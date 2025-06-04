@@ -42,11 +42,11 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="products.html">Prodcts</a>
+                               <a href="{{ route('products.index') }}">Products</a>
                             </li>
 
                             <li>
-                                <a href="add-new-product.html">Add New Products</a>
+                                  <a href="{{ route('products.create') }}">Add New Product</a>
                             </li>
                         </ul>
                     </li>
@@ -58,11 +58,11 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="category.html">Category List</a>
+                               <a href="{{ route('categories.index') }}">Category List</a>
                             </li>
 
                             <li>
-                                <a href="add-new-category.html">Add New Category</a>
+                                <a href="{{ route('categories.create') }}">Add New Category</a>
                             </li>
                         </ul>
                     </li>
