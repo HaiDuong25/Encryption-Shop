@@ -10,29 +10,64 @@ class Rate extends Model
     use HasFactory;
 
     protected $fillable = [
-        'product_id', // Vẫn giữ lại product_id ở đây
         'user_id',
+        'product_id',
         'score',
         'content',
-        'status',
+        'status', // Giả sử status là TINYINT: 0 = pending, 1 = approved, 2 = rejected
     ];
 
-    // public function user()
-    // {
-    //     return $this->belongsTo(Account::class, 'user_id'); // Giả sử model người dùng là Account
-    // }
+    // --- THÊM CÁC PHƯƠNG THỨC ACCESSOR DƯỚI ĐÂY ---
 
-    /*
-    // TẠM THỜI BÌNH LUẬN HOẶC XÓA MỐI QUAN HỆ NÀY
-    // SẼ THÊM LẠI KHI CÓ MODEL Product
-    public function product()
+    /**
+     * Accessor để lấy tên trạng thái dưới dạng chuỗi.
+     * Sẽ được gọi qua $rate->status_text
+     */
+    public function getStatusTextAttribute(): string
     {
-        // return $this->belongsTo(Product::class, 'product_id');
+        switch ($this->attributes['status']) { // Truy cập giá trị gốc của status
+            case 0:
+                return 'pending';
+            case 1:
+                return 'approved';
+            case 2:
+                return 'rejected';
+            default:
+                return 'unknown';
+        }
     }
-    */
+
+    /**
+     * Accessor để lấy class CSS cho badge trạng thái.
+     * Sẽ được gọi qua $rate->status_class
+     */
+    public function getStatusClassAttribute(): string
+    {
+        switch ($this->attributes['status']) { // Truy cập giá trị gốc của status
+            case 0: // pending
+                return 'bg-warning text-dark';
+            case 1: // approved
+                return 'bg-success';
+            case 2: // rejected
+                return 'bg-danger';
+            default:
+                return 'bg-secondary';
+        }
+    }
+
+    // --- KẾT THÚC PHẦN THÊM ACCESSOR ---
+
+
+    // Các relationships của bạn
+    public function user()
+    {
+        return $this->belongsTo(Account::class, 'user_id');
+    }
 
     public function replies()
     {
         return $this->hasMany(RateReply::class, 'rate_id');
     }
+
+    // public function product() { ... } // Sẽ thêm sau
 }

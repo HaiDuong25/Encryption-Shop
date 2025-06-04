@@ -13,13 +13,13 @@
                 <div class="col-lg-6">
                     <h3>Quản lý Đánh giá</h3>
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{-- route('admin.dashboard') --}}">Tổng quan</a></li>
+                        <li class="breadcrumb-item"><a href="{{-- route('admin.dashboard') --}}</a></li>
     <li class="breadcrumb-item active">Đánh giá</li>
     </ol>
 </div>
 </div>
 </div>
---}}
+
 {{-- Hoặc đơn giản là một tiêu đề --}}
 <h3 class="mt-3 mb-3">Danh sách Đánh giá Khách hàng</h3>
 
@@ -29,11 +29,6 @@
         <div class="row">
             <div class="col">
                 <h5 class="card-title mb-0"> <i class="fas fa-table me-1"></i> Tất cả Đánh giá</h5>
-            </div>
-            <div class="col-auto">
-                {{-- Nút thêm mới nếu cần, ví dụ:
-                        <a href="{{-- route('admin.rates.create') --}}" class="btn btn-primary btn-sm">Thêm mới Đánh giá</a>
-                --}}
             </div>
         </div>
     </div>
@@ -87,29 +82,36 @@
                         </td>
                         <td>{{ Str::limit($rate->content, 100) }}</td>
                         <td>
-                            <span class="badge rounded-pill
-                                            @if($rate->status == 'approved') bg-success
-                                            @elseif($rate->status == 'pending') bg-warning text-dark
-                                            @elseif($rate->status == 'rejected') bg-danger
-                                            @else bg-secondary @endif">
-                                {{ ucfirst(str_replace('_', ' ', $rate->status)) }}
+
+                            <span class="badge rounded-pill {{ $rate->status_class }}">
+                                {{ ucfirst(str_replace('_', ' ', $rate->status_text)) }}
                             </span>
                         </td>
+
                         <td>{{ $rate->created_at->format('d/m/Y H:i') }}</td>
                         <td>
-                            <a href="{{ route('admin.rates.show', $rate->id) }}" class="btn btn-info btn-sm" title="Xem chi tiết">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            {{-- Các nút chức năng khác sẽ được thêm sau --}}
-                            {{--
-                                        <button type="button" class="btn btn-primary btn-sm" title="Duyệt/Sửa trạng thái">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-danger btn-sm" title="Xóa">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        --}}
-                        </td>
+    <div class="d-flex flex-wrap gap-1">
+        {{-- Nút Xem --}}
+        <a href="{{ route('admin.rates.show', $rate->id) }}" class="btn btn-primary btn-sm" title="Xem chi tiết">
+            <i class="fas fa-eye"></i>
+        </a>
+
+        {{-- Nút Sửa --}}
+        <a href="{{ route('admin.rates.edit', $rate->id) }}" class="btn btn-primary btn-sm" title="Sửa trạng thái">
+            <i class="fas fa-edit"></i>
+        </a>
+
+        {{-- Nút Xóa --}}
+        <form action="{{ route('admin.rates.destroy', $rate->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này không?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger" title="Xóa đánh giá">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+    </div>
+</td>
+
                     </tr>
                     @empty
                     <tr>

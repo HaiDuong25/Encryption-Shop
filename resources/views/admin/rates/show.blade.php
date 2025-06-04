@@ -8,21 +8,17 @@
     <div class="page-header mb-3">
         <div class="row align-items-center">
             <div class="col-sm">
-                <h1 class="page-title">Chi tiết Đánh giá #{{ $rate->id }}</h1>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Tổng quan</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.rates.index') }}">Quản lý Đánh giá</a></li>
-                    <li class="breadcrumb-item active">Chi tiết Đánh giá</li>
-                </ul>
+                <h1 class="">Chi tiết Đánh giá #{{ $rate->id }}</h1>
+
             </div>
-            <div class="col-sm-auto">
+
+        </div>
+    </div>
+<div class="col-sm-auto">
                 <a href="{{ route('admin.rates.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại Danh sách
                 </a>
             </div>
-        </div>
-    </div>
-
     <div class="card">
         <div class="card-header">
             <h5 class="card-title mb-0">Thông tin Đánh giá</h5>
@@ -51,19 +47,16 @@
                     <p><strong>Ngày đánh giá:</strong> {{ $rate->created_at->format('d/m/Y H:i:s') }}</p>
                     <p>
                         <strong>Trạng thái:</strong>
-                        <span class="badge rounded-pill
-                            @if($rate->status == 'approved') bg-success
-                            @elseif($rate->status == 'pending') bg-warning text-dark
-                            @elseif($rate->status == 'rejected') bg-danger
-                            @else bg-secondary @endif">
-                            {{ ucfirst(str_replace('_', ' ', $rate->status)) }}
-                        </span>
+                       <span class="badge rounded-pill {{ $rate->status_class }}">
+        {{ ucfirst(str_replace('_', ' ', $rate->status_text)) }}
+    </span>
                     </p>
+                    <a href="{{ route('admin.rates.edit', $rate->id) }}" class="btn btn-primary">Thay đổi Trạng thái Đánh giá</a>
                 </div>
             </div>
             <hr>
             <h5>Nội dung đánh giá:</h5>
-            <div class="p-3 border rounded bg-light">
+            <div class="p-3 border rounded bg-light text-muted">
                 {!! nl2br(e($rate->content)) !!}
             </div>
         </div>

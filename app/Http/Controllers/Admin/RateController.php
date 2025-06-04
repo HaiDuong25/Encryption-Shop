@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller; // Đảm bảo bạn đã use Controller cơ sở
 use App\Models\Rate; // Import model Rate
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RateController extends Controller
 {
@@ -22,17 +23,6 @@ class RateController extends Controller
         return view('admin.rates.show', compact('rate'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
@@ -41,14 +31,21 @@ class RateController extends Controller
     /**
      * Display the specified resource.
      */
-   
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Rate $rate)
     {
-        //
+
+        $statuses = [
+            0 => 'Pending',   // Chờ duyệt
+            1 => 'Approved',  // Đã duyệt
+            2 => 'Rejected',  // Bị từ chối
+        ];
+
+        return view('admin.rates.edit', compact('rate', 'statuses'));
     }
 
     /**
@@ -56,7 +53,15 @@ class RateController extends Controller
      */
     public function update(Request $request, Rate $rate)
     {
-        //
+        $validStatuses = [0, 1, 2]; // pending, approved, rejected
+        $validatedData = $request->validate([
+            'status' => ['required', Rule::in($validStatuses)],
+        ]);
+        $rate->status = $validatedData['status'];
+        $rate->save();
+         return redirect()->route('admin.rates.show', $rate->id)
+         ->with('success', 'Trạng thái đánh giá đã được cập nhật thành công!');
+
     }
 
     /**
@@ -64,6 +69,13 @@ class RateController extends Controller
      */
     public function destroy(Rate $rate)
     {
-        //
+        try {
+            $rate->delete();
+            return redirect()->route('admin.rates.index')
+                             ->with('success', 'Đánh giá (ID: ' . $rate->id . ') đã được xóa thành công!');
+    }catch (\Exception $e) {
+        return redirect()->route('admin.rates.index')
+                             ->with('error', 'Có lỗi xảy ra khi xóa đánh giá. Vui lòng thử lại.');
+        }
     }
 }
