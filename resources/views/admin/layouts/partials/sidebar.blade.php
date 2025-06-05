@@ -15,8 +15,7 @@
         <div class="logo-icon-wrapper">
             <a href="index.html">
                 <img class="img-fluid main-logo main-white" src="assets/images/logo/logo.png" alt="logo">
-                <img class="img-fluid main-logo main-dark" src="assets/images/logo/logo-white.png"
-                    alt="logo">
+                <img class="img-fluid main-logo main-dark" src="assets/images/logo/logo-white.png" alt="logo">
             </a>
         </div>
         <nav class="sidebar-main">
@@ -161,14 +160,26 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="coupon-list.html">Coupon List</a>
+                                <a href="{{ route('coupons.store') }}">Coupon List</a>
                             </li>
 
                             <li>
-                                <a href="create-coupon.html">Create Coupon</a>
+                                <a href="{{ route('coupons.create') }}">Create Coupon</a>
                             </li>
                         </ul>
                     </li>
+                    <li class="sidebar-list">
+    <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
+        <i class="ri-newspaper-line"></i>
+        <span>News</span>
+    </a>
+</li>
+<li class="sidebar-list">
+    <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
+        <i class="ri-image-line"></i>
+        <span>Quản lý banner</span>
+    </a>
+</li>
 
                     <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title link-nav" href="taxes.html">
