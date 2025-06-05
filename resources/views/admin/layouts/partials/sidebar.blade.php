@@ -185,9 +185,9 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="support-ticket.html">
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.contacts.index') }}">
                             <i class="ri-phone-line"></i>
-                            <span>Support Ticket</span>
+                            <span>Support</span>
                         </a>
                     </li>
 
