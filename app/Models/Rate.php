@@ -66,7 +66,7 @@ class Rate extends Model
 
     public function replies()
     {
-        return $this->hasMany(RateReply::class, 'rate_id');
+        return $this->hasMany(RateReply::class, 'rate_id')->orderBy('created_at', 'desc');
     }
 
     // public function product() { ... } // Sẽ thêm sau

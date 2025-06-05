@@ -25,5 +25,8 @@ class Admin extends Authenticatable // Hoặc extends Model nếu không cần a
         'remember_token', // Nếu có
     ];
 
-    // Các mối quan hệ sẽ được định nghĩa ở dưới
+    public function rateReplies() {
+        return $this->hasMany(RateReply::class, 'admin_id');
+    }
+
 }
