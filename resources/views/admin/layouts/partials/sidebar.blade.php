@@ -44,7 +44,6 @@
                             <li>
                                <a href="{{ route('products.index') }}">Products</a>
                             </li>
-
                             <li>
                                   <a href="{{ route('products.create') }}">Add New Product</a>
                             </li>
@@ -60,7 +59,6 @@
                             <li>
                                <a href="{{ route('categories.index') }}">Category List</a>
                             </li>
-
                             <li>
                                 <a href="{{ route('categories.create') }}">Add New Category</a>
                             </li>
@@ -178,16 +176,16 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="product-review.html">
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.rates.index') }}">
                             <i class="ri-star-line"></i>
                             <span>Product Review</span>
                         </a>
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="support-ticket.html">
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.contacts.index') }}">
                             <i class="ri-phone-line"></i>
-                            <span>Support Ticket</span>
+                            <span>Support</span>
                         </a>
                     </li>
 
