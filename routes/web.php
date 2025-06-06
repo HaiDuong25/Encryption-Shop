@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\ProductVariantController;
 
 use App\Http\Controllers\Admin\RateController as AdminRateController;
 use App\Http\Controllers\Admin\RateReplyController as AdminRateReplyController;
@@ -41,6 +42,15 @@ route::prefix('admin')->group(function () {
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+
+    //product variants
+    Route::get('/product-variants', [ProductVariantController::class, 'index'])->name('product-variants.index');
+    Route::get('/product-variants/create', [ProductVariantController::class, 'create'])->name('product-variants.create');
+    Route::post('/product-variants', [ProductVariantController::class, 'store'])->name('product-variants.store');
+    Route::get('/product-variants/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product-variants.edit');
+    Route::put('/product-variants/{productVariant}', [ProductVariantController::class, 'update'])->name('product-variants.update');
+    Route::delete('/product-variants/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
+
     //rate
     Route::get('/rates', [AdminRateController::class, 'index'])->name('rates.index');
     Route::get('/rates/{rate}', [AdminRateController::class, 'show'])->name('rates.show');
