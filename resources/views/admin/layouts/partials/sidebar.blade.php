@@ -41,10 +41,10 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                               <a href="{{ route('products.index') }}">Products</a>
+                                <a href="{{ route('products.index') }}">Products</a>
                             </li>
                             <li>
-                                  <a href="{{ route('products.create') }}">Add New Product</a>
+                                <a href="{{ route('products.create') }}">Add New Product</a>
                             </li>
                         </ul>
                     </li>
@@ -56,7 +56,7 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                               <a href="{{ route('categories.index') }}">Category List</a>
+                                <a href="{{ route('categories.index') }}">Category List</a>
                             </li>
                             <li>
                                 <a href="{{ route('categories.create') }}">Add New Category</a>
@@ -64,7 +64,7 @@
                         </ul>
                     </li>
 
-                    <li class="sidebar-list">
+                    <!-- <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-list-settings-line"></i>
                             <span>Attributes</span>
@@ -78,9 +78,9 @@
                                 <a href="add-new-attributes.html">Add Attributes</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
 
-                    <li class="sidebar-list">
+                    <!-- <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-user-3-line"></i>
                             <span>Users</span>
@@ -93,9 +93,9 @@
                                 <a href="add-new-user.html">Add new user</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
 
-                    <li class="sidebar-list">
+                    <!-- <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-user-3-line"></i>
                             <span>Roles</span>
@@ -108,16 +108,16 @@
                                 <a href="create-role.html">Create Role</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
 
-                    <li class="sidebar-list">
+                    <!-- <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title link-nav" href="media.html">
                             <i class="ri-price-tag-3-line"></i>
                             <span>Media</span>
                         </a>
-                    </li>
+                    </li> -->
 
-                    <li class="sidebar-list">
+                    <!-- <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-archive-line"></i>
                             <span>Orders</span>
@@ -133,9 +133,9 @@
                                 <a href="order-tracking.html">Order Tracking</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
 
-                    <li class="sidebar-list">
+                    <!-- <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-focus-3-line"></i>
                             <span>Localization</span>
@@ -149,7 +149,7 @@
                                 <a href="currency-rates.html">Currency Rates</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
@@ -167,17 +167,17 @@
                         </ul>
                     </li>
                     <li class="sidebar-list">
-    <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
-        <i class="ri-newspaper-line"></i>
-        <span>News</span>
-    </a>
-</li>
-<li class="sidebar-list">
-    <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
-        <i class="ri-image-line"></i>
-        <span>Quản lý banner</span>
-    </a>
-</li>
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
+                            <i class="ri-newspaper-line"></i>
+                            <span>News</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
+                            <i class="ri-image-line"></i>
+                            <span>Quản lý banner</span>
+                        </a>
+                    </li>
 
                     <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title link-nav" href="taxes.html">
@@ -187,14 +187,14 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.rates.index') }}">
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('rates.index') }}">
                             <i class="ri-star-line"></i>
                             <span>Product Review</span>
                         </a>
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.contacts.index') }}">
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
                             <i class="ri-phone-line"></i>
                             <span>Support</span>
                         </a>
