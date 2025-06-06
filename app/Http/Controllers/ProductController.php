@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -87,7 +88,7 @@ class ProductController extends Controller
             $validated['image'] = $path;
             // Bạn có thể thêm xóa file cũ nếu muốn
             if ($product->image) {
-                \Storage::disk('public')->delete($product->image);
+                Storage::disk('public')->delete($product->image);
             }
         }
 
