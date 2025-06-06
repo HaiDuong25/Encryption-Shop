@@ -56,12 +56,12 @@
                             <td class="text-nowrap">
                                 <div class="d-flex flex-wrap gap-1">
                                     {{-- Nút Xem --}}
-                                    <a href="{{ route('admin.contacts.show', $contact->id) }}" class="btn btn-primary btn-sm" title="Xem chi tiết">
+                                    <a href="{{ route('contacts.show', $contact->id) }}" class="btn btn-primary btn-sm" title="Xem chi tiết">
                                         <i class="fas fa-eye"></i> Xem
                                     </a>
 
                                     {{-- Nút Xóa --}}
-                                    <form action="{{ route('admin.contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa liên hệ này?');">
+                                    <form action="{{ route('contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa liên hệ này?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" title="Xóa liên hệ">

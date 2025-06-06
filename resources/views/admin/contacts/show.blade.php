@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="col-sm-auto">
-        <a href="{{ route('admin.contacts.index') }}" class="btn btn-secondary">
+        <a href="{{ route('contacts.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại Danh sách
         </a>
     </div>
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="card-footer text-end">
-            <form action="{{ route('admin.contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa liên hệ này?');">
+            <form action="{{ route('contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa liên hệ này?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">

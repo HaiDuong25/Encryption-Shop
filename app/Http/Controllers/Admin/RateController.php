@@ -28,14 +28,7 @@ class RateController extends Controller
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
 
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Rate $rate)
     {
 
@@ -59,7 +52,7 @@ class RateController extends Controller
         ]);
         $rate->status = $validatedData['status'];
         $rate->save();
-         return redirect()->route('admin.rates.show', $rate->id)
+         return redirect()->route('rates.show', $rate->id)
          ->with('success', 'Trạng thái đánh giá đã được cập nhật thành công!');
 
     }
@@ -71,10 +64,10 @@ class RateController extends Controller
     {
         try {
             $rate->delete();
-            return redirect()->route('admin.rates.index')
+            return redirect()->route('rates.index')
                              ->with('success', 'Đánh giá (ID: ' . $rate->id . ') đã được xóa thành công!');
     }catch (\Exception $e) {
-        return redirect()->route('admin.rates.index')
+        return redirect()->route('rates.index')
                              ->with('error', 'Có lỗi xảy ra khi xóa đánh giá. Vui lòng thử lại.');
         }
     }
