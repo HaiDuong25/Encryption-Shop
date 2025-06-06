@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('admin.layouts.main')
 @section('content')
 <div class="container">
     <h1 class="mb-3" style="font-size:2.2rem; font-weight: bold;">Danh sách mã giảm giá</h1>

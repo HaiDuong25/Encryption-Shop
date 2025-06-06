@@ -1,45 +1,43 @@
-@extends('layouts.app')
+@extends('admin.layouts.main') {{-- Kế thừa từ layout chính của bạn --}}
+
+@section('title', 'Chi tiết Đánh giá #' . $rate->id)
 
 @section('content')
-<div class="container">
-    <h2>Chi tiết Đánh giá #{{ $rate->id }}</h2>
-
-    <div class="mb-3">
-        <strong>Nội dung:</strong>
-        <div class="border p-2">{!! nl2br(e($rate->content)) !!}</div>
+<div class="col-12">
+    {{-- Breadcrumb hoặc tiêu đề trang --}}
+    <div class="page-header mb-3">
+        <div class="row align-items-center">
+            <div class="col-sm">
+                <h1 class="">Chi tiết Đánh giá #{{ $rate->id }}</h1>
+            </div>
+            {{-- Nút "Quay lại Danh sách" đã được bạn đặt ở vị trí khác, nên tôi giữ nguyên theo code của bạn --}}
+        </div>
     </div>
-
-
-    <div class="mb-3">
-        <strong>Trạng thái:</strong>
-        <span class="{{ $rate->status_class ?? '' }}">
-            {{ $rate->status_text ?? '' }}
-        </span>
 
     {{-- Nút "Quay lại Chi tiết" theo cấu trúc bạn cung cấp --}}
     <div class="mb-3"> {{-- Thêm class mb-3 cho nút này để tạo khoảng cách với card bên dưới --}}
         <a href="{{ route('rates.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại Danh sách
         </a>
-
     </div>
 
-    @if($rate->replies && $rate->replies->isNotEmpty())
-        <div class="mb-3">
-            <strong>Phản hồi:</strong>
-            <ul>
-                @foreach($rate->replies as $reply)
-                    <li>
-                        @if($reply->admin)
-                            <span class="badge bg-primary">Admin</span>
+    {{-- Card Thông tin Đánh giá --}}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Thông tin Đánh giá</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>ID Đánh giá:</strong> {{ $rate->id }}</p>
+                    <p><strong>Sản phẩm ID:</strong> {{ $rate->product_id ?: 'N/A' }}</p>
+                    <p>
+                        <strong>Người đánh giá:</strong>
+                        @if ($rate->user)
+                            {{ $rate->user->name }} (Email: {{ $rate->user->email }})
                         @else
-                            <span class="badge bg-secondary">Khách</span>
+                            <span class="text-muted">Không xác định</span>
                         @endif
-                        {!! nl2br(e($reply->content)) !!}
-                    </li>
-                @endforeach
-            </ul>
-
                     </p>
                 </div>
                 <div class="col-md-6">
@@ -128,11 +126,10 @@
                     <i class="fas fa-paper-plane"></i> Gửi phản hồi
                 </button>
             </form>
-
         </div>
-    @endif
+    </div>
+    {{-- Card Phản hồi của Admin -- END PHẦN CHỈNH SỬA CHÍNH --}}
 
-    <a href="{{ route('rates.index') }}" class="btn btn-secondary">Quay lại</a>
     {{-- Các nút hành động khác (nếu có) đã được bạn tích hợp vào Card Thông tin Đánh giá --}}
     {{-- <div class="mt-4">
          <a href="{{ route('rates.edit', $rate->id) }}" class="btn btn-primary">Thay đổi Trạng thái Đánh giá</a>

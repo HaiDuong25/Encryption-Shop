@@ -92,4 +92,6 @@ route::prefix('admin')->group(function () {
 
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
+    Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
 });

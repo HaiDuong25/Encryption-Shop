@@ -41,25 +41,42 @@ class BannerController extends Controller
         return view('banners.edit', compact('banner'));
     }
 
-  public function update(Request $request, $id)
-{
-    $banner = \App\Models\Banner::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $banner = Banner::findOrFail($id);
 
-    // Xử lý validate ở đây nếu có
+        // Validate nếu cần
 
-    $banner->title = $request->title;
+        $banner->title = $request->title;
 
-    // Nếu có đổi ảnh:
-    if ($request->hasFile('image')) {
-        // Xử lý upload file, lưu lại $path
-        $path = $request->file('image')->store('banners', 'public');
-        $banner->image = $path;
+        if ($request->hasFile('image')) {
+            // Xóa ảnh cũ nếu có
+            if ($banner->image && \Storage::disk('public')->exists($banner->image)) {
+                \Storage::disk('public')->delete($banner->image);
+            }
+
+            $path = $request->file('image')->store('banners', 'public');
+            $banner->image = $path;
+        }
+
+        $banner->position = $request->position;
+        $banner->is_active = $request->is_active;
+        $banner->save();
+
+        return redirect()->route('banners.index')->with('success', 'Cập nhật thành công!');
     }
 
-    $banner->position = $request->position;           // SỬA ĐÚNG VỊ TRÍ
-    $banner->is_active = $request->is_active;         // SỬA ĐÚNG TRẠNG THÁI KÍCH HOẠT
-    $banner->save();
+    // Thêm phương thức destroy
+    public function destroy($id)
+    {
+        $banner = Banner::findOrFail($id);
 
-    return redirect()->route('banners.index')->with('success', 'Cập nhật thành công!');
-}
+        if ($banner->image && \Storage::disk('public')->exists($banner->image)) {
+            \Storage::disk('public')->delete($banner->image);
+        }
+
+        $banner->delete();
+
+        return redirect()->route('banners.index')->with('success', 'Xóa banner thành công!');
+    }
 }
