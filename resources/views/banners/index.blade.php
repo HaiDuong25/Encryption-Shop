@@ -47,13 +47,14 @@
                         @endif
                     </td>
                     <td>{{ $banner->position }}</td>
-                    <td>
-                        @if($banner->is_active)
-                            <span class="badge bg-success">Hiện</span>
-                        @else
-                            <span class="badge bg-secondary">Ẩn</span>
-                        @endif
-                    </td>
+                <td>
+    @if($banner->is_active)
+        <span class="badge bg-success">Hiện</span>
+    @else
+        <span class="badge" style="background-color: #e0e0e0; color: black;">Ẩn</span>
+    @endif
+</td>
+
                     <td>
                         <a href="{{ route('banners.edit', $banner->id) }}" class="btn btn-warning btn-sm">
                             Sửa

@@ -43,13 +43,13 @@
                         @endphp
 
                         @if($start && $end && $now->between($start, $end))
-                            <span class="badge bg-success">
+                            <span class="badge bg-primary">
                              Còn hạn {{ floor($now->diffInDays($end) + 1) }} ngày
                             </span>
                         @elseif($end && $now->gt($end))
                             <span class="badge bg-danger">Hết hạn</span>
                         @elseif($start && $now->lt($start))
-                            <span class="badge bg-secondary">Chưa bắt đầu</span>
+                            <span class="badge bg-success">Chưa bắt đầu</span>
                         @else
                             <span class="badge bg-warning">Không xác định</span>
                         @endif

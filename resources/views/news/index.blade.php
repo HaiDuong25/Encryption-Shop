@@ -50,13 +50,14 @@
                         </div>
                     </td>
                     <td>{{ $item->author ?? 'Không rõ' }}</td>
-                    <td>
-                        @if($item->is_published)
-                            <span class="badge bg-success">Đã đăng</span>
-                        @else
-                            <span class="badge bg-secondary">Nháp</span>
-                        @endif
-                    </td>
+                <td>
+    @if($item->is_published)
+        <span class="badge bg-success">Đã đăng</span>
+    @else
+        <span class="badge" style="background-color: #e0e0e0; color: black;">Nháp</span>
+    @endif
+</td>
+
                     <td>{{ $item->created_at->format('d/m/Y') }}</td>
                     <td>
                         <a href="{{ route('news.edit', $item->id) }}" class="btn btn-warning btn-sm">

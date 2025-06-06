@@ -36,6 +36,7 @@ route::prefix('admin')->group(function () {
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     //brands
+    Route::resource('brands', BrandController::class);
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
     Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
     Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
