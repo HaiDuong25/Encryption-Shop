@@ -82,7 +82,7 @@
                             <div class="card o-hidden card-hover">
                                 <div class="card-header border-0 pb-1">
                                     <div class="card-header-title p-0">
-                                        <h4>Category</h4>
+                                        <h4>Encryption-Shop</h4>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
@@ -90,10 +90,11 @@
                                         <div>
                                             <div class="dashboard-category">
                                                 <a href="javascript:void(0)" class="category-image">
-                                                    <img src="assets/svg/vegetable.svg" class="img-fluid" alt="">
+                                                  <img src="https://cdn-icons-png.flaticon.com/512/892/892458.png" class="img-fluid" alt="">
+
                                                 </a>
                                                 <a href="javascript:void(0)" class="category-name">
-                                                    <h6>Vegetables & Fruit</h6>
+                                                    <h6>Men's T-shirt</h6>
                                                 </a>
                                             </div>
                                         </div>
@@ -101,7 +102,8 @@
                                         <div>
                                             <div class="dashboard-category">
                                                 <a href="javascript:void(0)" class="category-image">
-                                                    <img src="assets/svg/cup.svg" class="img-fluid" alt="">
+                                                    <img src="https://cdn-icons-png.flaticon.com/512/891/891462.png" class="img-fluid" alt="">
+
                                                 </a>
                                                 <a href="javascript:void(0)" class="category-name">
                                                     <h6>Beverages</h6>

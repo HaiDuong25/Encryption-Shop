@@ -1,11 +1,22 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductVariantController;
+
+use App\Http\Controllers\Admin\RateController as AdminRateController;
+use App\Http\Controllers\Admin\RateReplyController as AdminRateReplyController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\CouponController;
+use App\Models\Coupon;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\BannerController;
 
 route::prefix('admin')->group(function () {
     route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
@@ -31,6 +42,7 @@ route::prefix('admin')->group(function () {
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+
     //product variants
     Route::get('/product-variants', [ProductVariantController::class, 'index'])->name('product-variants.index');
     Route::get('/product-variants/create', [ProductVariantController::class, 'create'])->name('product-variants.create');
@@ -38,5 +50,45 @@ route::prefix('admin')->group(function () {
     Route::get('/product-variants/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product-variants.edit');
     Route::put('/product-variants/{productVariant}', [ProductVariantController::class, 'update'])->name('product-variants.update');
     Route::delete('/product-variants/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
-});
 
+    //rate
+    Route::get('/rates', [AdminRateController::class, 'index'])->name('rates.index');
+    Route::get('/rates/{rate}', [AdminRateController::class, 'show'])->name('rates.show');
+    Route::get('/rates/{rate}/edit', [AdminRateController::class, 'edit'])->name('rates.edit');
+    Route::put('/rates/{rate}', [AdminRateController::class, 'update'])->name('rates.update');
+    Route::delete('/rates/{rate}', [AdminRateController::class, 'destroy'])->name('rates.destroy');
+
+    // Route cho việc lưu phản hồi của Admin cho một Rate
+    Route::post('/rates/{rate}/replies', [AdminRateReplyController::class, 'store'])->name('rates.replies.store');
+    // Routes cho Quản lý Liên hệ Khách hàng
+    Route::get('/contacts', [AdminContactController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
+    Route::delete('/contacts/{contact}', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
+
+    Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
+
+    // Route tạo và lưu mã giảm giá
+    Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
+    Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
+
+    // Route áp dụng mã giảm giá cho đơn hàng`
+    Route::post('/apply-coupon', function (Request $request) {
+        $coupon = Coupon::where('code', $request->code)->first();
+        if (!$coupon || !$coupon->isValid()) {
+            return back()->with('error', 'Mã giảm giá không hợp lệ hoặc đã hết hạn!');
+        }
+        session(['coupon' => [
+            'code' => $coupon->code,
+            'discount' => $coupon->discount
+        ]]);
+        return back()->with('success', 'Áp dụng mã thành công!');
+    })->name('apply.coupon');
+
+    Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
+    Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
+    Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+
+    Route::resource('news', NewsController::class);
+    Route::resource('banners', BannerController::class);
+});
