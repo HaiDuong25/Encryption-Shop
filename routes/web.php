@@ -65,6 +65,7 @@ route::prefix('admin')->group(function () {
     Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
     Route::delete('/contacts/{contact}', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
 
+    //coupons
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
 
     // Route tạo và lưu mã giảm giá
