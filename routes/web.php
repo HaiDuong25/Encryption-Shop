@@ -17,6 +17,7 @@ use App\Http\Controllers\CouponController;
 use App\Models\Coupon;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\BannerController;
+use App\Http\Controllers\OrderController;
 
 route::prefix('admin')->group(function () {
     route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
@@ -28,6 +29,16 @@ route::prefix('admin')->group(function () {
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('inventory.index');
+    // orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
     //categories
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
