@@ -29,10 +29,10 @@ class ContactController extends Controller
     {
         try {
             $contact->delete();
-            return redirect()->route('admin.contacts.index')
+            return redirect()->route('contacts.index')
                 ->with('success', 'Liên hệ (ID: ' . $contact->id . ') đã được xóa thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.contacts.index')
+            return redirect()->route('contacts.index')
                 ->with('error', 'Có lỗi xảy ra khi xóa liên hệ. Vui lòng thử lại.');
         }
     }

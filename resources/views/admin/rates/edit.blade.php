@@ -14,7 +14,7 @@
         </div>
     </div>
 <div class="col-sm-auto">
-                <a href="{{ route('admin.rates.show', $rate->id) }}" class="btn btn-secondary">
+                <a href="{{ route('rates.show', $rate->id) }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại Chi tiết
                 </a>
             </div>
@@ -32,7 +32,7 @@
                 </span>
             </p>
 
-            <form action="{{ route('admin.rates.update', $rate->id) }}" method="POST">
+            <form action="{{ route('rates.update', $rate->id) }}" method="POST">
                 @csrf {{-- Cross-Site Request Forgery token --}}
                 @method('PUT') {{-- Hoặc 'PATCH'. Phương thức HTTP cho update --}}
 

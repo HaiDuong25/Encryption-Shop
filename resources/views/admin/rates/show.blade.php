@@ -16,7 +16,7 @@
 
     {{-- Nút "Quay lại Chi tiết" theo cấu trúc bạn cung cấp --}}
     <div class="mb-3"> {{-- Thêm class mb-3 cho nút này để tạo khoảng cách với card bên dưới --}}
-        <a href="{{ route('admin.rates.index') }}" class="btn btn-secondary">
+        <a href="{{ route('rates.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại Danh sách
         </a>
     </div>
@@ -55,7 +55,7 @@
                         </span>
                     </p>
                     {{-- Nút thay đổi trạng thái đã được bạn đặt ở đây, giữ nguyên --}}
-                    <a href="{{ route('admin.rates.edit', $rate->id) }}" class="btn btn-primary mt-2"> <i class="fas fa-edit"></i> Thay đổi Trạng thái</a>
+                    <a href="{{ route('rates.edit', $rate->id) }}" class="btn btn-primary mt-2"> <i class="fas fa-edit"></i> Thay đổi Trạng thái</a>
                 </div>
             </div>
             <hr>
@@ -111,7 +111,7 @@
             {{-- Form thêm phản hồi mới --}}
             <hr class="my-4">
             <h5>Thêm phản hồi mới:</h5>
-            <form action="{{ route('admin.rates.replies.store', $rate->id) }}" method="POST">
+            <form action="{{ route('rates.replies.store', $rate->id) }}" method="POST">
                 @csrf
                 <div class="mb-3">
                     <label for="reply_content" class="form-label">Nội dung phản hồi của bạn:</label>
@@ -132,7 +132,7 @@
 
     {{-- Các nút hành động khác (nếu có) đã được bạn tích hợp vào Card Thông tin Đánh giá --}}
     {{-- <div class="mt-4">
-         <a href="{{ route('admin.rates.edit', $rate->id) }}" class="btn btn-primary">Thay đổi Trạng thái Đánh giá</a>
+         <a href="{{ route('rates.edit', $rate->id) }}" class="btn btn-primary">Thay đổi Trạng thái Đánh giá</a>
     </div> --}}
 </div>
 @endsection

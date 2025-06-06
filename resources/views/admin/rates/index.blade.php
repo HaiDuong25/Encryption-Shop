@@ -92,17 +92,17 @@
                         <td>
     <div class="d-flex flex-wrap gap-1">
         {{-- Nút Xem --}}
-        <a href="{{ route('admin.rates.show', $rate->id) }}" class="btn btn-primary btn-sm" title="Xem chi tiết">
+        <a href="{{ route('rates.show', $rate->id) }}" class="btn btn-primary btn-sm" title="Xem chi tiết">
             <i class="fas fa-eye"></i>
         </a>
 
         {{-- Nút Sửa --}}
-        <a href="{{ route('admin.rates.edit', $rate->id) }}" class="btn btn-primary btn-sm" title="Sửa trạng thái">
+        <a href="{{ route('rates.edit', $rate->id) }}" class="btn btn-primary btn-sm" title="Sửa trạng thái">
             <i class="fas fa-edit"></i>
         </a>
 
         {{-- Nút Xóa --}}
-        <form action="{{ route('admin.rates.destroy', $rate->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này không?');">
+        <form action="{{ route('rates.destroy', $rate->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này không?');">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger" title="Xóa đánh giá">

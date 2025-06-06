@@ -32,13 +32,13 @@ class RateReplyController extends Controller
             //         'admin_id' => $loggedInAdminId,
             //         'reply_content' => $request->input('reply_content'),
             //         ]);
-            //         return redirect()->route('admin.rates.show', $rate->id)
+            //         return redirect()->route('rates.show', $rate->id)
             //         ->with('success', 'Phản hồi đã được gửi thành công!');
             //          } catch (\Exception $e) {
             //             return back()->withInput()->with('error', 'Có lỗi xảy ra khi lưu phản hồi. Vui lòng thử lại.');
             //          }
             //          } else {
-            //             return redirect()->route('admin.login')
+            //             return redirect()->route('login')
             //             ->with('error', 'Vui lòng đăng nhập với tư cách quản trị viên để phản hồi.');
             //          }
             //         } PHẦN NÀY ĐỂ KHI LÀM ĐĂNG NHẬP XONG.
@@ -54,7 +54,7 @@ class RateReplyController extends Controller
                     'reply_content' => $request->input('reply_content'),
 
             ]);
-            return redirect()->route('admin.rates.show', $rate->id)
+            return redirect()->route('rates.show', $rate->id)
             ->with('success', 'Phản hồi đã được gửi thành công!');
             } catch (\Exception $e) {
                 return back()->withInput()->with('error', 'Có lỗi xảy ra khi lưu phản hồi. Vui lòng thử lại.');
