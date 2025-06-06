@@ -111,12 +111,13 @@
                         </ul>
                     </li> -->
 
-                    <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('inventory.index') }}">
-                            <i class="ri-archive-2-line"></i>
-                            <span>Quản lý kho hàng</span>
-                        </a>
-                    </li>
+                   <li class="sidebar-list">
+    <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('inventory.index') }}">
+        <i class="ri-archive-line"></i> {{-- icon đổi tùy ý --}}
+        <span>Inventory</span>
+    </a>
+</li>
+
                     <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-archive-line"></i>
@@ -169,7 +170,7 @@
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
                             <i class="ri-image-line"></i>
-                            <span>Quản lý banner</span>
+                            <span>Banner</span>
                         </a>
                     </li>
 
