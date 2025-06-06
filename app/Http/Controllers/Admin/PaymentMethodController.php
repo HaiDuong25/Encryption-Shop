@@ -27,7 +27,7 @@ class PaymentMethodController extends Controller
         ]);
 
         PaymentMethod::create($request->only('payment_type', 'description'));
-        return redirect()->route('admin.payment-methods.index')->with('success', 'Thêm phương thức thành công');
+        return redirect()->route('payment-methods.index')->with('success', 'Thêm phương thức thành công');
     }
 
     public function edit(PaymentMethod $payment_method)
@@ -43,7 +43,7 @@ class PaymentMethodController extends Controller
         ]);
 
         $payment_method->update($request->only('payment_type', 'description'));
-        return redirect()->route('admin.payment-methods.index')->with('success', 'Cập nhật thành công');
+        return redirect()->route('payment-methods.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(PaymentMethod $payment_method)

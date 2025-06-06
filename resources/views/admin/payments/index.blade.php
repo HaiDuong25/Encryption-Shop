@@ -33,7 +33,7 @@
                 <td>{{ $payment->confirmed_at ? $payment->confirmed_at->format('d/m/Y H:i') : '-' }}</td>
                 <td>
                     @if($payment->status === 'pending')
-                    <form action="{{ route('admin.payments.confirm', $payment->id) }}" method="POST" onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');">
+                    <form action="{{ route('payments.confirm', $payment->id) }}" method="POST" onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');">
                         @csrf
                         <button type="submit">Xác nhận</button>
                     </form>

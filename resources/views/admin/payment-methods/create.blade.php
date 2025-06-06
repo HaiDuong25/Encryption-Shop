@@ -3,7 +3,7 @@
 @section('content')
     <h2>Thêm phương thức thanh toán</h2>
 
-    <form action="{{ route('admin.payment-methods.store') }}" method="POST">
+    <form action="{{ route('payment-methods.store') }}" method="POST">
         @csrf
         <div class="mb-3">
             <label>Loại thanh toán</label>
@@ -14,6 +14,6 @@
             <textarea name="description" class="form-control">{{ old('description') }}</textarea>
         </div>
         <button class="btn btn-success">Lưu</button>
-        <a href="{{ route('admin.payment-methods.index') }}" class="btn btn-secondary">Quay lại</a>
+        <a href="{{ route('payment-methods.index') }}" class="btn btn-secondary">Quay lại</a>
     </form>
 @endsection

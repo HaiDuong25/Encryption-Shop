@@ -3,7 +3,7 @@
 @section('content')
     <h2>Danh sách phương thức thanh toán</h2>
 
-    <a href="{{ route('admin.payment-methods.create') }}" class="btn btn-primary mb-3 ">
+    <a href="{{ route('payment-methods.create') }}" class="btn btn-primary mb-3 ">
         <i class="fa fa-plus"></i> Thêm mới
     </a>
 
@@ -28,7 +28,7 @@
                     <td>{{ $method->description }}</td>
                     <td>
     <div class="d-flex align-items-center gap-2">
-        <a href="{{ route('admin.payment-methods.edit', $method) }}"
+        <a href="{{ route('payment-methods.edit', $method) }}"
            class="btn btn-primary btn-sm fw-bold rounded-2 shadow-sm" title="Sửa">
           <i class="fas fa-edit" style="display: inline-block;"></i> Sửa
         </a>
@@ -51,7 +51,7 @@
                                         <p class="fw-bold">Bạn có chắc chắn muốn xóa phương thức này?</p>
                                     </div>
                                     <div class="modal-footer">
-                                        <form action="{{ route('admin.payment-methods.destroy', $method) }}" method="POST">
+                                        <form action="{{ route('payment-methods.destroy', $method) }}" method="POST">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn btn-danger">Xóa</button>
                                         </form>
