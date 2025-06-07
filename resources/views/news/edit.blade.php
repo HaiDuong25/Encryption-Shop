@@ -23,6 +23,11 @@
             @endif
             @error('image') <small class="text-danger">{{ $message }}</small> @enderror
         </div>
+        <div class="mb-3">
+            <label for="author" class="form-label">Tác giả</label>
+            <input type="text" name="author" class="form-control" required value="{{ old('author', $news->author) }}">
+            @error('author') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
         <div class="mb-3 form-check">
             <input type="checkbox" name="is_published" class="form-check-input" id="is_published"
                    {{ old('is_published', $news->is_published) ? 'checked' : '' }}>

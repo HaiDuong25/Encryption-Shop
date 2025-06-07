@@ -14,7 +14,11 @@
         </div>
         <div class="mb-3">
             <label>Ảnh đại diện</label>
-            <input type="file" name="image" class="form-control">
+            <input type="file" name="image" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Tác giả</label>
+            <input type="text" name="author" class="form-control" value="{{ old('author') }}" required>
         </div>
         <div class="mb-3">
             <label><input type="checkbox" name="is_published"> Đăng ngay</label>
