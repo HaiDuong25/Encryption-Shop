@@ -10,7 +10,7 @@
         </div>
         <div class="mb-3">
             <label>Nội dung</label>
-            <textarea name="content" class="form-control" rows="6" required></textarea>
+            <textarea name="content" class="form-control summernote" rows="6" required></textarea>
         </div>
         <div class="mb-3">
             <label>Ảnh đại diện</label>
