@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('order_id');
 
-            $table->enum('status', ['pending', 'confirmed', 'rejected'])->default('pending');
+            $table->enum('status', ['Chờ thanh toán', 'Đã thanh toán', 'rejected'])->default('Chờ thanh toán');
 $table->timestamp('confirmed_at')->nullable(); // ✅
             $table->string('transaction_code')->nullable();
             $table->timestamps();

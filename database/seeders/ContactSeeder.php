@@ -38,7 +38,7 @@ class ContactSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'user_id' => 4,
+                'user_id' => 2,
                 'name' => 'Pham Thi D',
                 'email' => 'd@example.com',
                 'phone' => null,
@@ -47,7 +47,7 @@ class ContactSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'user_id' => 5,
+                'user_id' => 1,
                 'name' => 'Hoang Van E',
                 'email' => 'e@example.com',
                 'phone' => '0909090909',

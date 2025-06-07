@@ -12,7 +12,7 @@ class CreateRatesTable extends Migration
             $table->id();
 
 $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-$table->foreignId('account_id')->constrained('accounts')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 $table->tinyInteger('score');
 $table->text('content')->nullable();
 $table->tinyInteger('status')->default(1);

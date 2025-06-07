@@ -47,7 +47,7 @@ class OrderSeeder extends Seeder
                 'updated_at' => now(),
             ],
              [
-                'user_id' => 4,
+                'user_id' => 2,
                 'name' => 'Le Van C',
                 'phone' => '0912345678',
                 'address' => '789 Đường LMN, Quận 5',
@@ -59,7 +59,7 @@ class OrderSeeder extends Seeder
                 'updated_at' => now(),
             ],
              [
-                'user_id' => 5,
+                'user_id' => 1,
                 'name' => 'Le Van C',
                 'phone' => '0912345678',
                 'address' => '789 Đường LMN, Quận 5',

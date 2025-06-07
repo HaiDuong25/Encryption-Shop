@@ -43,7 +43,7 @@
                             <td>{{ $contact->id }}</td>
                             <td>
                                 {{ $contact->name }}
-                                @if($contact->user_id && $contact->user) {{-- Thêm kiểm tra $contact->user tồn tại --}}
+                                @if($contact->user_id && $contact->user)
                                 <br><small class="text-muted">(User: {{ $contact->user->name }} - ID: {{ $contact->user_id }})</small>
                                 @else
                                 <br><small class="text-muted">(Khách)</small>
@@ -74,7 +74,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center">Chưa có liên hệ nào.</td> {{-- Giảm colspan vì bỏ cột status --}}
+                            <td colspan="7" class="text-center">Chưa có liên hệ nào.</td>
                         </tr>
                         @endforelse
                     </tbody>

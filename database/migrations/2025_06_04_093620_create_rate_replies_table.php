@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('rate_id')->constrained('rates')->onDelete('cascade');
 
             // SỬ DỤNG DÒNG NÀY: admin_id liên kết với bảng 'admins'
-            $table->foreignId('account_id')->constrained('accounts')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
             $table->text('reply_content');
             $table->timestamps();

@@ -12,11 +12,11 @@ class PaymentSeeder extends Seeder
     public function run(): void
     {
         DB::table('payments')->insert([
-            ['order_id' => 1, 'status' => 'confirmed', 'payment_method_id' => 1, 'confirmed_at' => now()],
-            ['order_id' => 2, 'status' => 'pending',   'payment_method_id' => 2, 'confirmed_at' => null],
-            ['order_id' => 3, 'status' => 'confirmed', 'payment_method_id' => 3, 'confirmed_at' => now()],
-            ['order_id' => 4, 'status' => 'pending',   'payment_method_id' => 4, 'confirmed_at' => null],
-            ['order_id' => 5, 'status' => 'confirmed', 'payment_method_id' => 5, 'confirmed_at' => now()],
+            ['order_id' => 1, 'status' => 'Chờ thanh toán', 'payment_method_id' => 1, 'confirmed_at' => now()],
+            ['order_id' => 2, 'status' => 'Chờ thanh toán',   'payment_method_id' => 2, 'confirmed_at' => null],
+            ['order_id' => 3, 'status' => 'Chờ thanh toán', 'payment_method_id' => 3, 'confirmed_at' => now()],
+            ['order_id' => 4, 'status' => 'Chờ thanh toán',   'payment_method_id' => 4, 'confirmed_at' => null],
+            ['order_id' => 5, 'status' => 'Chờ thanh toán', 'payment_method_id' => 5, 'confirmed_at' => now()],
         ]);
     }
 }

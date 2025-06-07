@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
       $this->call([
-
+UserSeeder::class,
     AccountSeeder::class,      // Account thường liên quan User
     BrandSeeder::class,        // Brand trước Product nếu Product có brand_id
     CategorySeeder::class,     // Category trước Product nếu Product có category_id

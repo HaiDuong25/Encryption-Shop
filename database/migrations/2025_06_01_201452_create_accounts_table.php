@@ -13,7 +13,7 @@ class CreateAccountsTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('role');
-            $table->string('address')->nullable();
+            $table->string('address');
             $table->string('password');
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
