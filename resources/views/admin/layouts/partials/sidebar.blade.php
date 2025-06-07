@@ -32,7 +32,7 @@
                         </a>
                     </li>
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('products.index') }}">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-store-3-line"></i>
                             <span>Quản lý sản phẩm</span>
                         </a>
@@ -108,12 +108,12 @@
                         </ul>
                     </li> -->
 
-                   <li class="sidebar-list">
-    <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('inventory.index') }}">
-        <i class="ri-archive-line"></i> {{-- icon đổi tùy ý --}}
-        <span>Inventory</span>
-    </a>
-</li>
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('inventory.index') }}">
+                            <i class="ri-archive-line"></i> {{-- icon đổi tùy ý --}}
+                            <span>Inventory</span>
+                        </a>
+                    </li>
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('brands.index') }}">
@@ -128,11 +128,11 @@
                             <span>Quản lý biến thể</span>
                         </a>
                     </li>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('orders.index') }}">Order List</a>
-                            </li>
-                        </ul>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a href="{{ route('orders.index') }}">Order List</a>
+                        </li>
+                    </ul>
                     </li>
 
                     <!-- <li class="sidebar-list">
@@ -157,15 +157,15 @@
                             <span>Quản lý đánh giá sản phẩm</span>
                         </a>
                     </li>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('coupons.store') }}">Coupon List</a>
-                            </li>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a href="{{ route('coupons.store') }}">Coupon List</a>
+                        </li>
 
-                            <li>
-                                <a href="{{ route('coupons.create') }}">Create Coupon</a>
-                            </li>
-                        </ul>
+                        <li>
+                            <a href="{{ route('coupons.create') }}">Create Coupon</a>
+                        </li>
+                    </ul>
                     </li>
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
@@ -190,19 +190,19 @@
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('contacts.index') }}">
                             <i class="ri-store-3-line"></i>
                             <span>Quản lý liên hệ</span>
-                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('rates.index') }}">
-                            <i class="ri-star-line"></i>
-                            <span>Product Review</span>
-                        </a>
+                            <a class="sidebar-link sidebar-title link-nav" href="{{ route('rates.index') }}">
+                                <i class="ri-star-line"></i>
+                                <span>Product Review</span>
+                            </a>
                     </li>
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
                             <i class="ri-store-3-line"></i>
                             <span>Quản lý tin tức</span>
-                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
-                            <i class="ri-phone-line"></i>
-                            <span>Support</span>
-                        </a>
+                            <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
+                                <i class="ri-phone-line"></i>
+                                <span>Support</span>
+                            </a>
                     </li>
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
