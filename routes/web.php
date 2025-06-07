@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\DashboardController;
+
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
@@ -18,6 +19,10 @@ use App\Models\Coupon;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\OrderController;
+      
+use App\Http\Controllers\Admin\PaymentMethodController;
+use App\Http\Controllers\Admin\PaymentController;
+
 
 route::prefix('admin')->group(function () {
     route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
@@ -62,6 +67,15 @@ Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('i
     Route::get('/product-variants/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product-variants.edit');
     Route::put('/product-variants/{productVariant}', [ProductVariantController::class, 'update'])->name('product-variants.update');
     Route::delete('/product-variants/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
+
+    //phương thức thanh toán
+    Route::resource('payment-methods', PaymentMethodController::class);
+    Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('admin.payment-methods.index');
+
+    // Quản lý thanh toán
+    Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
+    Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
+    Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
 
     //rate
     Route::get('/rates', [AdminRateController::class, 'index'])->name('rates.index');

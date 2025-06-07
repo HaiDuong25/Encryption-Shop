@@ -15,31 +15,28 @@
         <div class="logo-icon-wrapper">
             <a href="index.html">
                 <img class="img-fluid main-logo main-white" src="{{ asset('assets/images/logo/logo.png') }}" alt="logo">
-                <img class="img-fluid main-logo main-dark" src="{{ asset('assets/images/logo/logo-white.png') }}"
-                    alt="logo">
+                <img class="img-fluid main-logo main-dark" src="{{ asset('assets/images/logo/logo-white.png') }}" alt="logo">
             </a>
         </div>
         <nav class="sidebar-main">
             <div class="left-arrow" id="left-arrow">
                 <i data-feather="arrow-left"></i>
             </div>
-
             <div id="sidebar-menu">
                 <ul class="sidebar-links" id="simple-bar">
                     <li class="back-btn"></li>
-
                     <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.dashboard') }}">
                             <i class="ri-home-line"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('products.index') }}">
                             <i class="ri-store-3-line"></i>
-                            <span>Product</span>
+                            <span>Quản lý sản phẩm</span>
                         </a>
+
                         <ul class="sidebar-submenu">
                             <li>
                                 <a href="{{ route('products.index') }}">Products</a>
@@ -49,11 +46,11 @@
                             </li>
                         </ul>
                     </li>
-
                     <li class="sidebar-list">
+
                         <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                             <i class="ri-list-check-2"></i>
-                            <span>Category</span>
+                            <span>Quản lý danh mục</span>
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
@@ -119,10 +116,18 @@
 </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-archive-line"></i>
-                            <span>Orders</span>
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('brands.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý thương hiệu</span>
                         </a>
+
+                    </li>
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('product-variants.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý biến thể</span>
+                        </a>
+                    </li>
                         <ul class="sidebar-submenu">
                             <li>
                                 <a href="{{ route('orders.index') }}">Order List</a>
@@ -147,10 +152,11 @@
                     </li> -->
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-price-tag-3-line"></i>
-                            <span>Coupons</span>
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('rates.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý đánh giá sản phẩm</span>
                         </a>
+                    </li>
                         <ul class="sidebar-submenu">
                             <li>
                                 <a href="{{ route('coupons.store') }}">Coupon List</a>
@@ -175,54 +181,49 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="taxes.html">
-                            <i class="ri-price-tag-3-line"></i>
-                            <span>Tax</span>
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('coupons.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý mã giảm giá</span>
                         </a>
                     </li>
-
                     <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('contacts.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý liên hệ</span>
                         <a class="sidebar-link sidebar-title link-nav" href="{{ route('rates.index') }}">
                             <i class="ri-star-line"></i>
                             <span>Product Review</span>
                         </a>
                     </li>
-
                     <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý tin tức</span>
                         <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
                             <i class="ri-phone-line"></i>
                             <span>Support</span>
                         </a>
                     </li>
-
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-settings-line"></i>
-                            <span>Settings</span>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="profile-setting.html">Profile Setting</a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="reports.html">
-                            <i class="ri-file-chart-line"></i>
-                            <span>Reports</span>
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý banner</span>
                         </a>
                     </li>
-
                     <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title link-nav" href="list-page.html">
-                            <i class="ri-list-check"></i>
-                            <span>List Page</span>
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('admin.payment-methods.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý phương thức thanh toán</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('admin.payments.index') }}">
+                            <i class="ri-store-3-line"></i>
+                            <span>Quản lý thanh toán</span>
                         </a>
                     </li>
                 </ul>
             </div>
-
             <div class="right-arrow" id="right-arrow">
                 <i data-feather="arrow-right"></i>
             </div>
