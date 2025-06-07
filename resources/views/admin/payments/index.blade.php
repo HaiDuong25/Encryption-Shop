@@ -1,6 +1,8 @@
 @extends('admin.layouts.main')
 
 @section('content')
+    @php use Carbon\Carbon; @endphp
+
     <h1>Quản lý Thanh Toán</h1>
 
     @if(session('success'))
@@ -27,18 +29,40 @@
             <tr>
                 <td>{{ $payment->id }}</td>
                 <td>{{ $payment->order->name ?? 'N/A' }}</td>
-<td>{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} VND</td>
+                <td>{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} VND</td>
                 <td>{{ $payment->paymentMethod->payment_type ?? 'Chưa chọn' }}</td>
                 <td>{{ ucfirst($payment->status) }}</td>
-                <td>{{ $payment->confirmed_at ? $payment->confirmed_at->format('d/m/Y H:i') : '-' }}</td>
+                <td>
+                    @if($payment->confirmed_at)
+                        {{ \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') }}
+                    @elseif($payment->rejected_at)
+                        {{ \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') }}
+                    @else
+                        -
+                    @endif
+                </td>
                 <td>
                     @if($payment->status === 'pending')
-                    <form action="{{ route('payments.confirm', $payment->id) }}" method="POST" onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');">
-                        @csrf
-                        <button type="submit">Xác nhận</button>
-                    </form>
-                    @else
-                        Đã xác nhận
+                        <div class="d-flex align-items-center gap-2">
+                            <form action="{{ route('payments.confirm', $payment->id) }}" method="POST" onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');">
+                                @csrf
+                                <button type="submit" class="btn btn-success btn-sm" style="background-color: #28a745; border-color: #28a745;">Xác nhận</button>
+                            </form>
+                            <form action="{{ route('payments.reject', $payment->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-sm" style="background-color: #dc3545; border-color: #dc3545;">Hủy đơn</button>
+                            </form>
+                        </div>
+                    @elseif($payment->status === 'confirmed')
+                        <span class="badge bg-success text-white" style="background-color: #28a745;">
+                            Đã xác nhận lúc
+                            {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
+                        </span>
+                    @elseif($payment->status === 'rejected')
+                        <span class="badge bg-danger text-white" style="background-color: #dc3545;">
+                            Đã hủy lúc 
+                            {{ $payment->rejected_at ? \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') : '' }}
+                        </span>
                     @endif
                 </td>
             </tr>

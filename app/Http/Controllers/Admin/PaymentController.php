@@ -37,7 +37,18 @@ class PaymentController extends Controller
             return redirect()->back()->with('error', 'Chỉ có thể xuất hóa đơn sau khi đã xác nhận.');
         }
 
-        $pdf = Pdf::loadView('admin.payments.invoice', compact('payment'));
-        return $pdf->download('hoa-don-thanh-toan-' . $payment->id . '.pdf');
+        // Hiển thị view hóa đơn trên web thay vì xuất PDF
+        return view('admin.payments.invoice', compact('payment'));
     }
+    public function reject($id)
+{
+    $payment = Payment::findOrFail($id);
+    if ($payment->status === 'confirmed') {
+        $payment->status = 'rejected';
+        $payment->rejected_at = now();
+        $payment->save();
+        return redirect()->route('payments.index')->with('success', 'Đã hủy đơn thành công!');
+    }
+    return redirect()->route('payments.index')->with('error', 'Chỉ có thể hủy đơn đã xác nhận.');
+}
 }
