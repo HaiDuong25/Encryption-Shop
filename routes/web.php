@@ -9,9 +9,9 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductVariantController;
 
-use App\Http\Controllers\Admin\RateController as AdminRateController;
-use App\Http\Controllers\Admin\RateReplyController as AdminRateReplyController;
-use App\Http\Controllers\Admin\ContactController as AdminContactController;
+use App\Http\Controllers\Admin\RateController;
+use App\Http\Controllers\Admin\RateReplyController;
+use App\Http\Controllers\Admin\ContactController;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\CouponController;
@@ -19,13 +19,22 @@ use App\Models\Coupon;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\OrderController;
-      
+
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PaymentController;
 
+use App\Http\Controllers\Admin\AuthController;
 
-route::prefix('admin')->group(function () {
+Route::view('/auth', 'auth.auth')->middleware('admin')->name('auth'); // Giao diện login/register
+Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
+
+Route::post('/register', [AuthController::class, 'register'])->name('register'); // Đăng ký
+Route::post('/login', [AuthController::class, 'login'])->name('login');     // xử lý submit form
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout'); // Đăng xuất
+
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+    route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
@@ -34,7 +43,7 @@ route::prefix('admin')->group(function () {
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('inventory.index');
+    Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('inventory.index');
     // orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
@@ -78,18 +87,18 @@ Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('i
     Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
 
     //rate
-    Route::get('/rates', [AdminRateController::class, 'index'])->name('rates.index');
-    Route::get('/rates/{rate}', [AdminRateController::class, 'show'])->name('rates.show');
-    Route::get('/rates/{rate}/edit', [AdminRateController::class, 'edit'])->name('rates.edit');
-    Route::put('/rates/{rate}', [AdminRateController::class, 'update'])->name('rates.update');
-    Route::delete('/rates/{rate}', [AdminRateController::class, 'destroy'])->name('rates.destroy');
+    Route::get('/rates', [RateController::class, 'index'])->name('rates.index');
+    Route::get('/rates/{rate}', [RateController::class, 'show'])->name('rates.show');
+    Route::get('/rates/{rate}/edit', [RateController::class, 'edit'])->name('rates.edit');
+    Route::put('/rates/{rate}', [RateController::class, 'update'])->name('rates.update');
+    Route::delete('/rates/{rate}', [RateController::class, 'destroy'])->name('rates.destroy');
 
     // Route cho việc lưu phản hồi của Admin cho một Rate
-    Route::post('/rates/{rate}/replies', [AdminRateReplyController::class, 'store'])->name('rates.replies.store');
+    Route::post('/rates/{rate}/replies', [RateReplyController::class, 'store'])->name('rates.replies.store');
     // Routes cho Quản lý Liên hệ Khách hàng
-    Route::get('/contacts', [AdminContactController::class, 'index'])->name('contacts.index');
-    Route::get('/contacts/{contact}', [AdminContactController::class, 'show'])->name('contacts.show');
-    Route::delete('/contacts/{contact}', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
+    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
     //coupons
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
@@ -119,5 +128,4 @@ Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('i
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
-
 });
