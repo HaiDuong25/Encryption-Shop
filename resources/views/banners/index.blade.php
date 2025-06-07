@@ -56,7 +56,7 @@
                                 @if($banner->is_active)
                                     <span class="badge bg-success">Hiện</span>
                                 @else
-                                    <span class="badge bg-secondary">Ẩn</span>
+                                    <span class="badge bg-danger">Ẩn</span>
                                 @endif
                             </td>
                             <td>
