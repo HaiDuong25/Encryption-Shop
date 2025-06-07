@@ -103,7 +103,11 @@ class ProductController extends Controller
         $product->load(['category', 'brand']);
         return view('admin.products.show', compact('product'));
     }
-
+public function inventory()
+{
+    $products = \App\Models\Product::all();
+    return view('admin.products.inventory', compact('products'));
+}
     // Xóa sản phẩm
     public function destroy(Product $product)
     {
