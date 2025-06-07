@@ -26,7 +26,12 @@
                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                    <div class="button-box">
                        <button type="button" class="btn btn--no" data-bs-dismiss="modal">No</button>
-                       <button type="button" class="btn  btn--yes btn-primary">Yes</button>
+                       <form method="POST" action="{{ route('logout') }}">
+                           @csrf
+                           <button type="submit" class="btn btn--yes">Đăng xuất</button>
+                       </form>
+
+
                    </div>
                </div>
            </div>

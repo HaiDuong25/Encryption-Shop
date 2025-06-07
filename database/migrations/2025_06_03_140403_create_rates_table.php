@@ -11,12 +11,12 @@ class CreateRatesTable extends Migration
         Schema::create('rates', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('accounts')->onDelete('cascade');
+$table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+$table->foreignId('account_id')->constrained('accounts')->onDelete('cascade');
+$table->tinyInteger('score');
+$table->text('content')->nullable();
+$table->tinyInteger('status')->default(1);
 
-            $table->tinyInteger('score');
-            $table->text('content')->nullable();
-            $table->tinyInteger('status')->default(1);
 
             $table->timestamps();
         });

@@ -11,4 +11,14 @@ class Order extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    protected $fillable = [
+        'user_id',
+        'name',
+        'phone',
+        'address',
+        'total_price',
+        'status',
+        'discount_id',
+        'payment_method_id',
+    ];
 }
