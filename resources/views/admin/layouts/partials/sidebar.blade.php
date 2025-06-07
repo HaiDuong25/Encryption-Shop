@@ -43,6 +43,7 @@
                             <span>Quản lý danh mục</span>
                         </a>
                     </li>
+
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('brands.index') }}">
                             <i class="ri-store-3-line"></i>
