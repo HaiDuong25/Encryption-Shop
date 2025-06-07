@@ -12,7 +12,7 @@ class CreateCommentsTable extends Migration
             $table->id();
 
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('accounts')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
             $table->text('comment');
             $table->tinyInteger('status')->default(1);
