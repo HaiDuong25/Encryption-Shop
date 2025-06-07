@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PaymentController;
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::view('/auth', 'auth.auth')->middleware('admin')->name('auth'); // Giao diện login/register
 Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
@@ -128,4 +129,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+    //user
+    Route::resource('users', UserController::class);
 });

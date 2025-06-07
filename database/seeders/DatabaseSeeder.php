@@ -20,8 +20,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
         $this->call([
-        RateSeeder::class,
-        RateReplySeeder::class,
+
         // Các seeder khác
     ]);
     }
