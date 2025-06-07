@@ -55,6 +55,9 @@
 
     <!-- App css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -72,19 +75,19 @@
                 <div class="header-logo-wrapper p-0">
                     <div class="logo-wrapper">
                         <a href="index.html">
-                            <img class="img-fluid main-logo" src="assets/images/logo/1.png" alt="logo">
-                            <img class="img-fluid white-logo" src="assets/images/logo/1-white.png" alt="logo">
+                            <img class="img-fluid main-logo" src="{{ asset('assets/images/logo/1.png') }}" alt="logo">
+                            <img class="img-fluid white-logo" src="{{ asset('assets/images/logo/1-white.png') }}" alt="logo">
                         </a>
                     </div>
                     <div class="toggle-sidebar">
                         <i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i>
                         <a href="index.html">
-                            <img src="assets/images/logo/1.png" class="img-fluid" alt="">
+                            <img src="{{ asset('assets/images/logo/1.png') }}" class="img-fluid" alt="">
                         </a>
                     </div>
                 </div>
 
-                <form class="form-inline search-full" action="javascript:void(0)" method="get">
+                <!-- <form class="form-inline search-full" action="javascript:void(0)" method="get">
                     <div class="form-group w-100">
                         <div class="Typeahead Typeahead--twitterUsers">
                             <div class="u-posRelative">
@@ -98,7 +101,7 @@
                             <div class="Typeahead-menu"></div>
                         </div>
                     </div>
-                </form>
+                </form> -->
                 <div class="nav-right col-6 pull-right right-header p-0">
                     <ul class="nav-menus">
                         <li>
@@ -153,7 +156,7 @@
                         </li>
                         <li class="profile-nav onhover-dropdown pe-0 me-0">
                             <div class="media profile-media">
-                                <img class="user-profile rounded-circle" src="assets/images/users/4.jpg" alt="">
+                                <img class="user-profile rounded-circle" src="{{ asset('assets/images/users/4.jpg') }}" alt="">
                                 <div class="user-name-hide media-body">
                                     <span>Emay Walter</span>
                                     <p class="mb-0 font-roboto">Admin<i class="middle ri-arrow-down-s-line"></i></p>
