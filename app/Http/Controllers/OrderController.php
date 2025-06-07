@@ -11,13 +11,13 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     // Hiển thị danh sách đơn hàng
-public function index()
-{
-    $orders = Order::with(['orderDetails.product', 'paymentMethod'])
-        ->orderByDesc('created_at')
-        ->paginate(10);
-    return view('orders.index', compact('orders'));
-}
+    public function index()
+    {
+        $orders = Order::with(['orderDetails.product', 'paymentMethod'])
+            ->orderByDesc('created_at')
+            ->paginate(10);
+        return view('orders.index', compact('orders'));
+    }
     // Hiển thị form tạo đơn hàng
     public function create()
     {
@@ -47,9 +47,15 @@ public function index()
     // Hiển thị chi tiết đơn hàng
     public function show(Order $order)
     {
+        // Nạp các quan hệ cần thiết
+        $order->load([
+            'orderDetails.product',
+            'paymentMethod',
+            'payments',
+            'coupon'
+        ]);
         return view('orders.show', compact('order'));
     }
-
     // Hiển thị form chỉnh sửa đơn hàng
     public function edit(Order $order)
     {
