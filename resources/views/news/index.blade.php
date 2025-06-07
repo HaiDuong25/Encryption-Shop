@@ -46,7 +46,7 @@
                             {{ \Illuminate\Support\Str::limit(strip_tags($item->content), 60) }}
                         </div>
                     </td>
-                    <td>{{ $item->author ?? 'Không rõ' }}</td>
+                    <td>{{ $item->author }}</td>
                 <td>
     @if($item->is_published)
         <span class="badge bg-success">Đã đăng</span>

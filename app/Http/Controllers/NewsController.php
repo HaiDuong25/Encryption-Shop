@@ -72,6 +72,7 @@ class NewsController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'image' => $imagePath,
+            'author' => $request->input('author'),
             'is_published' => $request->has('is_published'),
         ]);
 
