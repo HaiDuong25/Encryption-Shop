@@ -17,6 +17,10 @@
             <label class="form-label">Vị trí</label>
             <input type="number" name="position" class="form-control" value="{{ old('position', 0) }}">
         </div>
+        <div class="mb-3">
+            <label class="form-label">Link (URL)</label>
+            <input type="url" name="link" class="form-control" value="{{ old('link') }}" placeholder="Nhập đường dẫn banner (nếu có)">
+        </div>
       <div class="mb-3 form-check">
     <input type="hidden" name="is_active" value="0">
     <input type="checkbox" name="is_active" class="form-check-input" id="is_active"
