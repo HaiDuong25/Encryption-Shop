@@ -57,15 +57,16 @@
                     @endforeach
                 </select>
             </div>
-            <div class="mb-3">
-                <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
-                <select class="form-select" id="payment_method_id" name="payment_method_id" required>
-                    <option value="">-- Chọn phương thức --</option>
-                    <option value="1" {{ old('payment_method_id') == 1 ? 'selected' : '' }}>Chuyển khoản</option>
-                    <option value="2" {{ old('payment_method_id') == 2 ? 'selected' : '' }}>Tiền mặt</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Tạo đơn hàng</button>
+<div class="mb-3">
+    <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
+<select class="form-select" id="payment_method_id" name="payment_method_id" required>
+    <option value="">-- Chọn phương thức --</option>
+    @foreach ($paymentMethods as $method)
+        <option value="{{ $method->id }}" {{ old('payment_method_id') == $method->id ? 'selected' : '' }}>
+            {{ $method->payment_type }}
+        </option>
+    @endforeach
+</select></div>            <button type="submit" class="btn btn-primary">Tạo đơn hàng</button>
             <a href="{{ route('orders.index') }}" class="btn btn-secondary">Quay lại</a>
         </form>
     </div>
