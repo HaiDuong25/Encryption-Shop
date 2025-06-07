@@ -215,13 +215,7 @@
 
                         </a>
                     </li>
-                    <li class="sidebar-list">
 
-                            <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
-                                <i class="ri-phone-line"></i>
-                                <span>Quản lý liên hệ</span>
-                            </a>
-                    </li>
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('payment-methods.index') }}">
                             <i class="ri-store-3-line"></i>
