@@ -1,85 +1,97 @@
 @extends('admin.layouts.main')
+
+@section('title', 'Quản lý banner')
+
 @section('content')
-<div class="container">
-    {{-- Tiêu đề lớn --}}
-    <h1 class="mb-3" style="font-size:2.2rem; font-weight: bold;">Danh sách quản lý banner</h1>
+<div class="container-fluid">
+    <div class="card card-table">
+        <div class="card-body">
+            <div class="title-header option-title d-flex justify-content-between align-items-center">
+                <h5>Danh sách banner</h5>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('banners.create') }}" class="btn btn-theme">
+                        <i data-feather="plus"></i> Thêm Banner
+                    </a>
+                </div>
+            </div>
 
-    {{-- Hai nút bên trái cùng một dòng --}}
-    <div class="mb-4 d-flex gap-2">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
-            Quay lại
-        </a>
-        <a href="{{ route('banners.create') }}" class="btn btn-success">
-            Thêm Banner
-        </a>
-    </div>
+            @if(session('success'))
+                <div class="alert alert-success mt-3">{{ session('success') }}</div>
+            @endif
 
-    @if(session('success')) 
-        <div class="alert alert-success">{{ session('success') }}</div> 
-    @endif
+            <div class="table-responsive table-product mt-3">
+                <table class="table theme-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tiêu đề</th>
+                            <th>Link</th>
+                            <th>Vị trí</th>
+                            <th>Kích hoạt</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($banners as $banner)
+                        <tr>
+                            <td>
+                                @if($banner->image)
+                                    <img src="{{ asset('storage/'.$banner->image) }}" width="80" style="border-radius: 8px;">
+                                @else
+                                    <span class="text-muted fst-italic">Không có ảnh</span>
+                                @endif
+                            </td>
+                            <td><strong>{{ $banner->title }}</strong></td>
+                            <td style="max-width: 200px;">
+                                @if($banner->link)
+                                    <a href="{{ $banner->link }}" target="_blank" class="text-truncate d-block" style="max-width: 200px;">
+                                        {{ $banner->link }}
+                                    </a>
+                                @else
+                                    <span class="text-muted fst-italic">Không có link</span>
+                                @endif
+                            </td>
+                            <td>{{ $banner->position }}</td>
+                            <td>
+                                @if($banner->is_active)
+                                    <span class="badge bg-success">Hiện</span>
+                                @else
+                                    <span class="badge bg-secondary">Ẩn</span>
+                                @endif
+                            </td>
+                            <td>
+                                <ul class="d-flex gap-2">
+                                    <li>
+                                        <a href="{{ route('banners.edit', $banner->id) }}" class="text-warning">
+                                            <i class="ri-pencil-line"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('banners.destroy', $banner->id) }}" method="POST" style="display:inline;">
+                                            @csrf @method('DELETE')
+                                            <button onclick="return confirm('Xóa banner này?')" class="btn btn-link p-0 text-danger">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Chưa có banner nào.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
-    <div class="table-responsive shadow rounded-2">
-        <table class="table align-middle table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>Hình ảnh</th>
-                    <th>Tiêu đề</th>
-                    <th>Link</th>
-                    <th>Vị trí</th>
-                    <th>Kích hoạt</th>
-                    <th style="width: 150px;">Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-            @forelse ($banners as $banner)
-                <tr>
-                    <td>
-                        @if($banner->image)
-                            <img src="{{ asset('storage/'.$banner->image) }}" style="max-width: 100px; max-height: 64px; border-radius:8px; box-shadow:0 2px 6px #0001;">
-                        @else
-                            <span class="text-muted fst-italic">Không có ảnh</span>
-                        @endif
-                    </td>
-                    <td>{{ $banner->title }}</td>
-                    <td>
-                        @if($banner->link)
-                            <a href="{{ $banner->link }}" target="_blank">{{ $banner->link }}</a>
-                        @endif
-                    </td>
-                    <td>{{ $banner->position }}</td>
-                <td>
-    @if($banner->is_active)
-        <span class="badge bg-success">Hiện</span>
-    @else
-        <span class="badge" style="background-color: #e0e0e0; color: black;">Ẩn</span>
-    @endif
-</td>
-
-                    <td>
-                        <a href="{{ route('banners.edit', $banner->id) }}" class="btn btn-warning btn-sm">
-                            Sửa
-                        </a>
-                        <form action="{{ route('banners.destroy', $banner->id) }}" method="POST" class="d-inline">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-danger btn-sm" onclick="return confirm('Xoá banner?')">
-                                Xoá
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-            <tr>
-<td colspan="6" class="text-center text-muted">Chưa có banner nào.</td>
-            </tr>
-            @endforelse
-            </tbody>
-        </table>
-    </div>
-    {{-- Nếu có phân trang --}}
-    @if (method_exists($banners, 'links'))
-        <div class="d-flex justify-content-end mt-3">
-            {{ $banners->links() }}
+                @if (method_exists($banners, 'links'))
+                <div class="mt-3 d-flex justify-content-end">
+                    {{ $banners->links() }}
+                </div>
+                @endif
+            </div>
         </div>
-    @endif
+    </div>
 </div>
 @endsection
