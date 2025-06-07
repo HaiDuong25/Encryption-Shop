@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Account;
+use App\Models\User;
 use App\Models\Coupon;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ class OrderController extends Controller
     // Hiển thị form tạo đơn hàng
 public function create()
 {
-    $users = Account::all(); // hoặc User::all() nếu bạn dùng model User
+    $users = user::all(); // hoặc User::all() nếu bạn dùng model User
     $coupons = Coupon::all();
     return view('orders.create', compact('users', 'coupons'));
 }
@@ -26,7 +26,7 @@ public function create()
 public function store(Request $request)
 {
     $validated = $request->validate([
-        'user_id' => 'required|integer|exists:accounts,id',
+        'user_id' => 'required|integer|exists:users,id',
         'name' => 'required|string|max:255',
         'phone' => 'required|string|max:20',
         'address' => 'required|string|max:255',

@@ -7,7 +7,7 @@
         <div class="card-body">
             <div class="title-header option-title">
                 <h5>Order List</h5>
-                <a href="{{ route('orders.create') }}" class="btn btn-solid">Tạo đơn hàng</a>
+                <!-- <a href="{{ route('orders.create') }}" class="btn btn-solid">Tạo đơn hàng</a> -->
             </div>
             <div>
                 <div class="table-responsive">

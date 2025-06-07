@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PaymentController;
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::view('/auth', 'auth.auth')->middleware('admin')->name('auth'); // Giao diện login/register
 Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
@@ -79,12 +80,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     //phương thức thanh toán
     Route::resource('payment-methods', PaymentMethodController::class);
-    Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('admin.payment-methods.index');
+    Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
 
     // Quản lý thanh toán
-    Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
+    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
-    Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
+    Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('payments.invoice');
 
     //rate
     Route::get('/rates', [RateController::class, 'index'])->name('rates.index');
@@ -128,4 +129,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+    //user
+    Route::resource('users', UserController::class);
 });
