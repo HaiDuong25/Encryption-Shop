@@ -26,60 +26,65 @@
 
                         <tbody>
                             @foreach ($orders as $order)
-                                                    <tr>
-                                                        <td>
-                                                            <a class="d-block">
-                                                                <span class="order-image">
-                                                                    {{-- Hiển thị hình ảnh sản phẩm đầu tiên trong đơn hàng --}}
-                                                                    @php
-                                                                        $productImage = optional($order->orderDetails->first()->product ?? null)->image;
-                                                                    @endphp
-                                                                    <img src="{{ $productImage ? asset('storage/' . $productImage) : asset('assets/images/product/1.png') }}"
-                                                                        class="img-fluid" alt="order">
-                                                                </span>
-                                                            </a>
-                                                        </td>
-                                                        <td>{{ $order->id }}</td>
-                                                        <td>{{ $order->created_at->format('d/m/Y') }}</td>
-                                                        <td>
-                                                            {{-- Hiển thị phương thức thanh toán nếu có --}}
-                                                            {{ $order->payment_method->name ?? 'N/A' }}
-                                                        </td>
-                                                        <td class="order-success">
-                                                            <span>{{ $order->status }}</span>
-                                                        </td>
-                                                        <td>{{ number_format($order->total_price, 0, ',', '.') }} đ</td>
-                                                        <td>
-                                                            <ul>
-                                                                <li>
-                                                                    <a href="{{ route('orders.show', $order->id) }}">
-                                                                        <i class="ri-eye-line"></i>
+                                                        <tr>
+                                                            <td>
+                                                                <a class="d-block">
+                                                                    <span class="order-image">
+                                                                        {{-- Hiển thị hình ảnh sản phẩm đầu tiên trong đơn hàng --}}
+                                                                        {{-- Hiển thị hình ảnh sản phẩm đầu tiên trong đơn hàng --}}
+                                                                        @php
+                                                                            $productImage = null;
+                                                                            if ($order->orderDetails && $order->orderDetails->count()) {
+                                                                                $firstDetail = $order->orderDetails->first();
+                                                                                $productImage = optional($firstDetail->product ?? null)->image;
+                                                                            }
+                                                                        @endphp
+                                                                        @if ($productImage)
+                                                                            <img src="{{ asset('storage/' . $productImage) }}" class="img-fluid" alt="order">
+                                                                        @endif                                                                
                                                                     </a>
-                                                                </li>
-                                                                <li>
-                                                                    <a href="{{ route('orders.edit', $order->id) }}">
-                                                                        <i class="ri-pencil-line"></i>
-                                                                    </a>
-                                                                </li>
-                                                                <li>
-                                                                    <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
-                                                                        style="display:inline;">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                        <button type="submit"
-                                                                            style="border:none; background:none; padding:0; color:#dc3545;">
-                                                                            <i class="ri-delete-bin-line"></i>
-                                                                        </button>
-                                                                    </form>
-                                                                </li>
-                                                                <li>
-                                                                    <a class="btn btn-sm btn-solid text-white" href="#">
-                                                                        Tracking
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        </td>
-                                                    </tr>
+                                                            </td>
+                                                            <td>{{ $order->id }}</td>
+                                                            <td>{{ $order->created_at->format('d/m/Y') }}</td>
+                                                            <td>
+                                                                {{-- Hiển thị phương thức thanh toán nếu có --}}
+                                                                {{ $order->paymentMethod->payment_type ?? 'N/A' }}
+                                                            </td>
+                                                            <td class="order-success">
+                                                                <span>{{ $order->status }}</span>
+                                                            </td>
+                                                            <td>{{ number_format($order->total_price, 0, ',', '.') }} đ</td>
+                                                            <td>
+                                                                <ul>
+                                                                    <li>
+                                                                        <a href="{{ route('orders.show', $order->id) }}">
+                                                                            <i class="ri-eye-line"></i>
+                                                                        </a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a href="{{ route('orders.edit', $order->id) }}">
+                                                                            <i class="ri-pencil-line"></i>
+                                                                        </a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
+                                                                            style="display:inline;">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit"
+                                                                                style="border:none; background:none; padding:0; color:#dc3545;">
+                                                                                <i class="ri-delete-bin-line"></i>
+                                                                            </button>
+                                                                        </form>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a class="btn btn-sm btn-solid text-white" href="#">
+                                                                            Tracking
+                                                                        </a>
+                                                                    </li>
+                                                                </ul>
+                                                            </td>
+                                                        </tr>
                             @endforeach
                         </tbody>
                     </table>

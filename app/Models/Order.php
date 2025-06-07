@@ -11,6 +11,16 @@ class Order extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    public function paymentMethod()
+{
+    return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+}
+
+    public function orderDetails()
+{
+    return $this->hasMany(OrderDetail::class);
+}
+
     protected $fillable = [
         'user_id',
         'name',
