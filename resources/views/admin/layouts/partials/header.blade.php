@@ -168,7 +168,7 @@
                                 </div>
                             </div>
                             <ul class="profile-dropdown onhover-show-div">
-                                <li>
+                                <!-- <li>
                                     <a href="all-users.html">
                                         <i data-feather="users"></i>
                                         <span>Users</span>
@@ -185,7 +185,7 @@
                                         <i data-feather="phone"></i>
                                         <span>Spports Tickets</span>
                                     </a>
-                                </li>
+                                </li> -->
                                 <li>
                                     <a href="profile-setting.html">
                                         <i data-feather="settings"></i>
