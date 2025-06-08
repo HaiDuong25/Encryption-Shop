@@ -24,9 +24,14 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Đổi ảnh mới (tối đa 8 ảnh, chọn lại sẽ thay thế toàn bộ)</label>
+<<<<<<< HEAD
             <input type="file" name="images[]" class="form-control" multiple accept="image/*" id="images">
             <small class="text-muted">Có thể chọn từ 1 đến 8 ảnh mới, nếu chọn sẽ thay thế toàn bộ ảnh cũ.</small>
             <div id="image-error" class="text-danger mt-1" style="display:none;"></div>
+=======
+            <input type="file" name="images[]" class="form-control" multiple accept="image/*">
+            <small class="text-muted">Có thể chọn từ 1 đến 8 ảnh mới, nếu chọn sẽ thay thế toàn bộ ảnh cũ.</small>
+>>>>>>> 491560e08aa557f2984f6b43bc80eba2f6c217b2
         </div>
         <div class="mb-3">
             <label class="form-label">Vị trí</label>
