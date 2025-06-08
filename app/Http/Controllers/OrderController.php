@@ -88,4 +88,35 @@ class OrderController extends Controller
         $order->delete();
         return redirect()->route('orders.index')->with('success', 'Xóa đơn hàng thành công!');
     }
+    public function tracking($id)
+{
+    $order = Order::with(['payments', 'orderDetails.product'])->findOrFail($id);
+
+    // Có thể giả lập dữ liệu vị trí (hoặc tích hợp API vận chuyển sau)
+    $locations = [
+        'Chờ xác nhận',
+        'Đang xử lý',
+        'Đã giao cho đơn vị vận chuyển',
+        'Đang giao hàng',
+        'Đã nhận hàng',
+        'Đơn hàng hoàn thành'
+    ];
+
+    return view('orders.tracking', compact('order', 'locations'));
+}
+public function updateStatus(Request $request, Order $order)
+{
+    $request->validate([
+        'status' => 'required|integer|min:0|max:5'
+    ]);
+
+    $order->status = $request->status;
+    $order->save();
+
+    return response()->json([
+        'message' => 'Cập nhật trạng thái thành công!',
+        'status' => $order->status,
+    ]);
+}
+
 }
