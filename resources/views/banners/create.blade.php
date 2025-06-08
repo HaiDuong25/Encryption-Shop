@@ -10,9 +10,9 @@
                 <input type="text" name="title" class="form-control" value="{{ old('title') }}" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Ảnh banner (tối đa 4 ảnh)</label>
-                <input type="file" name="images[]" class="form-control" multiple accept="image/*" required>
-                <small class="text-muted">Giữ Ctrl (hoặc Cmd) để chọn nhiều ảnh, tối đa 4 ảnh.</small>
+                <label for="images" class="form-label">Ảnh banner (tối đa 8 ảnh)</label>
+                <input type="file" name="images[]" id="images" class="form-control" multiple accept="image/*" required>
+                <small class="text-muted">Chọn tối đa 8 ảnh.</small>
             </div>
             <div class="mb-3">
                 <label class="form-label">Vị trí</label>
