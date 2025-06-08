@@ -1,7 +1,7 @@
 @extends('admin.layouts.main')
 
 @section('content')
-    <h2>Cập nhật phương thức</h2>
+    <h2 class="mb-3">Cập nhật phương thức</h2>
 
     <form action="{{ route('payment-methods.update', $payment_method) }}" method="POST">
         @csrf @method('PUT')
@@ -13,7 +13,11 @@
             <label>Mô tả</label>
             <textarea name="description" class="form-control">{{ old('description', $payment_method->description) }}</textarea>
         </div>
-        <button class="btn btn-success">Cập nhật</button>
-        <a href="{{ route('payment-methods.index') }}" class="btn btn-secondary">Quay lại</a>
+        <div class="d-flex justify-content-start align-items-center gap-2">
+            <a href="{{ route('payment-methods.index') }}" class="btn btn-secondary btn-sm px-3 fw-bold rounded-2 shadow-sm">
+                <i class="fa fa-arrow-left"></i> Quay lại
+            </a>
+            <button class="btn btn-success btn-sm px-3">Cập nhật</button>
+        </div>
     </form>
 @endsection

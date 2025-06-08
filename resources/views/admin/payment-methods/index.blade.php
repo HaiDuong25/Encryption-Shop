@@ -1,11 +1,12 @@
 @extends('admin.layouts.main')
 
 @section('content')
-    <h2>Danh sách phương thức thanh toán</h2>
-
-    <a href="{{ route('payment-methods.create') }}" class="btn btn-primary mb-3 ">
-        <i class="fa fa-plus"></i> Thêm mới
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Danh sách phương thức thanh toán</h2>
+        <a href="{{ route('payment-methods.create') }}" class="btn btn-primary btn-sm px-3 fw-bold rounded-2 shadow-sm">
+            <i class="fa fa-plus"></i> Thêm mới
+        </a>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
