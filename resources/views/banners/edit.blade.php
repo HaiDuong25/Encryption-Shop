@@ -24,6 +24,7 @@
             @endif
         </div>
         <div class="mb-3">
+            <label class="form-label">Đổi ảnh mới (tối đa 8 ảnh, chọn lại sẽ thay thế toàn bộ)</label>
             <input type="file" name="images[]" class="form-control" multiple accept="image/*" id="images">
             <div id="image-error" class="text-danger mt-1" style="display:none;"></div>
         </div>
