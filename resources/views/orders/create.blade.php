@@ -57,17 +57,28 @@
                     @endforeach
                 </select>
             </div>
-<div class="mb-3">
-    <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
-<select class="form-select" id="payment_method_id" name="payment_method_id" required>
-    <option value="">-- Chọn phương thức --</option>
-    @foreach ($paymentMethods as $method)
-        <option value="{{ $method->id }}" {{ old('payment_method_id') == $method->id ? 'selected' : '' }}>
-            {{ $method->payment_type }}
-        </option>
-    @endforeach
-</select></div>            <button type="submit" class="btn btn-primary">Tạo đơn hàng</button>
-            <a href="{{ route('orders.index') }}" class="btn btn-secondary">Quay lại</a>
+            <div class="mb-3">
+                <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
+                <select class="form-select" id="payment_method_id" name="payment_method_id" required>
+                    <option value="">-- Chọn phương thức --</option>
+                    @foreach ($paymentMethods as $method)
+                        <option value="{{ $method->id }}" {{ old('payment_method_id') == $method->id ? 'selected' : '' }}>
+                            {{ $method->payment_type }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="row mt-4">
+                <div class="col-4 d-flex justify-content-start">
+                    <a href="{{ route('orders.index') }}" class="btn btn-secondary btn-md px-4 fw-bold rounded-2 shadow-sm">
+                        <i class="fa fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="col-4 d-flex justify-content-center">
+                    <button type="submit" class="btn btn-success btn-md px-4">Tạo đơn hàng</button>
+                </div>
+                <div class="col-4"></div>
+            </div>
         </form>
     </div>
 </div>

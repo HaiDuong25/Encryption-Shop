@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\News;
 use Illuminate\Http\Request;
 
@@ -30,7 +31,7 @@ class NewsController extends Controller
         ]);
 
         $imagePath = null;
-        if($request->hasFile('image')){
+        if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('news', 'public');
         }
 
@@ -38,7 +39,7 @@ class NewsController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'image' => $imagePath,
-            'author' => auth()->user()->name ?? 'Admin',
+            'author' => $request->input('author'),
             'is_published' => $request->has('is_published'),
         ]);
 
@@ -64,7 +65,7 @@ class NewsController extends Controller
         ]);
 
         $imagePath = $news->image;
-        if($request->hasFile('image')){
+        if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('news', 'public');
         }
 
@@ -72,6 +73,7 @@ class NewsController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'image' => $imagePath,
+            'author' => $request->input('author'),
             'is_published' => $request->has('is_published'),
         ]);
 
@@ -85,5 +87,12 @@ class NewsController extends Controller
         $news->delete();
 
         return redirect()->route('news.index')->with('success', 'Đã xóa tin tức!');
+    }
+
+    // Hiển thị chi tiết tin tức
+    public function show($id)
+    {
+        $news = \App\Models\News::findOrFail($id);
+        return view('news.show', compact('news'));
     }
 }

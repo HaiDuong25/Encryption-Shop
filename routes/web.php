@@ -85,7 +85,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // Quản lý thanh toán
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
-    Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('payments.invoice');
+    Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
+    Route::post('admin/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
 
     //rate
     Route::get('/rates', [RateController::class, 'index'])->name('rates.index');

@@ -15,7 +15,8 @@
         <div class="logo-icon-wrapper">
             <a href="index.html">
                 <img class="img-fluid main-logo main-white" src="{{ asset('assets/images/logo/logo.png') }}" alt="logo">
-                <img class="img-fluid main-logo main-dark" src="{{ asset('assets/images/logo/logo-white.png') }}" alt="logo">
+                <img class="img-fluid main-logo main-dark" src="{{ asset('assets/images/logo/logo-white.png') }}"
+                    alt="logo">
             </a>
         </div>
         <nav class="sidebar-main">
@@ -57,6 +58,12 @@
                             </li>
                             <li>
                                 <a href="{{ route('products.create') }}">Add New Product</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('inventory.index') }}">
+                                    <span>Quản lí kho hàng</span>
+                                </a>
+
                             </li>
                         </ul>
                     </li>
@@ -104,13 +111,6 @@
                                 <a href="create-role.html">Create Role</a>
                             </li>
                         </ul>
-                    </li> -->
-
-                    <!-- <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('inventory.index') }}">
-                            <i class="ri-archive-line"></i> {{-- icon đổi tùy ý --}}
-                            <span>Inventory</span>
-                        </a>
                     </li> -->
 
                     <li class="sidebar-list">
@@ -189,7 +189,8 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('payment-methods.index') }}">
+                        <a class="linear-icon-link sidebar-link sidebar-nav"
+                            href="{{ route('payment-methods.index') }}">
                             <i class="ri-store-3-line"></i>
                             <span>Quản lý phương thức thanh toán</span>
                         </a>

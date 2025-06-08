@@ -67,20 +67,20 @@ class OrderController extends Controller
 
     // Cập nhật đơn hàng
     public function update(Request $request, Order $order)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'total_price' => 'required|numeric',
-            'status' => 'required|integer',
-            'discount_id' => 'nullable|integer|exists:coupons,id',
-            'payment_method_id' => 'required|integer|exists:payment_methods,id',
-        ]);
-        $order->update($validated);
-        return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
-    }
+{
+    $validated = $request->validate([
+        'user_id' => 'required|integer|exists:users,id',
+        'name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20',
+        'address' => 'required|string|max:255',
+        'total_price' => 'required|numeric',
+        'status' => 'required|integer',
+        'discount_id' => 'nullable|integer|exists:coupons,id',
+        'payment_method_id' => 'required|integer|exists:payment_methods,id',
+    ]);
+    $order->update($validated);
+    return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
+}
 
     // Xóa đơn hàng
     public function destroy(Order $order)
