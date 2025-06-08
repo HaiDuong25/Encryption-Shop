@@ -23,9 +23,9 @@
             @endif
         </div>
         <div class="mb-3">
-            <label class="form-label">Đổi ảnh mới (tối đa 4 ảnh, chọn lại sẽ thay thế toàn bộ)</label>
+            <label class="form-label">Đổi ảnh mới (tối đa 8 ảnh, chọn lại sẽ thay thế toàn bộ)</label>
             <input type="file" name="images[]" class="form-control" multiple accept="image/*">
-            <small class="text-muted">Có thể chọn từ 1 đến 4 ảnh mới, nếu chọn sẽ thay thế toàn bộ ảnh cũ.</small>
+            <small class="text-muted">Có thể chọn từ 1 đến 8 ảnh mới, nếu chọn sẽ thay thế toàn bộ ảnh cũ.</small>
         </div>
         <div class="mb-3">
             <label class="form-label">Vị trí</label>

@@ -81,7 +81,7 @@ class BannerController extends Controller
             $files = $request->file('images');
             $count = 0;
             foreach ($files as $file) {
-                if ($count >= 8) break; // Đổi 5 thành 8
+                if ($count >= 8) break; // Giới hạn tối đa 8 ảnh
                 $imagePaths[] = $file->store('banners', 'public');
                 $count++;
             }
