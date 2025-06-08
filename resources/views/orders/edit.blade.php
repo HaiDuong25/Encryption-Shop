@@ -45,10 +45,12 @@
                 <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
                     <select class="form-select" id="status" name="status" required>
-                        <option value="0" {{ old('status', $order->status) == 0 ? 'selected' : '' }}>Chờ xử lý</option>
-                        <option value="1" {{ old('status', $order->status) == 1 ? 'selected' : '' }}>Đang giao</option>
-                        <option value="2" {{ old('status', $order->status) == 2 ? 'selected' : '' }}>Hoàn thành</option>
-                        <option value="3" {{ old('status', $order->status) == 3 ? 'selected' : '' }}>Đã hủy</option>
+                        <option value="0" {{ old('status', $order->status) == 0 ? 'selected' : '' }}>Đã đặt</option>
+                        <option value="1" {{ old('status', $order->status) == 1 ? 'selected' : '' }}>Xác nhận</option>
+                        <option value="2" {{ old('status', $order->status) == 2 ? 'selected' : '' }}>Giao cho ĐVVC</option>
+                        <option value="3" {{ old('status', $order->status) == 3 ? 'selected' : '' }}>Đang giao</option>
+                        <option value="4" {{ old('status', $order->status) == 4 ? 'selected' : '' }}>Đã nhận</option>
+                        <option value="5" {{ old('status', $order->status) == 5 ? 'selected' : '' }}>Hoàn thành</option>
                     </select>
                 </div>
                 <div class="mb-3">

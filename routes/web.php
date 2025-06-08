@@ -130,6 +130,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
+    Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
+Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
 
     //user
     Route::resource('users', UserController::class);

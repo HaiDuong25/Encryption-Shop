@@ -35,6 +35,7 @@
         </thead>
         <tbody>
             @foreach($payments as $payment)
+<<<<<<< HEAD
                 <tr>
                     <td>{{ $payment->id }}</td>
                     <td>{{ $payment->order->name ?? 'N/A' }}</td>
@@ -101,6 +102,67 @@
                         @endif
                     </td>
                 </tr>
+=======
+            <tr>
+                <td>{{ $payment->id }}</td>
+                <td>{{ $payment->order->name ?? 'N/A' }}</td>
+                <td>{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} VND</td>
+                <td>{{ $payment->paymentMethod->payment_type ?? 'Chưa chọn' }}</td>
+                <td>
+                    @if($payment->status === 'pending')
+                        Chờ thanh toán
+                    @elseif($payment->status === 'confirmed')
+                        Đã thanh toán
+                    @elseif($payment->status === 'rejected')
+                        Đã hủy
+                    @else
+                        {{ ucfirst($payment->status) }}
+                    @endif
+                </td>
+                <td>
+                    @if($payment->confirmed_at)
+                        {{ \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') }}
+                    @elseif($payment->rejected_at)
+                        {{ \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>
+                    @if($payment->status === 'pending')
+                        <div class="d-flex align-items-center" style="gap: 6px;">
+                            <form action="{{ route('payments.confirm', $payment->id) }}" method="POST" onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-success btn-xs px-2 py-1" style="font-size: 0.85rem; background-color: #28a745; border-color: #28a745;">Xác nhận</button>
+                            </form>
+                            <form action="{{ route('payments.reject', $payment->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-xs px-2 py-1" style="font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545;">Hủy đơn</button>
+                            </form>
+                        </div>
+                    @elseif($payment->status === 'confirmed')
+                        <span class="badge bg-success text-white" style="background-color: #28a745;">
+                            Đã thanh toán lúc
+                            {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
+                        </span>
+                    @elseif($payment->status === 'rejected')
+                        <span class="badge bg-danger text-white" style="background-color: #dc3545;">
+                            Đã hủy lúc
+                            {{ $payment->rejected_at ? \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') : '' }}
+                        </span>
+                    @endif
+                </td>
+                <td>
+                    @if($payment->status === 'confirmed' || $payment->status === 'rejected')
+                        <a href="{{ route('admin.payments.invoice', $payment->id) }}" class="btn btn-primary btn-xs px-2 py-1" style="font-size: 0.85rem;">
+                            Xem hóa đơn
+                        </a>
+                    @else
+                        <span class="text-muted">---</span>
+                    @endif
+                </td>
+            </tr>
+>>>>>>> long
             @endforeach
         </tbody>
     </table>
