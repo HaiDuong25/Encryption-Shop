@@ -31,7 +31,8 @@ class BannerController extends Controller
             $files = $request->file('images');
             $count = 0;
             foreach ($files as $file) {
-                if ($count >= 8) break; // Đổi 5 thành 8
+                if ($count >= 8)
+                    break; // Đổi 5 thành 8
                 $imagePaths[] = $file->store('banners', 'public');
                 $count++;
             }
@@ -81,7 +82,12 @@ class BannerController extends Controller
             $files = $request->file('images');
             $count = 0;
             foreach ($files as $file) {
+<<<<<<< HEAD
+                if ($count >= 8)
+                    break; // Đổi 5 thành 8
+=======
                 if ($count >= 8) break; // Giới hạn tối đa 8 ảnh
+>>>>>>> 491560e08aa557f2984f6b43bc80eba2f6c217b2
                 $imagePaths[] = $file->store('banners', 'public');
                 $count++;
             }
@@ -118,5 +124,12 @@ class BannerController extends Controller
         $banner->delete();
 
         return redirect()->route('banners.index')->with('success', 'Xóa banner thành công!');
+    }
+    public function show($id)
+    {
+        $banner = \App\Models\Banner::findOrFail($id);
+        // Nếu bạn lưu nhiều ảnh dạng json, giải mã để truyền sang view
+        $banner->images = json_decode($banner->image, true) ?: [];
+        return view('banners.show', compact('banner'));
     }
 }

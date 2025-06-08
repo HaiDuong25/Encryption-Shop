@@ -81,6 +81,12 @@
                                                                     </a>
                                                                 </li>
                                                                 <li>
+                                                                    <a href="{{ route('banners.show', $banner->id) }}" class="text-info"
+                                                                        title="Xem chi tiết">
+                                                                        <i class="ri-eye-line"></i>
+                                                                    </a>
+                                                                </li>
+                                                                <li>
                                                                     <form action="{{ route('banners.destroy', $banner->id) }}" method="POST"
                                                                         style="display:inline;">
                                                                         @csrf @method('DELETE')
