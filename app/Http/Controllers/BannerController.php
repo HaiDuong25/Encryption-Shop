@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Banner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -22,13 +23,22 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'required',
-            'image' => 'required|image',
+            'images' => 'required',
+            'images.*' => 'image',
         ]);
-        $imagePath = $request->file('image')->store('banners', 'public');
-
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
+            $count = 0;
+            foreach ($files as $file) {
+                if ($count >= 5) break;
+                $imagePaths[] = $file->store('banners', 'public');
+                $count++;
+            }
+        }
         Banner::create([
             'title' => $request->title,
-            'image' => $imagePath,
+            'image' => json_encode($imagePaths),
             'link' => $request->link,
             'position' => $request->position ?? 0,
             'is_active' => $request->is_active ? true : false,
@@ -38,6 +48,7 @@ class BannerController extends Controller
 
     public function edit(Banner $banner)
     {
+        $banner->images = json_decode($banner->image, true) ?: [];
         return view('banners.edit', compact('banner'));
     }
 
@@ -49,14 +60,32 @@ class BannerController extends Controller
 
         $banner->title = $request->title;
 
-        if ($request->hasFile('image')) {
+        // Xử lý cập nhật nhiều ảnh (1 hoặc nhiều, tối đa 4)
+        if ($request->hasFile('images')) {
             // Xóa ảnh cũ nếu có
-            if ($banner->image && \Storage::disk('public')->exists($banner->image)) {
-                \Storage::disk('public')->delete($banner->image);
+            if ($banner->image) {
+                $images = json_decode($banner->image, true);
+                if (is_array($images)) {
+                    foreach ($images as $img) {
+                        if (Storage::disk('public')->exists($img)) {
+                            Storage::disk('public')->delete($img);
+                        }
+                    }
+                } else {
+                    if (Storage::disk('public')->exists($banner->image)) {
+                        Storage::disk('public')->delete($banner->image);
+                    }
+                }
             }
-
-            $path = $request->file('image')->store('banners', 'public');
-            $banner->image = $path;
+            $imagePaths = [];
+            $files = $request->file('images');
+            $count = 0;
+            foreach ($files as $file) {
+                if ($count >= 5) break;
+                $imagePaths[] = $file->store('banners', 'public');
+                $count++;
+            }
+            $banner->image = json_encode($imagePaths);
         }
 
         $banner->position = $request->position;
@@ -71,8 +100,19 @@ class BannerController extends Controller
     {
         $banner = Banner::findOrFail($id);
 
-        if ($banner->image && \Storage::disk('public')->exists($banner->image)) {
-            \Storage::disk('public')->delete($banner->image);
+        if ($banner->image) {
+            $images = json_decode($banner->image, true);
+            if (is_array($images)) {
+                foreach ($images as $img) {
+                    if (Storage::disk('public')->exists($img)) {
+                        Storage::disk('public')->delete($img);
+                    }
+                }
+            } else {
+                if (Storage::disk('public')->exists($banner->image)) {
+                    Storage::disk('public')->delete($banner->image);
+                }
+            }
         }
 
         $banner->delete();
