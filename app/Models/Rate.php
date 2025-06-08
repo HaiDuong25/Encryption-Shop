@@ -61,7 +61,7 @@ class Rate extends Model
     // Các relationships của bạn
     public function user()
     {
-        return $this->belongsTo(Account::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function replies()
