@@ -32,7 +32,17 @@
                 <td>{{ $payment->order->name ?? 'N/A' }}</td>
                 <td>{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} VND</td>
                 <td>{{ $payment->paymentMethod->payment_type ?? 'Chưa chọn' }}</td>
-                <td>{{ ucfirst($payment->status) }}</td>
+                <td>
+                    @if($payment->status === 'pending')
+                        Chờ thanh toán
+                    @elseif($payment->status === 'confirmed')
+                        Đã thanh toán
+                    @elseif($payment->status === 'rejected')
+                        Đã hủy
+                    @else
+                        {{ ucfirst($payment->status) }}
+                    @endif
+                </td>
                 <td>
                     @if($payment->confirmed_at)
                         {{ \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') }}
@@ -56,12 +66,12 @@
                         </div>
                     @elseif($payment->status === 'confirmed')
                         <span class="badge bg-success text-white" style="background-color: #28a745;">
-                            Đã xác nhận lúc
+                            Đã thanh toán lúc
                             {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
                         </span>
                     @elseif($payment->status === 'rejected')
                         <span class="badge bg-danger text-white" style="background-color: #dc3545;">
-                            Đã hủy lúc 
+                            Đã hủy lúc
                             {{ $payment->rejected_at ? \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') : '' }}
                         </span>
                     @endif
