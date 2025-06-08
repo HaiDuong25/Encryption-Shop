@@ -12,13 +12,20 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Ảnh banner hiện tại</label><br>
-            @if($banner->image)
-                <img src="{{ asset('storage/'.$banner->image) }}" width="120">
+            @if(!empty($banner->images) && is_array($banner->images))
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach($banner->images as $img)
+                        <img src="{{ asset('storage/' . $img) }}" width="80" style="border-radius:6px; border:1px solid #eee;">
+                    @endforeach
+                </div>
+            @else
+                <span class="text-muted fst-italic">Không có ảnh</span>
             @endif
         </div>
         <div class="mb-3">
-            <label class="form-label">Đổi ảnh mới (nếu muốn)</label>
-            <input type="file" name="image" class="form-control">
+            <label class="form-label">Đổi ảnh mới (tối đa 4 ảnh, chọn lại sẽ thay thế toàn bộ)</label>
+            <input type="file" name="images[]" class="form-control" multiple accept="image/*">
+            <small class="text-muted">Có thể chọn từ 1 đến 4 ảnh mới, nếu chọn sẽ thay thế toàn bộ ảnh cũ.</small>
         </div>
         <div class="mb-3">
             <label class="form-label">Vị trí</label>
