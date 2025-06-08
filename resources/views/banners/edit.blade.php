@@ -38,8 +38,10 @@
                 value="1" {{ old('is_active', $banner->is_active) ? 'checked' : '' }}>
             <label class="form-check-label" for="is_active">Kích hoạt</label>
         </div>
-        <button type="submit" class="btn btn-primary">Cập nhật</button>
-        <a href="{{ route('banners.index') }}" class="btn btn-secondary">Quay lại</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('banners.index') }}" class="btn btn-secondary">Quay lại</a>
+            <button type="submit" class="btn btn-primary">Cập nhật</button>
+        </div>
     </form>
 </div>
 <script>
