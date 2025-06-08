@@ -1,10 +1,11 @@
 @extends('admin.layouts.main')
 @section('content')
     <div class="container">
-        <h2>{{ $news->title }}</h2>
-        <div class="mb-3">
+        <h2 style="font-size:2.2rem; font-weight:bold;">{{ $news->title }}</h2>
+        <div class="mb-2">
             <strong>Tác giả:</strong> {{ $news->author }}
-            <span class="mx-2">|</span>
+        </div>
+        <div class="mb-3">
             <strong>Ngày đăng:</strong> {{ $news->created_at->format('d/m/Y') }}
         </div>
         <div class="mb-3">

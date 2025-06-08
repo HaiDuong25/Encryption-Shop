@@ -26,16 +26,16 @@ class BannerController extends Controller
             'images' => 'required',
             'images.*' => 'image',
         ]);
+
         $imagePaths = [];
         if ($request->hasFile('images')) {
             $files = $request->file('images');
-            $count = 0;
-            foreach ($files as $file) {
-                if ($count >= 5) break;
+            foreach ($files as $index => $file) {
+                if ($index >= 8) break; // Giới hạn tối đa 8 ảnh
                 $imagePaths[] = $file->store('banners', 'public');
-                $count++;
             }
         }
+
         Banner::create([
             'title' => $request->title,
             'image' => json_encode($imagePaths),
@@ -43,6 +43,7 @@ class BannerController extends Controller
             'position' => $request->position ?? 0,
             'is_active' => $request->is_active ? true : false,
         ]);
+
         return redirect()->route('banners.index')->with('success', 'Tạo banner thành công!');
     }
 
@@ -56,11 +57,9 @@ class BannerController extends Controller
     {
         $banner = Banner::findOrFail($id);
 
-        // Validate nếu cần
-
         $banner->title = $request->title;
 
-        // Xử lý cập nhật nhiều ảnh (1 hoặc nhiều, tối đa 4)
+        // Xử lý cập nhật nhiều ảnh (tối đa 8)
         if ($request->hasFile('images')) {
             // Xóa ảnh cũ nếu có
             if ($banner->image) {
@@ -71,7 +70,7 @@ class BannerController extends Controller
                             Storage::disk('public')->delete($img);
                         }
                     }
-                } else {
+                } elseif (is_string($banner->image) && $banner->image) {
                     if (Storage::disk('public')->exists($banner->image)) {
                         Storage::disk('public')->delete($banner->image);
                     }
@@ -79,23 +78,21 @@ class BannerController extends Controller
             }
             $imagePaths = [];
             $files = $request->file('images');
-            $count = 0;
-            foreach ($files as $file) {
-                if ($count >= 5) break;
+            foreach ($files as $index => $file) {
+                if ($index >= 8) break; // Giới hạn tối đa 8 ảnh
                 $imagePaths[] = $file->store('banners', 'public');
-                $count++;
             }
             $banner->image = json_encode($imagePaths);
         }
 
-        $banner->position = $request->position;
-        $banner->is_active = $request->is_active;
+        $banner->position = $request->position ?? 0;
+        $banner->is_active = $request->is_active ? true : false;
+        $banner->link = $request->link;
         $banner->save();
 
         return redirect()->route('banners.index')->with('success', 'Cập nhật thành công!');
     }
 
-    // Thêm phương thức destroy
     public function destroy($id)
     {
         $banner = Banner::findOrFail($id);
@@ -108,7 +105,7 @@ class BannerController extends Controller
                         Storage::disk('public')->delete($img);
                     }
                 }
-            } else {
+            } elseif (is_string($banner->image) && $banner->image) {
                 if (Storage::disk('public')->exists($banner->image)) {
                     Storage::disk('public')->delete($banner->image);
                 }
@@ -118,5 +115,12 @@ class BannerController extends Controller
         $banner->delete();
 
         return redirect()->route('banners.index')->with('success', 'Xóa banner thành công!');
+    }
+
+    public function show($id)
+    {
+        $banner = Banner::findOrFail($id);
+        $banner->images = json_decode($banner->image, true) ?: [];
+        return view('banners.show', compact('banner'));
     }
 }

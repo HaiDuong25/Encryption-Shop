@@ -180,13 +180,6 @@
                         </a>
 
                     </li>
-                    <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('banners.index') }}">
-                            <i class="ri-store-3-line"></i>
-                            <span>Quản lý banner</span>
-
-                        </a>
-                    </li>
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav"
