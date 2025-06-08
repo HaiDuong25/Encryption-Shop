@@ -58,7 +58,7 @@
                                 @if($item->is_published)
                                     <span class="badge bg-success">Đã đăng</span>
                                 @else
-                                    <span class="badge bg-secondary">Nháp</span>
+                                    <span class="badge bg-warning">Nháp</span>
                                 @endif
                             </td>
                             <td>{{ $item->created_at->format('d/m/Y') }}</td>
