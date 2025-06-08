@@ -8,12 +8,25 @@
     <div class="card p-3">
         <div class="row">
             <div class="col-md-4">
+                <h5>Ảnh đại diện</h5>
                 @if ($product->image)
-                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-fluid">
+                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-fluid mb-3 rounded">
                 @else
-                <p>Không có ảnh</p>
+                <p>Không có ảnh đại diện</p>
+                @endif
+
+                <h5>Ảnh mô tả</h5>
+                @if ($product->images && $product->images->count() > 0)
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach ($product->images as $img)
+                    <img src="{{ asset('storage/' . $img->image_path) }}" alt="Ảnh mô tả" class="img-thumbnail" width="100" height="100">
+                    @endforeach
+                </div>
+                @else
+                <p>Không có ảnh mô tả</p>
                 @endif
             </div>
+
             <div class="col-md-8">
                 <h4>Thông tin sản phẩm</h4>
                 <ul class="list-group list-group-flush">

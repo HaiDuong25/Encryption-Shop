@@ -21,12 +21,12 @@
             @endif
 
             <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped text-center">
+                <table class="table table-bordered table-hover table-striped text-center align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Tên</th>
-                            <th>Ảnh</th>
+                            <th>Ảnh đại diện</th>
                             <th>Giá</th>
                             <th>Danh mục</th>
                             <th>Thương hiệu</th>
@@ -42,7 +42,9 @@
                             <td>{{ $product->name }}</td>
                             <td>
                                 @if ($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" width="100">
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" width="80" class="img-thumbnail">
+                                @else
+                                —
                                 @endif
                             </td>
                             <td>{{ number_format($product->price, 0, ',', '.') }} đ</td>
@@ -55,7 +57,7 @@
                             </td>
                             <td>{{ $product->created_at->format('d/m/Y') }}</td>
                             <td>
-                                <div class="d-flex gap-1">
+                                <div class="d-flex gap-1 justify-content-center">
                                     <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
                                     <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
@@ -67,7 +69,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center">Không có sản phẩm.</td>
+                            <td colspan="10" class="text-center">Không có sản phẩm.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -81,4 +83,6 @@
             @endif
         </div>
     </div>
-</div> @endsection
+</div>
+
+@endsection
