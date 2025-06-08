@@ -26,6 +26,10 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
 
+Route::get('/', function () {
+    return response('OK', 200);
+});
+
 Route::view('/auth', 'auth.auth')->middleware('admin')->name('auth'); // Giao diện login/register
 Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
 
@@ -34,7 +38,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');     // x
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout'); // Đăng xuất
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -139,6 +142,3 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
 
 //Client
-Route::get('/', function () {
-    return response('Welcome to Encryption-Shop');
-});
