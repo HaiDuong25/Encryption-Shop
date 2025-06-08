@@ -135,8 +135,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
 });
 
+
+
+
+//Client
 Route::get('/', function () {
-    return 'Hello, Laravel CI!';
+    return response('Welcome to Encryption-Shop');
 });
-
-
