@@ -12,6 +12,14 @@
         <div style="color: red">{{ session('error') }}</div>
     @endif
 
+    <style>
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+
     <table border="1" cellpadding="10" cellspacing="0" width="100%">
         <thead>
             <tr>

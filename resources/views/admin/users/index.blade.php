@@ -46,7 +46,13 @@
                             <td>{{ $user->phone }}</td>
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->address }}</td>
-                            <td>{{ $user->status }}</td>
+                            <td>
+                                @if($user->status == 'active')
+                                    <span class="badge bg-success">Hoạt động</span>
+                                @else
+                                    <span class="badge bg-danger">Khóa</span>
+                                @endif
+                            </td>
                             <td>
                                 <ul>
                                     <li><a href="{{ route('users.edit', $user) }}"><i class="ri-pencil-line"></i></a></li>

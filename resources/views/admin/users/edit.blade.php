@@ -28,7 +28,7 @@
         <div class="mb-3">
             <label class="form-label">Trạng thái</label>
             <select name="status" class="form-select">
-                @foreach(['active','inactive','pending'] as $status)
+                @foreach(['active','inactive'] as $status)
                     <option value="{{ $status }}" @selected($user->status == $status)>{{ ucfirst($status) }}</option>
                 @endforeach
             </select>

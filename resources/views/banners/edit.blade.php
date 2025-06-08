@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h2>Sửa banner</h2>
-    <form action="{{ route('banners.update', $banner->id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('banners.update', $banner->id) }}" method="POST" enctype="multipart/form-data" id="bannerEditForm">
         @csrf
         @method('PUT')
         <div class="mb-3">
@@ -12,13 +12,21 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Ảnh banner hiện tại</label><br>
-            @if($banner->image)
-                <img src="{{ asset('storage/'.$banner->image) }}" width="120">
+            @if(!empty($banner->images) && is_array($banner->images))
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach($banner->images as $img)
+                        <img src="{{ asset('storage/' . $img) }}" width="80" height="80"
+                             style="object-fit:contain; aspect-ratio:1/1; border-radius:6px; border:1px solid #eee; background:#fafafa;">
+                    @endforeach
+                </div>
+            @else
+                <span class="text-muted fst-italic">Không có ảnh</span>
             @endif
         </div>
         <div class="mb-3">
-            <label class="form-label">Đổi ảnh mới (nếu muốn)</label>
-            <input type="file" name="image" class="form-control">
+            <label class="form-label">Đổi ảnh mới (tối đa 8 ảnh, chọn lại sẽ thay thế toàn bộ)</label>
+            <input type="file" name="images[]" class="form-control" multiple accept="image/*" id="images">
+            <div id="image-error" class="text-danger mt-1" style="display:none;"></div>
         </div>
         <div class="mb-3">
             <label class="form-label">Vị trí</label>
@@ -34,4 +42,17 @@
         <a href="{{ route('banners.index') }}" class="btn btn-secondary">Quay lại</a>
     </form>
 </div>
+<script>
+    document.getElementById('bannerEditForm').addEventListener('submit', function(e) {
+        var input = document.getElementById('images');
+        var errorDiv = document.getElementById('image-error');
+        if (input.files.length > 8) {
+            e.preventDefault();
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Bạn chỉ được chọn tối đa 8 ảnh!';
+        } else {
+            errorDiv.style.display = 'none';
+        }
+    });
+</script>
 @endsection

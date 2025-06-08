@@ -9,9 +9,7 @@
             <div class="title-header option-title d-flex justify-content-between align-items-center">
                 <h5>Danh sách mã giảm giá</h5>
                 <div class="d-flex gap-2">
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
-                        <i data-feather="arrow-left"></i> Quay lại
-                    </a>
+                    
                     <a href="{{ route('coupons.create') }}" class="btn btn-theme">
                         <i data-feather="plus"></i> Tạo mã mới
                     </a>
