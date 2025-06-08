@@ -134,3 +134,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     //user
     Route::resource('users', UserController::class);
 });
+
+Route::get('/', function () {
+    return 'Hello, Laravel CI!';
+});
+
+
