@@ -20,15 +20,34 @@
                         value="{{ old('name', $product->name ?? '') }}" required>
                 </div>
 
+                <!-- Ảnh đại diện -->
                 <div class="mb-3">
-                    <label for="image" class="form-label">Ảnh</label>
+                    <label for="image" class="form-label">Ảnh đại diện</label>
                     @if(isset($product) && $product->image)
                         <div class="mb-2">
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="Ảnh hiện tại" width="100">
+                            <img src="{{ asset('storage/' . $product->image) }}" alt="Ảnh hiện tại" width="120" class="img-thumbnail">
                         </div>
                     @endif
                     <input type="file" class="form-control" id="image" name="image" accept="image/*">
                 </div>
+
+                <!-- Ảnh mô tả nhiều -->
+                <div class="mb-3">
+                    <label for="description_images" class="form-label">Ảnh mô tả (có thể chọn nhiều ảnh)</label>
+                    <input type="file" class="form-control" id="description_images" name="description_images[]" multiple accept="image/*">
+                </div>
+
+                @if(isset($product) && $product->images->count() > 0)
+                    <div class="mb-3">
+                        <label class="form-label">Ảnh mô tả hiện tại</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($product->images as $img)
+                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="Ảnh mô tả" width="80" height="80" class="img-thumbnail">
+                            @endforeach
+                        </div>
+                        <small class="text-muted">Nếu bạn tải ảnh mới lên, ảnh mô tả mới sẽ được thêm vào danh sách hiện tại.</small>
+                    </div>
+                @endif
 
                 <div class="mb-3">
                     <label for="quantity" class="form-label">Số lượng</label>
