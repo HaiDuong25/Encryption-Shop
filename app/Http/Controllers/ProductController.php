@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -88,7 +89,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image) {
-                \Storage::disk('public')->delete($product->image);
+                Storage::disk('public')->delete($product->image);
             }
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
@@ -110,7 +111,6 @@ class ProductController extends Controller
         $product->load(['category', 'brand', 'images']);
         return view('admin.products.show', compact('product'));
     }
-
     public function destroy(Product $product)
     {
         if ($product->image) {

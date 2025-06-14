@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Payment;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+class PaymentController extends Controller
+{
+    public function index()
+    {
+        $payments = Payment::with(['order', 'paymentMethod'])->paginate(10);
+        return view('admin.payments.index', compact('payments'));
+    }
+
+    public function confirm($id)
+    {
+        $payment = Payment::findOrFail($id);
+        if ($payment->status !== 'pending') {
+            return redirect()->back()->with('error', 'Thanh toán đã được xác nhận hoặc không thể xác nhận');
+        }
+
+        $payment->status = 'confirmed';
+        $payment->confirmed_at = now();
+        $payment->save();
+
+        return redirect()->route('admin.payments.invoice', $payment->id);
+    }
+
+    public function invoice($id)
+    {
+        $payment = Payment::with(['order', 'paymentMethod'])->findOrFail($id);
+
+        // Cho phép cả confirmed và rejected xem hóa đơn
+        if (!in_array($payment->status, ['confirmed', 'rejected'])) {
+            return redirect()->back()->with('error', 'Chỉ có thể xem hóa đơn sau khi đã xác nhận hoặc bị hủy.');
+        }
+
+        return view('admin.payments.invoice', compact('payment'));
+    }
+    public function reject($id)
+{
+    $payment = Payment::findOrFail($id);
+    if ($payment->status !== 'rejected') {
+        $payment->status = 'rejected';
+        $payment->rejected_at = now();
+        $payment->save();
+        return redirect()->route('payments.index')->with('success', 'Đã hủy đơn thành công!');
+    }
+    return redirect()->route('payments.index')->with('error', 'Đơn này đã bị hủy trước đó.');
+}
+}

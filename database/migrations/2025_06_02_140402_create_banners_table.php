@@ -8,18 +8,15 @@ class CreateBannersTable extends Migration
 {
     public function up()
     {
-        Schema::create('banners', function (Blueprint $table) {
-            $table->id();
-
-            $table->string('title');
-            $table->string('image')->nullable();
-            $table->string('link')->nullable();
-            $table->string('location')->nullable();
-            $table->integer('views')->default(0);
-            $table->tinyInteger('status')->default(1);
-
-            $table->timestamps();
-        });
+Schema::create('banners', function (Blueprint $table) {
+    $table->id();
+    $table->string('title');
+    $table->string('image');
+    $table->string('link')->nullable();
+    $table->integer('position')->default(0);
+    $table->boolean('is_active')->default(true);
+    $table->timestamps();
+});
     }
 
     public function down()
