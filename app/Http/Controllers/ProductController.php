@@ -8,6 +8,10 @@ use App\Models\Category;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ProductVariant;
+use App\Models\Color;
+use App\Models\Size;
+
 
 class ProductController extends Controller
 {
@@ -21,10 +25,15 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $brands = Brand::all();
+        $colors = Color::all();
+        $sizes = Size::all();
+
         return view('admin.products.form', [
             'product' => null,
             'categories' => $categories,
             'brands' => $brands,
+            'colors' => $colors,
+            'sizes' => $sizes,
         ]);
     }
 
@@ -57,6 +66,12 @@ class ProductController extends Controller
             }
         }
 
+        if ($request->has('variants')) {
+            foreach ($request->variants as $variant) {
+                $product->variants()->create($variant);
+            }
+        }
+
         return redirect()->route('products.index')->with('success', 'Sản phẩm đã được tạo thành công.');
     }
 
@@ -64,12 +79,14 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $brands = Brand::all();
-        return view('admin.products.form', [
-            'product' => $product,
-            'categories' => $categories,
-            'brands' => $brands,
-        ]);
+        $colors = Color::all();
+        $sizes = Size::all();
+
+        $product->load('variants');
+
+        return view('admin.products.form', compact('product', 'categories', 'brands', 'colors', 'sizes'));
     }
+
 
     public function update(Request $request, Product $product)
     {
@@ -91,6 +108,7 @@ class ProductController extends Controller
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
+            \Storage::disk('public')->delete($product->image);
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
 
@@ -100,6 +118,13 @@ class ProductController extends Controller
             foreach ($request->file('description_images') as $img) {
                 $path = $img->store('products/descriptions', 'public');
                 $product->images()->create(['image_path' => $path]);
+            }
+        }
+
+        $product->variants()->delete();
+        if ($request->has('variants')) {
+            foreach ($request->variants as $variant) {
+                $product->variants()->create($variant);
             }
         }
 
@@ -126,4 +151,3 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Sản phẩm đã được xóa thành công.');
     }
 }
-

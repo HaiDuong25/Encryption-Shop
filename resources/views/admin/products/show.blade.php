@@ -37,6 +37,9 @@
                     <li class="list-group-item"><strong>Chất liệu:</strong> {{ $product->material ?? '—' }}</li>
                     <li class="list-group-item"><strong>Danh mục:</strong> {{ $product->category->name ?? '—' }}</li>
                     <li class="list-group-item"><strong>Thương hiệu:</strong> {{ $product->brand->name ?? '—' }}</li>
+                    @php $variant = $product->variants->first(); @endphp
+                    <li class="list-group-item"><strong>Màu sắc:</strong> {{ $variant?->color->name ?? '—' }}</li>
+                    <li class="list-group-item"><strong>Kích cỡ:</strong> {{ $variant?->size->name ?? '—' }}</li>
                     <li class="list-group-item"><strong>Mô tả:</strong> {!! nl2br(e($product->description)) ?: '—' !!}</li>
                     <li class="list-group-item"><strong>Trạng thái:</strong>
                         <span class="badge bg-{{ $product->status ? 'success' : 'secondary' }}">

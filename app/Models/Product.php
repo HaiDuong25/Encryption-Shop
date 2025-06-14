@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -6,9 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'name', 'image', 'quantity', 'material',
-        'price', 'sale_price', 'description', 'status',
-        'category_id', 'brand_id'
+        'name',
+        'image',
+        'quantity',
+        'material',
+        'price',
+        'sale_price',
+        'description',
+        'status',
+        'category_id',
+        'brand_id'
     ];
 
     public function category()
@@ -25,6 +33,8 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
 }
-
-

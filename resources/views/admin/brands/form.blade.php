@@ -3,7 +3,7 @@
 @section('title', isset($brand) ? 'Chỉnh sửa Thương hiệu' : 'Thêm Thương hiệu')
 
 @section('content')
-<div class="col-12 col-md-6 offset-md-3">
+<div class="col-12">
     <h3 class="mt-3 mb-3">{{ isset($brand) ? 'Chỉnh sửa' : 'Thêm mới' }} Thương hiệu</h3>
     <div class="card">
         <div class="card-body">
@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="image" class="form-label">Ảnh (file upload)</label>
+                    <label for="image" class="form-label">Ảnh</label>
                     @if (isset($brand) && $brand->image)
                         <div class="mb-2">
                             <img src="{{ asset('storage/' . $brand->image) }}" alt="Ảnh hiện tại" width="100">
