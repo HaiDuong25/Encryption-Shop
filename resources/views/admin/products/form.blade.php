@@ -1,9 +1,13 @@
+@php
+$initialVariantIndex = isset($product) && $product->variants->count() ? $product->variants->count() : 1;
+@endphp
+
 @extends('admin.layouts.main')
 
 @section('title', isset($product) ? 'Chỉnh sửa Sản phẩm' : 'Thêm Sản phẩm')
 
 @section('content')
-<div class="col-12 col-md-8 offset-md-2">
+<div class="container-fluid">
     <h3 class="mt-3 mb-3">{{ isset($product) ? 'Chỉnh sửa' : 'Thêm mới' }} Sản phẩm</h3>
     <div class="card">
         <div class="card-body">
@@ -11,7 +15,7 @@
                 method="POST" enctype="multipart/form-data">
                 @csrf
                 @if (isset($product))
-                    @method('PUT')
+                @method('PUT')
                 @endif
 
                 <div class="mb-3">
@@ -20,33 +24,31 @@
                         value="{{ old('name', $product->name ?? '') }}" required>
                 </div>
 
-                <!-- Ảnh đại diện -->
                 <div class="mb-3">
                     <label for="image" class="form-label">Ảnh đại diện</label>
                     @if(isset($product) && $product->image)
-                        <div class="mb-2">
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="Ảnh hiện tại" width="120" class="img-thumbnail">
-                        </div>
+                    <div class="mb-2">
+                        <img src="{{ asset('storage/' . $product->image) }}" alt="Ảnh hiện tại" width="120" class="img-thumbnail">
+                    </div>
                     @endif
                     <input type="file" class="form-control" id="image" name="image" accept="image/*">
                 </div>
 
-                <!-- Ảnh mô tả nhiều -->
                 <div class="mb-3">
                     <label for="description_images" class="form-label">Ảnh mô tả (có thể chọn nhiều ảnh)</label>
                     <input type="file" class="form-control" id="description_images" name="description_images[]" multiple accept="image/*">
                 </div>
 
                 @if(isset($product) && $product->images->count() > 0)
-                    <div class="mb-3">
-                        <label class="form-label">Ảnh mô tả hiện tại</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach($product->images as $img)
-                                <img src="{{ asset('storage/' . $img->image_path) }}" alt="Ảnh mô tả" width="80" height="80" class="img-thumbnail">
-                            @endforeach
-                        </div>
-                        <small class="text-muted">Nếu bạn tải ảnh mới lên, ảnh mô tả mới sẽ được thêm vào danh sách hiện tại.</small>
+                <div class="mb-3">
+                    <label class="form-label">Ảnh mô tả hiện tại</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach($product->images as $img)
+                        <img src="{{ asset('storage/' . $img->image_path) }}" alt="Ảnh mô tả" width="80" height="80" class="img-thumbnail">
+                        @endforeach
                     </div>
+                    <small class="text-muted">Nếu bạn tải ảnh mới lên, ảnh mô tả mới sẽ được thêm vào danh sách hiện tại.</small>
+                </div>
                 @endif
 
                 <div class="mb-3">
@@ -92,10 +94,7 @@
                         <label for="category_id" class="form-label">Danh mục</label>
                         <select name="category_id" class="form-select" required>
                             @foreach ($categories as $category)
-                            <option value="{{ $category->id }}"
-                                {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
+                            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -104,13 +103,38 @@
                         <label for="brand_id" class="form-label">Thương hiệu</label>
                         <select name="brand_id" class="form-select" required>
                             @foreach ($brands as $brand)
-                            <option value="{{ $brand->id }}"
-                                {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
-                                {{ $brand->name }}
-                            </option>
+                            <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
                             @endforeach
                         </select>
                     </div>
+                </div>
+                <hr>
+                <h3 class="mt-4">Biến thể sản phẩm</h3><br>
+                <div id="variant-container">
+                    @php
+                    $variantsData = isset($product) && $product->variants->count() ? $product->variants : [null];
+                    @endphp
+
+                    @foreach($variantsData as $index => $variant)
+                    <div class="row mb-3 variant-item">
+                        <div class="col-md-3">
+                            <label>Màu sắc</label>
+                            <select name="variants[{{ $index }}][color_id]" class="form-select">
+                                @foreach($colors as $color)
+                                <option value="{{ $color->id }}" {{ isset($variant) && $variant->color_id == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Kích cỡ</label>
+                            <select name="variants[{{ $index }}][size_id]" class="form-select">
+                                @foreach($sizes as $size)
+                                <option value="{{ $size->id }}" {{ isset($variant) && $variant->size_id == $size->id ? 'selected' : '' }}>{{ $size->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
 
                 <div class="d-flex justify-content-end">

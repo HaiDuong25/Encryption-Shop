@@ -6,14 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductVariant extends Model
 {
-    protected $fillable = [
-        'product_id',
-        'color_id',
-        'size_id',
-        'price',
-        'quantity',
-        'image',
-    ];
+    protected $fillable = ['product_id', 'color_id', 'size_id', 'price', 'quantity', 'image'];
 
     public function product()
     {
@@ -30,3 +23,4 @@ class ProductVariant extends Model
         return $this->belongsTo(Size::class);
     }
 }
+

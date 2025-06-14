@@ -3,86 +3,96 @@
 @section('title', 'Quản lý Sản phẩm')
 
 @section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card card-table">
+                <div class="card-body">
+                    <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
+                        <h5>Danh sách sản phẩm</h5>
+                        <div class="right-options d-flex gap-2 align-items-center">
+                            <a class="btn btn-solid" href="{{ route('products.create') }}">Thêm sản phẩm</a>
+                        </div>
+                    </div>
 
-<div class="col-12">
-    <h3 class="mt-3 mb-3">Danh sách Sản phẩm</h3>
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0"><i class="fas fa-box me-1"></i> Tất cả Sản phẩm</h5>
-            <a href="{{ route('products.create') }}" class="btn btn-success btn-sm">+ Thêm mới</a>
-        </div>
+                    <div class="mt-3 mb-2 d-flex justify-content-end">
+                        <div class="form-group mb-0">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search:">
+                        </div>
+                    </div>
 
-        <div class="card-body">
-            @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="table-responsive">
+                        <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Số lượng</th>
+                                    <th>Giá</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($products as $product)
+                                <tr style="border-bottom: none !important;">
+                                    <td>
+                                        <div class="table-image">
+                                            @if ($product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid" width="60" alt="{{ $product->name }}">
+                                            @else
+                                            —
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>{{ $product->name }}</td>
+                                    <td>{{ $product->category->name ?? '—' }}</td>
+                                    <td>{{ $product->quantity ?? 0 }}</td>
+                                    <td class="td-price">{{ number_format($product->price, 0, ',', '.') }} đ</td>
+                                    <td class="{{ $product->status ? 'status-close' : 'status-danger' }}">
+                                        <span>{{ $product->status ? 'Hiển thị' : 'Ẩn' }}</span>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
+                                            <li>
+                                                <a href="{{ route('products.show', $product) }}">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('products.edit', $product) }}">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-link p-0 text-danger">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="7" class="text-center">Không có sản phẩm.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+
+                        @if ($products->hasPages())
+                        <div class="mt-3">
+                            {{ $products->links() }}
+                        </div>
+                        @endif
+                    </div>
+                </div>
             </div>
-            @endif
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped text-center align-middle">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Ảnh đại diện</th>
-                            <th>Giá</th>
-                            <th>Danh mục</th>
-                            <th>Thương hiệu</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($products as $product)
-                        <tr>
-                            <td>{{ $product->id }}</td>
-                            <td>{{ $product->name }}</td>
-                            <td>
-                                @if ($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" width="80" class="img-thumbnail">
-                                @else
-                                —
-                                @endif
-                            </td>
-                            <td>{{ number_format($product->price, 0, ',', '.') }} đ</td>
-                            <td>{{ $product->category->name ?? '—' }}</td>
-                            <td>{{ $product->brand->name ?? '—' }}</td>
-                            <td>
-                                <span class="badge bg-{{ $product->status ? 'success' : 'secondary' }}">
-                                    {{ $product->status ? 'Hiển thị' : 'Ẩn' }}
-                                </span>
-                            </td>
-                            <td>{{ $product->created_at->format('d/m/Y') }}</td>
-                            <td>
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
-                                    <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                    <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="10" class="text-center">Không có sản phẩm.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if ($products->hasPages())
-            <div class="mt-3">
-                {{ $products->links() }}
-            </div>
-            @endif
         </div>
     </div>
 </div>
-
 @endsection

@@ -3,7 +3,7 @@
 @section('title', isset($category) ? 'Chỉnh sửa Danh mục' : 'Thêm Danh mục')
 
 @section('content')
-<div class="col-12 col-md-6 offset-md-3">
+<div class="col-12">
     <h3 class="mt-3 mb-3">{{ isset($category) ? 'Chỉnh sửa' : 'Thêm mới' }} Danh mục</h3>
     <div class="card">
         <div class="card-body">
