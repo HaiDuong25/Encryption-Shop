@@ -65,6 +65,7 @@ class UserController extends Controller
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
             'role'     => 'required|in:admin,staff,user',
             'phone'    => 'nullable|string',
             'address'  => 'nullable|string',
@@ -79,6 +80,9 @@ class UserController extends Controller
             'phone'   => $request->phone,
             'address' => $request->address,
         ];
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
 
         if ($request->hasFile('avatar')) {
             if ($user->avatar) {
@@ -94,6 +98,14 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        // Nếu user là admin thì không cho xóa
+        if ($user->role === 'admin') {
+            return redirect()->route('users.index')->with('error', 'Không thể xóa tài khoản admin!');
+        }
+        
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
         $user->delete();
         return redirect()->route('users.index')->with('success', 'Đã xoá người dùng');
     }

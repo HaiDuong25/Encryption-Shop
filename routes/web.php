@@ -73,14 +73,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
-    //product variants
-    Route::get('/product-variants', [ProductVariantController::class, 'index'])->name('product-variants.index');
-    Route::get('/product-variants/create', [ProductVariantController::class, 'create'])->name('product-variants.create');
-    Route::post('/product-variants', [ProductVariantController::class, 'store'])->name('product-variants.store');
-    Route::get('/product-variants/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product-variants.edit');
-    Route::put('/product-variants/{productVariant}', [ProductVariantController::class, 'update'])->name('product-variants.update');
-    Route::delete('/product-variants/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
-
     //phương thức thanh toán
     Route::resource('payment-methods', PaymentMethodController::class);
     Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('payment-methods.index');

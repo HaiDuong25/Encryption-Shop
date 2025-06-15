@@ -3,6 +3,13 @@
 @section('title', 'Quản lý người dùng')
 
 @section('content')
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
+
 <div class="container-fluid">
     <div class="card card-table">
         <div class="card-body">
@@ -48,21 +55,27 @@
                             <td>{{ $user->address }}</td>
                             <td>
                                 @if($user->status == 'active')
-                                    <span class="badge bg-success">Hoạt động</span>
+                                <span class="badge bg-success">Hoạt động</span>
                                 @else
-                                    <span class="badge bg-danger">Khóa</span>
+                                <span class="badge bg-danger">Khóa</span>
                                 @endif
                             </td>
                             <td>
                                 <ul>
                                     <li><a href="{{ route('users.edit', $user) }}"><i class="ri-pencil-line"></i></a></li>
                                     <li>
+                                        @if($user->role !== 'admin')
                                         <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline;">
                                             @csrf @method('DELETE')
                                             <button onclick="return confirm('Xoá người dùng này?')" class="btn btn-link p-0 text-danger">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </form>
+                                        @else
+                                        <span class="text-muted" style="font-size: 14px;">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </span>
+                                        @endif
                                     </li>
                                 </ul>
                             </td>
