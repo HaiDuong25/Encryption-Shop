@@ -15,8 +15,11 @@
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Tên danh mục</label>
-                    <input type="text" class="form-control" id="name" name="name"
-                        value="{{ old('name', $category->name ?? '') }}" required>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
+                        value="{{ old('name', $category->name ?? '') }}">
+                    @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="mb-3">
@@ -26,15 +29,21 @@
                             <img src="{{ asset('storage/' . $category->image) }}" alt="Ảnh hiện tại" width="100">
                         </div>
                     @endif
-                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                    <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
-                    <select name="status" id="status" class="form-select" required>
+                    <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
                         <option value="1" {{ old('status', $category->status ?? 1) == 1 ? 'selected' : '' }}>Hiển thị</option>
                         <option value="0" {{ old('status', $category->status ?? 1) == 0 ? 'selected' : '' }}>Ẩn</option>
                     </select>
+                    @error('status')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="d-flex justify-content-end">
