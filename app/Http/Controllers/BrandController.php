@@ -16,7 +16,6 @@ class BrandController extends Controller
 
     public function create()
     {
-        // Giao diện form chung dùng cho create & edit
         return view('admin.brands.form');
     }
 
@@ -24,12 +23,11 @@ class BrandController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|max:2048', // validate ảnh, tối đa 2MB
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        // Xử lý upload ảnh nếu có
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('brands', 'public'); // lưu trong storage/app/public/brands
+            $path = $request->file('image')->store('brands', 'public');
             $validated['image'] = $path;
         }
 
@@ -51,7 +49,6 @@ class BrandController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            // Xoá ảnh cũ nếu có
             if ($brand->image && Storage::disk('public')->exists($brand->image)) {
                 Storage::disk('public')->delete($brand->image);
             }
@@ -66,7 +63,6 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
-        // Xoá ảnh nếu có
         if ($brand->image && Storage::disk('public')->exists($brand->image)) {
             Storage::disk('public')->delete($brand->image);
         }

@@ -23,12 +23,11 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|max:2048', // max 2MB
+            'image' => 'nullable|image|max:2048',
             'status' => 'required|boolean',
         ]);
 
         if ($request->hasFile('image')) {
-            // Lưu file vào storage/app/public/categories
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
 
@@ -51,12 +50,10 @@ class CategoryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            // Xóa ảnh cũ nếu có
             if ($category->image && Storage::disk('public')->exists($category->image)) {
                 Storage::disk('public')->delete($category->image);
             }
 
-            // Lưu ảnh mới
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
 
@@ -67,7 +64,6 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        // Xóa ảnh trong storage nếu có
         if ($category->image && Storage::disk('public')->exists($category->image)) {
             Storage::disk('public')->delete($category->image);
         }

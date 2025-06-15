@@ -15,10 +15,11 @@
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Tên thương hiệu</label>
-                    <input type="text" name="name" id="name" class="form-control"
-                        value="{{ old('name', $brand->name ?? '') }}" required>
+                    <input type="text" name="name" id="name"
+                        class="form-control @error('name') is-invalid @enderror"
+                        value="{{ old('name', $brand->name ?? '') }}" >
                     @error('name')
-                        <div class="text-danger mt-1">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -29,9 +30,11 @@
                             <img src="{{ asset('storage/' . $brand->image) }}" alt="Ảnh hiện tại" width="100">
                         </div>
                     @endif
-                    <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                    <input type="file" name="image" id="image"
+                        class="form-control @error('image') is-invalid @enderror"
+                        accept="image/*">
                     @error('image')
-                        <div class="text-danger mt-1">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
