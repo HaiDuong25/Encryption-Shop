@@ -1,71 +1,86 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Phương thức thanh toán')
+
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Danh sách phương thức thanh toán</h2>
-        <a href="{{ route('payment-methods.create') }}" class="btn btn-primary btn-sm px-3 fw-bold rounded-2 shadow-sm">
-            <i class="fa fa-plus"></i> Thêm mới
-        </a>
+<div class="col-12">
+    <h3 class="mt-3 mb-3">Danh sách Phương thức thanh toán</h3>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Tất cả phương thức</h5>
+            <a href="{{ route('payment-methods.create') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> Thêm mới
+            </a>
+        </div>
+
+        <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            <table class="table table-bordered table-hover table-striped text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Loại thanh toán</th>
+                        <th>Mô tả</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($methods as $method)
+                        <tr>
+                            <td>{{ $method->id }}</td>
+                            <td>{{ $method->payment_type }}</td>
+                            <td>{{ $method->description }}</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ route('payment-methods.edit', $method) }}" class="btn btn-sm btn-primary" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal{{ $method->id }}" title="Xóa">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Modal Xác nhận Xóa -->
+                                <div class="modal fade" id="deleteModal{{ $method->id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Bạn có chắc chắn muốn xóa phương thức <strong>{{ $method->payment_type }}</strong> không?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form action="{{ route('payment-methods.destroy', $method) }}" method="POST">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Modal -->
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-center mt-3">
+                {{ $methods->links() }}
+            </div>
+        </div>
     </div>
-
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Loại thanh toán</th>
-                <th>Mô tả</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($methods as $method)
-                <tr>
-                    <td>{{ $method->id }}</td>
-                    <td>{{ $method->payment_type }}</td>
-                    <td>{{ $method->description }}</td>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <a href="{{ route('payment-methods.edit', $method) }}"
-                                class="btn btn-primary btn-sm fw-bold rounded-2 shadow-sm" title="Sửa">
-                                <i class="fas fa-edit" style="display: inline-block;"></i> Sửa
-                            </a>
-
-                            <button class="btn btn-primary btn-sm fw-bold rounded-2 shadow-sm" data-bs-toggle="modal"
-                                data-bs-target="#deleteModal{{ $method->id }}" title="Xóa">
-                                <i class="fa fa-trash"></i> Xóa
-                            </button>
-                        </div>
-                    </td>
-                    <!-- Modal Xác nhận Xóa -->
-                    <div class="modal fade" id="deleteModal{{ $method->id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title text-danger">Xác nhận xóa</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p class="fw-bold">Bạn có chắc chắn muốn xóa phương thức này?</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <form action="{{ route('payment-methods.destroy', $method) }}" method="POST">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">Xóa</button>
-                                    </form>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    {{ $methods->links() }}
+</div>
 @endsection

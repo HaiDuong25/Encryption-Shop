@@ -52,7 +52,9 @@
                             <td><a href="mailto:{{ $contact->email }}">{{ $contact->email }}</a></td>
                             <td>{{ $contact->phone ?: 'N/A' }}</td>
                             <td>{{ Str::limit($contact->content, 100) }}</td>
-                            <td>{{ $contact->created_at->format('d/m/Y H:i') }}</td>
+<td>
+    {{ $contact->created_at ? $contact->created_at->format('d/m/Y H:i') : 'Không rõ' }}
+</td>
                             <td class="text-nowrap">
                                 <div class="d-flex flex-wrap gap-1">
                                     {{-- Nút Xem --}}

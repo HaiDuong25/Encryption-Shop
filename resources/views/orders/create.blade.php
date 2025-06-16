@@ -70,6 +70,29 @@
                     @endforeach
                 </select>
             </div>
+            <hr class="my-4">
+<h5>Danh sách sản phẩm</h5>
+@foreach ($products as $index => $product)
+    <div class="row align-items-end mb-3 border-bottom pb-2">
+        <div class="col-md-4">
+            <label class="form-label">Sản phẩm</label>
+            <input type="text" class="form-control" value="{{ $product->name }}" disabled>
+            <input type="hidden" name="products[{{ $index }}][product_id]" value="{{ $product->id }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Số lượng</label>
+            <input type="number" name="products[{{ $index }}][quantity]" class="form-control" value="1" min="1">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Giá</label>
+            <input type="number" name="products[{{ $index }}][price]" class="form-control" value="{{ $product->price }}">
+        </div>
+        <div class="col-md-2 text-muted">
+            <small><i>Mặc định: {{ number_format($product->price, 0, ',', '.') }} đ</i></small>
+        </div>
+    </div>
+@endforeach
+
             <div class="row mt-4">
                 <div class="col-4 d-flex justify-content-start">
                     <a href="{{ route('orders.index') }}" class="btn btn-secondary btn-md px-4 fw-bold rounded-2 shadow-sm">

@@ -52,7 +52,7 @@
                             <td class="order-success">
                                 @php
                                     $statusArr = [
-                                        0 => 'Đã đặt',
+                                        0 => 'Chờ xử lí',
                                         1 => 'Xác nhận',
                                         2 => 'Giao cho ĐVVC',
                                         3 => 'Đang giao',

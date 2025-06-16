@@ -3,11 +3,22 @@
 @section('content')
     <h2 class="mb-3">Cập nhật phương thức</h2>
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('payment-methods.update', $payment_method) }}" method="POST">
         @csrf @method('PUT')
         <div class="mb-3">
             <label>Loại thanh toán</label>
-            <input type="text" name="payment_type" class="form-control" value="{{ old('payment_type', $payment_method->payment_type) }}" required>
+            <input type="text" name="payment_type" class="form-control @error('payment_type') is-invalid @enderror" value="{{ old('payment_type', isset($payment_method) ? $payment_method->payment_type : '') }}">
+
         </div>
         <div class="mb-3">
             <label>Mô tả</label>

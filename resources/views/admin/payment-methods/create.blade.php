@@ -3,11 +3,26 @@
 @section('content')
     <h2 class="mb-3">Thêm phương thức thanh toán</h2>
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('payment-methods.store') }}" method="POST">
         @csrf
         <div class="mb-3">
             <label>Loại thanh toán</label>
-            <input type="text" name="payment_type" class="form-control" value="{{ old('payment_type') }}" required>
+            <input type="text" name="payment_type" class="form-control" value="{{ old('payment_type') }}" >
+           @error('payment_type')
+                <div class="invalid-feedback">
+                    {{ $message }}
+                </div>
+            @enderror
         </div>
         <div class="mb-3">
             <label>Mô tả</label>
