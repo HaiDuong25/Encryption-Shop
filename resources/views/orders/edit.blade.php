@@ -100,4 +100,3 @@
         });
     </script>
 @endsection
-@endsection
