@@ -130,6 +130,8 @@ Route::post('/orders/{order}/update-status', [OrderController::class, 'updateSta
 
     //user
     Route::resource('users', UserController::class);
+    Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+
 });
 
 

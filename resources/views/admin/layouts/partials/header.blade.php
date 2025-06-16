@@ -160,7 +160,7 @@
                         <li class="profile-nav onhover-dropdown pe-0 me-0">
                             <div class="media profile-media">
                                 <img class="user-profile rounded-circle"
-                                    src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets/images/users/default.png') }}"
+                                    src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets/images/users/favi.png') }}"
                                     alt="">
                                 <div class="user-name-hide media-body">
                                     <span>{{ auth()->user()->name }}</span>
@@ -187,7 +187,7 @@
                                     </a>
                                 </li> -->
                                 <li>
-                                    <a href="profile-setting.html">
+                                    <a href="{{ route('users.edit' , auth()->user()->id) }}">
                                         <i data-feather="settings"></i>
                                         <span>Settings</span>
                                     </a>

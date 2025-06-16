@@ -4,10 +4,10 @@
 
 @section('content')
 @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+<div class="alert alert-success">{{ session('success') }}</div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
+<div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
 <div class="container-fluid">
@@ -62,7 +62,20 @@
                             </td>
                             <td>
                                 <ul>
+                                    <li>
+                                        @if($user->role !== 'admin')
+                                        <form action="{{ route('users.toggle', $user) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-link p-0"
+                                                onclick="return confirm('Bạn chắc chắn muốn {{ $user->status == 'active' ? 'khóa' : 'mở khóa' }} người dùng này?')">
+                                                {{ $user->status == 'active' ? 'Khóa' : 'Mở khóa' }}
+                                            </button>
+                                        </form>
+                                        @endif
+                                    </li>
+
                                     <li><a href="{{ route('users.edit', $user) }}"><i class="ri-pencil-line"></i></a></li>
+
                                     <li>
                                         @if($user->role !== 'admin')
                                         <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline;">

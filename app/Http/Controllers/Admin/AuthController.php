@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -35,6 +36,14 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            // Kiểm tra trạng thái tài khoản
+            if ($user->status !== 'active') {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ vói chúng tôi để được hỗ trợ!',
+                ]);
+            }
             $request->session()->regenerate();
             return redirect()->intended('/admin/dashboard'); // hoặc route bạn muốn
         }
