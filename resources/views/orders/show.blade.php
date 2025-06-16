@@ -114,8 +114,8 @@
                 @foreach ($order->orderDetails as $detail)
                     <tr>
                         <td>
-                            @if ($detail->product && $detail->product->image)
-                                <img src="{{ asset('storage/' . $detail->product->image) }}" width="60" style="border-radius:8px;">
+                            @if ($detail->image)
+                                <img src="{{ asset('storage/' . $detail->image) }}" width="60" style="border-radius:8px;">
                             @else
                                 <span class="text-muted">N/A</span>
                             @endif
@@ -129,32 +129,12 @@
             </tbody>
         </table>
     </div>
-    <div class="order-section-title" style="margin-top:28px;">
-        <i class="fas fa-money-check-alt"></i> Lịch sử thanh toán
-    </div>
-    <ul class="order-history-list">
-        @php
-            $validPayments = $order->payments->whereNotNull('created_at')->where('amount', '>', 0);
-        @endphp
-        @forelse ($validPayments as $payment)
-            <li>
-                <i class="fas fa-calendar-alt text-primary"></i>
-                {{ $payment->created_at->format('d/m/Y H:i') }} -
-                <span style="color:#22c55e;font-weight:500">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
-                <span class="text-muted">({{ $payment->note ?? '' }})</span>
-            </li>
-        @empty
-            <li><span class="text-danger">Chưa có thanh toán</span></li>
-        @endforelse
-    </ul>
     <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mt-2">
-    Theo dõi đơn hàng
-</a>
-
+        Theo dõi đơn hàng
+    </a>
     <a href="{{ route('orders.index') }}" class="btn btn-secondary order-back-btn">
         <i class="fas fa-arrow-left"></i> Quay lại
     </a>
 </div>
-<!-- FontAwesome CDN for icons (if not already included in layout) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 @endsection
