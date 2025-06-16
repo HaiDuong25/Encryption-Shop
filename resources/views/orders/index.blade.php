@@ -14,7 +14,7 @@
                 <table class="table all-package order-table theme-table" id="table_id">
                     <thead>
                         <tr>
-                            <th>Hình ảnh sản phẩm</th>
+                            <!-- <th>Hình ảnh sản phẩm</th> -->
                             <th>Mã vận đơn</th>
                             <th>Ngày</th>
                             <th>Phương thức thanh toán</th>
@@ -26,7 +26,7 @@
                     <tbody>
                         @foreach ($orders as $order)
                         <tr>
-                            <td>
+                            <!-- <td>
                                 <a class="d-block">
                                     <span class="order-image">
                                         {{-- Hiển thị hình ảnh sản phẩm đầu tiên trong đơn hàng --}}
@@ -42,7 +42,7 @@
                                         @endif
                                     </span>
                                 </a>
-                            </td>
+                            </td> -->
                             <td>{{ $order->id }}</td>
                             <td>{{ $order->created_at->format('d/m/Y') }}</td>
                             <td>
@@ -84,11 +84,11 @@
                                             </button>
                                         </form>
                                     </li>
-                                    <li>
+                                    <!-- <li>
                                         <a class="btn btn-sm btn-solid text-white" href="#">
                                             Tracking
                                         </a>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </td>
                         </tr>

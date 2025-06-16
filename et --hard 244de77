@@ -1,0 +1,70 @@
+[33m411f3b7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mduong[m[33m, [m[1;31morigin/main[m[33m)[m Merge pull request #56 from HaiDuong25/nam
+[33me9caea5[m fix
+[33m244de77[m Merge pull request #55 from HaiDuong25/nam
+[33mc9e61b4[m fix
+[33m71bd6e1[m Merge pull request #54 from HaiDuong25/nam
+[33m2e7679a[m Merge branch 'main' into nam
+[33maf0da8d[m fix anh don hang
+[33m73c766e[m fix đơn hàng
+[33me6a20da[m fix lại đơn hàng
+[33m81081dc[m Merge pull request #52 from HaiDuong25/duong
+[33mf00ef81[m[33m ([m[1;31morigin/duong[m[33m)[m fix some bug
+[33m58d6a7d[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into duong
+[33m1b509eb[m Merge pull request #50 from HaiDuong25/duc
+[33m5ff160c[m sua lai giao dien tin tuc
+[33ma61c790[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into duong
+[33m5025da2[m Merge pull request #48 from HaiDuong25/dung
+[33m2ee19fb[m Merge pull request #49 from HaiDuong25/luong
+[33m09c4592[m validate
+[33m7b58f86[m fix user
+[33m970c12d[m update phanhoikhachhang
+[33mb538892[m Merge pull request #47 from HaiDuong25/luong
+[33m98340d4[m fix
+[33m97d4784[m Merge pull request #45 from HaiDuong25/luong
+[33mad7b9c6[m Merge branch 'main' into luong
+[33m4e8585f[m thêm nhiều ảnh sp
+[33m4875f52[m fix
+[33m5bcd91c[m fix
+[33m7388f80[m Merge pull request #44 from HaiDuong25/duong
+[33m6ceab78[m fix some bug
+[33ma8567ee[m Merge pull request #42 from HaiDuong25/main
+[33m81cf6fc[m Merge pull request #41 from HaiDuong25/nam
+[33m35c328f[m chinh nut banner
+[33mcf89d5a[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into nam
+[33ma084b03[m Merge pull request #32 from HaiDuong25/long
+[33mf68c000[m Merge branch 'main' into long
+[33mb2379d2[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into nam
+[33ma1a6f70[m Merge pull request #40 from HaiDuong25/duong
+[33me0df4a1[m fix: add to pass feature test
+[33mccd2799[m fix: add public route '/' to pass feature test
+[33mf702466[m Merge pull request #39 from HaiDuong25/main
+[33m17c2932[m Fix: add homepage route for feature test
+[33m296ebbc[m Merge pull request #38 from HaiDuong25/nam
+[33mb8ff77b[m update workflow
+[33med38128[m fix banner
+[33m5096ce6[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into nam
+[33m25d3479[m Update laravel.yml
+[33mb45e8b4[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into nam
+[33m26dd1c4[m Merge pull request #37 from HaiDuong25/nam
+[33m37d7f88[m Merge branch 'main' of https://github.com/HaiDuong25/Encryption-Shop into nam
+[33m6fbffbd[m Merge pull request #36 from HaiDuong25/duc
+[33m2af8d23[m Update composer.lock for CI compatibility
+[33mdf3970c[m sua anh loi
+[33me221d1c[m sua anh
+[33m909673d[m Merge pull request #35 from HaiDuong25/nam
+[33mf00d9dd[m xoa bot code thua
+[33m7efdb25[m Merge pull request #34 from HaiDuong25/duc
+[33m7a3ebe2[m Fix lock file for CI
+[33m4bd1569[m them xem chi tiet anh
+[33m6484b1c[m them xem chi tiet anh
+[33m491560e[m Merge pull request #33 from HaiDuong25/nam
+[33m54ffcf8[m update lenh giai phong dung luong anh du thua
+[33mfa92e20[m update banner
+[33mbf1ec36[m Merge pull request #31 from HaiDuong25/duc
+[33mae868bf[m thêm theo dõi đơn hàng
+[33mb3e567d[m chinh lai banner
+[33m9ef468a[m Merge pull request #30 from HaiDuong25/nam
+[33m6ba014e[m update migration
+[33mcff4253[m thêm theo dõi đơn hàng
+[33m4bb2866[m Merge pull request #29 from HaiDuong25/duong
+[33m64141e1[m Merge branch 'main' into duong

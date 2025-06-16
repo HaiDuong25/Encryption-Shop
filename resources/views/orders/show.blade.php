@@ -63,10 +63,10 @@
             <span><i class="fas fa-calendar-alt text-info"></i> {{ $order->created_at->format('d/m/Y H:i') }}</span>
             <span><i class="fas fa-box text-primary"></i> {{ $order->orderDetails->sum('quantity') }} sản phẩm</span>
         </div>
-        <div>
+        <!-- <div>
             <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
                     style="color:#e11d48">{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></span>
-        </div>
+        </div> -->
     </div>
 
     <div class="row">
@@ -121,7 +121,7 @@
                         <li class="mb-2">
                             <i class="fas fa-calendar-alt text-primary"></i>
                             {{ $payment->created_at->format('d/m/Y H:i') }} -
-                            <span class="text-success fw-bold">{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</span>
+                            <span class="text-success fw-bold">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
                             <small class="text-muted">({{ $payment->note ?? '' }})</small>
                         </li>
                     @empty
@@ -130,7 +130,9 @@
                 </ul>
             </div>
 
-
+            <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
+                <i class="fas fa-truck"></i> Theo dõi đơn hàng
+            </a>
 
             <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -171,45 +173,4 @@
             </div>
         </div>
     </div>
-    <div class="order-section-title" style="margin-top:28px;">
-        <i class="fas fa-box"></i> Sản phẩm trong đơn hàng
-    </div>
-    <div class="table-responsive">
-        <table class="table table-bordered order-table">
-            <thead>
-                <tr>
-                    <th>Ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Số lượng</th>
-                    <th>Giá</th>
-                    <th>Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($order->orderDetails as $detail)
-                    <tr>
-                        <td>
-                            @if ($detail->image)
-                                <img src="{{ asset('storage/' . $detail->image) }}" width="60" style="border-radius:8px;">
-                            @else
-                                <span class="text-muted">N/A</span>
-                            @endif
-                        </td>
-                        <td>{{ $detail->product->name ?? 'Sản phẩm đã xóa' }}</td>
-                        <td>{{ $detail->quantity }}</td>
-                        <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
-                        <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mt-2">
-        Theo dõi đơn hàng
-    </a>
-    <a href="{{ route('orders.index') }}" class="btn btn-secondary order-back-btn">
-        <i class="fas fa-arrow-left"></i> Quay lại
-    </a>
-</div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 @endsection

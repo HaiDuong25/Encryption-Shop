@@ -37,11 +37,7 @@
                     <tbody>
                         @foreach($users as $user)
                         <tr>
-                            <!-- <td>
-                                <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : asset('assets/images/users/default.jpg') }}"
-                                    width="60" class="rounded-circle">
-                            </td> -->
-                            <td>
+                            <td class="text-center">
                                 @if ($user->avatar)
                                 <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" width="100">
                                 @endif
