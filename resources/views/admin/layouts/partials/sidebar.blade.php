@@ -59,12 +59,11 @@
                             <li>
                                 <a href="{{ route('products.create') }}">Add New Product</a>
                             </li>
-                            <li>
+                            <!-- <li>
                                 <a href="{{ route('inventory.index') }}">
                                     <span>Quản lí kho hàng</span>
                                 </a>
-
-                            </li>
+                            </li> -->
                         </ul>
                     </li>
                     <li class="sidebar-list">
@@ -112,13 +111,6 @@
                             </li>
                         </ul>
                     </li> -->
-
-                    <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('product-variants.index') }}">
-                            <i class="ri-store-3-line"></i>
-                            <span>Quản lý biến thể</span>
-                        </a>
-                    </li>
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
