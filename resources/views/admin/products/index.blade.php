@@ -15,11 +15,11 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 mb-2 d-flex justify-content-end">
-                        <div class="form-group mb-0">
-                            <input type="text" class="form-control form-control-sm" placeholder="Search:">
-                        </div>
-                    </div>
+                  <form action="{{ route('products.index') }}" method="GET" class="d-flex">
+    <input type="text" name="keyword" value="{{ request('keyword') }}" class="form-control form-control-sm"
+        placeholder="Tìm kiếm sản phẩm...">
+    <button type="submit" class="btn btn-sm btn-primary ms-2">Tìm</button>
+</form>
 
                     <div class="table-responsive">
                         <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
@@ -86,7 +86,8 @@
 
                         @if ($products->hasPages())
                         <div class="mt-3">
-                            {{ $products->links() }}
+                           {{ $products->appends(['keyword' => request('keyword')])->links() }}
+
                         </div>
                         @endif
                     </div>
