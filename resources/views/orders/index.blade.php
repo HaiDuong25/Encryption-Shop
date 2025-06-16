@@ -52,10 +52,12 @@
                             <td class="order-success">
                                 @php
                                     $statusArr = [
-                                        0 => 'Chờ xử lý',
-                                        1 => 'Đang giao',
-                                        2 => 'Hoàn thành',
-                                        3 => 'Đã hủy'
+                                        0 => 'Chờ xử lí',
+                                        1 => 'Xác nhận',
+                                        2 => 'Giao cho ĐVVC',
+                                        3 => 'Đang giao',
+                                        4 => 'Đã nhận',
+                                        5 => 'Hoàn thành'
                                     ];
                                 @endphp
                                 <span>{{ $statusArr[$order->status] ?? 'Không xác định' }}</span>

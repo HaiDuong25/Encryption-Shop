@@ -72,6 +72,32 @@
                 <input type="text" class="form-control" id="address" name="address" required value="{{ old('address') }}">
             </div>
             <div class="mb-3">
+                <label for="total_price" class="form-label">Tổng tiền</label>
+                <input type="number" class="form-control" id="total_price" name="total_price" required value="{{ old('total_price') }}">
+            </div>
+            <div class="mb-3">
+                <label for="status" class="form-label">Trạng thái</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="0" {{ old('status') == 0 ? 'selected' : '' }}>Đã đặt</option>
+                    <option value="1" {{ old('status') == 1 ? 'selected' : '' }}>Xác nhận</option>
+                    <option value="2" {{ old('status') == 2 ? 'selected' : '' }}>Giao cho ĐVVC</option>
+                    <option value="3" {{ old('status') == 3 ? 'selected' : '' }}>Đang giao</option>
+                    <option value="4" {{ old('status') == 4 ? 'selected' : '' }}>Đã nhận</option>
+                    <option value="5" {{ old('status') == 5 ? 'selected' : '' }}>Hoàn thành</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="discount_id" class="form-label">Mã giảm giá</label>
+                <select class="form-select" id="discount_id" name="discount_id">
+                    <option value="">-- Không áp dụng --</option>
+                    @foreach ($coupons as $coupon)
+                        <option value="{{ $coupon->id }}" {{ old('discount_id') == $coupon->id ? 'selected' : '' }}>
+                            {{ $coupon->code }} - {{ $coupon->discount }}%
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3">
                 <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
                 <select class="form-select" id="payment_method_id" name="payment_method_id" required>
                     <option value="">-- Chọn phương thức --</option>
@@ -99,6 +125,29 @@
                 <input type="hidden" id="total_price" name="total_price" value="0">
             </div>
             {{-- Nút --}}
+            <hr class="my-4">
+<h5>Danh sách sản phẩm</h5>
+@foreach ($products as $index => $product)
+    <div class="row align-items-end mb-3 border-bottom pb-2">
+        <div class="col-md-4">
+            <label class="form-label">Sản phẩm</label>
+            <input type="text" class="form-control" value="{{ $product->name }}" disabled>
+            <input type="hidden" name="products[{{ $index }}][product_id]" value="{{ $product->id }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Số lượng</label>
+            <input type="number" name="products[{{ $index }}][quantity]" class="form-control" value="1" min="1">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Giá</label>
+            <input type="number" name="products[{{ $index }}][price]" class="form-control" value="{{ $product->price }}">
+        </div>
+        <div class="col-md-2 text-muted">
+            <small><i>Mặc định: {{ number_format($product->price, 0, ',', '.') }} đ</i></small>
+        </div>
+    </div>
+@endforeach
+
             <div class="row mt-4">
                 <div class="col-4 d-flex justify-content-start">
                     <a href="{{ route('orders.index') }}" class="btn btn-secondary btn-md px-4 fw-bold rounded-2 shadow-sm">
@@ -173,4 +222,5 @@
     // Tính tổng tiền khi load trang
     window.onload = calcTotal;
 </script>
+@endsection
 @endsection

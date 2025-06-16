@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\DashboardController;
-
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
@@ -73,14 +72,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
-    //product variants
-    Route::get('/product-variants', [ProductVariantController::class, 'index'])->name('product-variants.index');
-    Route::get('/product-variants/create', [ProductVariantController::class, 'create'])->name('product-variants.create');
-    Route::post('/product-variants', [ProductVariantController::class, 'store'])->name('product-variants.store');
-    Route::get('/product-variants/{productVariant}/edit', [ProductVariantController::class, 'edit'])->name('product-variants.edit');
-    Route::put('/product-variants/{productVariant}', [ProductVariantController::class, 'update'])->name('product-variants.update');
-    Route::delete('/product-variants/{productVariant}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
-
     //phương thức thanh toán
     Route::resource('payment-methods', PaymentMethodController::class);
     Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
@@ -134,10 +125,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
-Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
+Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
     //user
     Route::resource('users', UserController::class);
+    Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+
 });
 
 

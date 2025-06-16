@@ -21,7 +21,7 @@ class Contact extends Model
 
     public function user()
     {
-        return $this->belongsTo(Account::class, 'user_id')->withDefault([
+        return $this->belongsTo(User::class, 'user_id')->withDefault([
             'name' => 'Khách vãng lai',
             'email' => '',
         ]);
