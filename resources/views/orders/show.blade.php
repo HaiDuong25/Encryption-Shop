@@ -63,13 +63,11 @@
             <span><i class="fas fa-calendar-alt text-info"></i> {{ $order->created_at->format('d/m/Y H:i') }}</span>
             <span><i class="fas fa-box text-primary"></i> {{ $order->orderDetails->sum('quantity') }} sản phẩm</span>
         </div>
-        <div>
-           <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
-        style="color:#e11d48">{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></span>
-
-        </div>
+        <!-- <div>
+            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
+                    style="color:#e11d48">{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></span>
+        </div> -->
     </div>
-
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4 p-3">
