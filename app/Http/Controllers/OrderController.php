@@ -2,26 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use App\Models\User;
 use App\Models\Coupon;
-use App\Models\Payment;
-use App\Models\OrderDetail;
+use App\Models\Order;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    // Hiển thị danh sách đơn hàng
     public function index()
     {
-        $orders = Order::with(['orderDetails.variant.product', 'paymentMethod'])
-            ->latest()
+        $orders = Order::with(['orderDetails.product', 'paymentMethod'])
+            ->orderByDesc('created_at')
             ->paginate(10);
-
         return view('orders.index', compact('orders'));
     }
-
+    // Hiển thị form tạo đơn hàng
     public function create()
     {
         $users = \App\Models\User::all();
@@ -30,14 +27,13 @@ class OrderController extends Controller
         $products = \App\Models\Product::all(); // Lấy danh sách sản phẩm
 
         return view('orders.create', compact('users', 'coupons', 'paymentMethods', 'products'));
-
-        return view('orders.create', compact('users', 'coupons', 'paymentMethods'));
     }
 
+    // Lưu đơn hàng mới
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required|integer|exists:users,id',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:255',
@@ -84,67 +80,30 @@ class OrderController extends Controller
         }
 
         return redirect()->route('orders.index')->with('success', 'Tạo đơn hàng thành công!');
-            'total_price' => 'required|numeric|min:0',
-            'status' => 'required|integer|min:0|max:5',
-            'discount_id' => 'nullable|exists:coupons,id',
-            'payment_method_id' => 'required|exists:payment_methods,id',
-            'products' => 'required|array|min:1',
-            'products.*.id' => 'required|exists:products,id',
-            'products.*.quantity' => 'required|integer|min:1',
-            'products.*.price' => 'required|numeric|min:0',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $order = Order::create([
-                'user_id' => $validated['user_id'],
-                'name' => $validated['name'],
-                'phone' => $validated['phone'],
-                'address' => $validated['address'],
-                'total_price' => $validated['total_price'],
-                'status' => $validated['status'],
-                'coupon_id' => $validated['discount_id'] ?? null,
-                'payment_method_id' => $validated['payment_method_id'],
-            ]);
-
-            foreach ($validated['products'] as $item) {
-                OrderDetail::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                ]);
-            }
-
-            DB::commit();
-            return redirect()->route('orders.index')->with('success', 'Đơn hàng đã được tạo!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
-        }
     }
 
+    // Hiển thị chi tiết đơn hàng
     public function show(Order $order)
     {
+        // Nạp các quan hệ cần thiết
         $order->load([
-            'orderDetails.variant.product',
+            'orderDetails.product',
             'paymentMethod',
-            'coupon',
-            'payments'
+            'payments',
+            'coupon'
         ]);
-
         return view('orders.show', compact('order'));
     }
-
+    // Hiển thị form chỉnh sửa đơn hàng
     public function edit(Order $order)
     {
         $users = User::all();
         $coupons = Coupon::all();
         $paymentMethods = PaymentMethod::all();
-
         return view('orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
     }
 
+    // Cập nhật đơn hàng
     public function update(Request $request, Order $order)
 {
     $validated = $request->validate([
@@ -159,96 +118,41 @@ class OrderController extends Controller
     $order->update($validated);
     return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
 }
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'total_price' => 'required|numeric|min:0',
-            'status' => 'required|integer|min:0|max:5',
-            'discount_id' => 'nullable|exists:coupons,id',
-            'payment_method_id' => 'required|exists:payment_methods,id',
-        ]);
 
-        $order->update([
-            'user_id' => $validated['user_id'],
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'address' => $validated['address'],
-            'total_price' => $validated['total_price'],
-            'status' => $validated['status'],
-            'coupon_id' => $validated['discount_id'] ?? null,
-            'payment_method_id' => $validated['payment_method_id'],
-        ]);
-
-        return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
-    }
-
+    // Xóa đơn hàng
     public function destroy(Order $order)
     {
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Đã xóa đơn hàng!');
+        return redirect()->route('orders.index')->with('success', 'Xóa đơn hàng thành công!');
     }
-
     public function tracking($id)
-    {
-        $order = Order::with(['payments', 'orderDetails.variant.product'])->findOrFail($id);
+{
+    $order = Order::with(['payments', 'orderDetails.product'])->findOrFail($id);
 
-        $locations = [
-            'Chờ xác nhận',
-            'Đang xử lý',
-            'Đã giao cho đơn vị vận chuyển',
-            'Đang giao hàng',
-            'Đã nhận hàng',
-            'Đơn hàng hoàn thành',
-        ];
- $order->history = [
-        [
-            'date' => '2025-06-10 08:30:00',
-            'desc' => 'Đơn hàng đã được xác nhận',
-            'location' => 'Kho Hải Dương'
-        ],
-        [
-            'date' => '2025-06-11 14:15:00',
-            'desc' => 'Đang giao hàng bởi shipper',
-            'location' => 'TP. Hà Nội'
-        ]
+    // Có thể giả lập dữ liệu vị trí (hoặc tích hợp API vận chuyển sau)
+    $locations = [
+        'Chờ xác nhận',
+        'Đang xử lý',
+        'Đã giao cho đơn vị vận chuyển',
+        'Đang giao hàng',
+        'Đã nhận hàng',
+        'Đơn hàng hoàn thành'
     ];
-        return view('orders.tracking', compact('order', 'locations'));
-    }
- public function updateStatus(Request $request, Order $order)
-    {
-        try {
-            $request->validate([
-                'status' => 'required|integer|min:0|max:5'
-            ]);
 
-            $order->status = $request->status;
-            $order->save();
+    return view('orders.tracking', compact('order', 'locations'));
+}
+public function updateStatus(Request $request, Order $order)
+{
+    $request->validate([
+        'status' => 'required|integer|min:0|max:5'
+    ]);
 
-            if ($order->status == 1 && $order->payments()->count() == 0) {
-                Payment::create([
-                    'order_id' => $order->id,
-                    'amount' => $order->total_price,
-                    'note' => 'Thanh toán khi xác nhận',
-                ]);
-            }
+    $order->status = $request->status;
+    $order->save();
 
     return response()->json([
         'message' => 'Cập nhật trạng thái thành công!',
         'status' => $order->status,
     ]);
 }
-            return response()->json([
-                'message' => 'Cập nhật trạng thái thành công!',
-                'status' => $order->status,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
 }
