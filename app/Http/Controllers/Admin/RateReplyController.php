@@ -13,92 +13,36 @@ class RateReplyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function store(Request $request, Rate $rate)
-    {
-        $request->validate([
-            'reply_content' => 'required|string|min:3|max:500',
-        ], [
-            'reply_content.required' => 'Nội dung phản hồi không được để trống.',
-            'reply_content.min' => 'Nội dung phản hồi phải có ít nhất 3 ký tự.',
-            'reply_content.max' => 'Nội dung phản hồi không được vượt quá 500 ký tự.',
-             ]);
+public function store(Request $request, Rate $rate)
+{
+    $request->validate([
+        'reply_content' => 'required|string|min:3|max:500',
+    ], [
+        'reply_content.required' => 'Nội dung phản hồi không được để trống.',
+        'reply_content.min' => 'Phản hồi phải có ít nhất 3 ký tự.',
+        'reply_content.max' => 'Phản hồi không được quá 500 ký tự.',
+    ]);
 
-            //  if (Auth::guard('admin')->check()) {
-            //     $loggedInAdminId = Auth::guard('admin')->id();
+    /** @var \App\Models\User|null $user */
+    $user = Auth::user();
 
-            //     try {
-            //     RateReply::create([
-            //         'rate_id' => $rate->id,
-            //         'admin_id' => $loggedInAdminId,
-            //         'reply_content' => $request->input('reply_content'),
-            //         ]);
-            //         return redirect()->route('rates.show', $rate->id)
-            //         ->with('success', 'Phản hồi đã được gửi thành công!');
-            //          } catch (\Exception $e) {
-            //             return back()->withInput()->with('error', 'Có lỗi xảy ra khi lưu phản hồi. Vui lòng thử lại.');
-            //          }
-            //          } else {
-            //             return redirect()->route('login')
-            //             ->with('error', 'Vui lòng đăng nhập với tư cách quản trị viên để phản hồi.');
-            //          }
-            //         } PHẦN NÀY ĐỂ KHI LÀM ĐĂNG NHẬP XONG.
-
-            $loggedInAdminId = 1; //ID ADMIN ĐỂ TEST
-            if (!$loggedInAdminId) {
-                return back()->withInput()->with('error', 'Không thể xác định admin. Vui lòng thử lại.');
-            }
-            try {
-                RateReply::create([
-                    'rate_id' => $rate->id,
-                    'admin_id' => $loggedInAdminId,
-                    'reply_content' => $request->input('reply_content'),
-
-            ]);
-            return redirect()->route('rates.show', $rate->id)
-            ->with('success', 'Phản hồi đã được gửi thành công!');
-            } catch (\Exception $e) {
-                return back()->withInput()->with('error', 'Có lỗi xảy ra khi lưu phản hồi. Vui lòng thử lại.');
-        }
-
+    // Nếu chưa đăng nhập hoặc không phải admin thì chặn lại
+    if (!$user || !$user->isAdmin()) {
+        return redirect()->route('login')->with('error', 'Bạn không có quyền thực hiện hành động này.');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+    try {
+        RateReply::create([
+            'rate_id' => $rate->id,
+            'user_id' => $user->id, // gán ID admin
+            'reply_content' => $request->input('reply_content'),
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(RateReply $rateReply)
-    {
-        //
+        return redirect()->route('admin.rates.show', $rate->id)
+                         ->with('success', 'Phản hồi đã được gửi thành công!');
+    } catch (\Exception $e) {
+        return back()->withInput()->with('error', 'Đã xảy ra lỗi khi lưu phản hồi.');
     }
+}
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(RateReply $rateReply)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, RateReply $rateReply)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(RateReply $rateReply)
-    {
-        //
-    }
 }
