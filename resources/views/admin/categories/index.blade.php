@@ -3,63 +3,81 @@
 @section('title', 'Quản lý Danh mục')
 
 @section('content')
-<div class="col-12">
-    <h3 class="mt-3 mb-3">Danh sách Danh mục</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card card-table">
+                <div class="card-body">
+                    <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
+                        <h5>Danh sách danh mục</h5>
+                        <div class="right-options d-flex gap-2 align-items-center">
+                            <a class="btn btn-solid btn-sm" href="{{ route('categories.create') }}">Thêm danh mục</a>
+                        </div>
+                    </div>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Tất cả Danh mục</h5>
-            <a href="{{ route('categories.create') }}" class="btn btn-success btn-sm">+ Thêm mới</a>
-        </div>
+                    @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-3">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
 
-        <div class="card-body">
-            @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="table-responsive mt-3">
+                        <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tên danh mục</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Ảnh</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($categories as $category)
+                                <tr style="border-bottom: none !important;">
+                                    <td>{{ $category->name }}</td>
+                                    <td>
+                                        {{ $category->created_at ? $category->created_at->format('d/m/Y H:i') : '—' }}
+                                    </td>
+                                    <td>
+                                        @if ($category->image)
+                                        <img src="{{ asset('storage/' . $category->image) }}" class="img-fluid" width="60" alt="{{ $category->name }}">
+                                        @else
+                                        —
+                                        @endif
+                                    </td>
+                                    <td class="{{ $category->status ? 'status-close' : 'status-danger' }}">
+                                        <span>{{ $category->status ? 'Hiển thị' : 'Ẩn' }}</span>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
+                                            <li>
+                                                <a href="{{ route('categories.edit', $category) }}">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <form action="{{ route('categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-link p-0 text-danger">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">Không có danh mục.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            @endif
-
-            <table class="table table-bordered table-hover table-striped text-center">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên</th>
-                        <th>Ảnh</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($categories as $category)
-                    <tr>
-                        <td>{{ $category->id }}</td>
-                        <td>{{ $category->name }}</td>
-                        <td>
-                            @if ($category->image)
-                                <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" width="100">
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ $category->status ? 'success' : 'secondary' }}">
-                                {{ $category->status ? 'Hiển thị' : 'Ẩn' }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                <form action="{{ route('categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="5">Không có danh mục.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
     </div>
 </div>

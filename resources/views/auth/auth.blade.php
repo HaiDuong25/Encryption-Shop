@@ -9,7 +9,16 @@
 </head>
 
 <body>
+
     <div class="container" id="container">
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            @foreach ($errors->all() as $error)
+            <div>{{ $error }}</div>
+            @endforeach
+        </div>
+        @endif
+
         {{-- Sign Up --}}
         <div class="form-container sign-up-container">
             <form method="POST" action="{{ route('register') }}">

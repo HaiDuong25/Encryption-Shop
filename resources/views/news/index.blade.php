@@ -1,100 +1,113 @@
 @extends('admin.layouts.main')
+
+@section('title', 'Quản lý Tin tức')
+
 @section('content')
-    <div class="container">
-        {{-- Tiêu đề lớn --}}
-        <h1 class="mb-3" style="font-size:2.2rem; font-weight: bold;">Danh sách tin tức</h1>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card card-table">
+                    <div class="card-body">
+                        <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
+                            <h5>Danh sách tin tức</h5>
+                            <div class="right-options d-flex gap-2 align-items-center">
+                                <a class="btn btn-solid" href="{{ route('news.create') }}">Thêm tin mới</a>
+                            </div>
+                        </div>
 
-        {{-- Hai nút bên dưới, nằm cạnh nhau bên trái --}}
-        <div class="mb-4 d-flex justify-content-end gap-2">
-            <a href="{{ route('news.create') }}" class="btn btn-theme" style="color: #fff;">
-                + Thêm tin mới
-            </a>
+                        <div class="table-responsive">
+                            <table class="table all-package theme-table table-product text-center align-middle"
+                                style="border-collapse: separate; border-spacing: 0 12px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ảnh</th>
+                                        <th>Tiêu đề</th>
+                                        <th>Nội dung</th>
+                                        <th>Tác giả</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày đăng</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($news as $item)
+                                        <tr style="border-bottom: none !important;">
+                                            <td>
+                                                <div class="table-image">
+                                                    @if($item->image)
+                                                        <img src="{{ asset('storage/' . $item->image) }}" class="img-fluid"
+                                                            width="60" alt="{{ $item->title }}">
+                                                    @else
+                                                        —
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>{{ $item->title }}</td>
+                                            <td>
+                                                <div class="small text-muted"
+                                                    style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                                    {{ \Illuminate\Support\Str::limit(strip_tags($item->content), 60) }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if($item->user)
+                                                    {{ $item->user->name }}
+                                                @else
+                                                    {{ $item->author }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <span class="{{ $item->is_published ? 'status-close' : 'status-danger' }}">
+                                                    {{ $item->is_published ? 'Đã đăng' : 'Nháp' }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $item->created_at->format('d/m/Y') }}</td>
+                                            <td>
+                                                <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
+                                                    <li>
+                                                        <a href="{{ route('news.show', $item->id) }}" class="text-info"
+                                                            title="Xem chi tiết">
+                                                            <i class="ri-eye-line"></i>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('news.edit', $item->id) }}" class="text-warning"
+                                                            title="Sửa">
+                                                            <i class="ri-pencil-line"></i>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <form action="{{ route('news.destroy', $item->id) }}" method="POST"
+                                                            onsubmit="return confirm('Xác nhận xoá?');">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit" class="btn btn-link p-0 text-danger">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">Chưa có tin tức nào.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+
+                            {{-- Nếu có phân trang --}}
+                            {{--
+                            @if ($news->hasPages())
+                            <div class="mt-3">
+                                {{ $news->links() }}
+                            </div>
+                            @endif
+                            --}}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        <div class="table-responsive shadow rounded-2">
-            <table class="table align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Ảnh</th>
-                        <th>Tiêu đề</th>
-                        <th>Nội dung</th>
-                        <th>Tác giả</th>
-                        <th>Trạng thái</th>
-                        <th>Ngày đăng</th>
-                        <th style="width: 160px;">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($news as $item)
-                        <tr>
-                            <td>
-                                @if($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}"
-                                        style="max-width: 64px; max-height:64px; border-radius:8px; box-shadow:0 2px 6px #0001;">
-                                @else
-                                    <span class="text-muted fst-italic">Không có ảnh</span>
-                                @endif
-                            </td>
-                            <td>
-                                <strong>{{ $item->title }}</strong>
-                            </td>
-                            <td>
-                                <div class="small text-muted"
-                                    style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($item->content), 60) }}
-                                </div>
-                            </td>
-                            <td>
-                                @if($item->user)
-                                    {{ $item->user->name }}
-                                @else
-                                    {{ $item->author }}
-                                @endif
-                            </td>
-                            <td>
-                                @if($item->is_published)
-                                    <span class="badge bg-success">Đã đăng</span>
-                                @else
-                                    <span class="badge bg-danger">Nháp</span>
-                                @endif
-                            </td>
-
-                            <td>{{ $item->created_at->format('d/m/Y') }}</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <a href="{{ route('news.edit', $item->id) }}" class="btn btn-success btn-sm px-3"
-                                        style="color: #fff; font-weight: 500; border-radius: 6px; box-shadow: 0 2px 6px #0001;">
-                                        <i class="bi bi-pencil"></i> Sửa
-                                    </a>
-                                    <a href="{{ route('news.show', $item->id) }}" class="btn btn-info btn-sm px-3"
-                                        style="color: #fff; font-weight: 500; border-radius: 6px; box-shadow: 0 2px 6px #0001;">
-                                        <i class="bi bi-eye"></i> Xem chi tiết
-                                    </a>
-                                    <form action="{{ route('news.destroy', $item->id) }}" method="POST" class="d-inline">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-danger btn-sm px-3"
-                                            style="background-color: #e67e22; border-color: #e67e22; color: #fff; font-weight: 500; border-radius: 6px; box-shadow: 0 2px 6px #0001;"
-                                            onclick="return confirm('Xóa tin này?')">
-                                            <i class="bi bi-trash"></i> Xóa
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">Chưa có tin tức nào.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        {{-- <div class="d-flex justify-content-end mt-3">
-            {{ $news->links() }}
-        </div> --}}
     </div>
 @endsection

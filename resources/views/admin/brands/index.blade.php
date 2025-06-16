@@ -3,63 +3,77 @@
 @section('title', 'Quản lý Thương hiệu')
 
 @section('content')
-<div class="col-12">
-    <h3 class="mt-3 mb-3">Danh sách Thương hiệu</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card card-table">
+                <div class="card-body">
+                    <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
+                        <h5>Danh sách thương hiệu</h5>
+                        <div class="right-options d-flex gap-2 align-items-center">
+                            <a class="btn btn-solid btn-sm" href="{{ route('brands.create') }}">Thêm mới</a>
+                        </div>
+                    </div>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0"><i class="fas fa-tags me-1"></i> Tất cả Thương hiệu</h5>
-            <a href="{{ route('brands.create') }}" class="btn btn-success btn-sm">+ Thêm mới</a>
-        </div>
+                    @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-3">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
 
-        <div class="card-body">
-            @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            @endif
+                    <div class="table-responsive mt-3">
+                        <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tên thương hiệu</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Ảnh</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($brands as $brand)
+                                <tr style="border-bottom: none !important;">
+                                    <td>{{ $brand->name }}</td>
+                                    <td>
+                                        {{ $brand->created_at ? $brand->created_at->format('d/m/Y H:i') : '—' }}
+                                    </td>
+                                    <td>
+                                        @if ($brand->image)
+                                        <img src="{{ asset('storage/' . $brand->image) }}" class="img-fluid" width="60" alt="{{ $brand->name }}">
+                                        @else
+                                        —
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
+                                            <li>
+                                                <a href="{{ route('brands.edit', $brand) }}">
+                                                    <i class="ri-pencil-line"></i>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <form action="{{ route('brands.destroy', $brand) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-link p-0 text-danger">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">Không có thương hiệu.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped text-center">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Ảnh</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($brands as $brand)
-                        <tr>
-                            <td>{{ $brand->id }}</td>
-                            <td>{{ $brand->name }}</td>
-                            <td>
-                                @if ($brand->image)
-                                <img src="{{ asset('storage/' . $brand->image) }}" alt="{{ $brand->name }}" width="100">
-                                @else
-                                —
-                                @endif
-                            </td>
-                            <td>
-                               <div class="d-flex gap-1 justify-content-center">
-                                    <a href="{{ route('brands.edit', $brand) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
-                                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="text-center">Không có thương hiệu.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                </div>
             </div>
         </div>
     </div>
