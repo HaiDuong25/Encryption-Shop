@@ -15,11 +15,20 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        $products = Product::with(['category', 'brand'])->paginate(10);
-        return view('admin.products.index', compact('products'));
+  public function index(Request $request)
+{
+    $query = Product::with('category');
+
+    if ($request->filled('keyword')) {
+        $keyword = $request->keyword;
+        $query->where('name', 'like', '%' . $keyword . '%');
     }
+
+    $products = $query->latest()->paginate(10);
+
+    return view('admin.products.index', compact('products'));
+}
+
 
     public function create()
     {
@@ -147,7 +156,7 @@ class ProductController extends Controller
                         'product_id' => $product->id,
                         'color_id'   => $variant['color_id'],
                         'size_id'    => $variant['size_id'],
-                        'price'      => $product->price, 
+                        'price'      => $product->price,
                     ]);
                 }
             }

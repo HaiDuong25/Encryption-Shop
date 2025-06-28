@@ -68,7 +68,6 @@
                     style="color:#e11d48">{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></span>
         </div> -->
     </div>
-
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4 p-3">
@@ -121,7 +120,7 @@
                         <li class="mb-2">
                             <i class="fas fa-calendar-alt text-primary"></i>
                             {{ $payment->created_at->format('d/m/Y H:i') }} -
-                            <span class="text-success fw-bold">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
+                            <span class="text-success fw-bold">{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</span>
                             <small class="text-muted">({{ $payment->note ?? '' }})</small>
                         </li>
                     @empty
