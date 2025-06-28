@@ -25,9 +25,11 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
 
-Route::get('/', function () {
-    return response('OK', 200);
-});
+//client
+use App\Http\Controllers\Client\HomeController;
+
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::view('/auth', 'auth.auth')->middleware('admin')->name('auth'); // Giao diện login/register
 Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
