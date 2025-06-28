@@ -15,7 +15,7 @@
                     <thead>
                         <tr>
                             <!-- <th>Hình ảnh sản phẩm</th> -->
-                            <th>Mã vận đơn</th>
+                            <th>ID</th>
                             <th>Ngày</th>
                             <th>Phương thức thanh toán</th>
                             <th>Trạng thái giao hàng</th>

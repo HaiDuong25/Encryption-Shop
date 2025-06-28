@@ -130,9 +130,9 @@
                 </ul>
             </div>
 
-            <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
+            <!-- <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
                 <i class="fas fa-truck"></i> Theo dõi đơn hàng
-            </a>
+            </a> -->
 
             <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -169,7 +169,7 @@
                 <p><strong>Mã giảm giá:</strong> {{ $order->coupon->code ?? 'Không áp dụng' }}</p>
                 <hr>
                 <p><strong>Tổng tiền:</strong><br><span style="color:#e11d48;font-weight:600">{{ number_format($order->total_price, 0, ',', '.') }} đ</span></p>
-                <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p>
+                <!-- <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p> -->
             </div>
         </div>
     </div>
