@@ -1,0 +1,235 @@
+@extends('client.layout.main')
+@section('content')
+<section class="section-b-space shop-section">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar category -->
+            <div class="col-lg-3">
+                <div class="left-box wow fadeInUp">
+                    <div class="shop-left-sidebar">
+                        <div class="back-button">
+                            <h3><i class="fa-solid fa-arrow-left"></i> Back</h3>
+                        </div>
+                        <div class="accordion custom-accordion" id="accordionExample">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseOne">
+                                        <span>Categories</span>
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show">
+                                    <div class="accordion-body">
+                                        <div class="form-floating theme-form-floating-2 search-box">
+                                            <input type="search" class="form-control" id="search-category"
+                                                placeholder="Search ..">
+                                            <label for="search-category">Search</label>
+                                        </div>
+
+                                        <form action="{{ route('client.products.index') }}" method="GET">
+                                            <ul class="category-list custom-padding custom-height" id="category-list">
+                                                @foreach($categories as $category)
+                                                <li>
+                                                    <div class="form-check ps-0 m-0 category-list-box">
+                                                        <input class="checkbox_animated" type="checkbox" name="categories[]" value="{{ $category->id }}"
+                                                            id="category-{{ $category->id }}"
+                                                            @if(in_array($category->id, $selectedCategories ?? [])) checked @endif>
+                                                        <label class="form-check-label" for="category-{{ $category->id }}">
+                                                            <span class="name">
+                                                                <a href="{{ route('client.products.category', $category->id) }}">
+                                                                    {{ $category->name }}
+                                                                </a>
+                                                            </span>
+                                                            <span class="number">({{ $category->products()->where('status',1)->count() }})</span>
+                                                        </label>
+                                                    </div>
+                                                </li>
+                                                @endforeach
+                                            </ul>
+                                            <button type="submit" class="btn theme-bg-color btn-md text-white fw-bold mt-3">Lọc</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Product list -->
+            <div class="col-lg-9">
+                <div class="row g-sm-4 g-3">
+                    @foreach($products as $product)
+                    <div class="col-lg-4 col-md-6 col-6">
+                        <div class="product-box-3 h-100 wow fadeInUp">
+                            <div class="product-header">
+                                <div class="product-image">
+                                    <a href="#">
+                                        <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
+                                    </a>
+
+                                    <ul class="product-option">
+                                        <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#view-{{ $product->id }}">
+                                                <i data-feather="eye"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="product-footer">
+                                <div class="product-detail">
+                                    <span class="span-name">{{ $product->category->name ?? 'Chưa phân loại' }}</span>
+                                    <a href="#">
+                                        <h5 class="name">{{ $product->name }}</h5>
+                                    </a>
+                                    <p class="text-content mt-1 mb-2 product-content">{{ $product->description }}</p>
+
+                                    <div class="product-rating mt-2">
+                                        <ul class="rating">
+                                            <li><i data-feather="star" class="fill"></i></li>
+                                            <li><i data-feather="star" class="fill"></i></li>
+                                            <li><i data-feather="star" class="fill"></i></li>
+                                            <li><i data-feather="star" class="fill"></i></li>
+                                            <li><i data-feather="star"></i></li>
+                                        </ul>
+                                        <span>(4.0)</span>
+                                    </div>
+
+                                    <h6 class="unit">{{ $product->material ?? 'Đang cập nhật' }}</h6>
+
+                                    <h5 class="price">
+                                        @if($product->sale_price)
+                                        <span class="theme-color">{{ number_format($product->sale_price) }} đ</span>
+                                        <del>{{ number_format($product->price) }} đ</del>
+                                        @else
+                                        <span class="theme-color">{{ number_format($product->price) }} đ</span>
+                                        @endif
+                                    </h5>
+
+                                    <div class="add-to-cart-box bg-white">
+                                        <button class="btn btn-add-cart addcart-button">Add
+
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick View Modal -->
+                        <div class="modal fade theme-modal view-modal" id="view-{{ $product->id }}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+                                <div class="modal-content">
+                                    <div class="modal-header p-0">
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row g-sm-4 g-2">
+                                            <div class="col-lg-6">
+                                                <div class="slider-image">
+                                                    <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-6">
+                                                <div class="right-sidebar-modal">
+                                                    <h4 class="title-name">{{ $product->name }}</h4>
+                                                    <h4 class="price">{{ number_format($product->sale_price ?? $product->price) }} đ</h4>
+
+                                                    <div class="product-rating">
+                                                        <ul class="rating">
+                                                            <li><i data-feather="star" class="fill"></i></li>
+                                                            <li><i data-feather="star" class="fill"></i></li>
+                                                            <li><i data-feather="star" class="fill"></i></li>
+                                                            <li><i data-feather="star" class="fill"></i></li>
+                                                            <li><i data-feather="star"></i></li>
+                                                        </ul>
+                                                        <span class="ms-2">8 Reviews</span>
+                                                        <span class="ms-2 text-danger">6 sold in last 16 hours</span>
+                                                    </div>
+
+                                                    <div class="product-detail">
+                                                        <h4>Product Details :</h4>
+                                                        <p>{{ $product->description }}</p>
+                                                    </div>
+
+                                                    <ul class="brand-list">
+                                                        <li>
+                                                            <div class="brand-box">
+                                                                <h5>Category:</h5>
+                                                                <h6>{{ $product->category->name ?? 'Chưa phân loại' }}</h6>
+                                                            </div>
+                                                        </li>
+
+                                                        <li>
+                                                            <div class="brand-box">
+                                                                <h5>Material:</h5>
+                                                                <h6>{{ $product->material ?? 'Đang cập nhật' }}</h6>
+                                                            </div>
+                                                        </li>
+
+                                                        <li>
+                                                            <div class="brand-box">
+                                                                <h5>Status:</h5>
+                                                                <h6>{{ $product->status ? 'Còn hàng' : 'Hết hàng' }}</h6>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+
+                                                    <div class="modal-button">
+                                                        <button onclick="location.href=''"
+                                                            class="btn btn-md add-cart-button icon">Add To Cart</button>
+                                                        <button onclick="location.href=''"
+                                                            class="btn theme-bg-color view-button icon text-white fw-bold btn-md">
+                                                            View More Details
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- End Modal -->
+
+                    </div>
+
+                    @endforeach
+                </div>
+
+                <div class="mt-4">
+                    {{ $products->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById('search-category');
+        const categoryList = document.getElementById('category-list');
+        const items = categoryList.getElementsByTagName('li');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const text = item.textContent || item.innerText;
+
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+        });
+    });
+</script>
+@endpush
