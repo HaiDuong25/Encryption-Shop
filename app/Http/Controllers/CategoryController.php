@@ -10,13 +10,14 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::whereNotNull('parent_id')->get();
         return view('admin.categories.index', compact('categories'));
     }
 
     public function create()
     {
-        return view('admin.categories.form');
+        $categories = Category::whereNull('parent_id')->get();
+        return view('admin.categories.form', compact('categories'));
     }
 
     public function store(Request $request)
@@ -25,6 +26,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|max:2048',
             'status' => 'required|boolean',
+            'parent_id' => 'nullable|exists:categories,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -38,7 +40,10 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        return view('admin.categories.form', compact('category'));
+        $categories = Category::where('id', '!=', $category->id)
+            ->whereNull('parent_id')
+            ->get();
+        return view('admin.categories.form', compact('category', 'categories'));
     }
 
     public function update(Request $request, Category $category)
@@ -47,6 +52,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|max:2048',
             'status' => 'required|boolean',
+            'parent_id' => 'nullable|exists:categories,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -62,14 +68,46 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')->with('success', 'Danh mục được sửa thành công.');
     }
 
-    public function destroy(Category $category)
+
+    public function createParent()
     {
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
+        return view('admin.categories.create-parent');
+    }
+
+    public function storeParent(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|image|max:2048',
+            'status' => 'required|boolean',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('categories', 'public');
         }
 
-        $category->delete();
+        $validated['parent_id'] = null;
 
-        return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
+        Category::create($validated);
+
+        return redirect()->route('categories.index')->with('success', 'Danh mục cha được tạo thành công.');
     }
+
+   public function destroy(Category $category)
+{
+    $hasChildren = Category::where('parent_id', $category->id)->exists();
+
+    if ($hasChildren) {
+        return redirect()->route('categories.index')->with('error', 'Không thể xóa danh mục cha vì đang chứa danh mục con.');
+    }
+
+    if ($category->image && Storage::disk('public')->exists($category->image)) {
+        Storage::disk('public')->delete($category->image);
+    }
+
+    $category->delete();
+
+    return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
+}
+
 }

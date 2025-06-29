@@ -65,7 +65,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::get('categories/create-parent', [CategoryController::class, 'createParent'])->name('categories.create-parent');
+    Route::post('categories/store-parent', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
     //brands
     Route::resource('brands', BrandController::class);
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
@@ -140,5 +143,6 @@ Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStat
 
 
 //Client
+
 Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
