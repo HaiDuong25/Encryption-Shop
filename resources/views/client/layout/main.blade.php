@@ -33,6 +33,7 @@
 
     <!-- Template css -->
     <link id="color-link" rel="stylesheet" type="text/css" href="{{ asset('assets-front/css/style.css') }}">
+     @stack('style')
 </head>
 @include('client.layout.partials.header')
 <body class="theme-color-3 dark">
@@ -472,6 +473,7 @@
 
     <!-- theme setting js -->
     <script src="{{ asset('assets-front/js/theme-setting.js') }}"></script>
+    @stack('scripts')
 </body>
 
 

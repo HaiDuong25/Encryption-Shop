@@ -25,9 +25,10 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
 
+
 //client
 use App\Http\Controllers\Client\HomeController;
-
+use App\Http\Controllers\Client\ProductController as ClientProductController ;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -139,3 +140,5 @@ Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStat
 
 
 //Client
+Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
+Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
