@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Size extends Model
+class Attribute extends Model
 {
     protected $fillable = ['name'];
-
-    public function productVariants()
+    public function values()
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(AttributeValue::class);
     }
 }

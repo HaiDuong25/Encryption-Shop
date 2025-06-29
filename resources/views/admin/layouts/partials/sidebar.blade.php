@@ -54,16 +54,11 @@
 
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="{{ route('products.index') }}">Products</a>
+                                <a href="{{ route('products.index') }}">Sản phẩm</a>
                             </li>
                             <li>
-                                <a href="{{ route('products.create') }}">Add New Product</a>
+                                <a href="{{ route('products.create') }}">Thêm sản phẩm</a>
                             </li>
-                            <!-- <li>
-                                <a href="{{ route('inventory.index') }}">
-                                    <span>Quản lí kho hàng</span>
-                                </a>
-                            </li> -->
                         </ul>
                     </li>
                     <li class="sidebar-list">

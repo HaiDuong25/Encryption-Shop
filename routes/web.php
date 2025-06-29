@@ -3,10 +3,10 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\AttributeValueController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
-use App\Http\Controllers\ProductVariantController;
 
 use App\Http\Controllers\Admin\RateController;
 use App\Http\Controllers\Admin\RateReplyController;
@@ -28,7 +28,7 @@ use App\Http\Controllers\Admin\UserController;
 
 //client
 use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\Client\ProductController as ClientProductController ;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -42,14 +42,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-    Route::get('/admin/inventory', [ProductController::class, 'inventory'])->name('inventory.index');
+    Route::resource('products', ProductController::class);
+    //variant
+    Route::post('/attributes/{attribute}/values', [AttributeValueController::class, 'storeAjax']);
     // orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
@@ -128,12 +123,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
-Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
     //user
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
-
 });
 
 
