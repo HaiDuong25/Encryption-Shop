@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\ProductVariant;
 class OrderDetail extends Model
 {
     protected $fillable = [
@@ -11,13 +11,27 @@ class OrderDetail extends Model
         'product_id',
         'quantity',
         'price',
-        // Thêm các trường khác nếu cần
+        'total_price',
+        'image', // thêm trường này nếu lưu ảnh vào order_details
     ];
+
+    // Nếu muốn lấy đường dẫn đầy đủ
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
+public function variant()
+{
+    return $this->belongsTo(ProductVariant::class, 'variant_id');
+}
+
+
+
     public function order()
     {
         return $this->belongsTo(Order::class);

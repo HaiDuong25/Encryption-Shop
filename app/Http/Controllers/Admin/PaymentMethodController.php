@@ -21,11 +21,11 @@ class PaymentMethodController extends Controller
 
     public function store(Request $request)
     {
+
         $request->validate([
             'payment_type' => 'required|max:255',
             'description' => 'nullable'
         ]);
-
         PaymentMethod::create($request->only('payment_type', 'description'));
         return redirect()->route('payment-methods.index')->with('success', 'Thêm phương thức thành công');
     }

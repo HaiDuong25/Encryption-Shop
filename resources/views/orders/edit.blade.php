@@ -16,39 +16,52 @@
                     <select class="form-select" id="user_id" name="user_id" required>
                         <option value="">-- Chọn khách hàng --</option>
                         @foreach ($users as $user)
-                            <option value="{{ $user->id }}" {{ old('user_id', $order->user_id) == $user->id ? 'selected' : '' }}>
+                            <option value="{{ $user->id }}" data-name="{{ $user->name }}" data-phone="{{ $user->phone }}" data-address="{{ $user->address }}" {{ old('user_id', $order->user_id) == $user->id ? 'selected' : '' }}>
                                 {{ $user->name }} (ID: {{ $user->id }})
                             </option>
                         @endforeach
                     </select>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Sản phẩm trong đơn hàng</label>
+                    <div id="products-wrapper">
+                        @foreach ($order->orderDetails as $detail)
+                            <div class="row mb-2 product-row">
+                                <div class="col-7">
+                                    <input type="text" class="form-control" value="{{ $detail->product->name ?? 'Sản phẩm đã xóa' }}" readonly>
+                                </div>
+                                <div class="col-3">
+                                    <input type="number" name="quantities[]" class="form-control" min="1" value="{{ $detail->quantity }}" required>
+                                </div>
+                                <div class="col-2 d-flex align-items-center">
+                                    <!-- Không cho xóa sản phẩm ở đây -->
+                                </div>
+                                <input type="hidden" name="product_ids[]" value="{{ $detail->product_id }}">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="mb-3">
                     <label for="name" class="form-label">Tên khách hàng</label>
-                    <input type="text" class="form-control" id="name" name="name" required
-                        value="{{ old('name', $order->name) }}">
+                    <input type="text" class="form-control" id="name" name="name" required value="{{ old('name', $order->name) }}">
                 </div>
                 <div class="mb-3">
                     <label for="phone" class="form-label">Số điện thoại</label>
-                    <input type="text" class="form-control" id="phone" name="phone" required
-                        value="{{ old('phone', $order->phone) }}">
+                    <input type="text" class="form-control" id="phone" name="phone" required value="{{ old('phone', $order->phone) }}">
                 </div>
                 <div class="mb-3">
                     <label for="address" class="form-label">Địa chỉ</label>
-                    <input type="text" class="form-control" id="address" name="address" required
-                        value="{{ old('address', $order->address) }}">
-                </div>
-                <div class="mb-3">
-                    <label for="total_price" class="form-label">Tổng tiền</label>
-                    <input type="number" class="form-control" id="total_price" name="total_price" required
-                        value="{{ old('total_price', $order->total_price) }}">
+                    <input type="text" class="form-control" id="address" name="address" required value="{{ old('address', $order->address) }}">
                 </div>
                 <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
                     <select class="form-select" id="status" name="status" required>
-                        <option value="0" {{ old('status', $order->status) == 0 ? 'selected' : '' }}>Chờ xử lý</option>
-                        <option value="1" {{ old('status', $order->status) == 1 ? 'selected' : '' }}>Đang giao</option>
-                        <option value="2" {{ old('status', $order->status) == 2 ? 'selected' : '' }}>Hoàn thành</option>
-                        <option value="3" {{ old('status', $order->status) == 3 ? 'selected' : '' }}>Đã hủy</option>
+                        <option value="0" {{ old('status', $order->status) == 0 ? 'selected' : '' }}>Đã đặt</option>
+                        <option value="1" {{ old('status', $order->status) == 1 ? 'selected' : '' }}>Xác nhận</option>
+                        <option value="2" {{ old('status', $order->status) == 2 ? 'selected' : '' }}>Giao cho ĐVVC</option>
+                        <option value="3" {{ old('status', $order->status) == 3 ? 'selected' : '' }}>Đang giao</option>
+                        <option value="4" {{ old('status', $order->status) == 4 ? 'selected' : '' }}>Đã nhận</option>
+                        <option value="5" {{ old('status', $order->status) == 5 ? 'selected' : '' }}>Hoàn thành</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -78,4 +91,12 @@
             </form>
         </div>
     </div>
+    <script>
+        document.getElementById('user_id').addEventListener('change', function() {
+            var selected = this.options[this.selectedIndex];
+            document.getElementById('name').value = selected.getAttribute('data-name') || '';
+            document.getElementById('phone').value = selected.getAttribute('data-phone') || '';
+            document.getElementById('address').value = selected.getAttribute('data-address') || '';
+        });
+    </script>
 @endsection

@@ -15,11 +15,20 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        $products = Product::with(['category', 'brand'])->paginate(10);
-        return view('admin.products.index', compact('products'));
+  public function index(Request $request)
+{
+    $query = Product::with('category');
+
+    if ($request->filled('keyword')) {
+        $keyword = $request->keyword;
+        $query->where('name', 'like', '%' . $keyword . '%');
     }
+
+    $products = $query->latest()->paginate(10);
+
+    return view('admin.products.index', compact('products'));
+}
+
 
     public function create()
     {
@@ -66,7 +75,11 @@ class ProductController extends Controller
         }
 
         foreach ($request->input('variants', []) as $variant) {
-            $product->variants()->create($variant);
+            $product->variants()->create([
+                'color_id'  => $variant['color_id'],
+                'size_id'   => $variant['size_id'],
+                'price'     => $product->price,
+            ]);
         }
 
         return redirect()->route('products.index')->with('success', 'Thêm sản phẩm thành công!');
@@ -141,8 +154,9 @@ class ProductController extends Controller
                 foreach ($request->input('variants') as $variant) {
                     ProductVariant::create([
                         'product_id' => $product->id,
-                        'color_id' => $variant['color_id'],
-                        'size_id' => $variant['size_id'],
+                        'color_id'   => $variant['color_id'],
+                        'size_id'    => $variant['size_id'],
+                        'price'      => $product->price,
                     ]);
                 }
             }

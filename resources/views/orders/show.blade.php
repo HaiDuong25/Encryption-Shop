@@ -3,158 +3,173 @@
 @section('title', 'Chi tiết đơn hàng #' . $order->id)
 
 @section('content')
-<style>
-    .order-info-card {
-        background: #f8fafc;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        padding: 24px 32px;
-        margin-bottom: 32px;
-    }
-    .order-section-title {
-        font-size: 1.15rem;
-        font-weight: 600;
-        color: #2563eb;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .order-info-list {
-        list-style: none;
-        padding: 0;
-        margin-bottom: 18px;
-    }
-    .order-info-list li {
-        margin-bottom: 7px;
-        font-size: 1rem;
-    }
-    .order-table th, .order-table td {
-        vertical-align: middle !important;
-    }
-    .order-table th {
-        background: #e0e7ef;
-        color: #1e293b;
-    }
-    .order-status-badge {
-        padding: 2px 10px;
-        border-radius: 8px;
-        font-size: 0.95em;
-        font-weight: 500;
-        color: #fff;
-        display: inline-block;
-    }
-    .status-0 { background: #f59e42; }
-    .status-1 { background: #3b82f6; }
-    .status-2 { background: #22c55e; }
-    .status-3 { background: #ef4444; }
-    .order-history-list {
-        list-style: none;
-        padding: 0;
-    }
-    .order-history-list li {
-        margin-bottom: 6px;
-        font-size: 0.98rem;
-    }
-    .order-back-btn {
-        margin-top: 18px;
-    }
-</style>
-<div class="order-info-card">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="order-section-title">
-                <i class="fas fa-user"></i> Thông tin khách hàng
-            </div>
-            <ul class="order-info-list">
-                <li><strong>Tên:</strong> {{ $order->name }}</li>
-                <li><strong>SĐT:</strong> {{ $order->phone }}</li>
-                <li><strong>Địa chỉ:</strong> {{ $order->address }}</li>
-            </ul>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+    <style>
+        .order-header-bar {
+            background: #fff;
+            padding: 20px 28px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .order-header-bar span {
+            margin-right: 16px;
+            color: #334155;
+        }
+
+        .table th {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .badge-status {
+            padding: 4px 12px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .status-0 { background-color: #f59e0b; }
+        .status-1 { background-color: #3b82f6; }
+        .status-2 { background-color: #10b981; }
+        .status-3 { background-color: #ef4444; }
+
+        .summary-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .summary-card p { margin-bottom: 10px; }
+        .summary-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+    </style>
+
+    <div class="order-header-bar">
+        <div>
+            <span><i class="fas fa-calendar-alt text-info"></i> {{ $order->created_at->format('d/m/Y H:i') }}</span>
+            <span><i class="fas fa-box text-primary"></i> {{ $order->orderDetails->sum('quantity') }} sản phẩm</span>
         </div>
-        <div class="col-md-6">
-            <div class="order-section-title">
-                <i class="fas fa-info-circle"></i> Thông tin đơn hàng
+        <!-- <div>
+            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
+                    style="color:#e11d48">{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></span>
+        </div> -->
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 p-3">
+                <h5 class="mb-3"><i class="fas fa-shopping-bag me-2 text-success"></i> Sản phẩm trong đơn hàng</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>Ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Số lượng</th>
+                                <th>Giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($order->orderDetails as $detail)
+                                <tr>
+                                    <td>
+                                        @if ($detail->variant && $detail->variant->product && $detail->variant->product->image)
+                                            <img src="{{ asset('storage/' . $detail->variant->product->image) }}" width="60" style="border-radius:8px;">
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($detail->variant && $detail->variant->product)
+                                            {{ $detail->variant->product->name }}
+                                        @else
+                                            <span class="text-danger">Sản phẩm đã xóa</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $detail->quantity }}</td>
+                                    <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
+                                    <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <ul class="order-info-list">
-                <li><strong>Ngày tạo:</strong>
-                    {{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : 'Không xác định' }}
-                </li>
-                <li>
-                    <strong>Trạng thái:</strong>
+
+            <div class="card mb-4 p-3">
+                <h5 class="mb-3"><i class="fas fa-receipt me-2 text-primary"></i> Lịch sử thanh toán</h5>
+                <ul class="list-unstyled">
                     @php
-                        $statusArr = ['Chờ xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy'];
-                        $statusClass = 'status-' . ($order->status ?? 0);
+                        $validPayments = $order->payments->whereNotNull('created_at')->where('amount', '>', 0);
                     @endphp
-                    <span class="order-status-badge {{ $statusClass }}">
+                    @forelse ($validPayments as $payment)
+                        <li class="mb-2">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                            {{ $payment->created_at->format('d/m/Y H:i') }} -
+                            <span class="text-success fw-bold">{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</span>
+                            <small class="text-muted">({{ $payment->note ?? '' }})</small>
+                        </li>
+                    @empty
+                        <li><span class="text-danger">Chưa có thanh toán</span></li>
+                    @endforelse
+                </ul>
+            </div>
+
+            <!-- <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
+                <i class="fas fa-truck"></i> Theo dõi đơn hàng
+            </a> -->
+
+            <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <div class="summary-title">Tóm tắt đơn hàng</div>
+                <p><strong>Mã đơn:</strong> {{ $order->id }}</p>
+                <p><strong>Ngày tạo:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
+                <p><strong>Trạng thái:</strong>
+                    @php
+                        $statusArr = [
+                            0 => 'Chờ xử lí',
+                            1 => 'Xác nhận',
+                            2 => 'Giao cho ĐVVC',
+                            3 => 'Đang giao',
+                            4 => 'Đã nhận',
+                            5 => 'Hoàn thành',
+                        ];
+                        $statusClass = 'badge-status status-' . ($order->status ?? 0);
+                    @endphp
+                    <span class="{{ $statusClass }}">
                         <i class="fas fa-circle"></i> {{ $statusArr[$order->status] ?? 'Không xác định' }}
                     </span>
-                </li>
-                <li><strong>Phương thức thanh toán:</strong> {{ $order->paymentMethod->payment_type ?? 'N/A' }}</li>
-                <li><strong>Mã giảm giá:</strong> {{ $order->coupon->code ?? 'Không áp dụng' }}</li>
-                <li><strong>Tổng tiền:</strong> <span style="color:#e11d48;font-weight:600">{{ number_format($order->total_price, 0, ',', '.') }} đ</span></li>
-            </ul>
+                </p>
+                <hr>
+                <p><strong>Khách hàng:</strong><br>{{ $order->name }}</p>
+                <p><strong>SĐT:</strong> {{ $order->phone }}</p>
+                <p><strong>Địa chỉ:</strong><br>{{ $order->address }}</p>
+                <hr>
+                <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
+                <p><strong>Mã giảm giá:</strong> {{ $order->coupon->code ?? 'Không áp dụng' }}</p>
+                <hr>
+                <p><strong>Tổng tiền:</strong><br><span style="color:#e11d48;font-weight:600">{{ number_format($order->total_price, 0, ',', '.') }} đ</span></p>
+                <!-- <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p> -->
+            </div>
         </div>
     </div>
-    <div class="order-section-title" style="margin-top:28px;">
-        <i class="fas fa-box"></i> Sản phẩm trong đơn hàng
-    </div>
-    <div class="table-responsive">
-        <table class="table table-bordered order-table">
-            <thead>
-                <tr>
-                    <th>Ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Số lượng</th>
-                    <th>Giá</th>
-                    <th>Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($order->orderDetails as $detail)
-                    <tr>
-                        <td>
-                            @if ($detail->product && $detail->product->image)
-                                <img src="{{ asset('storage/' . $detail->product->image) }}" width="60" style="border-radius:8px;">
-                            @else
-                                <span class="text-muted">N/A</span>
-                            @endif
-                        </td>
-                        <td>{{ $detail->product->name ?? 'Sản phẩm đã xóa' }}</td>
-                        <td>{{ $detail->quantity }}</td>
-                        <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
-                        <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <div class="order-section-title" style="margin-top:28px;">
-        <i class="fas fa-money-check-alt"></i> Lịch sử thanh toán
-    </div>
-    <ul class="order-history-list">
-        @php
-            $validPayments = $order->payments->whereNotNull('created_at')->where('amount', '>', 0);
-        @endphp
-        @forelse ($validPayments as $payment)
-            <li>
-                <i class="fas fa-calendar-alt text-primary"></i>
-                {{ $payment->created_at->format('d/m/Y H:i') }} -
-                <span style="color:#22c55e;font-weight:500">{{ number_format($payment->amount, 0, ',', '.') }} đ</span>
-                <span class="text-muted">({{ $payment->note ?? '' }})</span>
-            </li>
-        @empty
-            <li><span class="text-danger">Chưa có thanh toán</span></li>
-        @endforelse
-    </ul>
-    <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mt-2">
-    Theo dõi đơn hàng
-</a>
-
-    <a href="{{ route('orders.index') }}" class="btn btn-secondary order-back-btn">
-        <i class="fas fa-arrow-left"></i> Quay lại
-    </a>
-</div>
-<!-- FontAwesome CDN for icons (if not already included in layout) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 @endsection
