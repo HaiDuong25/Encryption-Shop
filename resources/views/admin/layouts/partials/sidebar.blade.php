@@ -59,11 +59,6 @@
                             <li>
                                 <a href="{{ route('products.create') }}">Thêm sản phẩm mới</a>
                             </li>
-                            <!-- <li>
-                                <a href="{{ route('inventory.index') }}">
-                                    <span>Quản lí kho hàng</span>
-                                </a>
-                            </li> -->
                         </ul>
                     </li>
                     <li class="sidebar-list">
