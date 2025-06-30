@@ -12,8 +12,8 @@
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">BST Mùa Hè 2025</h2>
                             <p class="lead mb-3">Khám phá phong cách mới, trẻ trung &amp; năng động</p>
-                            <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a>
+                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
+                                ngay</a> --}}
                         </div>
                     </div>
                     <div class="carousel-item">
@@ -22,8 +22,8 @@
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">Ưu đãi Đặc Biệt</h2>
                             <p class="lead mb-3">Giảm giá lên đến 50% cho các sản phẩm hot trend</p>
-                            <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a>
+                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
+                                ngay</a> --}}
                         </div>
                     </div>
                     <div class="carousel-item">
@@ -32,8 +32,8 @@
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">BST Đầm Dạ Hội</h2>
                             <p class="lead mb-3">Sang trọng, quyến rũ cho mọi sự kiện</p>
-                            <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a>
+                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
+                                ngay</a> --}}
                         </div>
                     </div>
                     <div class="carousel-item">
@@ -42,9 +42,9 @@
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">Áo Sơ Mi Nam Cao Cấp</h2>
                             <p class="lead mb-3">Lịch lãm, trẻ trung cho phái mạnh</p>
-                            <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
+                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
                                 ngay</a>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#mainBannerCarousel"
@@ -64,8 +64,8 @@
             aspect-ratio: 16/5;
             object-fit: cover;
             border-radius: 24px;
-            min-height: 340px;
-            max-height: 520px;
+            min-height: 700px;
+            max-height: 1300px;
         }
 
         .carousel-caption {
