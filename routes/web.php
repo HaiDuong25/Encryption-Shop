@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\DashboardController;
@@ -31,16 +32,33 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::view('/auth', 'auth.auth')->middleware('admin')->name('auth'); // Giao diện login/register
+
+Route::view('/auth', 'auth.auth')->name('auth'); // Giao diện login/register
 Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
 
 Route::post('/register', [AuthController::class, 'register'])->name('register'); // Đăng ký
 Route::post('/login', [AuthController::class, 'login'])->name('login');     // xử lý submit form
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout'); // Đăng xuất
 
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+// client
+Route::get('/', [HomeController::class, 'index'])->name('home');
+//sản phẩm
+Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
+Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
+Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+
+
+// Route chỉ user (và admin được truy cập luôn)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::get('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+});
+
+
+Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
     route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
     Route::resource('products', ProductController::class);
@@ -136,16 +154,3 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
 
 
-
-//Client
-
-Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
-Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
-Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::get('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
-    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-});

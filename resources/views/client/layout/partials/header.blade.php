@@ -32,7 +32,7 @@
                         <div class="middle-box md-2">
                             <div class="searchbar-box-2 input-group d-xl-flex d-none">
                                 <button class="btn search-icon" type="button">
-                                    <i class="iconly-Search icli"></i>
+                                    <i class="fa-solid fa-magnifying-glass"></i>
                                 </button>
                                 <input type="text" class="form-control"
                                     placeholder="Tìm kiếm sản phẩm thời trang, thương hiệu...">
@@ -242,13 +242,14 @@
 
                         <a href="user-dashboard.html" class="user-box">
                             <span class="header-icon">
-                                <i class="fa-regular fa-user"></i>
+                                <i class="fa-solid fa-user"></i>
                             </span>
                             <div class="user-name">
                                 <h6 class="text-content">Tài khoản của bạn</h6>
-                                <h4 class="mt-1">Xin chào, Khách hàng</h4>
+                                <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
                             </div>
                         </a>
+                        
                     </div>
                 </div>
             </div>

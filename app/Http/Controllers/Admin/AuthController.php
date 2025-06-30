@@ -26,6 +26,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user',
+            'status' => 'active',
         ]);
 
         return redirect('/auth')->with('success', 'Đăng ký thành công. Hãy đăng nhập!');
@@ -37,21 +39,30 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            // Kiểm tra trạng thái tài khoản
+
+            // Kiểm tra trạng thái
             if ($user->status !== 'active') {
                 Auth::logout();
                 return back()->withErrors([
-                    'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ vói chúng tôi để được hỗ trợ!',
+                    'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với chúng tôi để được hỗ trợ!',
                 ]);
             }
+
             $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard'); // hoặc route bạn muốn
+
+            // Phân quyền chuyển hướng
+            if ($user->role === 'admin') {
+                return redirect()->intended('/admin/dashboard');
+            } else {
+                return redirect()->intended('/'); // client
+            }
         }
 
         return back()->withErrors([
             'email' => 'Email hoặc mật khẩu không đúng.',
         ]);
     }
+
 
     public function logout(Request $request)
     {
