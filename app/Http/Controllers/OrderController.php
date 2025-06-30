@@ -99,32 +99,35 @@ class OrderController extends Controller
         return view('orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
     }
 
-    public function update(Request $request, Order $order)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'total_price' => 'required|numeric|min:0',
-            'status' => 'required|integer|min:0|max:5',
-            'discount_id' => 'nullable|exists:coupons,id',
-            'payment_method_id' => 'required|exists:payment_methods,id',
-        ]);
+ public function update(Request $request, Order $order)
+{
+    $validated = $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20',
+        'address' => 'required|string|max:255',
+        'status' => 'required|integer|min:0|max:5',
+        'discount_id' => 'nullable|exists:coupons,id',
+        'payment_method_id' => 'required|exists:payment_methods,id',
+    ]);
 
-        $order->update([
-            'user_id' => $validated['user_id'],
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'address' => $validated['address'],
-            'total_price' => $validated['total_price'],
-            'status' => $validated['status'],
-            'coupon_id' => $validated['discount_id'] ?? null,
-            'payment_method_id' => $validated['payment_method_id'],
-        ]);
-
-        return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
+    // 🛑 Không cho phép cập nhật status lùi lại
+    if ($validated['status'] < $order->status) {
+        return back()->withErrors(['status' => 'Không thể cập nhật trạng thái lùi về trạng thái trước đó.']);
     }
+
+    $order->update([
+        'user_id' => $validated['user_id'],
+        'name' => $validated['name'],
+        'phone' => $validated['phone'],
+        'address' => $validated['address'],
+        'status' => $validated['status'],
+        'coupon_id' => $validated['discount_id'] ?? null,
+        'payment_method_id' => $validated['payment_method_id'],
+    ]);
+
+    return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
+}
 
     public function destroy(Order $order)
     {

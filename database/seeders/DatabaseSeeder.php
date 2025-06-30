@@ -19,7 +19,19 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-        $this->call([
+     $this->call([
+      UsersTableSeeder::class,
+    BannersTableSeeder::class,
+    ContactsTableSeeder::class,
+    CouponsTableSeeder::class,
+    CartsTableSeeder::class,
+     OrdersTableSeeder::class,
+     OrderDetailsTableSeeder::class,
+    PaymentMethodsTableSeeder::class,
+    PaymentsTableSeeder::class,         
+
+    RatesTableSeeder::class,
+    RateRepliesTableSeeder::class,
             CategorySeeder::class,
             BrandSeeder::class,
             AttributeSeeder::class,

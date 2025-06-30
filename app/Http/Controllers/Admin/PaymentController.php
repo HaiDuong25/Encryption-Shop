@@ -18,15 +18,18 @@ class PaymentController extends Controller
     public function confirm($id)
     {
         $payment = Payment::findOrFail($id);
-        if ($payment->status !== 'pending') {
-            return redirect()->back()->with('error', 'Thanh toán đã được xác nhận hoặc không thể xác nhận');
-        }
-
         $payment->status = 'confirmed';
         $payment->confirmed_at = now();
         $payment->save();
 
-        return redirect()->route('admin.payments.invoice', $payment->id);
+        // Cập nhật trạng thái đơn hàng
+        $order = $payment->order;
+        if ($order) {
+            $order->status = 1; // 1 = Xác nhận
+            $order->save();
+        }
+
+        return redirect()->back()->with('success', 'Đã xác nhận thanh toán và cập nhật trạng thái đơn hàng!');
     }
 
     public function invoice($id)

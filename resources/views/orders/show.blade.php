@@ -37,10 +37,21 @@
             font-size: 0.9rem;
         }
 
-        .status-0 { background-color: #f59e0b; }
-        .status-1 { background-color: #3b82f6; }
-        .status-2 { background-color: #10b981; }
-        .status-3 { background-color: #ef4444; }
+        .status-0 {
+            background-color: #f59e0b;
+        }
+
+        .status-1 {
+            background-color: #3b82f6;
+        }
+
+        .status-2 {
+            background-color: #10b981;
+        }
+
+        .status-3 {
+            background-color: #ef4444;
+        }
 
         .summary-card {
             background: #f8fafc;
@@ -49,7 +60,10 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
         }
 
-        .summary-card p { margin-bottom: 10px; }
+        .summary-card p {
+            margin-bottom: 10px;
+        }
+
         .summary-title {
             font-weight: 600;
             color: #1e293b;
@@ -63,10 +77,12 @@
             <span><i class="fas fa-calendar-alt text-info"></i> {{ $order->created_at->format('d/m/Y H:i') }}</span>
             <span><i class="fas fa-box text-primary"></i> {{ $order->orderDetails->sum('quantity') }} sản phẩm</span>
         </div>
-        <!-- <div>
+        <div>
             <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
-                    style="color:#e11d48">{{ number_format($order->total_price, 0, ',', '.') }} đ</strong></span>
-        </div> -->
+                    style="color:#e11d48">{{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }}
+                    đ
+                </strong></span>
+        </div>
     </div>
     <div class="row">
         <div class="col-md-8">
@@ -88,7 +104,8 @@
                                 <tr>
                                     <td>
                                         @if ($detail->variant && $detail->variant->product && $detail->variant->product->image)
-                                            <img src="{{ asset('storage/' . $detail->variant->product->image) }}" width="60" style="border-radius:8px;">
+                                            <img src="{{ asset('storage/' . $detail->variant->product->image) }}"
+                                                width="60" style="border-radius:8px;">
                                         @else
                                             <span class="text-muted">N/A</span>
                                         @endif
@@ -113,14 +130,21 @@
             <div class="card mb-4 p-3">
                 <h5 class="mb-3"><i class="fas fa-receipt me-2 text-primary"></i> Lịch sử thanh toán</h5>
                 <ul class="list-unstyled">
+                    <li>
+                        <i class="fas fa-money-bill-wave text-success"></i>
+                        Tổng tiền thanh toán:
+                        <span class="text-success fw-bold">
+                            {{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }}
+                            đ
+                        </span>
+                    </li>
                     @php
-                        $validPayments = $order->payments->whereNotNull('created_at')->where('amount', '>', 0);
+                        $validPayments = $order->payments->whereNotNull('created_at');
                     @endphp
                     @forelse ($validPayments as $payment)
                         <li class="mb-2">
                             <i class="fas fa-calendar-alt text-primary"></i>
-                            {{ $payment->created_at->format('d/m/Y H:i') }} -
-                            <span class="text-success fw-bold">{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</span>
+                            {{ $payment->created_at->format('d/m/Y H:i') }}
                             <small class="text-muted">({{ $payment->note ?? '' }})</small>
                         </li>
                     @empty
@@ -130,8 +154,8 @@
             </div>
 
             <!-- <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
-                <i class="fas fa-truck"></i> Theo dõi đơn hàng
-            </a> -->
+                        <i class="fas fa-truck"></i> Theo dõi đơn hàng
+                    </a> -->
 
             <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -142,7 +166,7 @@
             <div class="summary-card">
                 <div class="summary-title">Tóm tắt đơn hàng</div>
                 <p><strong>Mã đơn:</strong> {{ $order->id }}</p>
-                <p><strong>Ngày tạo:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
+                <p><strong>Ngày dặt:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
                 <p><strong>Trạng thái:</strong>
                     @php
                         $statusArr = [
@@ -160,15 +184,27 @@
                     </span>
                 </p>
                 <hr>
+                <div class="summary-title">Thông tin khách hàng</div>
                 <p><strong>Khách hàng:</strong><br>{{ $order->name }}</p>
                 <p><strong>SĐT:</strong> {{ $order->phone }}</p>
+                <p><strong>Email:</strong> {{ $order->user->email ?? 'N/A' }}</p>
                 <p><strong>Địa chỉ:</strong><br>{{ $order->address }}</p>
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
                 <p><strong>Mã giảm giá:</strong> {{ $order->coupon->code ?? 'Không áp dụng' }}</p>
-                <hr>
-                <p><strong>Tổng tiền:</strong><br><span style="color:#e11d48;font-weight:600">{{ number_format($order->total_price, 0, ',', '.') }} đ</span></p>
+
                 <!-- <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p> -->
+            </div>
+
+            <div class="summary-card mt-3">
+                <div class="summary-title">Chi tiết giao hàng</div>
+                <p><strong>Người nhận:</strong> {{ $order->shipping_name ?? $order->name }}</p>
+                <p><strong>Địa chỉ:</strong><br>
+                    {{ $order->shipping_address ?? $order->address }}
+                </p>
+                <p><strong>Số điện thoại:</strong> {{ $order->shipping_phone ?? $order->phone }}</p>
+                <p><strong>Email:</strong> {{ $order->user->email ?? 'N/A' }}</p>
+                <p><strong>Phương thức vận chuyển:</strong> {{ $order->shipping_method ?? 'Miễn phí vận chuyển' }}</p>
             </div>
         </div>
     </div>

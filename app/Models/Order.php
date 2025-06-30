@@ -23,6 +23,10 @@ class Order extends Model
     {
         return $this->belongsTo(Coupon::class, 'discount_id');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
     protected $fillable = [
         'user_id',
         'name',
