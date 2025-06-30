@@ -173,63 +173,64 @@
                             </li>
 
                             <li class="onhover-dropdown">
-                                <a href="javascript:void(0)" class="header-icon swap-icon">
-                                    <i class="fa-regular fa-heart"></i>
-                                </a>
+    <a href="{{ route('cart.index') }}" class="header-icon swap-icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+        @php
+            $cart = session('cart', []);
+            $totalQuantity = array_sum(array_column($cart, 'quantity'));
+        @endphp
+        @if($totalQuantity > 0)
+            <span class="badge bg-danger">{{ $totalQuantity }}</span>
+        @endif
+    </a>
 
-                                <div class="onhover-div">
-                                    <ul class="cart-list">
-                                        <li>
-                                            <div class="drop-cart">
-                                                <a href="product-left-thumbnail.html" class="drop-image">
-                                                    <img src="{{ asset('assets-front/images/vegetable/product/1.png') }}"
-                                                        class="blur-up lazyload" alt="">
-                                                </a>
+    <div class="onhover-div">
+        <ul class="cart-list">
+            @forelse($cart as $id => $item)
+            <li>
+                <div class="drop-cart">
+                    <a href="#" class="drop-image">
+                        <img src="{{ asset('storage/' . $item['image']) }}" class="blur-up lazyload" alt="{{ $item['name'] }}">
+                    </a>
 
-                                                <div class="drop-contain">
-                                                    <a href="product-left-thumbnail.html">
-                                                        <h5>Fantasy Crunchy Choco Chip Cookies</h5>
-                                                    </a>
-                                                    <h6><span>1 x</span> $80.58</h6>
-                                                    <button class="close-button">
-                                                        <i class="fa-solid fa-xmark"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </li>
+                    <div class="drop-contain">
+                        <a href="#">
+                            <h5>{{ $item['name'] }}</h5>
+                        </a>
+                        <h6><span>{{ $item['quantity'] }} x</span> {{ number_format($item['price']) }} đ</h6>
+                        <form action="{{ route('cart.delete', $id) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button class="close-button" type="submit">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            @empty
+            <li><p class="text-center">Giỏ hàng trống.</p></li>
+            @endforelse
+        </ul>
 
-                                        <li>
-                                            <div class="drop-cart">
-                                                <a href="product-left-thumbnail.html" class="drop-image">
-                                                    <img src="{{ asset('assets-front/images/vegetable/product/2.png') }}"
-                                                        class="blur-up lazyload" alt="">
-                                                </a>
+        @if(count($cart) > 0)
+        <div class="price-box">
+            <h5>Tổng:</h5>
+            <h4 class="theme-color fw-bold">
+                {{ number_format(collect($cart)->reduce(function($carry, $item){
+                    return $carry + ($item['price'] * $item['quantity']);
+                }, 0)) }} đ
+            </h4>
+        </div>
 
-                                                <div class="drop-contain">
-                                                    <a href="product-left-thumbnail.html">
-                                                        <h5>Peanut Butter Bite Premium Butter Cookies 600 g</h5>
-                                                    </a>
-                                                    <h6><span>1 x</span> $25.68</h6>
-                                                    <button class="close-button">
-                                                        <i class="fa-solid fa-xmark"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
+        <div class="button-group">
+            <a href="{{ route('cart.index') }}" class="btn btn-sm cart-button">Xem Giỏ Hàng</a>
+            <a href="{{ route('cart.checkout') }}" class="btn btn-sm cart-button theme-bg-color text-white">Thanh Toán</a>
+        </div>
+        @endif
+    </div>
+</li>
 
-                                    <div class="price-box">
-                                        <h5>Price :</h5>
-                                        <h4 class="theme-color fw-bold">$106.58</h4>
-                                    </div>
-
-                                    <div class="button-group">
-                                        <a href="cart.html" class="btn btn-sm cart-button">View Cart</a>
-                                        <a href="checkout.html" class="btn btn-sm cart-button theme-bg-color
-                                                    text-white">Checkout</a>
-                                    </div>
-                                </div>
-                            </li>
 
                             <li>
                                 <a href="cart.html" class="header-icon bag-icon">
