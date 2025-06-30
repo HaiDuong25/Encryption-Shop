@@ -16,7 +16,10 @@
                         <tr>
                             <!-- <th>Hình ảnh sản phẩm</th> -->
                             <th>ID</th>
-                            <th>Ngày</th>
+
+                            <th>Tên người nhận</th> <!-- Thêm -->
+                            <th>Địa chỉ giao hàng</th> <!-- Thêm -->
+                            <th>Ngày đặt</th>
                             <th>Phương thức thanh toán</th>
                             <th>Trạng thái giao hàng</th>
                             <th>Giá sản phẩm</th>
@@ -26,24 +29,10 @@
                     <tbody>
                         @foreach ($orders as $order)
                         <tr>
-                            <!-- <td>
-                                <a class="d-block">
-                                    <span class="order-image">
-                                        {{-- Hiển thị hình ảnh sản phẩm đầu tiên trong đơn hàng --}}
-                                        @php
-                                            $productImage = null;
-                                            if ($order->orderDetails && $order->orderDetails->count()) {
-                                                $firstDetail = $order->orderDetails->first();
-                                                $productImage = optional($firstDetail->product ?? null)->image;
-                                            }
-                                        @endphp
-                                        @if ($productImage)
-                                            <img src="{{ asset('storage/' . $productImage) }}" class="img-fluid" alt="order">
-                                        @endif
-                                    </span>
-                                </a>
-                            </td> -->
+
                             <td>{{ $order->id }}</td>
+                             <td>{{ $order->name }}</td> <!-- Thêm -->
+                                <td>{{ $order->address }}</td> <!-- Thêm -->
                             <td>{{ $order->created_at->format('d/m/Y') }}</td>
                             <td>
                                 {{-- Hiển thị phương thức thanh toán nếu có --}}
@@ -62,7 +51,7 @@
                                 @endphp
                                 <span>{{ $statusArr[$order->status] ?? 'Không xác định' }}</span>
                             </td>
-                            <td>{{ number_format($order->total_price, 0, ',', '.') }} đ</td>
+                            <td> {{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }} đ</td>
                             <td>
                                 <ul>
                                     <li>
