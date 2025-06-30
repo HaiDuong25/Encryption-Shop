@@ -9,9 +9,13 @@ use Illuminate\Http\Request;
 class NewsController extends Controller
 {
     // Hiển thị danh sách tin tức
-    public function index()
+    public function index(Request $request)
     {
-        $news = News::orderBy('created_at', 'desc')->paginate(10);
+        $query = \App\Models\News::query();
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+        $news = $query->get(); // hoặc paginate()
         return view('news.index', compact('news'));
     }
 

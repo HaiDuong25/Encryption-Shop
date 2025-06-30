@@ -15,6 +15,18 @@
                             </div>
                         </div>
 
+                        {{-- Thêm form tìm kiếm theo tiêu đề --}}
+                        <form action="{{ route('news.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
+                            <input type="text" name="title" value="{{ request('title') }}" placeholder="Tìm theo tiêu đề..."
+                                class="form-control" style="width:220px;">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="ri-search-line"></i> Tìm
+                            </button>
+                            @if(request('title'))
+                                <a href="{{ route('news.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                            @endif
+                        </form>
+
                         <div class="table-responsive">
                             <table class="table all-package theme-table table-product text-center align-middle"
                                 style="border-collapse: separate; border-spacing: 0 12px;">
@@ -90,7 +102,9 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">Chưa có tin tức nào.</td>
+                                            <td colspan="7" class="text-center text-muted">
+                                                {{ request('title') ? 'Không tìm thấy tin tức nào phù hợp.' : 'Chưa có tin tức nào.' }}
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>

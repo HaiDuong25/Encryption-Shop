@@ -8,9 +8,13 @@ use Illuminate\Support\Str;
 
 class CouponController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $coupons = Coupon::orderByDesc('id')->get();
+        $query = \App\Models\Coupon::query();
+        if ($request->filled('discount')) {
+            $query->where('discount', $request->discount);
+        }
+        $coupons = $query->paginate(15);
         return view('coupons.index', compact('coupons'));
     }
 
