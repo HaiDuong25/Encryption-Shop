@@ -11,7 +11,7 @@
     <meta name="keywords" content="Fastkart">
     <meta name="author" content="Fastkart">
     <link rel="icon" href="{{ asset('assets-front/images/favicon/5.png') }}" type="image/x-icon">
-    <title>On-demand last-mile delivery</title>
+    <title>Shop Bán Quần Áo</title>
 
     <!-- Google font -->
     <link rel="preconnect" href="https://fonts.gstatic.com/">
@@ -90,42 +90,6 @@
         </ul>
     </div>
     <!-- mobile fix menu end -->
-
-    <!-- Home Section Start -->
-    <section class="home-section-2 home-section-bg pt-0 overflow-hidden">
-        <div class="container-fluid p-0">
-            <div class="row">
-                <div class="col-12">
-                    <div class="slider-animate">
-                        <div>
-                            <div class="home-contain rounded-0 p-0">
-                                <img src="{{ asset('assets-front') }}/images/grocery/banner/1.jpg"
-                                    class="img-fluid bg-img blur-up lazyload" alt="">
-                                <div class="home-detail home-big-space p-center-left home-overlay position-relative">
-                                    <div class="container-fluid-lg">
-                                        <div>
-                                            <h6 class="ls-expanded theme-color text-uppercase">Weekend Special offer
-                                            </h6>
-                                            <h1 class="heding-2">Premium Quality Dry Fruits</h1>
-                                            <h2 class="content-2">Dryfruits shopping made Easy</h2>
-                                            <h5 class="text-content">Fresh & Top Quality Dry Fruits are available here!
-                                            </h5>
-                                            <button
-                                                class="btn theme-bg-color btn-md text-white fw-bold mt-md-4 mt-2 mend-auto"
-                                                onclick="location.href = 'shop-left-sidebar.html';">Shop Now <i
-                                                    class="fa-solid fa-arrow-right icon"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Home Section End -->
-
 
   @yield('content')
     <!-- Service Section End -->
@@ -239,7 +203,7 @@
     <!-- Quick View Modal Box End -->
 
     <!-- Cookie Bar Box Start -->
-    <div class="cookie-bar-box">
+    <!-- <div class="cookie-bar-box">
         <div class="cookie-box">
             <div class="cookie-image">
                 <img src="{{ asset('assets-front') }}/images/cookie-bar.png" class="blur-up lazyload" alt="">
@@ -255,108 +219,8 @@
             <button class="btn privacy-button">Privacy Policy</button>
             <button class="btn ok-button">OK</button>
         </div>
-    </div>
+    </div> -->
     <!-- Cookie Bar Box End -->
-
-    <!-- Location Modal Start -->
-    <div class="modal location-modal fade theme-modal" id="locationModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Choose your Delivery Location</h5>
-                    <p class="mt-1 text-content">Enter your address and we will specify the offer for your area.</p>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="location-list">
-                        <div class="search-input">
-                            <input type="search" class="form-control" placeholder="Search Your Area">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </div>
-
-                        <div class="disabled-box">
-                            <h6>Select a Location</h6>
-                        </div>
-
-                        <ul class="location-select custom-height">
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Alabama</h6>
-                                    <span>Min: $130</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Arizona</h6>
-                                    <span>Min: $150</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>California</h6>
-                                    <span>Min: $110</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Colorado</h6>
-                                    <span>Min: $140</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Florida</h6>
-                                    <span>Min: $160</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Georgia</h6>
-                                    <span>Min: $120</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Kansas</h6>
-                                    <span>Min: $170</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Minnesota</h6>
-                                    <span>Min: $120</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>New York</h6>
-                                    <span>Min: $110</span>
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="javascript:void(0)">
-                                    <h6>Washington</h6>
-                                    <span>Min: $130</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Location Modal End -->
 
     <!-- Tap to top and theme setting button start -->
     <!-- <div class="theme-option">

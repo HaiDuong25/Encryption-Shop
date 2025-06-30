@@ -15,6 +15,18 @@
                     </div>
                 </div>
 
+                {{-- Form tìm kiếm theo tên --}}
+                <form action="{{ route('banners.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
+                    <input type="text" name="title" value="{{ request('title') }}" placeholder="Tìm theo tiêu đề..."
+                        class="form-control" style="width:220px;">
+                    <button class="btn btn-outline-primary" type="submit">
+                        <i class="ri-search-line"></i> Tìm
+                    </button>
+                    @if(request('title'))
+                        <a href="{{ route('banners.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    @endif
+                </form>
+
                 @if(session('success'))
                     <div class="alert alert-success mt-3">{{ session('success') }}</div>
                 @endif

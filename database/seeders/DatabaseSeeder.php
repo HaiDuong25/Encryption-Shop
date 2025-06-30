@@ -21,26 +21,21 @@ class DatabaseSeeder extends Seeder
         ]);
      $this->call([
       UsersTableSeeder::class,
-    BrandsTableSeeder::class,
     BannersTableSeeder::class,
     ContactsTableSeeder::class,
-    CategoriesTableSeeder::class,
-    ProductsTableSeeder::class,
-    SizesTableSeeder::class,
-    ColorsTableSeeder::class,
     CouponsTableSeeder::class,
     CartsTableSeeder::class,
-
      OrdersTableSeeder::class,
-         ProductVariantsTableSeeder::class, // Thêm dòng này
-
      OrderDetailsTableSeeder::class,
     PaymentMethodsTableSeeder::class,
-    PaymentsTableSeeder::class,         // Thêm dòng này
+    PaymentsTableSeeder::class,         
 
-      // Thêm dòng này
     RatesTableSeeder::class,
     RateRepliesTableSeeder::class,
-    ]);
+            CategorySeeder::class,
+            BrandSeeder::class,
+            AttributeSeeder::class,
+            ProductSeeder::class,
+        ]);
     }
 }
