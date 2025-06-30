@@ -1,5 +1,27 @@
 @extends('client.layout.main')
 @section('content')
+@if(session('success'))
+<div class="alert alert-success">
+    {{ session('success') }}
+</div>
+@endif
+
+@if(session('error'))
+<div class="alert alert-danger">
+    {{ session('error') }}
+</div>
+@endif
+
+@if($errors->any())
+<div class="alert alert-danger">
+    <ul class="mb-0">
+        @foreach($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
 <section class="section-b-space shop-section">
     <div class="container">
         <div class="row">
@@ -116,7 +138,6 @@
                             </div>
                         </div>
 
-                        <!-- Quick View Modal -->
                         <div class="modal fade theme-modal view-modal" id="view-{{ $product->id }}" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
                                 <div class="modal-content">
@@ -132,24 +153,12 @@
                                                     <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
                                                 </div>
                                             </div>
-
                                             <div class="col-lg-6">
                                                 <div class="right-sidebar-modal">
                                                     <h4 class="title-name">{{ $product->name }}</h4>
-                                                    <h4 class="price">{{ number_format($product->sale_price ?? $product->price) }} đ</h4>
-
-                                                    <div class="product-rating">
-                                                        <ul class="rating">
-                                                            <li><i data-feather="star" class="fill"></i></li>
-                                                            <li><i data-feather="star" class="fill"></i></li>
-                                                            <li><i data-feather="star" class="fill"></i></li>
-                                                            <li><i data-feather="star" class="fill"></i></li>
-                                                            <li><i data-feather="star"></i></li>
-                                                        </ul>
-                                                        <span class="ms-2">8 Reviews</span>
-                                                        <span class="ms-2 text-danger">6 sold in last 16 hours</span>
-                                                    </div>
-
+                                                    <h4 class="price" id="price-{{ $product->id }}">
+                                                        {{ number_format($product->price) }} đ
+                                                    </h4>
                                                     <div class="product-detail">
                                                         <h4>Product Details :</h4>
                                                         <p>{{ $product->description }}</p>
@@ -162,29 +171,49 @@
                                                                 <h6>{{ $product->category->name ?? 'Chưa phân loại' }}</h6>
                                                             </div>
                                                         </li>
-
-                                                        <li>
-                                                            <div class="brand-box">
-                                                                <h5>Material:</h5>
-                                                                <h6>{{ $product->material ?? 'Đang cập nhật' }}</h6>
-                                                            </div>
-                                                        </li>
-
                                                         <li>
                                                             <div class="brand-box">
                                                                 <h5>Status:</h5>
-                                                                <h6>{{ $product->status ? 'Còn hàng' : 'Hết hàng' }}</h6>
+                                                                <h6>{{ $product->status == 'active' ? 'Còn hàng' : 'Hết hàng' }}</h6>
                                                             </div>
                                                         </li>
                                                     </ul>
 
                                                     <div class="modal-button">
-                                                        <button onclick="location.href=''"
-                                                            class="btn btn-md add-cart-button icon">Add To Cart</button>
-                                                        <button onclick="location.href=''"
-                                                            class="btn theme-bg-color view-button icon text-white fw-bold btn-md">
-                                                            View More Details
-                                                        </button>
+                                                        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2">
+                                                            @csrf
+
+                                                            <!-- Đưa select vào trong form -->
+                                                            @if($product->variants->count())
+                                                            <div class="select-variant mb-3">
+                                                                <h5>Chọn biến thể:</h5>
+                                                                <select name="variant_id" id="variant-select-{{ $product->id }}" class="form-select">
+                                                                    @foreach($product->variants as $variant)
+                                                                    <option value="{{ $variant->id }}"
+                                                                        data-price="{{ $variant->price }}"
+                                                                        data-compare-price="{{ $variant->compare_price }}"
+                                                                        data-stock="{{ $variant->stock }}">
+                                                                        {{ $variant->sku }} - {{ number_format($variant->price) }} đ (Tồn: {{ $variant->stock }})
+                                                                    </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            @endif
+
+                                                            <div class="input-group">
+                                                                <button type="button" class="btn qty-left-minus bg-gray" data-type="minus">
+                                                                    <i class="fa fa-minus"></i>
+                                                                </button>
+                                                                <input type="text" name="quantity" value="1" min="1" class="form-control text-center qty-input">
+                                                                <button type="button" class="btn qty-right-plus bg-gray" data-type="plus">
+                                                                    <i class="fa fa-plus"></i>
+                                                                </button>
+                                                            </div>
+
+                                                            <button type="submit" class="btn theme-bg-color btn-md text-white fw-bold">
+                                                                <i class="fa-solid fa-plus me-1"></i> Add To Cart
+                                                            </button>
+                                                        </form>
                                                     </div>
 
                                                 </div>
@@ -193,7 +222,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div><!-- End Modal -->
+                        </div>
+
 
                     </div>
 
@@ -208,28 +238,46 @@
     </div>
 </section>
 @endsection
-
 @push('scripts')
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+
+        // ========== Tăng giảm số lượng ==========
+        document.querySelectorAll('.qty-left-minus').forEach(function(btn) {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', function(e) {
+                const input = newBtn.closest('.input-group').querySelector('input.qty-input');
+                let value = parseInt(input.value) || 1;
+                if (value > 1) input.value = value - 1;
+            });
+        });
+
+        document.querySelectorAll('.qty-right-plus').forEach(function(btn) {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', function(e) {
+                const input = newBtn.closest('.input-group').querySelector('input.qty-input');
+                let value = parseInt(input.value) || 1;
+                input.value = value + 1;
+            });
+        });
+
+        // ========== Search category ==========
         const searchInput = document.getElementById('search-category');
         const categoryList = document.getElementById('category-list');
-        const items = categoryList.getElementsByTagName('li');
-
-        searchInput.addEventListener('keyup', function() {
-            const filter = searchInput.value.toLowerCase();
-
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                const text = item.textContent || item.innerText;
-
-                if (text.toLowerCase().indexOf(filter) > -1) {
-                    item.style.display = "";
-                } else {
-                    item.style.display = "none";
+        if (searchInput && categoryList) {
+            const items = categoryList.getElementsByTagName('li');
+            searchInput.addEventListener('keyup', function() {
+                const filter = searchInput.value.toLowerCase();
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const text = item.textContent || item.innerText;
+                    item.style.display = text.toLowerCase().includes(filter) ? "" : "none";
                 }
-            }
-        });
+            });
+        }
+
     });
 </script>
 @endpush
