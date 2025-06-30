@@ -11,7 +11,7 @@
     <meta name="keywords" content="Fastkart">
     <meta name="author" content="Fastkart">
     <link rel="icon" href="{{ asset('assets-front/images/favicon/5.png') }}" type="image/x-icon">
-    <title>On-demand last-mile delivery</title>
+    <title>Shop Bán Quần Áo</title>
 
     <!-- Google font -->
     <link rel="preconnect" href="https://fonts.gstatic.com/">
