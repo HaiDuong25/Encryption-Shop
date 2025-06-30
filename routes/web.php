@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\UserController;
 //client
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\CartController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -140,3 +141,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
 Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
+Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::get('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+});
