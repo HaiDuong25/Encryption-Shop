@@ -245,7 +245,7 @@
                             </span>
                             <div class="user-name">
                                 <h6 class="text-content">Tài khoản của bạn</h6>
-                                <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
+                                <h4 class="mt-1">Xin chào</h4>
                             </div>
                         </a>
                         
