@@ -107,7 +107,7 @@
                         </a>
                         <div class="category-box-view">
                             <a href="#">
-                                <img src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=300&q=80"
+                                <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80"
                                     class="img-fluid category-img-equal mx-auto" alt="Vest Nam">
                             </a>
                             <button onclick="location.href = '{{ route('client.products.index') }}';"
@@ -235,198 +235,134 @@
         }
     </style>
     <!-- Category Section End -->
-
-    <!-- Ưu đãi vé giảm giá Start -->
+    <!-- Voucher Section Start -->
     <section class="voucher-section section-b-space">
         <div class="container-fluid-lg">
             <div class="title mb-4 text-center">
-                <h2 class="fw-bold mb-2">Ưu đãi &amp; Mã giảm giá hot</h2>
-                <div class="text-muted mb-2">Nhanh tay nhận ngay ưu đãi hấp dẫn dành cho bạn!</div>
+                <h2 class="fw-bold mb-2">Ưu đãi & Mã giảm giá hot</h2>
+                <div class="text-muted mb-2">Chọn mã phù hợp để nhận ưu đãi khi thanh toán!</div>
             </div>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+                <!-- Voucher 1 -->
                 <div class="col">
-                    <div
-                        class="voucher-banner-card bg-gradient-primary position-relative overflow-hidden shadow-lg rounded-4 p-0 h-100">
-                        <div class="d-flex align-items-center h-100 px-3 py-4">
-                            <div
-                                class="gift-icon-box bg-white rounded-circle shadow d-flex align-items-center justify-content-center me-4 flex-shrink-0">
-                                <img src="https://cdn-icons-png.flaticon.com/512/3469/3469100.png" alt="gift"
-                                    style="width:48px;height:48px;">
+                    <div class="p-2" style="background: #f0f1f3; border-radius: 14px;">
+                        <div class="bg-white rounded-3 shadow-sm h-100 px-3 py-3 d-flex flex-column align-items-center justify-content-between"
+                            style="min-height: 170px; max-width: 350px; margin:auto;">
+                            <div class="mb-2">
+                                <i class="fa-solid fa-ticket fa-lg text-primary mb-1"></i>
                             </div>
-                            <div class="flex-grow-1">
-                                <h4 class="fw-bold mb-1 text-primary">Tặng 10% cho đơn từ 500K</h4>
-                                <div class="mb-2 text-secondary small">Áp dụng toàn bộ sản phẩm</div>
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6">SALE10</span>
-                                    <button class="btn btn-primary btn-sm fw-bold px-3 py-1 rounded-pill shadow-sm">Sao chép
-                                        mã</button>
-                                </div>
-                                <div class="progress" style="height: 6px;">
-                                    <div class="progress-bar bg-primary" style="width: 80%"></div>
-                                </div>
+                            <div class="mb-2">
+                                <span class="badge bg-primary text-white fs-6 px-3 py-1 mb-2 rounded-pill">VOUCHER</span>
                             </div>
-                            <img src="https://cdn-icons-png.flaticon.com/512/616/616489.png" alt="gift"
-                                class="voucher-bg-gift">
+                            <h5 class="fw-bold text-primary mb-1" style="font-size: 1.15rem;">Giảm 10% (tối đa 10K)</h5>
+                            <div class="text-secondary mb-1" style="font-size: 1rem;">Cho đơn từ 200.000₫</div>
+                            <div class="text-muted mb-2" style="font-size: 1rem;">Nhập mã: <span
+                                    class="voucher-code fw-bold">JUL10</span></div>
+                            <button class="btn btn-primary btn-sm fw-bold px-3 py-1 rounded-pill mt-2 copy-btn"
+                                data-code="JUL10" style="font-size: 1rem;">
+                                <i class="fa-solid fa-copy me-1"></i> Sao chép
+                            </button>
+                            <div class="mt-2">
+                                <span class="badge bg-light text-primary border border-primary fs-6 px-2 py-1">Hot</span>
+                            </div>
                         </div>
-                        <span class="voucher-ribbon bg-primary text-white">Hot</span>
                     </div>
                 </div>
+                <!-- Voucher 2 -->
                 <div class="col">
-                    <div
-                        class="voucher-banner-card bg-gradient-success position-relative overflow-hidden shadow-lg rounded-4 p-0 h-100">
-                        <div class="d-flex align-items-center h-100 px-3 py-4">
-                            <div
-                                class="gift-icon-box bg-white rounded-circle shadow d-flex align-items-center justify-content-center me-4 flex-shrink-0">
-                                <img src="https://cdn-icons-png.flaticon.com/512/3469/3469100.png" alt="gift"
-                                    style="width:48px;height:48px;">
+                    <div class="p-2" style="background: #f0f1f3; border-radius: 14px;">
+                        <div class="bg-white rounded-3 shadow-sm h-100 px-3 py-3 d-flex flex-column align-items-center justify-content-between"
+                            style="min-height: 170px; max-width: 350px; margin:auto;">
+                            <div class="mb-2">
+                                <i class="fa-solid fa-percent fa-lg text-success mb-1"></i>
                             </div>
-                            <div class="flex-grow-1">
-                                <h4 class="fw-bold mb-1 text-success">Giảm 20% cho đơn từ 1 triệu</h4>
-                                <div class="mb-2 text-secondary small">Số lượng có hạn</div>
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 fs-6">HOT20</span>
-                                    <button class="btn btn-success btn-sm fw-bold px-3 py-1 rounded-pill shadow-sm">Sao chép
-                                        mã</button>
-                                </div>
-                                <div class="progress" style="height: 6px;">
-                                    <div class="progress-bar bg-success" style="width: 60%"></div>
-                                </div>
+                            <div class="mb-2">
+                                <span class="badge bg-success text-white fs-6 px-3 py-1 mb-2 rounded-pill">HOT20</span>
                             </div>
-                            <img src="https://cdn-icons-png.flaticon.com/512/616/616490.png" alt="gift"
-                                class="voucher-bg-gift">
+                            <h5 class="fw-bold text-success mb-1" style="font-size: 1.15rem;">Giảm 20%</h5>
+                            <div class="text-secondary mb-1" style="font-size: 1rem;">Cho đơn từ 1.000.000₫</div>
+                            <div class="text-muted mb-2" style="font-size: 1rem;">Nhập mã: <span
+                                    class="voucher-code fw-bold">HOT20</span></div>
+                            <button class="btn btn-success btn-sm fw-bold px-3 py-1 rounded-pill mt-2 copy-btn"
+                                data-code="HOT20" style="font-size: 1rem;">
+                                <i class="fa-solid fa-copy me-1"></i> Sao chép
+                            </button>
+                            <div class="mt-2">
+                                <span class="badge bg-light text-success border border-success fs-6 px-2 py-1">Giới
+                                    hạn</span>
+                            </div>
                         </div>
-                        <span class="voucher-ribbon bg-success text-white">Giới hạn</span>
                     </div>
                 </div>
+                <!-- Voucher 3 -->
                 <div class="col">
-                    <div
-                        class="voucher-banner-card bg-gradient-warning position-relative overflow-hidden shadow-lg rounded-4 p-0 h-100">
-                        <div class="d-flex align-items-center h-100 px-3 py-4">
-                            <div
-                                class="gift-icon-box bg-white rounded-circle shadow d-flex align-items-center justify-content-center me-4 flex-shrink-0">
-                                <img src="https://cdn-icons-png.flaticon.com/512/3469/3469100.png" alt="gift"
-                                    style="width:48px;height:48px;">
+                    <div class="p-2" style="background: #f0f1f3; border-radius: 14px;">
+                        <div class="bg-white rounded-3 shadow-sm h-100 px-3 py-3 d-flex flex-column align-items-center justify-content-between"
+                            style="min-height: 170px; max-width: 350px; margin:auto;">
+                            <div class="mb-2">
+                                <i class="fa-solid fa-truck-fast fa-lg text-warning mb-1"></i>
                             </div>
-                            <div class="flex-grow-1">
-                                <h4 class="fw-bold mb-1 text-warning">Freeship toàn quốc</h4>
-                                <div class="mb-2 text-secondary small">Không giới hạn giá trị đơn</div>
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 fs-6">FREESHIP</span>
-                                    <button class="btn btn-warning btn-sm fw-bold px-3 py-1 rounded-pill shadow-sm">Sao chép
-                                        mã</button>
-                                </div>
-                                <div class="progress" style="height: 6px;">
-                                    <div class="progress-bar bg-warning" style="width: 100%"></div>
-                                </div>
+                            <div class="mb-2">
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-1 mb-2 rounded-pill">FREESHIP</span>
                             </div>
-                            <img src="https://cdn-icons-png.flaticon.com/512/616/616491.png" alt="gift"
-                                class="voucher-bg-gift">
+                            <h5 class="fw-bold text-warning mb-1" style="font-size: 1.15rem;">Freeship toàn quốc</h5>
+                            <div class="text-secondary mb-1" style="font-size: 1rem;">Không giới hạn giá trị đơn</div>
+                            <div class="text-muted mb-2" style="font-size: 1rem;">Nhập mã: <span
+                                    class="voucher-code fw-bold">FREESHIP</span></div>
+                            <button class="btn btn-warning btn-sm fw-bold px-3 py-1 rounded-pill mt-2 copy-btn"
+                                data-code="FREESHIP" style="font-size: 1rem;">
+                                <i class="fa-solid fa-copy me-1"></i> Sao chép
+                            </button>
+                            <div class="mt-2">
+                                <span
+                                    class="badge bg-light text-warning border border-warning fs-6 px-2 py-1">Freeship</span>
+                            </div>
                         </div>
-                        <span class="voucher-ribbon bg-warning text-dark">Freeship</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <style>
-        .voucher-banner-card {
-            min-height: 180px;
-            background: linear-gradient(120deg, #f8fafc 60%, #e9ecef 100%);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            transition: box-shadow 0.2s, transform 0.2s;
-            border: none;
-        }
-
-        .voucher-banner-card:hover {
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
-            transform: translateY(-6px) scale(1.025);
-        }
-
-        .gift-icon-box {
-            width: 80px;
-            height: 80px;
-            margin-right: 10px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .voucher-bg-gift {
-            position: absolute;
-            right: -10px;
-            bottom: -10px;
-            width: 100px;
-            opacity: 0.12;
-            pointer-events: none;
-            user-select: none;
-            z-index: 1;
-        }
-
-        .voucher-ribbon {
-            position: absolute;
-            top: 18px;
-            left: -32px;
-            padding: 4px 36px;
-            font-size: 1rem;
-            font-weight: 700;
-            transform: rotate(-25deg);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            z-index: 2;
-            letter-spacing: 1px;
-        }
-
-        .bg-gradient-primary {
-            background: linear-gradient(120deg, #e3f0ff 60%, #c9e7ff 100%) !important;
-        }
-
-        .bg-gradient-success {
-            background: linear-gradient(120deg, #e6f9ed 60%, #c7f5dd 100%) !important;
-        }
-
-        .bg-gradient-warning {
-            background: linear-gradient(120deg, #fff7e0 60%, #ffe9b8 100%) !important;
-        }
-
-        .progress {
-            background: #e9ecef;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
-
-        .progress-bar {
-            border-radius: 6px;
-        }
-    </style>
-    <!-- Ưu đãi vé giảm giá End -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.copy-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const code = btn.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(function () {
+                        btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Đã sao chép';
+                        btn.disabled = true;
+                        setTimeout(function () {
+                            btn.innerHTML = '<i class="fa-solid fa-copy me-1"></i> Sao chép';
+                            btn.disabled = false;
+                        }, 2000);
+                    });
+                });
+            });
+        });
+    </script>
     <!-- Product Section Start -->
     <section class="product-section-3">
         <div class="container-fluid-lg">
-            <div class="title">
-                <h2>Sản phẩm nổi bật</h2>
+            <div class="title text-center mb-2">
+                <h2 class="fw-bold" style="font-size: 2rem;">Sản phẩm nổi bật</h2>
             </div>
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
                 @php
                     $products = [
-                        ['name' => 'Vest nam cao cấp', 'old' => '4.200.000₫', 'new' => '3.500.000₫', 'img' => 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Đầm dạ hội nữ', 'old' => '3.200.000₫', 'new' => '2.800.000₫', 'img' => 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo sơ mi nam', 'old' => '1.500.000₫', 'new' => '1.200.000₫', 'img' => 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80', 'rating' => 3],
-                        ['name' => 'Áo khoác nam', 'old' => '2.500.000₫', 'new' => '2.000.000₫', 'img' => 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=80', 'rating' => 2],
-                        ['name' => 'Đầm dự tiệc', 'old' => '3.800.000₫', 'new' => '3.000.000₫', 'img' => 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Quần tây nam', 'old' => '1.400.000₫', 'new' => '1.000.000₫', 'img' => 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=600&q=80', 'rating' => 3],
-                        ['name' => 'Áo thun nữ basic', 'old' => '700.000₫', 'new' => '490.000₫', 'img' => 'https://images.unsplash.com/photo-1593032465171-8fb7c8f7d61f?auto=format&fit=crop&w=600&q=80', 'rating' => 5],
+                        ['name' => 'Vest nam cao cấp', 'old' => '4.200.000₫', 'new' => '3.500.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Đầm dạ hội nữ', 'old' => '3.200.000₫', 'new' => '2.800.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Áo sơ mi nam', 'old' => '1.500.000₫', 'new' => '1.200.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Áo khoác nam', 'old' => '2.500.000₫', 'new' => '2.000.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Đầm dự tiệc', 'old' => '3.800.000₫', 'new' => '3.000.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Quần tây nam', 'old' => '1.400.000₫', 'new' => '1.000.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Áo thun nữ basic', 'old' => '700.000₫', 'new' => '490.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
                         ['name' => 'Váy công sở', 'old' => '2.000.000₫', 'new' => '1.500.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo hoodie nam', 'old' => '1.800.000₫', 'new' => '1.400.000₫', 'img' => 'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Chân váy nữ', 'old' => '900.000₫', 'new' => '700.000₫', 'img' => 'https://images.unsplash.com/photo-1551854838-593f0f46aa53?auto=format&fit=crop&w=600&q=80', 'rating' => 3],
-                        ['name' => 'Áo vest nữ công sở', 'old' => '2.500.000₫', 'new' => '1.900.000₫', 'img' => 'https://images.unsplash.com/photo-1570784091703-0ba1dcac6c6d?auto=format&fit=crop&w=600&q=80', 'rating' => 5],
-                        ['name' => 'Quần jean nam', 'old' => '1.600.000₫', 'new' => '1.200.000₫', 'img' => 'https://images.unsplash.com/photo-1585386959984-a4155224c7f4?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Áo hoodie nam', 'old' => '1.800.000₫', 'new' => '1.400.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Chân váy nữ', 'old' => '900.000₫', 'new' => '700.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Áo vest nữ công sở', 'old' => '2.500.000₫', 'new' => '1.900.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
+                        ['name' => 'Quần jean nam', 'old' => '1.600.000₫', 'new' => '1.200.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
                     ];
                 @endphp
-
                 @foreach ($products as $product)
                     <div class="col">
                         <div
@@ -449,55 +385,47 @@
                                                 class="{{ $i < $product['rating'] ? 'fill text-warning' : '' }}"></i></li>
                                     @endfor
                                 </ul>
-
-                                <!-- Tên sản phẩm -->
-                                <a href="#">
-                                    <h6 class="fw-semibold text-dark mb-2">{{ $product['name'] }}</h6>
+                                <!-- Tên sản phẩm căn giữa -->
+                                <a href="#" class="d-block text-center">
+                                    <h5 class="fw-bold text-dark mb-2" style="font-size: 1.2rem;">
+                                        {{ $product['name'] }}
+                                    </h5>
                                 </a>
-
-                                <!-- Giá -->
-                                <div>
-                                    <h6 class="text-muted mb-1"><del>{{ $product['old'] }}</del></h6>
-                                    <h5 class="text-danger fw-bold mb-2">{{ $product['new'] }}</h5>
+                                <!-- Giá + nút -->
+                                <div class="d-flex align-items-center justify-content-center gap-2 mb-2 flex-wrap">
+                                    <div class="text-start">
+                                        <h6 class="text-muted mb-1" style="font-size: 0.95rem;"><del>{{ $product['old'] }}</del>
+                                        </h6>
+                                        <h5 class="text-danger fw-bold mb-0" style="font-size: 1.1rem;">{{ $product['new'] }}
+                                        </h5>
+                                    </div>
+                                    <div class="d-flex flex-column ms-2">
+                                        <a href="#" class="btn btn-outline-secondary btn-sm mb-1" title="Xem chi tiết">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-primary btn-sm" title="Thêm vào giỏ">
+                                            <i class="fa-solid fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                    <a href="#" class="btn btn-danger btn-sm ms-2 fw-bold btn-buy-now">Mua ngay</a>
                                 </div>
-
-                                <!-- Nút -->
-                                <button class="btn btn-outline-primary w-100 mt-auto">Thêm vào giỏ</button>
                             </div>
                         </div>
                     </div>
                 @endforeach
+            </div> <!-- ĐÓNG .row ở đây -->
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{{ route('client.products.index') }}"
+                    class="btn btn-primary fw-semibold rounded-pill shadow-sm d-inline-flex align-items-center px-3 py-2"
+                    style="min-width: 140px;">
+                    <span>Xem tất cả</span>
+                    <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
             </div>
 
-            <!-- Thêm các sản phẩm khác tương tự nếu muốn -->
-        </div>
-        </div>
+
     </section>
-    <style>
-        .product-img-square {
-            width: 100%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 10px;
-            display: block;
-        }
 
-        .product-box-4 {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            padding: 12px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .product-detail {
-            padding-top: 10px;
-        }
-    </style>
-    <!-- Product Section End -->
 
     <!-- News Section Start -->
     <section class="news-section section-b-space">
@@ -508,7 +436,7 @@
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                 <div class="col">
                     <div class="card h-100 shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=500&q=80"
+                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=500&q=80"
                             class="card-img-top news-img-equal" alt="Tin tức 1">
                         <div class="card-body">
                             <h5 class="card-title">BST Thu Đông 2025: Xu hướng mới lên ngôi</h5>
@@ -599,16 +527,6 @@
         </div>
     </section>
     <!-- Service Section End -->
-
-    <style>
-        .news-img-equal {
-            width: 100%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 10px 10px 0 0;
-            display: block;
-        }
-    </style>
     <!-- News Section End -->
 
 @endsection
