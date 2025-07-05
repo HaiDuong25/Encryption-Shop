@@ -41,19 +41,6 @@ class UsersTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'name' => 'Regular User',
-                'email' => 'user@example.com',
-                'role' => 'user',
-                'phone' => '1122334455',
-                'address' => '789 User Ave, User City',
-                'status' => 'active',
-                'avatar' => null,
-                'email_verified_at' => now(),
-                'password' => bcrypt('password123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
         ]);
     }
 }
