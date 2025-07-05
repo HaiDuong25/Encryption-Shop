@@ -12,16 +12,35 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
-    // Hiển thị danh sách sản phẩm
     public function index(Request $request)
     {
-        $query = Product::query()->with('category', 'brand', 'variants');
-        if ($request->keyword) {
+        $query = Product::query()->with('category', 'brand');
+
+        if ($request->filled('keyword')) {
             $query->where('name', 'like', '%' . $request->keyword . '%');
         }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('price_from')) {
+            $query->where('price', '>=', $request->price_from);
+        }
+        if ($request->filled('price_to')) {
+            $query->where('price', '<=', $request->price_to);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
         $products = $query->latest()->paginate(15);
-        return view('admin.products.index', compact('products'));
+        $categories = Category::all();
+
+        return view('admin.products.index', compact('products', 'categories'));
     }
+
     public function show(Product $product)
     {
         $product->load('variants.attributeValues.attribute', 'category', 'brand');
@@ -30,13 +49,11 @@ class ProductController extends Controller
 
     public function create()
     {
-        // Chuẩn bị thuộc tính Size, Màu
         $sizeAttr = Attribute::firstOrCreate(['name' => 'Size']);
         $colorAttr = Attribute::firstOrCreate(['name' => 'Màu']);
         $sizes = $sizeAttr->values;
         $colors = $colorAttr->values;
 
-        // Nếu có thêm danh mục/thương hiệu thì truyền $categories, $brands qua view
         return view('admin.products.create', [
             'sizes' => $sizes,
             'colors' => $colors,
@@ -71,11 +88,9 @@ class ProductController extends Controller
             'variant_image' => 'array',
         ]);
 
-        // Ảnh đại diện
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
         }
-        // Gallery (nhiều ảnh)
         if ($request->hasFile('gallery')) {
             $galleryPaths = [];
             foreach ($request->file('gallery') as $img) {
@@ -86,7 +101,6 @@ class ProductController extends Controller
         $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
         $product = Product::create($data);
 
-        // Tổ hợp variant
         $combinations = $this->cartesian([$request->sizes, $request->colors]);
         foreach ($combinations as $index => $combo) {
             $variantSku = $request->input("variant_sku.$index") ?: ($product->sku ? $product->sku . '-' : '') . implode('-', $combo);
@@ -108,7 +122,6 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Đã tạo sản phẩm và biến thể!');
     }
 
-    // Hàm cartesian product
     private function cartesian($arrays)
     {
         $result = [[]];
@@ -124,7 +137,6 @@ class ProductController extends Controller
         return $result;
     }
 
-    // Sửa sản phẩm
     public function edit(Product $product)
     {
         $categories = \App\Models\Category::all();
@@ -134,7 +146,6 @@ class ProductController extends Controller
         $sizes = $sizeAttr->values;
         $colors = $colorAttr->values;
         $product->load('variants.attributeValues');
-        // Trong edit
         $variantData = $product->variants->map(function ($v) {
             return [
                 'id' => $v->id,
@@ -158,7 +169,6 @@ class ProductController extends Controller
         ]);
     }
 
-    // Cập nhật sản phẩm
     public function update(Request $request, Product $product)
     {
         $data = $request->validate([
@@ -183,11 +193,9 @@ class ProductController extends Controller
             'variant_image' => 'array',
         ]);
 
-        // Cập nhật ảnh đại diện
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
         }
-        // Gallery (nhiều ảnh)
         if ($request->hasFile('gallery')) {
             $galleryPaths = [];
             foreach ($request->file('gallery') as $img) {
@@ -200,7 +208,6 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        // 1. Nếu có mảng variant_sizes => XÓA hết các biến thể cũ và tạo lại từ đầu (theo biến thể mới)
         if ($request->has('variant_sizes')) {
             $product->variants()->delete();
             $sizes = $request->variant_sizes;
@@ -217,9 +224,7 @@ class ProductController extends Controller
                         : null,
                 ]);
             }
-        }
-        // 2. Nếu không có variant_sizes => chỉ update lại các biến thể cũ
-        else if ($request->has('old_variant_ids')) {
+        } else if ($request->has('old_variant_ids')) {
             foreach ($request->old_variant_ids as $idx => $id) {
                 $variant = $product->variants()->find($id);
                 if ($variant) {
@@ -237,7 +242,6 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Đã cập nhật sản phẩm!');
     }
 
-    // Xóa sản phẩm
     public function destroy(Product $product)
     {
         $product->delete();

@@ -19,8 +19,27 @@
                     <i data-feather="plus"></i> Thêm sản phẩm
                 </a>
             </div>
-            <form action="{{ route('products.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
-                <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm sản phẩm..." class="form-control" style="width:220px;">
+            <form action="{{ route('products.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm theo tên" class="form-control" style="width:200px;">
+
+                <select name="category_id" class="form-select" style="width:180px;">
+                    <option value="">-- Danh mục --</option>
+                    @foreach ($categories as $cat)
+                    <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->name }}
+                    </option>
+                    @endforeach
+                </select>
+
+                <input type="number" name="price_from" value="{{ request('price_from') }}" placeholder="Giá từ" class="form-control" style="width:120px;">
+                <input type="number" name="price_to" value="{{ request('price_to') }}" placeholder="Giá đến" class="form-control" style="width:120px;">
+
+                <select name="status" class="form-select" style="width:150px;">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hiển thị</option>
+                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Ẩn</option>
+                </select>
+
                 <button class="btn btn-outline-primary" type="submit">
                     <i data-feather="search"></i> Tìm
                 </button>
@@ -44,9 +63,9 @@
                         <tr>
                             <td class="text-center">
                                 @if($product->image)
-                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" width="80" class="rounded border">
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" width="80" class="rounded border">
                                 @else
-                                    <span class="text-secondary small fst-italic">Không có</span>
+                                <span class="text-secondary small fst-italic">Không có</span>
                                 @endif
                             </td>
                             <td>
@@ -57,9 +76,9 @@
                             <td class="text-danger fw-bold">{{ number_format($product->price,0,',','.') }} đ</td>
                             <td>
                                 @if($product->status == 'active')
-                                    <span class="badge bg-success">Hiển thị</span>
+                                <span class="badge bg-success">Hiển thị</span>
                                 @else
-                                    <span class="badge bg-danger">Ẩn</span>
+                                <span class="badge bg-danger">Ẩn</span>
                                 @endif
                             </td>
                             <td>
