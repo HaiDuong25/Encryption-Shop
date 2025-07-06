@@ -151,6 +151,3 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 });
-
-
-

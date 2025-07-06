@@ -245,78 +245,78 @@
             <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
                 <!-- Voucher 1 -->
                 <div class="col">
-                    <div class="p-2" style="background: #f0f1f3; border-radius: 14px;">
-                        <div class="bg-white rounded-3 shadow-sm h-100 px-3 py-3 d-flex flex-column align-items-center justify-content-between"
-                            style="min-height: 170px; max-width: 350px; margin:auto;">
+                    <div class="card shadow-lg border-0 h-100 text-center"
+                        style="border-radius: 2rem; background: linear-gradient(135deg, #fffbe7 60%, #ffe7e7 100%);">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4"
+                            style="border-radius: 2rem;">
                             <div class="mb-2">
-                                <i class="fa-solid fa-ticket fa-lg text-primary mb-1"></i>
+                                <i class="fa-solid fa-gift fa-3x text-warning"
+                                    style="background: #fff3cd; border-radius: 50%; padding: 18px 22px; box-shadow: 0 2px 12px #ffe082;"></i>
                             </div>
                             <div class="mb-2">
-                                <span class="badge bg-primary text-white fs-6 px-3 py-1 mb-2 rounded-pill">VOUCHER</span>
+                                <span class="badge bg-warning text-dark fs-6 px-4 py-2 rounded-pill shadow-sm"
+                                    style="font-size:1.1rem;">JUL10</span>
                             </div>
-                            <h5 class="fw-bold text-primary mb-1" style="font-size: 1.15rem;">Giảm 10% (tối đa 10K)</h5>
-                            <div class="text-secondary mb-1" style="font-size: 1rem;">Cho đơn từ 200.000₫</div>
-                            <div class="text-muted mb-2" style="font-size: 1rem;">Nhập mã: <span
-                                    class="voucher-code fw-bold">JUL10</span></div>
-                            <button class="btn btn-primary btn-sm fw-bold px-3 py-1 rounded-pill mt-2 copy-btn"
-                                data-code="JUL10" style="font-size: 1rem;">
-                                <i class="fa-solid fa-copy me-1"></i> Sao chép
+                            <h5 class="fw-bold text-danger mb-2" style="font-size:1.3rem;">Giảm 10% (tối đa 10K)</h5>
+                            <div class="mb-2 text-secondary" style="font-size:1.05rem;">Cho đơn từ 200.000₫</div>
+                            <button class="btn btn-danger btn-sm fw-bold px-4 py-2 rounded-pill copy-btn mb-2 shadow"
+                                data-code="JUL10" style="font-size:1.05rem;">
+                                <i class="fa-solid fa-copy me-1"></i> Sao chép mã
                             </button>
-                            <div class="mt-2">
-                                <span class="badge bg-light text-primary border border-primary fs-6 px-2 py-1">Hot</span>
-                            </div>
+                            <span
+                                class="badge bg-white text-warning border border-warning fs-6 px-3 py-1 mt-1 shadow-sm">Hot</span>
                         </div>
                     </div>
                 </div>
                 <!-- Voucher 2 -->
                 <div class="col">
-                    <div class="p-2" style="background: #f0f1f3; border-radius: 14px;">
-                        <div class="bg-white rounded-3 shadow-sm h-100 px-3 py-3 d-flex flex-column align-items-center justify-content-between"
-                            style="min-height: 170px; max-width: 350px; margin:auto;">
+                    <div class="card shadow-lg border-0 h-100 text-center"
+                        style="border-radius: 2rem; background: linear-gradient(135deg, #e7fff6 60%, #e7f3ff 100%);">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4"
+                            style="border-radius: 2rem;">
                             <div class="mb-2">
-                                <i class="fa-solid fa-percent fa-lg text-success mb-1"></i>
+                                <i class="fa-solid fa-gift fa-3x text-success"
+                                    style="background: #d1fae5; border-radius: 50%; padding: 18px 22px; box-shadow: 0 2px 12px #b9f6ca;"></i>
                             </div>
                             <div class="mb-2">
-                                <span class="badge bg-success text-white fs-6 px-3 py-1 mb-2 rounded-pill">HOT20</span>
+                                <span class="badge bg-success text-white fs-6 px-4 py-2 rounded-pill shadow-sm"
+                                    style="font-size:1.1rem;">HOT20</span>
                             </div>
-                            <h5 class="fw-bold text-success mb-1" style="font-size: 1.15rem;">Giảm 20%</h5>
-                            <div class="text-secondary mb-1" style="font-size: 1rem;">Cho đơn từ 1.000.000₫</div>
-                            <div class="text-muted mb-2" style="font-size: 1rem;">Nhập mã: <span
-                                    class="voucher-code fw-bold">HOT20</span></div>
-                            <button class="btn btn-success btn-sm fw-bold px-3 py-1 rounded-pill mt-2 copy-btn"
-                                data-code="HOT20" style="font-size: 1rem;">
-                                <i class="fa-solid fa-copy me-1"></i> Sao chép
+                            <h5 class="fw-bold text-success mb-2" style="font-size:1.3rem;">Giảm 20%</h5>
+                            <div class="mb-2 text-secondary" style="font-size:1.05rem;">Cho đơn từ 1.000.000₫</div>
+                            <button class="btn btn-success btn-sm fw-bold px-4 py-2 rounded-pill copy-btn mb-2 shadow"
+                                data-code="HOT20" style="font-size:1.05rem;">
+                                <i class="fa-solid fa-copy me-1"></i> Sao chép mã
                             </button>
-                            <div class="mt-2">
-                                <span class="badge bg-light text-success border border-success fs-6 px-2 py-1">Giới
-                                    hạn</span>
-                            </div>
+                            <span
+                                class="badge bg-white text-success border border-success fs-6 px-3 py-1 mt-1 shadow-sm">Giới
+                                hạn</span>
                         </div>
                     </div>
                 </div>
                 <!-- Voucher 3 -->
                 <div class="col">
-                    <div class="p-2" style="background: #f0f1f3; border-radius: 14px;">
-                        <div class="bg-white rounded-3 shadow-sm h-100 px-3 py-3 d-flex flex-column align-items-center justify-content-between"
-                            style="min-height: 170px; max-width: 350px; margin:auto;">
+                    <div class="card shadow-lg border-0 h-100 text-center"
+                        style="border-radius: 2rem; background: linear-gradient(135deg, #e7f0ff 60%, #e7faff 100%);">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4"
+                            style="border-radius: 2rem;">
                             <div class="mb-2">
-                                <i class="fa-solid fa-truck-fast fa-lg text-warning mb-1"></i>
+                                <i class="fa-solid fa-gift fa-3x text-primary"
+                                    style="background: #e3f2fd; border-radius: 50%; padding: 18px 22px; box-shadow: 0 2px 12px #90caf9;"></i>
                             </div>
                             <div class="mb-2">
-                                <span class="badge bg-warning text-dark fs-6 px-3 py-1 mb-2 rounded-pill">FREESHIP</span>
+                                <span class="badge bg-primary text-white fs-6 px-4 py-2 rounded-pill shadow-sm"
+                                    style="font-size:1.1rem;">FREESHIP</span>
                             </div>
-                            <h5 class="fw-bold text-warning mb-1" style="font-size: 1.15rem;">Freeship toàn quốc</h5>
-                            <div class="text-secondary mb-1" style="font-size: 1rem;">Không giới hạn giá trị đơn</div>
-                            <div class="text-muted mb-2" style="font-size: 1rem;">Nhập mã: <span
-                                    class="voucher-code fw-bold">FREESHIP</span></div>
-                            <button class="btn btn-warning btn-sm fw-bold px-3 py-1 rounded-pill mt-2 copy-btn"
-                                data-code="FREESHIP" style="font-size: 1rem;">
-                                <i class="fa-solid fa-copy me-1"></i> Sao chép
+                            <h5 class="fw-bold text-primary mb-2" style="font-size:1.3rem;">Freeship toàn quốc</h5>
+                            <div class="mb-2 text-secondary" style="font-size:1.05rem;">Không giới hạn giá trị đơn
+                            </div>
+                            <button class="btn btn-primary btn-sm fw-bold px-4 py-2 rounded-pill copy-btn mb-2 shadow"
+                                data-code="FREESHIP" style="font-size:1.05rem;">
+                                <i class="fa-solid fa-copy me-1"></i> Sao chép mã
                             </button>
-                            <div class="mt-2">
-                                <span
-                                    class="badge bg-light text-warning border border-warning fs-6 px-2 py-1">Freeship</span>
-                            </div>
+                            <span
+                                class="badge bg-white text-primary border border-primary fs-6 px-3 py-1 mt-1 shadow-sm">Freeship</span>
                         </div>
                     </div>
                 </div>
@@ -332,7 +332,7 @@
                         btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Đã sao chép';
                         btn.disabled = true;
                         setTimeout(function () {
-                            btn.innerHTML = '<i class="fa-solid fa-copy me-1"></i> Sao chép';
+                            btn.innerHTML = '<i class="fa-solid fa-copy me-1"></i> Sao chép mã';
                             btn.disabled = false;
                         }, 2000);
                     });
@@ -346,7 +346,7 @@
             <div class="title text-center mb-2">
                 <h2 class="fw-bold" style="font-size: 2rem;">Sản phẩm nổi bật</h2>
             </div>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
                 @php
                     $products = [
                         ['name' => 'Vest nam cao cấp', 'old' => '4.200.000₫', 'new' => '3.500.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
@@ -365,55 +365,56 @@
                 @endphp
                 @foreach ($products as $product)
                     <div class="col">
-                        <div
-                            class="product-box-4 wow fadeInUp h-100 d-flex flex-column align-items-center text-center p-2 border rounded shadow-sm">
-                            <!-- Ảnh sản phẩm -->
-                            <div class="product-image product-image-2 d-flex justify-content-center align-items-center mb-3"
-                                style="height: 200px; overflow: hidden;">
-                                <a href="#">
-                                    <img src="{{ $product['img'] }}" class="img-fluid rounded object-fit-cover"
-                                        style="max-height: 100%; width: auto;" alt="{{ $product['name'] }}">
+                        <div class="card shadow-lg border-0 h-100 d-flex flex-column align-items-center"
+                            style="border-radius: 1.5rem; overflow: hidden;">
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                style="height: 260px; width: 100%; overflow: hidden;">
+                                <a href="#" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <img src="{{ $product['img'] }}" alt="{{ $product['name'] }}" class="img-fluid"
+                                        style="max-height: 240px; max-width: 100%; object-fit: cover; border-radius: 1.5rem 1.5rem 0 0;">
                                 </a>
                             </div>
-
-                            <!-- Chi tiết -->
-                            <div class="product-detail d-flex flex-column justify-content-between w-100 flex-grow-1">
-                                <!-- Đánh giá -->
+                            <div class="card-body d-flex flex-column justify-content-between w-100 flex-grow-1 px-3 py-3">
                                 <ul class="rating d-flex justify-content-center mb-2 list-unstyled">
                                     @for ($i = 0; $i < 5; $i++)
-                                        <li><i data-feather="star"
-                                                class="{{ $i < $product['rating'] ? 'fill text-warning' : '' }}"></i></li>
+                                        <li>
+                                            <i data-feather="star"
+                                                class="{{ $i < $product['rating'] ? 'fill text-warning' : 'text-secondary' }}"></i>
+                                        </li>
                                     @endfor
                                 </ul>
-                                <!-- Tên sản phẩm căn giữa -->
-                                <a href="#" class="d-block text-center">
-                                    <h5 class="fw-bold text-dark mb-2" style="font-size: 1.2rem;">
+                                <a href="#" class="text-decoration-none">
+                                    <h5 class="fw-bold text-dark text-center mb-2" style="font-size: 1.15rem;">
                                         {{ $product['name'] }}
                                     </h5>
                                 </a>
-                                <!-- Giá + nút -->
-                                <div class="d-flex align-items-center justify-content-center gap-2 mb-2 flex-wrap">
-                                    <div class="text-start">
-                                        <h6 class="text-muted mb-1" style="font-size: 0.95rem;"><del>{{ $product['old'] }}</del>
-                                        </h6>
-                                        <h5 class="text-danger fw-bold mb-0" style="font-size: 1.1rem;">{{ $product['new'] }}
-                                        </h5>
-                                    </div>
-                                    <div class="d-flex flex-column ms-2">
-                                        <a href="#" class="btn btn-outline-secondary btn-sm mb-1" title="Xem chi tiết">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </a>
-                                        <button class="btn btn-outline-primary btn-sm" title="Thêm vào giỏ">
-                                            <i class="fa-solid fa-cart-plus"></i>
-                                        </button>
-                                    </div>
-                                    <a href="#" class="btn btn-danger btn-sm ms-2 fw-bold btn-buy-now">Mua ngay</a>
+                                <div class="d-flex flex-column align-items-center gap-1 mb-2">
+                                    <span class="text-muted" style="font-size: 1rem;">
+                                        <del>{{ $product['old'] }}</del>
+                                    </span>
+                                    <span class="fw-bold text-danger" style="font-size: 1.2rem;">
+                                        {{ $product['new'] }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-center gap-2 mt-2">
+                                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill" title="Xem chi tiết">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill" title="Thêm vào giỏ">
+                                        <i class="fa-solid fa-cart-plus"></i>
+                                    </button>
+                                  <a href="#" 
+   class="btn btn-warning btn-sm fw-bold rounded-pill px-3 ms-1"
+   style="color: #fff; font-weight: 600; background-color: #ffc107; box-shadow: 0 2px 8px #ffe082; border: none;">
+   Mua ngay
+</a>
+
                                 </div>
                             </div>
                         </div>
                     </div>
                 @endforeach
-            </div> <!-- ĐÓNG .row ở đây -->
+            </div>
             <div class="d-flex justify-content-center mt-4">
                 <a href="{{ route('client.products.index') }}"
                     class="btn btn-primary fw-semibold rounded-pill shadow-sm d-inline-flex align-items-center px-3 py-2"
@@ -422,58 +423,111 @@
                     <i class="fa-solid fa-arrow-right ms-2"></i>
                 </a>
             </div>
-
-
+        </div>
     </section>
 
 
     <!-- News Section Start -->
     <section class="news-section section-b-space">
         <div class="container-fluid-lg">
-            <div class="title">
-                <h2>Tin tức mới nhất</h2>
+            <div class="title mb-4 text-center">
+                <h2 class="fw-bold mb-2" style="font-size:2rem;">Tin tức mới nhất</h2>
+                <div class="text-muted mb-3">Cập nhật xu hướng, ưu đãi và bí quyết thời trang mỗi ngày!</div>
             </div>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+                <!-- News 1 -->
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=500&q=80"
-                            class="card-img-top news-img-equal" alt="Tin tức 1">
-                        <div class="card-body">
-                            <h5 class="card-title">BST Thu Đông 2025: Xu hướng mới lên ngôi</h5>
-                            <p class="card-text">Khám phá những mẫu thiết kế mới nhất cho mùa thu đông, mang phong cách sang
-                                trọng và hiện đại.</p>
-                            <a href="#" class="btn btn-outline-primary btn-sm">Đọc tiếp</a>
+                    <div class="card border-0 shadow-lg h-100" style="border-radius: 1.5rem; overflow: hidden;">
+                        <div style="overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
+                            <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=80"
+                                class="card-img-top img-fluid" alt="Tin tức 1"
+                                style="object-fit:cover; height:220px; transition: transform 0.3s;"
+                                onmouseover="this.style.transform='scale(1.05)';"
+                                onmouseout="this.style.transform='scale(1)';">
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <h5 class="card-title fw-bold text-dark mb-2" style="font-size:1.15rem;">BST Thu Đông 2025: Xu
+                                hướng mới lên ngôi</h5>
+                            <p class="card-text text-secondary mb-3" style="font-size:1rem;">Khám phá những mẫu thiết kế mới
+                                nhất cho mùa thu đông, mang phong cách sang trọng và hiện đại.</p>
+                            <a href="#"
+                class="btn btn-warning rounded-pill fw-semibold text-white align-self-start px-4 py-2"
+                style="background-color: #f9a825; border: none; box-shadow: 0 4px 12px rgba(249, 168, 37, 0.4);">
+                Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-end px-3 pb-3">
+                            <span class="badge bg-light text-warning border border-warning">Xu hướng</span>
                         </div>
                     </div>
                 </div>
+                <!-- News 2 -->
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=80"
-                            class="card-img-top news-img-equal" alt="Tin tức 2">
-                        <div class="card-body">
-                            <h5 class="card-title">Bí quyết phối đồ công sở thanh lịch</h5>
-                            <p class="card-text">Gợi ý cách phối đồ công sở giúp bạn tự tin và nổi bật mỗi ngày tại nơi làm
-                                việc.</p>
-                            <a href="#" class="btn btn-outline-primary btn-sm">Đọc tiếp</a>
+                    <div class="card border-0 shadow-lg h-100" style="border-radius: 1.5rem; overflow: hidden;">
+                        <div style="overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
+                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
+                                class="card-img-top img-fluid" alt="Tin tức 2"
+                                style="object-fit:cover; height:220px; transition: transform 0.3s;"
+                                onmouseover="this.style.transform='scale(1.05)';"
+                                onmouseout="this.style.transform='scale(1)';">
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <h5 class="card-title fw-bold text-dark mb-2" style="font-size:1.15rem;">Bí quyết phối đồ công
+                                sở thanh lịch</h5>
+                            <p class="card-text text-secondary mb-3" style="font-size:1rem;">Gợi ý cách phối đồ công sở giúp
+                                bạn tự tin và nổi bật mỗi ngày tại nơi làm việc.</p>
+                            <a href="#"
+                class="btn btn-warning rounded-pill fw-semibold text-white align-self-start px-4 py-2"
+                style="background-color: #f9a825; border: none; box-shadow: 0 4px 12px rgba(249, 168, 37, 0.4);">
+                Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-end px-3 pb-3">
+                            <span class="badge bg-light text-success border border-success">Bí quyết</span>
                         </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=500&q=80"
-                            class="card-img-top news-img-equal" alt="Tin tức 3">
-                        <div class="card-body">
-                            <h5 class="card-title">Ưu đãi tháng 7: Giảm giá lên đến 50%</h5>
-                            <p class="card-text">Đừng bỏ lỡ cơ hội mua sắm với mức giá ưu đãi hấp dẫn chỉ có trong tháng
-                                này!</p>
-                            <a href="#" class="btn btn-outline-primary btn-sm">Đọc tiếp</a>
-                        </div>
-                    </div>
-                </div>
+            <!-- News 3 -->
+    <div class="col">
+        <div class="card border-0 shadow-lg h-100" style="border-radius: 1.5rem; overflow: hidden;">
+            <div style="overflow: hidden; border-radius: 1.5rem 1.5rem 0 0;">
+                <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=600&q=80"
+                    class="card-img-top img-fluid" alt="Tin tức 3"
+                    style="object-fit:cover; height:220px; transition: transform 0.3s;"
+                    onmouseover="this.style.transform='scale(1.05)';"
+                    onmouseout="this.style.transform='scale(1)';">
+            </div>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <h5 class="card-title fw-bold text-dark mb-2" style="font-size:1.15rem;">
+                    Phong cách hè 2025: Đơn giản mà nổi bật
+                </h5>
+                <p class="card-text text-secondary mb-3" style="font-size:1rem;">
+                    Cập nhật các xu hướng phối đồ đơn giản, trẻ trung cho mùa hè năm nay.
+                </p>
+                <a href="#"
+                class="btn btn-warning rounded-pill fw-semibold text-white align-self-start px-4 py-2"
+                style="background-color: #f9a825; border: none; box-shadow: 0 4px 12px rgba(249, 168, 37, 0.4);">
+                Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-end px-3 pb-3">
+                <span class="badge bg-light text-primary border border-primary">Hot</span>
+            </div>
+        </div>
+    </div>
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination pagination-rounded mb-0">
+                        <li class="page-item active"><span
+                                class="page-link border-0 rounded-pill bg-warning text-white">1</span></li>
+                        <li class="page-item"><a class="page-link border-0 rounded-pill text-dark" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link border-0 rounded-pill text-dark" href="#">3</a></li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </section>
-
     <!-- Service Section Start -->
     <section class="service-section section-b-space">
         <div class="container-fluid-lg">
