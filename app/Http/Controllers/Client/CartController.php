@@ -17,7 +17,7 @@ class CartController extends Controller
     }
 public function add(Request $request, $productId)
 {
-    $variantId = $request->input('variant_id'); // lấy variant_id nếu có
+    $variantId = $request->input('variant_id');
     $quantity = (int) $request->input('quantity', 1);
 
     if (!Auth::check()) {
@@ -27,10 +27,9 @@ public function add(Request $request, $productId)
     $product = Product::with('variants')->findOrFail($productId);
 
     if ($variantId) {
-        // Nếu có biến thể
+
         $variant = $product->variants()->where('id', $variantId)->firstOrFail();
 
-        // Tính số lượng hiện có trong giỏ hàng
         $existing = Cart::where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->where('variant_id', $variantId)
@@ -86,15 +85,26 @@ public function add(Request $request, $productId)
 
 private function updateSessionCart()
 {
-    $carts = Cart::where('user_id', Auth::id())->with('product')->get();
+    $carts = Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
     $sessionCart = [];
 
     foreach ($carts as $cart) {
-        $sessionCart[$cart->product_id] = [
+        $image = 'default.jpg';
+
+        // Nếu có variant và variant có ảnh
+        if ($cart->variant && $cart->variant->image) {
+            $image = 'storage/' . $cart->variant->image;
+        }
+        // Nếu không có variant nhưng product có ảnh
+        elseif ($cart->product && $cart->product->image) {
+            $image = 'storage/' . $cart->product->image;
+        }
+
+        $sessionCart[$cart->id] = [
             'name' => $cart->product->name,
             'quantity' => $cart->quantity,
-            'price' => $cart->product->sale_price ?? $cart->product->price,
-            'image' => $cart->product->image
+            'price' => $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price,
+            'image' => $image,
         ];
     }
 
@@ -102,15 +112,23 @@ private function updateSessionCart()
 }
 
 
- public function update(Request $request, $id)
-    {
-        $cart = Cart::where('user_id', Auth::id())->where('id', $id)->firstOrFail();
-        $cart->quantity = $request->quantity;
-        $cart->save();
 
-        return redirect()->back()->with('success', 'Đã cập nhật số lượng!');
+public function update(Request $request, $id)
+{
+    $cart = Cart::where('user_id', Auth::id())
+        ->with(['product', 'variant'])
+        ->where('id', $id)
+        ->firstOrFail();
+    $quantity = (int) $request->quantity;
+    $stock = $cart->variant ? $cart->variant->stock : $cart->product->stock;
+    if ($quantity > $stock) {
+        return redirect()->back()->with('error', 'Số lượng vượt quá tồn kho sản phẩm.');
     }
-
+    $cart->quantity = $quantity;
+    $cart->save();
+    $this->updateSessionCart();
+    return redirect()->back()->with('success', 'Đã cập nhật số lượng!');
+}
     public function delete($id)
     {
         $cart = Cart::where('user_id', Auth::id())->where('id', $id)->firstOrFail();

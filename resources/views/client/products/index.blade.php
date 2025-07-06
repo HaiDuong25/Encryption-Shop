@@ -1,5 +1,21 @@
 @extends('client.layout.main')
 @section('content')
+<style>
+    .list-group-item {
+        padding-left: 0;
+        padding-right: 0;
+        border: none;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    h5 {
+        font-weight: 600;
+    }
+</style>
+
 @if(session('success'))
 <div class="alert alert-success">
     {{ session('success') }}
@@ -33,6 +49,7 @@
                             <h3><i class="fa-solid fa-arrow-left"></i> Back</h3>
                         </div>
                         <div class="accordion custom-accordion" id="accordionExample">
+                            <!-- Categories filter -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingOne">
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -43,8 +60,7 @@
                                 <div id="collapseOne" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <div class="form-floating theme-form-floating-2 search-box">
-                                            <input type="search" class="form-control" id="search-category"
-                                                placeholder="Search ..">
+                                            <input type="search" class="form-control" id="search-category" placeholder="Search ..">
                                             <label for="search-category">Search</label>
                                         </div>
 
@@ -68,7 +84,47 @@
                                                 </li>
                                                 @endforeach
                                             </ul>
-                                            <button type="submit" class="btn theme-bg-color btn-md text-white fw-bold mt-3">Lọc</button>
+
+                                            <!-- Brand filter -->
+                                            <div class="mt-4">
+                                                <h5>Thương hiệu</h5>
+                                                <ul class="category-list custom-padding custom-height">
+                                                    @foreach($brands as $brand)
+                                                    <li>
+                                                        <div class="form-check ps-0 m-0 category-list-box">
+                                                            <input class="checkbox_animated" type="checkbox" name="brands[]" value="{{ $brand->id }}"
+                                                                id="brand-{{ $brand->id }}"
+                                                                @if(in_array($brand->id, $selectedBrands ?? [])) checked @endif>
+                                                            <label class="form-check-label" for="brand-{{ $brand->id }}">
+                                                                <span class="name">
+                                                                    <a href="#"> <!-- Nếu có route riêng brand thì thay # -->
+                                                                        {{ $brand->name }}
+                                                                    </a>
+                                                                </span>
+                                                                <span class="number">({{ $brand->products()->where('status',1)->count() }})</span>
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+
+
+                                            <!-- Price filter -->
+                                            <div class="mt-4">
+                                                <h5 class="mb-3 border-bottom pb-2">Khoảng giá</h5>
+                                                <div class="input-group mb-2">
+                                                    <span class="input-group-text">Từ</span>
+                                                    <input type="number" name="min_price" class="form-control" placeholder="0" value="{{ request('min_price') }}">
+                                                    <span class="input-group-text">đ</span>
+                                                </div>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">Đến</span>
+                                                    <input type="number" name="max_price" class="form-control" placeholder="0" value="{{ request('max_price') }}">
+                                                    <span class="input-group-text">đ</span>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn theme-bg-color btn-md text-white fw-bold mt-3 w-100">Lọc</button>
                                         </form>
                                     </div>
                                 </div>

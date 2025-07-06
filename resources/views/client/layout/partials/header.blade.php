@@ -29,16 +29,28 @@
                             </div>
                         </div>
 
-                        <div class="middle-box md-2">
-                            <div class="searchbar-box-2 input-group d-xl-flex d-none">
-                                <button class="btn search-icon" type="button">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                </button>
-                                <input type="text" class="form-control"
-                                    placeholder="Tìm kiếm sản phẩm thời trang, thương hiệu...">
-                                <button class="btn search-button" type="button">Tìm kiếm</button>
-                            </div>
-                        </div>
+                        <form action="{{ route('client.products.index') }}" method="GET" class="mb-4 search-form">
+
+                    @foreach(request('categories', []) as $categoryId)
+                    <input type="hidden" name="categories[]" value="{{ $categoryId }}">
+                    @endforeach
+
+                    @foreach(request('brands', []) as $brandId)
+                    <input type="hidden" name="brands[]" value="{{ $brandId }}">
+                    @endforeach
+
+                    <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                    <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+
+                    <div class="input-group shadow rounded search-input-group">
+                        <input type="text" class="form-control border-0 search-input" id="search-product" name="keyword"
+                            placeholder="🔍 Tìm kiếm sản phẩm..." value="{{ request('keyword') }}">
+                        <button type="submit" class="btn btn-primary search-button">
+                            <i class="fa fa-search me-1"></i> Tìm kiếm
+                        </button>
+                    </div>
+
+                </form>
 
                         <!-- <div class="rightside-menu support-sidemenu">
                                 <div class="support-box">
@@ -164,7 +176,6 @@
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </a>
                             </li>
-
                             <li>
                                 <a href="compare.html" class="header-icon">
                                     <small class="badge-number badge-light">2</small>
@@ -173,63 +184,65 @@
                             </li>
 
                             <li class="onhover-dropdown">
-    <a href="{{ route('cart.index') }}" class="header-icon swap-icon">
-        <i class="fa-solid fa-cart-shopping"></i>
-        @php
-            $cart = session('cart', []);
-            $totalQuantity = array_sum(array_column($cart, 'quantity'));
-        @endphp
-        @if($totalQuantity > 0)
-            <span class="badge bg-danger">{{ $totalQuantity }}</span>
-        @endif
-    </a>
+                                <a href="{{ route('cart.index') }}" class="header-icon swap-icon">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                    @php
+                                    $cart = session('cart', []);
+                                    $totalQuantity = array_sum(array_column($cart, 'quantity'));
+                                    @endphp
+                                    @if($totalQuantity > 0)
+                                    <span class="badge bg-danger">{{ $totalQuantity }}</span>
+                                    @endif
+                                </a>
 
-    <div class="onhover-div">
-        <ul class="cart-list">
-            @forelse($cart as $id => $item)
-            <li>
-                <div class="drop-cart">
-                    <a href="#" class="drop-image">
-                        <img src="{{ asset('storage/' . $item['image']) }}" class="blur-up lazyload" alt="{{ $item['name'] }}">
-                    </a>
+                                <div class="onhover-div">
+                                    <ul class="cart-list">
+                                        @forelse($cart as $id => $item)
+                                        <li>
+                                            <div class="drop-cart">
+                                                <a href="#" class="drop-image">
+                                                    <img src="{{ asset($item['image']) }}" alt="{{ $item['name'] }}">
+                                                </a>
 
-                    <div class="drop-contain">
-                        <a href="#">
-                            <h5>{{ $item['name'] }}</h5>
-                        </a>
-                        <h6><span>{{ $item['quantity'] }} x</span> {{ number_format($item['price']) }} đ</h6>
-                        <form action="{{ route('cart.delete', $id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button class="close-button" type="submit">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </li>
-            @empty
-            <li><p class="text-center">Giỏ hàng trống.</p></li>
-            @endforelse
-        </ul>
+                                                <div class="drop-contain">
+                                                    <a href="#">
+                                                        <h5>{{ $item['name'] }}</h5>
+                                                    </a>
+                                                    <h6><span>{{ $item['quantity'] }} x</span> {{ number_format($item['price']) }} đ</h6>
+                                                    <form action="{{ route('cart.delete', $id) }}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="close-button" type="submit">
+                                                            <i class="fa-solid fa-xmark"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        @empty
+                                        <li>
+                                            <p class="text-center">Giỏ hàng trống.</p>
+                                        </li>
+                                        @endforelse
+                                    </ul>
 
-        @if(count($cart) > 0)
-        <div class="price-box">
-            <h5>Tổng:</h5>
-            <h4 class="theme-color fw-bold">
-                {{ number_format(collect($cart)->reduce(function($carry, $item){
+                                    @if(count($cart) > 0)
+                                    <div class="price-box">
+                                        <h5>Tổng:</h5>
+                                        <h4 class="theme-color fw-bold">
+                                            {{ number_format(collect($cart)->reduce(function($carry, $item){
                     return $carry + ($item['price'] * $item['quantity']);
                 }, 0)) }} đ
-            </h4>
-        </div>
+                                        </h4>
+                                    </div>
 
-        <div class="button-group">
-            <a href="{{ route('cart.index') }}" class="btn btn-sm cart-button">Xem Giỏ Hàng</a>
-            <a href="{{ route('cart.checkout') }}" class="btn btn-sm cart-button theme-bg-color text-white">Thanh Toán</a>
-        </div>
-        @endif
-    </div>
-</li>
+                                    <div class="button-group">
+                                        <a href="{{ route('cart.index') }}" class="btn btn-sm cart-button">Xem Giỏ Hàng</a>
+                                        <a href="{{ route('cart.checkout') }}" class="btn btn-sm cart-button theme-bg-color text-white">Thanh Toán</a>
+                                    </div>
+                                    @endif
+                                </div>
+                            </li>
 
 
                             <li>
@@ -249,7 +262,7 @@
                                 <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
                             </div>
                         </a>
-                        
+
                     </div>
                 </div>
             </div>
