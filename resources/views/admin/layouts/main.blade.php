@@ -14,7 +14,7 @@
                 <div class="col-12"></div>
 
                 @yield('content')
-            
+
             </div>
         </div>
     </div>
@@ -23,3 +23,7 @@
     <!-- footer start-->
     @include('admin.layouts.partials.footer')
     <!-- footer End-->
+
+    @stack('scripts') {{-- Thêm dòng này ở đây --}}
+
+</div> {{-- Kết thúc .page-body-wrapper --}}

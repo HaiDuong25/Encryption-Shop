@@ -8,11 +8,39 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
-    public function index()
-    {
-        $categories = Category::whereNotNull('parent_id')->get();
-        return view('admin.categories.index', compact('categories'));
+    public function index(Request $request)
+{
+    $query = Category::query();
+
+    if ($request->filled('parent_id')) {
+        $parent = Category::whereNull('parent_id')
+                          ->where('id', $request->parent_id)
+                          ->first();
+
+        $children = Category::where('parent_id', $request->parent_id)->get();
+
+        $categories = collect();
+        if ($parent) {
+            $categories->push($parent);
+        }
+        $categories = $categories->merge($children);
+    } else {
+        $query->when($request->filled('keyword'), function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->keyword . '%');
+        });
+
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            $q->where('status', $request->status);
+        });
+
+        $categories = $query->orderBy('parent_id')->orderBy('created_at', 'desc')->get();
     }
+
+    $parentCategories = Category::whereNull('parent_id')->get();
+
+    return view('admin.categories.index', compact('categories', 'parentCategories'));
+}
+
 
     public function create()
     {
@@ -43,6 +71,7 @@ class CategoryController extends Controller
         $categories = Category::where('id', '!=', $category->id)
             ->whereNull('parent_id')
             ->get();
+
         return view('admin.categories.form', compact('category', 'categories'));
     }
 
@@ -68,7 +97,6 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')->with('success', 'Danh mục được sửa thành công.');
     }
 
-
     public function createParent()
     {
         return view('admin.categories.create-parent');
@@ -93,21 +121,20 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')->with('success', 'Danh mục cha được tạo thành công.');
     }
 
-   public function destroy(Category $category)
-{
-    $hasChildren = Category::where('parent_id', $category->id)->exists();
+    public function destroy(Category $category)
+    {
+        $hasChildren = Category::where('parent_id', $category->id)->exists();
 
-    if ($hasChildren) {
-        return redirect()->route('categories.index')->with('error', 'Không thể xóa danh mục cha vì đang chứa danh mục con.');
+        if ($hasChildren) {
+            return redirect()->route('categories.index')->with('error', 'Không thể xóa danh mục cha vì đang chứa danh mục con.');
+        }
+
+        if ($category->image && Storage::disk('public')->exists($category->image)) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+        $category->delete();
+
+        return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
     }
-
-    if ($category->image && Storage::disk('public')->exists($category->image)) {
-        Storage::disk('public')->delete($category->image);
-    }
-
-    $category->delete();
-
-    return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
-}
-
 }

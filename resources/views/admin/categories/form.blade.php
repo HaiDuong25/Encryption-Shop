@@ -10,47 +10,49 @@
             <form action="{{ isset($category) ? route('categories.update', $category) : route('categories.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @if(isset($category))
-                @method('PUT')
+                    @method('PUT')
                 @endif
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Tên danh mục</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
-                        value="{{ old('name', $category->name ?? '') }}">
+                           value="{{ old('name', $category->name ?? '') }}">
                     @error('name')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                @if($categories->count() > 0)
-                <div class="mb-3">
-                    <label for="parent_id" class="form-label">Danh mục cha</label>
-                    <select name="parent_id" id="parent_id" class="form-select @error('parent_id') is-invalid @enderror">
-                        @foreach($categories as $cat)
-                        @if(!isset($category) || $category->id !== $cat->id)
-                        <option value="{{ $cat->id }}" {{ old('parent_id', $category->parent_id ?? '') == $cat->id ? 'selected' : '' }}>
-                            {{ $cat->name }}
-                        </option>
-                        @endif
-                        @endforeach
-                    </select>
-                    @error('parent_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                @else
-                <div class="alert alert-warning">
-                    Hiện chưa có danh mục cha nào. Vui lòng <a href="{{ route('categories.create-parent') }}">thêm danh mục cha</a> trước.
-                </div>
+                @if(!isset($category) || ($category && $category->parent_id !== null))
+                    @if($categories->count() > 0)
+                        <div class="mb-3">
+                            <label for="parent_id" class="form-label">Danh mục cha</label>
+                            <select name="parent_id" id="parent_id" class="form-select @error('parent_id') is-invalid @enderror">
+                                <option value="">-- Không có --</option>
+                                @foreach($categories as $cat)
+                                    @if(!isset($category) || $category->id !== $cat->id)
+                                        <option value="{{ $cat->id }}" {{ old('parent_id', $category->parent_id ?? '') == $cat->id ? 'selected' : '' }}>
+                                            {{ $cat->name }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                            @error('parent_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    @else
+                        <div class="alert alert-warning">
+                            Hiện chưa có danh mục cha nào. Vui lòng <a href="{{ route('categories.create-parent') }}">thêm danh mục cha</a> trước.
+                        </div>
+                    @endif
                 @endif
-
 
                 <div class="mb-3">
                     <label for="image" class="form-label">Ảnh danh mục</label>
                     @if(isset($category) && $category->image)
-                    <div class="mb-2">
-                        <img src="{{ asset('storage/' . $category->image) }}" alt="Ảnh hiện tại" width="100">
-                    </div>
+                        <div class="mb-2">
+                            <img src="{{ asset('storage/' . $category->image) }}" alt="Ảnh hiện tại" width="100">
+                        </div>
                     @endif
                     <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
                     @error('image')
