@@ -47,6 +47,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
 Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
+Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 'getStock'])->name('client.products.getStock');
 
 
 // Route chỉ user (và admin được truy cập luôn)

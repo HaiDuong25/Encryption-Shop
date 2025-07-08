@@ -92,6 +92,47 @@ public function category(Request $request, $id)
     ]);
 }
 
+public function show($id)
+{
+    $product = Product::with([
+        'category',
+        'brand',
+        'variants.attributeValues.attribute',
+        'rates' => fn($q) => $q->where('status', 1)
+    ])->findOrFail($id);
+
+    $relatedProducts = Product::where('category_id', $product->category_id)
+        ->where('id', '!=', $product->id)
+        ->latest()
+        ->take(4)
+        ->get();
+
+    return view('client.products.show', compact('product', 'relatedProducts'));
+}
+public function getStock(Request $request)
+{
+    $productId = $request->product_id;
+    $sizeId = $request->size_id;
+    $colorId = $request->color_id;
+
+    $product = Product::findOrFail($productId);
+
+    // Lấy đúng variant ứng với cả size và color
+    $variant = $product->variants()
+        ->whereHas('attributeValues', function($q) use ($sizeId) {
+            $q->where('attribute_value_id', $sizeId);
+        })
+        ->whereHas('attributeValues', function($q) use ($colorId) {
+            $q->where('attribute_value_id', $colorId);
+        })
+        ->first();
+
+    return response()->json([
+        'stock' => $variant ? $variant->stock : 0,
+    ]);
+}
+
+
 
 
 }
