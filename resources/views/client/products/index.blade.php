@@ -97,7 +97,7 @@
                                                                 @if(in_array($brand->id, $selectedBrands ?? [])) checked @endif>
                                                             <label class="form-check-label" for="brand-{{ $brand->id }}">
                                                                 <span class="name">
-                                                                    <a href="#"> <!-- Nếu có route riêng brand thì thay # -->
+                                                                    <a href="#">
                                                                         {{ $brand->name }}
                                                                     </a>
                                                                 </span>
@@ -163,15 +163,24 @@
                                     <p class="text-content mt-1 mb-2 product-content">{{ $product->description }}</p>
 
                                     <div class="product-rating mt-2">
+                                        @php
+                                        $avgRate = $product->rates->where('status', 1)->avg('score');
+                                        $avgRate = round($avgRate * 2) / 2; // làm tròn 0.5
+                                        @endphp
                                         <ul class="rating">
-                                            <li><i data-feather="star" class="fill"></i></li>
-                                            <li><i data-feather="star" class="fill"></i></li>
-                                            <li><i data-feather="star" class="fill"></i></li>
-                                            <li><i data-feather="star" class="fill"></i></li>
-                                            <li><i data-feather="star"></i></li>
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                @if ($avgRate>= $i)
+                                                <li><i data-feather="star" class="fill"></i></li>
+                                                @elseif ($avgRate == ($i - 0.5))
+                                                <li><i data-feather="star-half"></i></li>
+                                                @else
+                                                <li><i data-feather="star"></i></li>
+                                                @endif
+                                                @endfor
                                         </ul>
-                                        <span>(4.0)</span>
+                                        <span>({{ number_format($avgRate, 1) }})</span>
                                     </div>
+
 
                                     <h6 class="unit">{{ $product->material ?? 'Đang cập nhật' }}</h6>
 

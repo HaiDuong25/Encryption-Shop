@@ -37,10 +37,9 @@ public function index(Request $request)
     $query->where('name', 'like', '%' . $request->keyword . '%');
 }
 
-    $products = $query->orderBy('id', 'desc')->paginate(12);
+    $products = $query->with('rates')->orderBy('id', 'desc')->paginate(12);
     $categories = Category::where('status', 1)->get();
     $brands = Brand::all();
-
     return view('client.products.index', [
         'products' => $products,
         'categories' => $categories,
