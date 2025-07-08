@@ -141,7 +141,7 @@
                         <div class="product-box-3 h-100 wow fadeInUp">
                             <div class="product-header">
                                 <div class="product-image">
-                                    <a href="#">
+                                    <a href="{{ route('client.products.show', $product->id) }}">
                                         <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
                                     </a>
 
@@ -157,7 +157,7 @@
                             <div class="product-footer">
                                 <div class="product-detail">
                                     <span class="span-name">{{ $product->category->name ?? 'Chưa phân loại' }}</span>
-                                    <a href="#">
+                                    <a href="{{ route('client.products.show', $product->id) }}">
                                         <h5 class="name">{{ $product->name }}</h5>
                                     </a>
                                     <p class="text-content mt-1 mb-2 product-content">{{ $product->description }}</p>
