@@ -28,17 +28,7 @@
                                 </div>
                             </div>
 
-                            <div class="middle-box">
-                                <div class="center-box">
-                                    <div class="location-box-2">
-                                        <button class="btn location-button" data-bs-toggle="modal"
-                                            data-bs-target="#locationModal">
-                                            <i class="iconly-Location icli"></i>
-                                            <span>Location</span>
-                                            <i class="fa-solid fa-angle-down down-arrow"></i>
-                                        </button>
-                                    </div>
-
+                            <div class="middle-box md-2">
                                     <div class="searchbar-box-2 input-group d-xl-flex d-none">
                                         <button class="btn search-icon" type="button">
                                             <i class="iconly-Search icli"></i>
@@ -47,10 +37,9 @@
                                             placeholder="Search for products, styles,brands...">
                                         <button class="btn search-button" type="button">Search</button>
                                     </div>
-                                </div>
                             </div>
 
-                            <div class="rightside-menu support-sidemenu">
+                            <!-- <div class="rightside-menu support-sidemenu">
                                 <div class="support-box">
                                     <div class="support-image">
                                         <img src="{{ asset('assets/images/icon/support.png') }}" class="img-fluid blur-up lazyload"
@@ -61,7 +50,7 @@
                                         <h4>24/7 Support Center</h4>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -71,7 +60,7 @@
         <div class="container-fluid-lg">
             <div class="row">
                 <div class="col-12 position-relative">
-                    <div class="main-nav nav-left-align">
+                    <div class="main-nav nav-align">
                         <div class="main-nav navbar navbar-expand-xl navbar-light navbar-sticky p-0">
                             <div class="offcanvas offcanvas-collapse order-xl-2" id="primaryMenu">
                                 <div class="offcanvas-header navbar-shadow">
@@ -81,82 +70,18 @@
                                 <div class="offcanvas-body">
                                     <ul class="navbar-nav">
                                         <li class="nav-item dropdown dropdown-mega">
-                                            <a class="nav-link dropdown-toggle ps-0" href="javascript:void(0)"
-                                                data-bs-toggle="dropdown">Home</a>
+                                            <a class="nav-link  ps-0" href="{{ route('home') }}"
+                                                data-bs-toggle="dropdown-item">Trang chủ</a>
+                                        </li>
 
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <a class="dropdown-item" href="index.html">Kartshop</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-2.html">Sweetshop</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-3.html">Organic</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-4.html">Supershop</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-5.html">Classic shop</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-6.html">Furniture</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-7.html">Search Oriented</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-8.html">Category Focus</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-9.html">Fashion</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-10.html">Book</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="index-11.html">Digital</a>
-                                                </li>
-                                            </ul>
+                                        <li class="nav-item dropdown dropdown-mega">
+                                            <a class="nav-link  ps-0" href="{{ route('client.products.index') }}"
+                                                data-bs-toggle="dropdown-item">Sản phẩm</a>
                                         </li>
 
                                         <li class="nav-item dropdown">
                                             <a class="nav-link dropdown-toggle" href="javascript:void(0)"
-                                                data-bs-toggle="dropdown">Shop</a>
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-category-slider.html">Shop
-                                                        Category Slider</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-category.html">Shop
-                                                        Category Sidebar</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-banner.html">Shop Banner</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-left-sidebar.html">Shop Left
-                                                        Sidebar</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-list.html">Shop List</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-right-sidebar.html">Shop
-                                                        Right Sidebar</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="shop-top-filter.html">Shop Top
-                                                        Filter</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li class="nav-item dropdown">
-                                            <a class="nav-link dropdown-toggle" href="javascript:void(0)"
-                                                data-bs-toggle="dropdown">Product</a>
+                                                data-bs-toggle="dropdown">Danh mục sản phẩm</a>
 
                                             <div class="dropdown-menu dropdown-menu-3 dropdown-menu-2">
                                                 <div class="row">
@@ -276,84 +201,6 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </li>
-
-                                        <li class="nav-item dropdown dropdown-mega">
-                                            <a class="nav-link dropdown-toggle ps-xl-2 ps-0" href="javascript:void(0)"
-                                                data-bs-toggle="dropdown">Mega Menu</a>
-
-                                            <div class="dropdown-menu dropdown-menu-2 dropdown-menu-left">
-                                                <div class="row">
-                                                    <div class="dropdown-column col-xl-3">
-                                                        <h5 class="dropdown-header">Daily Vegetables</h5>
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Beans &
-                                                            Brinjals</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Broccoli
-                                                            & Cauliflower</a>
-
-                                                        <a href="shop-left-sidebar.html" class="dropdown-item">Chilies,
-                                                            Garlic, Lemon & Ginger</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Cut
-                                                            Vegetables & Salads</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Gourd,
-                                                            Cucumber & Pumpkin</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Herbs &
-                                                            Sprouts</a>
-
-                                                        <a href="demo-personal-portfolio.html"
-                                                            class="dropdown-item">Lettuce
-                                                            & Leafy</a>
-                                                    </div>
-
-                                                    <div class="dropdown-column col-xl-3">
-                                                        <h5 class="dropdown-header">Baby Tender</h5>
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Beans &
-                                                            Brinjals</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Broccoli
-                                                            & Cauliflower</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Chilies,
-                                                            Garlic, Lemon & Ginger</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Cut
-                                                            Vegetables & Salads</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Gourd,
-                                                            Cucumber & Pumpkin</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Onions,
-                                                            Potatoes & Tomatoes</a>
-
-                                                        <a href="shop-left-sidebar.html" class="dropdown-item">Peas &
-                                                            Corn</a>
-                                                    </div>
-
-                                                    <div class="dropdown-column col-xl-3">
-                                                        <h5 class="dropdown-header">Exotic Vegetables</h5>
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Asparagus
-                                                            & Artichokes</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Avocados
-                                                            & Peppers</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Broccoli
-                                                            & Zucchini</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Celery,
-                                                            Fennel & Leeks</a>
-
-                                                        <a class="dropdown-item" href="shop-left-sidebar.html">Chilies &
-                                                            Lime</a>
-                                                    </div>
-
-                                                    <div class="dropdown-column dropdown-column-img col-3"></div>
                                                 </div>
                                             </div>
                                         </li>
@@ -593,18 +440,6 @@
                                 <div class="user-name">
                                     <h6 class="text-content">My Account</h6>
                                     <h4 class="mt-1">Jennifer V. Ward</h4>
-                                </div>
-                            </a>
-
-                            <a target="_blank" class="btn mobile-app d-xxl-flex d-none"
-                                href="https://play.google.com/store/games?utm_source=apac_med&amp;utm_medium=hasem&amp;utm_content=Oct0121&amp;utm_campaign=Evergreen&amp;pcampaignid=MKT-EDR-apac-in-1003227-med-hasem-py-Evergreen-Oct0121-Text_Search_BKWS-BKWS%7CONSEM_kwid_43700065205026415_creativeid_535350509927_device_c&amp;gclid=Cj0KCQjw8uOWBhDXARIsAOxKJ2H1K3VqdJFHodt0-XSnQzcuOuTP-s2aPBE6lG0QVOf8D5cJBsB-DxQaAkNAEALw_wcB&amp;gclsrc=aw.ds">
-                                <div class="mobile-image">
-                                    <img src="{{ asset('assets-front/images/icon/mobile.png') }}" class="img-fluid blur-up lazyload"
-                                        alt="">
-                                </div>
-
-                                <div class="mobile-name">
-                                    <h4>Download App</h4>
                                 </div>
                             </a>
                         </div>

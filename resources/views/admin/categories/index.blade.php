@@ -22,11 +22,20 @@
                     </div>
                     @endif
 
+                    @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-3">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
+
+
                     <div class="table-responsive mt-3">
                         <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>Tên danh mục</th>
+                                    <th>Danh mục cha</th>
                                     <th>Ngày tạo</th>
                                     <th>Ảnh</th>
                                     <th>Trạng thái</th>
@@ -37,6 +46,7 @@
                                 @forelse ($categories as $category)
                                 <tr style="border-bottom: none !important;">
                                     <td>{{ $category->name }}</td>
+                                    <td>{{ $category->parent->name ?? 'N/A' }}</td>
                                     <td>
                                         {{ $category->created_at ? $category->created_at->format('d/m/Y H:i') : '—' }}
                                     </td>
@@ -70,7 +80,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Không có danh mục.</td>
+                                    <td colspan="6" class="text-center">Không có danh mục.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

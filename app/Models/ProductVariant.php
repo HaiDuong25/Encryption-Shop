@@ -6,21 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductVariant extends Model
 {
-    protected $fillable = ['product_id', 'color_id', 'size_id', 'price', 'quantity', 'image'];
-
+    protected $fillable = [
+        'product_id',
+        'sku',
+        'price',
+        'compare_price',
+        'stock',
+        'image',
+        'gallery'
+    ];
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
-
-    public function color()
+    public function attributeValues()
     {
-        return $this->belongsTo(Color::class);
+        return $this->belongsToMany(AttributeValue::class, 'product_variant_attribute_values');
     }
-
-    public function size()
+    public function getDisplayPriceAttribute()
     {
-        return $this->belongsTo(Size::class);
+        return $this->price ?? $this->product->price;
     }
 }
-
