@@ -10,7 +10,7 @@ class ProductVariant extends Model
         'product_id',
         'sku',
         'price',
-        'compare_price',
+        'sale_price',
         'stock',
         'image',
         'gallery'
