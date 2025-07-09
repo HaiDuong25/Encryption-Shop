@@ -12,12 +12,13 @@
                 </div>
                 <div>
                     <h3 class="mb-2">{{ $product->name }}</h3>
-                    <div class="mb-1">Danh mục: <span class="badge bg-info text-dark">{{ $product->category->name ?? '-' }}</span></div>
-                    <div class="mb-1">Thương hiệu: <span class="badge bg-secondary">{{ $product->brand->name ?? '-' }}</span></div>
+                    <div class="mb-1">Danh mục: <span class="badge bg-info ">{{ $product->category->name ?? '-' }}</span></div>
+                    <div class="mb-1">Thương hiệu: <span class="badge btn-warning">{{ $product->brand->name ?? '-' }}</span></div>
                     <div class="mb-1 text-danger">Giá mặc định: <b>{{ number_format($product->price,0,',','.') }} đ</b></div>
+                    <div class="mb-1 text-danger">Giá khuyến mãi: <b>{{ number_format($product->compare_price,0,',','.') }} đ</b></div>
                     <div class="mb-1">
                         Trạng thái:
-                        <span class="badge bg-{{ $product->status=='active'?'success':'danger' }}">
+                        <span class="badge bg-{{ $product->status=='active'?'primary':'danger' }}">
                             {{ $product->status=='active' ? 'Hiển thị' : 'Ẩn' }}
                         </span>
                     </div>
@@ -26,7 +27,7 @@
 
             <div class="mb-3">
                 <label class="fw-semibold">Mô tả sản phẩm:</label>
-                <div class="bg-light rounded p-2">{!! nl2br(e($product->description)) !!}</div>
+                <span class="fw-bold">{!! nl2br(e($product->description)) !!}</span>
             </div>
 
             <hr>

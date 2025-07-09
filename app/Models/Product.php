@@ -33,4 +33,8 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariant::class);
     }
+    public function rates()
+    {
+        return $this->hasMany(Rate::class);
+    }
 }

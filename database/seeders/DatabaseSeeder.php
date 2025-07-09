@@ -33,9 +33,23 @@ class DatabaseSeeder extends Seeder
      OrderDetailsTableSeeder::class,
     PaymentMethodsTableSeeder::class,
     PaymentsTableSeeder::class,         
-
     RatesTableSeeder::class,
     RateRepliesTableSeeder::class,
-        ]);
+            CategorySeeder::class,
+            BrandSeeder::class,
+            AttributeSeeder::class,
+            ProductSeeder::class,
+            
+            UsersTableSeeder::class,
+            BannersTableSeeder::class,
+            ContactsTableSeeder::class,
+            CouponsTableSeeder::class,
+            OrdersTableSeeder::class,
+            OrderDetailsTableSeeder::class,
+            PaymentMethodsTableSeeder::class,
+            PaymentsTableSeeder::class,
+            RatesTableSeeder::class,
+            RateRepliesTableSeeder::class,
+     ]);
     }
 }
