@@ -23,7 +23,7 @@ class OrderController extends \App\Http\Controllers\Controller
             ->latest()
             ->paginate(10);
 
-        return view('orders.index', compact('orders'));
+        return view('admin.orders.index', compact('orders'));
     }
 
     public function create()
@@ -32,7 +32,7 @@ class OrderController extends \App\Http\Controllers\Controller
         $coupons = Coupon::all();
         $paymentMethods = PaymentMethod::all();
 
-        return view('orders.create', compact('users', 'coupons', 'paymentMethods'));
+        return view('admin.orders.create', compact('users', 'coupons', 'paymentMethods'));
     }
 
     public function store(Request $request)
@@ -91,7 +91,7 @@ class OrderController extends \App\Http\Controllers\Controller
             'coupon',
             'payments'
         ]);
-        return view('orders.show', compact('order'));
+        return view('admin.orders.show', compact('order'));
     }
 
     public function edit(Order $order)
@@ -99,7 +99,7 @@ class OrderController extends \App\Http\Controllers\Controller
         $users = User::all();
         $coupons = Coupon::all();
         $paymentMethods = PaymentMethod::all();
-        return view('orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
+        return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
     }
 
     public function update(Request $request, Order $order)
@@ -142,7 +142,7 @@ class OrderController extends \App\Http\Controllers\Controller
             'Đã nhận hàng',
             'Đơn hàng hoàn thành',
         ];
-        return view('orders.tracking', compact('order', 'locations'));
+        return view('admin.orders.tracking', compact('order', 'locations'));
     }
 
     public function updateStatus(Request $request, Order $order)

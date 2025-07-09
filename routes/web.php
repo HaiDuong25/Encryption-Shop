@@ -61,10 +61,9 @@ Route::middleware(['auth'])->group(function () {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');
-});
 
-
-Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
+    // ADMIN ROUTES - Auth được áp dụng chung, chỉ cần kiểm tra role
+    Route::prefix('admin')->middleware([RoleMiddleware::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
     Route::resource('products', ProductController::class);
@@ -141,7 +140,26 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
     Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::post('/admin/orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
     //user
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+    });
+});
+
+// Routes cho "Mua ngay" - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+});
+
+// Routes cho mã giảm giá AJAX - cần auth  
+Route::middleware(['auth'])->group(function () {
+    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
+    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
+});
+
+// Routes cho client orders - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
+    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
 });
