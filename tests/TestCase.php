@@ -13,7 +13,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         
-        // Ensure database is properly set up for testing
-        $this->artisan('migrate:fresh');
+        // Ensure database file exists
+        if (!file_exists(database_path('database.sqlite'))) {
+            touch(database_path('database.sqlite'));
+        }
     }
 }
