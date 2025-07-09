@@ -24,6 +24,10 @@ class DatabaseSeeder extends Seeder
     BannersTableSeeder::class,
     ContactsTableSeeder::class,
     CouponsTableSeeder::class,
+    CategorySeeder::class,
+    BrandSeeder::class,
+    AttributeSeeder::class,
+    ProductSeeder::class,
     CartsTableSeeder::class,
      OrdersTableSeeder::class,
      OrderDetailsTableSeeder::class,
@@ -32,10 +36,6 @@ class DatabaseSeeder extends Seeder
 
     RatesTableSeeder::class,
     RateRepliesTableSeeder::class,
-            CategorySeeder::class,
-            BrandSeeder::class,
-            AttributeSeeder::class,
-            ProductSeeder::class,
         ]);
     }
 }
