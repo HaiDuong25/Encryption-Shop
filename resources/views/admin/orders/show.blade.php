@@ -78,9 +78,32 @@
             <span><i class="fas fa-box text-primary"></i> {{ $order->orderDetails->sum('quantity') }} sản phẩm</span>
         </div>
         <div>
+            @php
+                $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
+                
+                // Tính số tiền giảm thực tế
+                $actualDiscountAmount = 0;
+                if ($order->coupon_code && $order->coupon_discount > 0) {
+                    if ($order->coupon_type == 'percentage') {
+                        $actualDiscountAmount = ($subtotal * $order->coupon_discount) / 100;
+                    } else {
+                        $actualDiscountAmount = min($order->coupon_discount, $subtotal);
+                    }
+                }
+                
+                $total = $order->total_price;
+            @endphp
+            
+            @if($actualDiscountAmount > 0)
+                <span><i class="fas fa-calculator text-info"></i> Tạm tính: <strong>{{ number_format($subtotal, 0, ',', '.') }} đ</strong></span>
+                <span><i class="fas fa-tag text-success"></i> Giảm giá: <strong style="color:#10b981">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</strong>
+                    @if($order->coupon_code)
+                        <span class="badge bg-primary ms-1">{{ $order->coupon_code }}</span>
+                    @endif
+                </span>
+            @endif
             <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
-                    style="color:#e11d48">{{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }}
-                    đ
+                    style="color:#e11d48">{{ number_format($total, 0, ',', '.') }} đ
                 </strong></span>
         </div>
     </div>
@@ -161,13 +184,43 @@
             <div class="card mb-4 p-3">
                 <h5 class="mb-3"><i class="fas fa-receipt me-2 text-primary"></i> Lịch sử thanh toán</h5>
                 <ul class="list-unstyled">
+                    @php
+                        $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
+                        
+                        // Tính số tiền giảm thực tế
+                        $actualDiscountAmount = 0;
+                        if ($order->coupon_code && $order->coupon_discount > 0) {
+                            if ($order->coupon_type == 'percentage') {
+                                $actualDiscountAmount = ($subtotal * $order->coupon_discount) / 100;
+                            } else {
+                                $actualDiscountAmount = min($order->coupon_discount, $subtotal);
+                            }
+                        }
+                        
+                        $total = $order->total_price;
+                    @endphp
+                    
+                    @if($actualDiscountAmount > 0)
+                        <li>
+                            <i class="fas fa-calculator text-info"></i>
+                            Tạm tính:
+                            <span class="fw-bold">{{ number_format($subtotal, 0, ',', '.') }} đ</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-tag text-success"></i>
+                            Giảm giá 
+                            @if($order->coupon_code)
+                                ({{ $order->coupon_code }})
+                            @endif
+                            :
+                            <span class="text-success fw-bold">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</span>
+                        </li>
+                    @endif
+                    
                     <li>
                         <i class="fas fa-money-bill-wave text-success"></i>
                         Tổng tiền thanh toán:
-                        <span class="text-success fw-bold">
-                            {{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }}
-                            đ
-                        </span>
+                        <span class="text-success fw-bold">{{ number_format($total, 0, ',', '.') }} đ</span>
                     </li>
                     @php
                         $validPayments = $order->payments->whereNotNull('created_at');
@@ -234,27 +287,46 @@
                     @endif
                 </p>
                 <hr>
-                <div class="summary-title">Thông tin khách hàng</div>
-                <p><strong>Khách hàng:</strong><br>{{ $order->name }}</p>
-                <p><strong>SĐT:</strong> {{ $order->phone }}</p>
-                <p><strong>Email:</strong> {{ $order->user->email ?? 'N/A' }}</p>
-                <p><strong>Địa chỉ:</strong><br>{{ $order->address }}</p>
+                <div class="summary-title">Thông tin người đặt hàng</div>
+                <p><strong>Người đặt:</strong><br>{{ $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
+                <p><strong>Email:</strong> {{ $order->orderer_email ?? ($order->user->email ?? 'N/A') }}</p>
+                <p><strong>SĐT:</strong> {{ $order->orderer_phone ?? 'N/A' }}</p>
+                
+                <hr>
+                <div class="summary-title">Thông tin người nhận hàng</div>
+                <p><strong>Người nhận:</strong><br>{{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
+                <p><strong>SĐT:</strong> {{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</p>
+                <p><strong>Địa chỉ:</strong><br>{{ $order->recipient_address ?? $order->address ?? 'N/A' }}</p>
+                
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
-                <p><strong>Mã giảm giá:</strong> {{ $order->coupon->code ?? 'Không áp dụng' }}</p>
+                @if($order->coupon_code)
+                    <p><strong>Mã giảm giá:</strong> 
+                        <span class="badge bg-success">{{ $order->coupon_code }}</span>
+                        @if($order->coupon_type == 'percentage')
+                            ({{ $order->coupon_discount }}%)
+                        @else
+                            (-{{ number_format($order->coupon_discount, 0, ',', '.') }} đ)
+                        @endif
+                    </p>
+                @else
+                    <p><strong>Mã giảm giá:</strong> Không áp dụng</p>
+                @endif
 
                 <!-- <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p> -->
             </div>
 
             <div class="summary-card mt-3">
                 <div class="summary-title">Chi tiết giao hàng</div>
-                <p><strong>Người nhận:</strong> {{ $order->shipping_name ?? $order->name }}</p>
-                <p><strong>Địa chỉ:</strong><br>
-                    {{ $order->shipping_address ?? $order->address }}
+                <p><strong>Người nhận:</strong> {{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
+                <p><strong>Địa chỉ giao hàng:</strong><br>
+                    {{ $order->recipient_address ?? $order->address ?? 'N/A' }}
                 </p>
-                <p><strong>Số điện thoại:</strong> {{ $order->shipping_phone ?? $order->phone }}</p>
-                <p><strong>Email:</strong> {{ $order->user->email ?? 'N/A' }}</p>
-                <p><strong>Phương thức vận chuyển:</strong> {{ $order->shipping_method ?? 'Miễn phí vận chuyển' }}</p>
+                <p><strong>Số điện thoại:</strong> {{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</p>
+                <p><strong>Email liên hệ:</strong> {{ $order->orderer_email ?? ($order->user->email ?? 'N/A') }}</p>
+                <p><strong>Phương thức vận chuyển:</strong> Giao hàng tận nơi</p>
+                <p><strong>Ngày đặt hàng:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</p>
+                <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(3)->format('d/m/Y') }}</p>
             </div>
         </div>
     </div>
