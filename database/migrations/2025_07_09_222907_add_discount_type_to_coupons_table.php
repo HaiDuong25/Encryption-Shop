@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('coupons', function (Blueprint $table) {
-            $table->enum('discount_type', ['percentage', 'fixed'])->default('percentage')->after('discount')
-                ->comment('Loại giảm giá: percentage = %, fixed = số tiền cố định');
+            //
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('coupons', function (Blueprint $table) {
-            $table->dropColumn('discount_type');
+            //
         });
     }
 };

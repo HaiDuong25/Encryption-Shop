@@ -81,9 +81,17 @@
                         <span class="fw-semibold">{{ $carts->sum('quantity') }}</span>
                     </p>
 
+                    @php
+                        $grandTotal = $carts->sum(function($cart){
+                            return ($cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+                        });
+                        $voucherDiscount = 50000; // Giả lập voucher giảm 50k
+                        $finalTotal = max(0, $grandTotal - $voucherDiscount);
+                    @endphp
+
                     <p class="d-flex justify-content-between mb-2">
                         <span>Tạm tính:</span>
-                        <span class="fw-semibold">{{ number_format($totals['subtotal']) }} đ</span>
+                        <span class="fw-semibold">{{ number_format($grandTotal) }} đ</span>
                     </p>
 
                     <!-- Divider -->
@@ -91,45 +99,25 @@
 
                     <!-- Voucher -->
                     <div class="mb-3">
-                        @php $appliedCoupon = session('applied_coupon'); @endphp
-                        
-                        @if($appliedCoupon)
-                            <!-- Hiển thị mã đã áp dụng -->
-                            <div class="alert alert-success d-flex justify-content-between align-items-center mb-2">
-                                <span><i class="fa-solid fa-check-circle me-1"></i> <strong>{{ $appliedCoupon['code'] }}</strong> đã được áp dụng</span>
-                                <form action="{{ route('cart.removeCoupon') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Hủy</button>
-                                </form>
-                            </div>
-                        @else
-                            <!-- Form nhập mã -->
-                            <label for="voucher" class="form-label fw-semibold"><i class="fa-solid fa-ticket me-1 text-warning"></i> Mã giảm giá</label>
-                            <form action="{{ route('cart.applyCoupon') }}" method="POST">
-                                @csrf
-                                <div class="input-group">
-                                    <input type="text" name="coupon_code" class="form-control" placeholder="Nhập mã giảm giá..." required>
-                                    <button class="btn btn-warning" type="submit">
-                                        <i class="fa-solid fa-percent me-1"></i>Áp dụng
-                                    </button>
-                                </div>
-                            </form>
-                        @endif
+                        <label for="voucher" class="form-label fw-semibold"><i class="fa-solid fa-ticket me-1 text-warning"></i> Mã giảm giá</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="voucher" placeholder="Nhập mã voucher...">
+                            <button class="btn btn-secondary" type="button" disabled>Áp dụng</button>
+                        </div>
+                        <small class="text-muted">Chức năng voucher đang được phát triển.</small>
                     </div>
 
-                    @if($totals['discount'] > 0)
-                        <p class="d-flex justify-content-between text-success mb-2">
-                            <span>Giảm giá ({{ $appliedCoupon['code'] ?? '' }}):</span>
-                            <span>-{{ number_format($totals['discount']) }} đ</span>
-                        </p>
-                    @endif
+                    <p class="d-flex justify-content-between text-success mb-2">
+                        <span>Giảm giá voucher:</span>
+                        <span>-{{ number_format($voucherDiscount) }} đ</span>
+                    </p>
 
                     <!-- Divider -->
                     <hr class="my-3">
 
                     <p class="d-flex justify-content-between fs-5 fw-bold">
                         <span>Tổng thanh toán:</span>
-                        <span class="text-primary">{{ number_format($totals['total']) }} đ</span>
+                        <span class="text-primary">{{ number_format($finalTotal) }} đ</span>
                     </p>
 
                     <a href="{{ route('cart.checkout') }}" class="btn w-100 py-2 mt-3" style="background:#222;color:#fff;">

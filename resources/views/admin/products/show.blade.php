@@ -15,7 +15,7 @@
                     <div class="mb-1">Danh mục: <span class="badge bg-info ">{{ $product->category->name ?? '-' }}</span></div>
                     <div class="mb-1">Thương hiệu: <span class="badge btn-warning">{{ $product->brand->name ?? '-' }}</span></div>
                     <div class="mb-1 text-danger">Giá mặc định: <b>{{ number_format($product->price,0,',','.') }} đ</b></div>
-                    <div class="mb-1 text-danger">Giá khuyến mãi: <b>{{ number_format($product->sale_price,0,',','.') }} đ</b></div>
+                    <div class="mb-1 text-danger">Giá khuyến mãi: <b>{{ number_format($product->compare_price,0,',','.') }} đ</b></div>
                     <div class="mb-1">
                         Trạng thái:
                         <span class="badge bg-{{ $product->status=='active'?'primary':'danger' }}">

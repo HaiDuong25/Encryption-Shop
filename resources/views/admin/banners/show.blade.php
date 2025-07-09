@@ -26,11 +26,13 @@
         <div class="mb-3">
             <strong>Ảnh banner:</strong>
             <div class="d-flex flex-wrap gap-2 mt-2">
-                @if($banner->images && count($banner->images) > 0)
-                    @foreach($banner->images as $img)
+                @php
+                    $images = is_array($banner->image) ? $banner->image : json_decode($banner->image, true);
+                @endphp
+                @if($images)
+                    @foreach($images as $img)
                         <img src="{{ asset('storage/' . $img) }}" width="120" height="120"
-                            style="object-fit:contain; aspect-ratio:1/1; border-radius:6px; border:1px solid #eee; background:#fafafa;"
-                            alt="Banner Image">
+                            style="object-fit:contain; aspect-ratio:1/1; border-radius:6px; border:1px solid #eee; background:#fafafa;">
                     @endforeach
                 @else
                     <span class="text-muted fst-italic">Không có ảnh</span>
