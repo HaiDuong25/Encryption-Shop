@@ -48,11 +48,25 @@
     background-color: #3b82f6;
     border-color: #3b82f6;
 }
+.price-info {
+    min-width: 150px;
+}
+.price-info .subtotal {
+    font-size: 0.85em;
+}
+.price-info .discount {
+    font-size: 0.85em;
+}
+.price-info .total {
+    font-size: 1.05em;
+}
 </style>
 <div class="container-fluid-lg py-4">
     <div class="card shadow-sm">
         <div class="card-header bg-white">
             <h3 class="mb-0">Đơn hàng của tôi</h3>
+            <!-- Lưu ý về trạng thái đơn hàng -->
+            <p class="text-muted small mt-2">Lưu ý: Đơn hàng chỉ được hủy khi đang trong trạng thái "Chờ xác nhận" hoặc "Đã xác nhận".</p>
         </div>
         <div class="card-body">
             @if($orders->count() > 0)
@@ -75,10 +89,43 @@
                         <tr>
                             <td>{{ $order->id }}</td>
                             <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $order->name }}</td>
-                            <td>{{ $order->phone }}</td>
-                            <td>{{ $order->address }}</td>
-                            <td>{{ number_format($order->total_price) }} đ</td>
+                            <td>{{ $order->recipient_name ?? $order->orderer_name ?? 'N/A' }}</td>
+                            <td>{{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</td>
+                            <td>{{ $order->recipient_address ?? 'N/A' }}</td>
+                            <td>
+                                @php
+                                    $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
+                                    
+                                    // Tính số tiền giảm thực tế
+                                    $actualDiscountAmount = 0;
+                                    if ($order->coupon_code && $order->coupon_discount > 0) {
+                                        if ($order->coupon_type == 'percentage') {
+                                            $actualDiscountAmount = ($subtotal * $order->coupon_discount) / 100;
+                                        } else {
+                                            $actualDiscountAmount = min($order->coupon_discount, $subtotal);
+                                        }
+                                    }
+                                    
+                                    $total = $order->total_price;
+                                @endphp
+                                
+                                <div class="price-info">
+                                    @if($actualDiscountAmount > 0)
+                                        <div class="subtotal text-muted small">
+                                            Tạm tính: {{ number_format($subtotal, 0, ',', '.') }}đ
+                                        </div>
+                                        <div class="discount text-danger small">
+                                            Giảm giá: -{{ number_format($actualDiscountAmount, 0, ',', '.') }}đ
+                                            @if($order->coupon_code)
+                                                <span class="badge bg-primary ms-1">{{ $order->coupon_code }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    <div class="total fw-bold text-primary">
+                                        {{ number_format($total, 0, ',', '.') }}đ
+                                    </div>
+                                </div>
+                            </td>
                             <td>
                                 @php
                                     // Convert numeric status to string for compatibility
@@ -115,7 +162,35 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-outline-primary">Xem</a>
+                                @php
+                                    // Convert numeric status to string for compatibility
+                                    $statusValue = $order->status;
+                                    if (is_numeric($statusValue)) {
+                                        $statusMap = [
+                                            '0' => 'pending',
+                                            '1' => 'confirmed', 
+                                            '2' => 'shipping',
+                                            '3' => 'delivering',
+                                            '4' => 'received',
+                                            '5' => 'completed'
+                                        ];
+                                        $statusValue = $statusMap[$statusValue] ?? 'pending';
+                                    }
+                                    $canCancel = in_array($statusValue, ['pending', 'confirmed']);
+                                @endphp
+                                
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa-solid fa-eye me-1"></i>Xem
+                                    </a>
+                                    
+                                    @if($canCancel)
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="cancelOrder({{ $order->id }})">
+                                            <i class="fa-solid fa-times me-1"></i>Hủy
+                                        </button>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -125,7 +200,51 @@
             @else
             <div class="alert alert-info text-center mb-0">Bạn chưa có đơn hàng nào.</div>
             @endif
+
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function cancelOrder(orderId) {
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
+        return;
+    }
+
+    // Disable button to prevent double click
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang hủy...';
+
+    fetch(`/orders/${orderId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload(); // Refresh page to show updated status
+        } else {
+            alert('Lỗi: ' + data.message);
+            // Re-enable button on error
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi hủy đơn hàng');
+        // Re-enable button on error
+        button.disabled = false;
+        button.innerHTML = originalContent;
+    });
+}
+</script>
+@endpush
