@@ -344,71 +344,63 @@
     <section class="product-section-3">
         <div class="container-fluid-lg">
             <div class="title text-center mb-2">
-                <h2 class="fw-bold" style="font-size: 2rem;">Sản phẩm nổi bật</h2>
+                <h2 class="fw-bold" style="font-size: 2rem;">Sản phẩm của chúng tôi</h2>
             </div>
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-                @php
-                    $products = [
-                        ['name' => 'Vest nam cao cấp', 'old' => '4.200.000₫', 'new' => '3.500.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Đầm dạ hội nữ', 'old' => '3.200.000₫', 'new' => '2.800.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo sơ mi nam', 'old' => '1.500.000₫', 'new' => '1.200.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo khoác nam', 'old' => '2.500.000₫', 'new' => '2.000.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Đầm dự tiệc', 'old' => '3.800.000₫', 'new' => '3.000.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Quần tây nam', 'old' => '1.400.000₫', 'new' => '1.000.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo thun nữ basic', 'old' => '700.000₫', 'new' => '490.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Váy công sở', 'old' => '2.000.000₫', 'new' => '1.500.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo hoodie nam', 'old' => '1.800.000₫', 'new' => '1.400.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Chân váy nữ', 'old' => '900.000₫', 'new' => '700.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Áo vest nữ công sở', 'old' => '2.500.000₫', 'new' => '1.900.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                        ['name' => 'Quần jean nam', 'old' => '1.600.000₫', 'new' => '1.200.000₫', 'img' => 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80', 'rating' => 4],
-                    ];
-                @endphp
                 @foreach ($products as $product)
                     <div class="col">
                         <div class="card shadow-lg border-0 h-100 d-flex flex-column align-items-center"
                             style="border-radius: 1.5rem; overflow: hidden;">
                             <div class="bg-light d-flex align-items-center justify-content-center"
                                 style="height: 260px; width: 100%; overflow: hidden;">
-                                <a href="#" class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                    <img src="{{ $product['img'] }}" alt="{{ $product['name'] }}" class="img-fluid"
+                                <a href="{{ route('client.products.show', $product->id) }}" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-fluid"
                                         style="max-height: 240px; max-width: 100%; object-fit: cover; border-radius: 1.5rem 1.5rem 0 0;">
                                 </a>
                             </div>
                             <div class="card-body d-flex flex-column justify-content-between w-100 flex-grow-1 px-3 py-3">
                                 <ul class="rating d-flex justify-content-center mb-2 list-unstyled">
+                                    @php
+                                        $avgRate = $product->rates->where('status', 1)->avg('score');
+                                        $avgRate = round($avgRate * 2) / 2;
+                                    @endphp
                                     @for ($i = 0; $i < 5; $i++)
                                         <li>
                                             <i data-feather="star"
-                                                class="{{ $i < $product['rating'] ? 'fill text-warning' : 'text-secondary' }}"></i>
+                                                class="{{ $i < $avgRate ? 'fill text-warning' : 'text-secondary' }}"></i>
                                         </li>
                                     @endfor
                                 </ul>
-                                <a href="#" class="text-decoration-none">
+                                <a href="{{ route('client.products.show', $product->id) }}" class="text-decoration-none">
                                     <h5 class="fw-bold text-dark text-center mb-2" style="font-size: 1.15rem;">
-                                        {{ $product['name'] }}
+                                        {{ $product->name }}
                                     </h5>
                                 </a>
                                 <div class="d-flex flex-column align-items-center gap-1 mb-2">
-                                    <span class="text-muted" style="font-size: 1rem;">
-                                        <del>{{ $product['old'] }}</del>
-                                    </span>
+                                    @if($product->compare_price)
+                                        <span class="text-muted" style="font-size: 1rem;">
+                                            <del>{{ number_format($product->compare_price) }}₫</del>
+                                        </span>
+                                    @endif
                                     <span class="fw-bold text-danger" style="font-size: 1.2rem;">
-                                        {{ $product['new'] }}
+                                        {{ number_format($product->price) }}₫
                                     </span>
                                 </div>
                                 <div class="d-flex justify-content-center gap-2 mt-2">
-                                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill" title="Xem chi tiết">
+                                    <a href="{{ route('client.products.show', $product->id) }}" class="btn btn-outline-secondary btn-sm rounded-pill" title="Xem chi tiết">
                                         <i class="fa-solid fa-eye"></i>
                                     </a>
-                                    <button class="btn btn-outline-primary btn-sm rounded-pill" title="Thêm vào giỏ">
-                                        <i class="fa-solid fa-cart-plus"></i>
-                                    </button>
-                                  <a href="#" 
-   class="btn btn-warning btn-sm fw-bold rounded-pill px-3 ms-1"
-   style="color: #fff; font-weight: 600; background-color: #ffc107; box-shadow: 0 2px 8px #ffe082; border: none;">
-   Mua ngay
-</a>
-
+                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button class="btn btn-outline-primary btn-sm rounded-pill" title="Thêm vào giỏ">
+                                            <i class="fa-solid fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{{ route('client.products.show', $product->id) }}"
+                                        class="btn btn-warning btn-sm fw-bold rounded-pill px-3 ms-1"
+                                        style="color: #fff; font-weight: 600; background-color: #ffc107; box-shadow: 0 2px 8px #ffe082; border: none;">
+                                        Mua ngay
+                                    </a>
                                 </div>
                             </div>
                         </div>
