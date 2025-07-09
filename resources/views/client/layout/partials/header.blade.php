@@ -259,7 +259,11 @@
                             </span>
                             <div class="user-name">
                                 <h6 class="text-content">Tài khoản của bạn</h6>
-                                <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
+                                @if(Auth::check())
+                                    <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
+                                @else
+                                    <h4 class="mt-1">Đăng nhập</h4>
+                                @endif
                             </div>
                         </a>
 
