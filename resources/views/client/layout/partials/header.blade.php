@@ -11,7 +11,7 @@
                                 <i class="iconly-Category icli"></i>
                             </span>
                         </button>
-                        <a href="index.html" class="web-logo nav-logo">
+                        <a href="{{ route('home') }}" class="web-logo nav-logo">
                             <img src="{{ asset('assets-front/images/logo/4.png') }}" class="img-fluid blur-up lazyload"
                                 alt="">
                         </a>
