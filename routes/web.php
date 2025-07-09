@@ -26,7 +26,7 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
-
+use App\Http\Controllers\WishlistController;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 
@@ -62,6 +62,11 @@ Route::middleware(['auth'])->group(function () {
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');
 });
+
+
+    Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
 
 
 Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {

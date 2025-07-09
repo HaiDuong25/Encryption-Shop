@@ -9,7 +9,6 @@
 </head>
 
 <body>
-
     <div class="container" id="container">
         @if ($errors->any())
         <div class="alert alert-danger">
@@ -21,7 +20,7 @@
 
         {{-- Sign Up --}}
         <div class="form-container sign-up-container">
-            <form method="POST" action="{{ route('register') }}">
+            <form method="POST" action="{{ route('auth.register') }}">
                 @csrf
                 <h1>Create Account</h1>
                 <div class="social-container">
@@ -42,7 +41,7 @@
 
         {{-- Sign In --}}
         <div class="form-container sign-in-container">
-            <form method="POST" action="{{ route('login') }}">
+            <form method="POST" action="{{ route('auth.login') }}">
                 @csrf
                 <h1>Sign in</h1>
                 <div class="social-container">

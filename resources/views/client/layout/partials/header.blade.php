@@ -176,12 +176,12 @@
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </a>
                             </li>
-                            <li>
-                                <a href="compare.html" class="header-icon">
-                                    <small class="badge-number badge-light">2</small>
-                                    <i class="fa-solid fa-arrows-rotate"></i>
-                                </a>
-                            </li>
+                         <li>
+    <a href="{{ route('wishlist.index') }}" class="header-icon">
+        <i class="fa-solid fa-heart"></i>
+    </a>
+</li>
+
 
                             @php
                             $cartItems = collect([]);

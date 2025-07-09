@@ -351,6 +351,10 @@
             </div>
         </div>
     </div>
+<form method="POST" action="{{ route('wishlist.add', $product->id) }}">
+    @csrf
+    <button class="btn btn-outline-danger btn-sm">💖 Thêm yêu thích</button>
+</form>
 
     <div class="product-info-block mt-5">
         <h4>Chi tiết sản phẩm</h4>
