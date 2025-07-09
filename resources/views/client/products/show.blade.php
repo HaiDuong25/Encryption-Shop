@@ -346,8 +346,25 @@
                     <button onclick="changeQty(1)">+</button>
                 </div>
             </div>
+            <div class="mb-2" id="expected-price-block">
+                <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price" class="text-danger fw-bold">{{ number_format($product->compare_price && $product->compare_price < $product->price ? $product->compare_price : $product->price) }}</span> đ
+            </div>
 
-
+@if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+            @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
             <div class="mb-4 d-flex">
                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2" id="add-to-cart-form">
     @csrf
@@ -360,9 +377,6 @@
         <i class="fa-solid fa-plus me-1"></i> Thêm vào giỏ
     </button>
 </form>
-
-
-
                 <button class="btn btn-buy px-4 py-2">Mua ngay</button>
             </div>
         </div>
@@ -491,13 +505,73 @@
         }
     }
 
+    function getUnitPrice() {
+        // Lấy giá ưu tiên compare_price nếu có, không thì lấy price
+        return {{ $product->compare_price && $product->compare_price < $product->price ? $product->compare_price : $product->price }};
+    }
+    function updateExpectedPrice() {
+        const qty = parseInt(document.getElementById('quantity').value) || 1;
+        const price = getUnitPrice() * qty;
+        document.getElementById('expected-price').textContent = price.toLocaleString('vi-VN');
+    }
     function changeQty(delta) {
         const input = document.getElementById('quantity');
         let current = parseInt(input.value) || 1;
         current += delta;
         if (current < 1) current = 1;
         input.value = current;
+        document.getElementById('form-quantity').value = current;
+        updateExpectedPrice();
     }
+    document.getElementById('quantity').addEventListener('input', function() {
+        let val = parseInt(this.value) || 1;
+        if (val < 1) val = 1;
+        this.value = val;
+        document.getElementById('form-quantity').value = val;
+        updateExpectedPrice();
+    });
+    // Khởi tạo giá dự kiến khi load trang
+    document.addEventListener('DOMContentLoaded', updateExpectedPrice);
+    function addToCart() {
+        const form = document.getElementById('buy-now-form');
+        const formData = new FormData(form);
+        const alertBox = document.getElementById('add-to-cart-success');
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success || data.status === 'success') {
+                alertBox.textContent = 'Thêm vào giỏ hàng thành công!';
+                alertBox.className = 'alert alert-success mt-2';
+            } else {
+                alertBox.textContent = data.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng!';
+                alertBox.className = 'alert alert-danger mt-2';
+            }
+            alertBox.classList.remove('d-none');
+            setTimeout(() => alertBox.classList.add('d-none'), 2000);
+        })
+        .catch(() => {
+            alertBox.textContent = 'Có lỗi xảy ra khi thêm vào giỏ hàng!';
+            alertBox.className = 'alert alert-danger mt-2';
+            alertBox.classList.remove('d-none');
+            setTimeout(() => alertBox.classList.add('d-none'), 2000);
+        });
+    }
+
+    // Tạm thời: Nút "Mua ngay" chỉ hiển thị thông báo, sau này bạn có thể bổ sung logic chuyển hướng hoặc xử lý khác
+    document.getElementById('buy-now-btn').addEventListener('click', function() {
+        const alertBox = document.getElementById('add-to-cart-success');
+        alertBox.textContent = 'Chức năng Mua ngay sẽ được cập nhật sau!';
+        alertBox.className = 'alert alert-info mt-2';
+        alertBox.classList.remove('d-none');
+        setTimeout(() => alertBox.classList.add('d-none'), 2000);
+    });
 
     function getSelectedVariant() {
         const sizeId = document.querySelector('input[name="size"]:checked')?.id.replace('size-', '');
@@ -568,4 +642,3 @@
     feather.replace();
 </script>
 @endpush
-

@@ -120,7 +120,7 @@
                         <span class="text-primary">{{ number_format($finalTotal) }} đ</span>
                     </p>
 
-                    <a href="{{ route('cart.checkout') }}" class="btn btn-success w-100 py-2 mt-3">
+                    <a href="{{ route('cart.checkout') }}" class="btn w-100 py-2 mt-3" style="background:#222;color:#fff;">
                         <i class="fa-solid fa-credit-card me-1"></i> Tiến hành thanh toán
                     </a>
                 </div>
