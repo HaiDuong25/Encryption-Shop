@@ -17,7 +17,7 @@ class CartController extends Controller
     }
 public function add(Request $request, $productId)
 {
-    $variantId = $request->input('variant_id'); // lấy variant_id nếu có
+    $variantId = $request->input('variant_id');
     $quantity = (int) $request->input('quantity', 1);
 
     if (!Auth::check()) {
@@ -27,10 +27,9 @@ public function add(Request $request, $productId)
     $product = Product::with('variants')->findOrFail($productId);
 
     if ($variantId) {
-        // Nếu có biến thể
+
         $variant = $product->variants()->where('id', $variantId)->firstOrFail();
 
-        // Tính số lượng hiện có trong giỏ hàng
         $existing = Cart::where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->where('variant_id', $variantId)
@@ -86,15 +85,26 @@ public function add(Request $request, $productId)
 
 private function updateSessionCart()
 {
-    $carts = Cart::where('user_id', Auth::id())->with('product')->get();
+    $carts = Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
     $sessionCart = [];
 
     foreach ($carts as $cart) {
-        $sessionCart[$cart->product_id] = [
+        $image = 'default.jpg';
+
+        // Nếu có variant và variant có ảnh
+        if ($cart->variant && $cart->variant->image) {
+            $image = 'storage/' . $cart->variant->image;
+        }
+        // Nếu không có variant nhưng product có ảnh
+        elseif ($cart->product && $cart->product->image) {
+            $image = 'storage/' . $cart->product->image;
+        }
+
+        $sessionCart[$cart->id] = [
             'name' => $cart->product->name,
             'quantity' => $cart->quantity,
-            'price' => $cart->product->sale_price ?? $cart->product->price,
-            'image' => $cart->product->image
+            'price' => $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price,
+            'image' => $image,
         ];
     }
 
@@ -102,15 +112,23 @@ private function updateSessionCart()
 }
 
 
- public function update(Request $request, $id)
-    {
-        $cart = Cart::where('user_id', Auth::id())->where('id', $id)->firstOrFail();
-        $cart->quantity = $request->quantity;
-        $cart->save();
 
-        return redirect()->back()->with('success', 'Đã cập nhật số lượng!');
+public function update(Request $request, $id)
+{
+    $cart = Cart::where('user_id', Auth::id())
+        ->with(['product', 'variant'])
+        ->where('id', $id)
+        ->firstOrFail();
+    $quantity = (int) $request->quantity;
+    $stock = $cart->variant ? $cart->variant->stock : $cart->product->stock;
+    if ($quantity > $stock) {
+        return redirect()->back()->with('error', 'Số lượng vượt quá tồn kho sản phẩm.');
     }
-
+    $cart->quantity = $quantity;
+    $cart->save();
+    $this->updateSessionCart();
+    return redirect()->back()->with('success', 'Đã cập nhật số lượng!');
+}
     public function delete($id)
     {
         $cart = Cart::where('user_id', Auth::id())->where('id', $id)->firstOrFail();
@@ -122,15 +140,53 @@ private function updateSessionCart()
 
     public function checkout()
     {
-        $carts = Cart::where('user_id', Auth::id())->with('product')->get();
+        $carts = Cart::where('user_id', Auth::id())->with(['product.category', 'product.brand', 'variant'])->get();
+        $total = $carts->sum(function($cart){
+            return ($cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+        });
+        $payment_methods = \App\Models\PaymentMethod::all();
+        return view('client.cart.checkout', compact('carts', 'total', 'payment_methods'));
+    }
 
-        // Tính tổng tiền
-        $total = 0;
-        foreach ($carts as $cart) {
-            $total += ($cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+    public function processCheckout(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'payment_method_id' => 'required|exists:payment_methods,id',
+        ]);
+        $carts = Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
+        if ($carts->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống!');
         }
-
-        return view('client.cart.checkout', compact('carts', 'total'));
+        $total = $carts->sum(function($cart){
+            return ($cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+        });
+        // Lưu đơn hàng
+        $order = new \App\Models\Order();
+        $order->user_id = Auth::id();
+        $order->name = $request->name;
+        $order->phone = $request->phone;
+        $order->address = $request->address;
+        $order->total_price = $total;
+        $order->status = 'pending';
+        $order->payment_method_id = $request->payment_method_id;
+        $order->save();
+        // Lưu chi tiết đơn hàng
+        foreach ($carts as $cart) {
+            $order->orderDetails()->create([
+                'product_id' => $cart->product_id,
+                'variant_id' => $cart->variant_id,
+                'quantity' => $cart->quantity,
+                'price' => $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price,
+            ]);
+        }
+        // Xóa giỏ hàng sau khi thanh toán
+        Cart::where('user_id', Auth::id())->delete();
+        session()->forget('cart');
+        // Chuyển hướng sang trang success, truyền mã đơn hàng
+        return redirect()->route('cart.success', ['order_id' => $order->id]);
     }
 
 }

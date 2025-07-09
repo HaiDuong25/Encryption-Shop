@@ -20,6 +20,7 @@ class Product extends Model
         'stock',
         'is_featured',
         'status',
+        'material',
     ];
     public function category()
     {
@@ -32,5 +33,14 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(ProductVariant::class);
+    }
+    public function rates()
+    {
+        return $this->hasMany(Rate::class);
+    }
+    
+    public function productImages()
+    {
+        return $this->hasMany(ProductImage::class);
     }
 }

@@ -103,18 +103,49 @@
                             @foreach ($order->orderDetails as $detail)
                                 <tr>
                                     <td>
-                                        @if ($detail->variant && $detail->variant->product && $detail->variant->product->image)
-                                            <img src="{{ asset('storage/' . $detail->variant->product->image) }}"
-                                                width="60" style="border-radius:8px;">
+                                        @php
+                                            $product = null;
+                                            $productImages = collect();
+                                            
+                                            // Ưu tiên lấy từ variant trước
+                                            if ($detail->variant && $detail->variant->product) {
+                                                $product = $detail->variant->product;
+                                                $productImages = $product->productImages ?? collect();
+                                            }
+                                            // Nếu không có variant, lấy trực tiếp từ product (và product_id > 0)
+                                            elseif ($detail->product_id > 0 && $detail->product) {
+                                                $product = $detail->product;
+                                                $productImages = $product->productImages ?? collect();
+                                            }
+                                        @endphp
+                                        
+                                        @if($product && $productImages->isNotEmpty())
+                                            <img src="{{ asset('storage/' . $productImages->first()->image_path) }}"
+                                                width="60" height="60" style="border-radius:8px; object-fit:cover;">
+                                        @elseif($product && $product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}"
+                                                width="60" height="60" style="border-radius:8px; object-fit:cover;">
+                                        @elseif($product)
+                                            <div class="no-image" style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
                                         @else
-                                            <span class="text-muted">N/A</span>
+                                            <div class="no-image" style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                                                <i class="fas fa-exclamation-circle text-danger"></i>
+                                            </div>
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($detail->variant && $detail->variant->product)
-                                            {{ $detail->variant->product->name }}
+                                        @if($product)
+                                            <div><strong>{{ $product->name }}</strong></div>
+                                            @if($detail->variant && $detail->variant->attribute_values)
+                                                <small class="text-muted">Phân loại: {{ $detail->variant->attribute_values }}</small>
+                                            @endif
                                         @else
-                                            <span class="text-danger">Sản phẩm đã xóa</span>
+                                            <div class="text-danger">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                Sản phẩm không còn tồn tại
+                                            </div>
                                         @endif
                                     </td>
                                     <td>{{ $detail->quantity }}</td>
@@ -169,19 +200,38 @@
                 <p><strong>Ngày dặt:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
                 <p><strong>Trạng thái:</strong>
                     @php
-                        $statusArr = [
-                            0 => 'Chờ xử lí',
-                            1 => 'Xác nhận',
-                            2 => 'Giao cho ĐVVC',
-                            3 => 'Đang giao',
-                            4 => 'Đã nhận',
-                            5 => 'Hoàn thành',
-                        ];
-                        $statusClass = 'badge-status status-' . ($order->status ?? 0);
+                        // Convert numeric status to string for compatibility
+                        $statusValue = $order->status;
+                        if (is_numeric($statusValue)) {
+                            $statusMap = [
+                                '0' => 'pending',
+                                '1' => 'confirmed', 
+                                '2' => 'shipping',
+                                '3' => 'delivering',
+                                '4' => 'received',
+                                '5' => 'completed'
+                            ];
+                            $statusValue = $statusMap[$statusValue] ?? 'pending';
+                        }
                     @endphp
-                    <span class="{{ $statusClass }}">
-                        <i class="fas fa-circle"></i> {{ $statusArr[$order->status] ?? 'Không xác định' }}
-                    </span>
+                    
+                    @if($statusValue == 'pending')
+                        <span class="badge bg-warning">Chờ xử lý</span>
+                    @elseif($statusValue == 'confirmed')
+                        <span class="badge bg-primary">Đã xác nhận</span>
+                    @elseif($statusValue == 'shipping')
+                        <span class="badge bg-info">Giao cho ĐVVC</span>
+                    @elseif($statusValue == 'delivering')
+                        <span class="badge bg-purple">Đang giao</span>
+                    @elseif($statusValue == 'received')
+                        <span class="badge bg-cyan">Đã nhận</span>
+                    @elseif($statusValue == 'completed')
+                        <span class="badge bg-success">Hoàn thành</span>
+                    @elseif($statusValue == 'cancelled')
+                        <span class="badge bg-danger">Đã hủy</span>
+                    @else
+                        <span class="badge bg-secondary">{{ $statusValue }}</span>
+                    @endif
                 </p>
                 <hr>
                 <div class="summary-title">Thông tin khách hàng</div>

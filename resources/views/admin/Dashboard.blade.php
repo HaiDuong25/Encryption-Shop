@@ -1,5 +1,10 @@
 @extends('admin.layouts.main')
 @section('content')
+@push('scripts')
+<script src="/path/to/apex-chart.js"></script>
+<script src="/path/to/chart-custom1.js"></script>
+@endpush
+
     <div class="col-sm-6 col-xxl-3 col-lg-6">
                             <div class="main-tiles border-5 border-0  card-hover card o-hidden">
                                 <div class="custome-1-bg b-r-4 card-body">
