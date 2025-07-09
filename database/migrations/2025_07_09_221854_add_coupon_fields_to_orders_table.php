@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->decimal('subtotal', 12, 2)->nullable()->after('total_price')->comment('Tổng tiền trước khi giảm giá');
-            $table->string('coupon_code', 50)->nullable()->after('subtotal')->comment('Mã giảm giá đã sử dụng');
-            $table->decimal('discount_amount', 12, 2)->default(0)->after('coupon_code')->comment('Số tiền được giảm');
+            //
         });
     }
 
@@ -24,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn(['subtotal', 'coupon_code', 'discount_amount']);
+            //
         });
     }
 };

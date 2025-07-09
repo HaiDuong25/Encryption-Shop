@@ -12,11 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Kiểm tra bảng orders có tồn tại không
-        if (!Schema::hasTable('orders')) {
-            return; // Bỏ qua nếu bảng chưa tồn tại
-        }
-        
         Schema::table('orders', function (Blueprint $table) {
             // First add new column
             $table->string('status_str')->default('pending')->after('status');

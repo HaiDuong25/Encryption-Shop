@@ -5,8 +5,8 @@
 @section('content')
 <style>
 .status-badge {
-    font-size: 0.75rem;
-    padding: 0.25em 0.5em;
+    font-size: 0.875rem;
+    padding: 0.35em 0.65em;
     font-weight: 500;
     border-radius: 4px;
 }
@@ -15,47 +15,6 @@
 }
 .bg-cyan {
     background-color: #06b6d4 !important;
-}
-.compact-table {
-    font-size: 0.875rem;
-}
-.compact-table th,
-.compact-table td {
-    padding: 0.5rem 0.3rem;
-    vertical-align: middle;
-}
-.compact-table th {
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-.price-info {
-    font-size: 0.8rem;
-    line-height: 1.2;
-}
-.price-info .small {
-    font-size: 0.7rem;
-}
-.action-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 0.25rem;
-}
-.action-list li {
-    display: inline-block;
-}
-.action-list a,
-.action-list button {
-    padding: 0.25rem;
-    font-size: 0.875rem;
-    border-radius: 3px;
-    color: #6c757d;
-    transition: color 0.15s ease-in-out;
-}
-.action-list a:hover,
-.action-list button:hover {
-    color: #495057;
 }
 </style>
 <div class="card card-table">
@@ -66,42 +25,32 @@
         </div>
         <div>
             <div class="table-responsive">
-                <table class="table all-package order-table theme-table compact-table" id="table_id">
+                <table class="table all-package order-table theme-table" id="table_id">
                     <thead>
                         <tr>
-                            <th style="width: 60px;">ID</th>
-                            <th style="width: 130px;">Người đặt</th>
-                            <th style="width: 130px;">Người nhận</th>
-                            <th style="width: 150px;">Địa chỉ nhận</th>
-                            <th style="width: 90px;">Ngày đặt</th>
-                            <th style="width: 100px;">PT thanh toán</th>
-                            <th style="width: 100px;">Trạng thái</th>
-                            <th style="width: 140px;">Tổng tiền</th>
-                            <th style="width: 90px;">Thao tác</th>
+                            <!-- <th>Hình ảnh sản phẩm</th> -->
+                            <th>ID</th>
+
+                            <th>Tên người nhận</th> <!-- Thêm -->
+                            <th>Địa chỉ giao hàng</th> <!-- Thêm -->
+                            <th>Ngày đặt</th>
+                            <th>Phương thức thanh toán</th>
+                            <th>Trạng thái giao hàng</th>
+                            <th>Giá sản phẩm</th>
+                            <th>Tùy chỉnh</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($orders as $order)
                         <tr>
-                            <td><strong>#{{ $order->id }}</strong></td>
+
+                            <td>{{ $order->id }}</td>
+                             <td>{{ $order->name }}</td> <!-- Thêm -->
+                                <td>{{ $order->address }}</td> <!-- Thêm -->
+                            <td>{{ $order->created_at->format('d/m/Y') }}</td>
                             <td>
-                                <div style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $order->orderer_name ?? 'N/A' }}">
-                                    {{ $order->orderer_name ?? 'N/A' }}
-                                </div>
-                            </td>
-                            <td>
-                                <div style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $order->recipient_name ?? $order->name ?? 'N/A' }}">
-                                    {{ $order->recipient_name ?? $order->name ?? 'N/A' }}
-                                </div>
-                            </td>
-                            <td>
-                                <div style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $order->recipient_address ?? $order->address ?? 'N/A' }}">
-                                    {{ $order->recipient_address ?? $order->address ?? 'N/A' }}
-                                </div>
-                            </td>
-                            <td><small>{{ $order->created_at->format('d/m/Y') }}</small></td>
-                            <td>
-                                <small>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</small>
+                                {{-- Hiển thị phương thức thanh toán nếu có --}}
+                                {{ $order->paymentMethod->payment_type ?? 'N/A' }}
                             </td>
                             <td>
                                 @php
@@ -138,64 +87,33 @@
                                     <span class="badge bg-secondary status-badge">{{ $statusValue }}</span>
                                 @endif
                             </td>
+                            <td> {{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }} đ</td>
                             <td>
-                                <div class="price-info">
-                                    @if($order->subtotal && $order->discount_amount > 0)
-                                        <div style="font-size: 0.7rem; color: #6c757d;">
-                                            Tạm tính: {{ number_format($order->subtotal, 0, ',', '.') }}đ
-                                        </div>
-                                        @if($order->coupon_code)
-                                            <div style="font-size: 0.7rem; color: #28a745;">
-                                                {{ $order->coupon_code }}: -{{ number_format($order->discount_amount, 0, ',', '.') }}đ
-                                            </div>
-                                        @else
-                                            <div style="font-size: 0.7rem; color: #28a745;">
-                                                Giảm: -{{ number_format($order->discount_amount, 0, ',', '.') }}đ
-                                            </div>
-                                        @endif
-                                        <strong style="color: #007bff; font-size: 0.85rem;">
-                                            {{ number_format($order->total_price, 0, ',', '.') }}đ
-                                        </strong>
-                                    @else
-                                        <strong style="color: #007bff; font-size: 0.85rem;">
-                                            {{ number_format($order->total_price, 0, ',', '.') }}đ
-                                        </strong>
-                                    @endif
-                                </div>
-                            </td>
-                            <td>
-                                <ul class="action-list">
+                                <ul>
                                     <li>
-                                        <a href="{{ route('orders.show', $order->id) }}" title="Xem chi tiết">
+                                        <a href="{{ route('orders.show', $order->id) }}">
                                             <i class="ri-eye-line"></i>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('orders.edit', $order->id) }}" title="Chỉnh sửa">
+                                        <a href="{{ route('orders.edit', $order->id) }}">
                                             <i class="ri-pencil-line"></i>
                                         </a>
                                     </li>
-                                    @if($statusValue !== 'cancelled')
                                     <li>
-                                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" style="display:inline;" 
-                                              onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?\n\nAdmin có thể hủy đơn hàng ở bất kỳ trạng thái nào.\nSố lượng sản phẩm sẽ được trả lại kho.')">
-                                            @csrf
-                                            <button type="submit" style="border:none; background:none; padding:0.25rem; color:#ffc107;" title="Hủy đơn hàng">
-                                                <i class="ri-close-circle-line"></i>
-                                            </button>
-                                        </form>
-                                    </li>
-                                    @endif
-                                    <li>
-                                        <form action="{{ route('orders.destroy', $order->id) }}" method="POST" style="display:inline;"
-                                              onsubmit="return confirm('Bạn có chắc muốn xóa đơn hàng này? Số lượng sản phẩm sẽ được trả lại kho.')">
+                                        <form action="{{ route('orders.destroy', $order->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" style="border:none; background:none; padding:0.25rem; color:#dc3545;" title="Xóa">
+                                            <button type="submit" style="border:none; background:none; padding:0; color:#dc3545;">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </form>
                                     </li>
+                                    <!-- <li>
+                                        <a class="btn btn-sm btn-solid text-white" href="#">
+                                            Tracking
+                                        </a>
+                                    </li> -->
                                 </ul>
                             </td>
                         </tr>

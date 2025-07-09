@@ -16,11 +16,10 @@ class Product extends Model
         'short_description',
         'description',
         'price',
-        'sale_price',
+        'compare_price',
         'stock',
         'is_featured',
         'status',
-        'material',
     ];
     public function category()
     {

@@ -53,13 +53,6 @@
     <div class="card shadow-sm">
         <div class="card-header bg-white">
             <h3 class="mb-0">Đơn hàng của tôi</h3>
-            <small class="text-muted">
-                <i class="fa-solid fa-info-circle me-1"></i>
-                <strong>Lưu ý:</strong> Bạn chỉ có thể hủy đơn hàng khi đang ở trạng thái 
-                <span class="badge bg-warning text-dark">Chờ xử lý</span> hoặc 
-                <span class="badge bg-primary">Đã xác nhận</span>.
-                Từ khi đơn hàng được giao cho đơn vị vận chuyển sẽ không thể hủy.
-            </small>
         </div>
         <div class="card-body">
             @if($orders->count() > 0)
@@ -69,10 +62,9 @@
                         <tr>
                             <th>Mã đơn hàng</th>
                             <th>Ngày đặt</th>
-                            <th>Người đặt</th>
                             <th>Người nhận</th>
-                            <th>SĐT nhận</th>
-                            <th>Địa chỉ nhận</th>
+                            <th>SĐT</th>
+                            <th>Địa chỉ</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
                             <th>Chi tiết</th>
@@ -83,10 +75,9 @@
                         <tr>
                             <td>{{ $order->id }}</td>
                             <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $order->orderer_name }}</td>
-                            <td>{{ $order->recipient_name }}</td>
-                            <td>{{ $order->recipient_phone }}</td>
-                            <td>{{ $order->recipient_address }}</td>
+                            <td>{{ $order->name }}</td>
+                            <td>{{ $order->phone }}</td>
+                            <td>{{ $order->address }}</td>
                             <td>{{ number_format($order->total_price) }} đ</td>
                             <td>
                                 @php
@@ -124,20 +115,7 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('client.orders.show', $order->id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fa-solid fa-eye me-1"></i>Xem
-                                    </a>
-                                    @if(in_array($statusValue, ['pending', 'confirmed']))
-                                    <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" style="display:inline;" 
-                                          onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?\n\nLưu ý: Chỉ có thể hủy khi đơn hàng đang ở trạng thái \'Chờ xử lý\' hoặc \'Đã xác nhận\'.')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-warning">
-                                            <i class="fa-solid fa-times me-1"></i>Hủy
-                                        </button>
-                                    </form>
-                                    @endif
-                                </div>
+                                <a href="#" class="btn btn-sm btn-outline-primary">Xem</a>
                             </td>
                         </tr>
                         @endforeach
