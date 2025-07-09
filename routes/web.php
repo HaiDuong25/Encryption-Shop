@@ -3,35 +3,32 @@
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\DashboardController;
+// ADMIN CONTROLLERS
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AttributeValueController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\BrandController;
-
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\RateController;
 use App\Http\Controllers\Admin\RateReplyController;
 use App\Http\Controllers\Admin\ContactController;
-
-use Illuminate\Http\Request;
-use App\Http\Controllers\CouponController;
-use App\Models\Coupon;
-use App\Http\Controllers\NewsController;
-use App\Http\Controllers\BannerController;
-use App\Http\Controllers\OrderController;
-
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PaymentController;
-
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
 
-
-//client
+// CLIENT CONTROLLERS
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
+use App\Http\Controllers\Client\OrderController as ClientOrderController;
 
+use Illuminate\Http\Request;
+use App\Models\Coupon;
 
 
 Route::view('/auth', 'auth.auth')->name('auth'); // Giao diện login/register
@@ -57,11 +54,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
+    // Đơn hàng cho user
+    Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
+    Route::get('/checkout/success', function(Request $request) {
+        $order_id = request('order_id');
+        return view('client.cart.success', compact('order_id'));
+    })->name('cart.success');
 });
 
 
 Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
-    route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
     Route::resource('products', ProductController::class);
     //variant
@@ -74,7 +78,6 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
-
     //categories
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
@@ -84,7 +87,6 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('categories/create-parent', [CategoryController::class, 'createParent'])->name('categories.create-parent');
     Route::post('categories/store-parent', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-
     //brands
     Route::resource('brands', BrandController::class);
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
@@ -93,38 +95,31 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
-
     //phương thức thanh toán
     Route::resource('payment-methods', PaymentMethodController::class);
     Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
-
     // Quản lý thanh toán
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
     Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
     Route::post('admin/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
-
     //rate
     Route::get('/rates', [RateController::class, 'index'])->name('rates.index');
     Route::get('/rates/{rate}', [RateController::class, 'show'])->name('rates.show');
     Route::get('/rates/{rate}/edit', [RateController::class, 'edit'])->name('rates.edit');
     Route::put('/rates/{rate}', [RateController::class, 'update'])->name('rates.update');
     Route::delete('/rates/{rate}', [RateController::class, 'destroy'])->name('rates.destroy');
-
     // Route cho việc lưu phản hồi của Admin cho một Rate
     Route::post('/rates/{rate}/replies', [RateReplyController::class, 'store'])->name('rates.replies.store');
     // Routes cho Quản lý Liên hệ Khách hàng
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
-
     //coupons
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
-
     // Route tạo và lưu mã giảm giá
     Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
     Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
-
     // Route áp dụng mã giảm giá cho đơn hàng`
     Route::post('/apply-coupon', function (Request $request) {
         $coupon = Coupon::where('code', $request->code)->first();
@@ -137,18 +132,15 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
         ]]);
         return back()->with('success', 'Áp dụng mã thành công!');
     })->name('apply.coupon');
-
     Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
     Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
     Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
-
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
     Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-
     //user
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
