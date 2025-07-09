@@ -145,3 +145,29 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 });
+
+// client
+Route::get('/', [HomeController::class, 'index'])->name('home');
+//sản phẩm
+Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
+Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
+Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
+Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 'getStock'])->name('client.products.getStock');
+Route::post('/cart/apply-voucher', [CartController::class, 'applyVoucher'])->name('cart.applyVoucher');
+
+
+// Route chỉ user (và admin được truy cập luôn)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
+    // Đơn hàng cho user
+    Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
+    Route::get('/checkout/success', function(Request $request) {
+        $order_id = request('order_id');
+        return view('client.cart.success', compact('order_id'));
+    })->name('cart.success');
+});
