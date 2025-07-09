@@ -15,11 +15,36 @@
                         </div>
                     </div>
 
+                    <form action="{{ route('categories.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                        <select name="parent_id" class="form-select" style="width:200px;">
+                            <option value="">-- Danh mục cha --</option>
+                            @foreach ($parentCategories as $parent)
+                                <option value="{{ $parent->id }}" {{ request('parent_id') == $parent->id ? 'selected' : '' }}>
+                                    {{ $parent->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <select name="status" class="form-select" style="width:150px;">
+                            <option value="">-- Trạng thái --</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hiển thị</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ẩn</option>
+                        </select>
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="ri-search-line"></i> Tìm
+                        </button>
+                    </form>
+
                     @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mt-3">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                        <div class="alert alert-success alert-dismissible fade show mt-3">
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show mt-3">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     @endif
 
                     @if(session('error'))
@@ -31,7 +56,7 @@
 
 
                     <div class="table-responsive mt-3">
-                        <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
+                        <table class="table theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>Tên danh mục</th>
@@ -86,9 +111,49 @@
                             </tbody>
                         </table>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.toggle-children').forEach(button => {
+            button.addEventListener('click', function () {
+                const parentRow = button.closest('tr');
+                const parentId = parentRow.dataset.id;
+                const icon = button.querySelector('i');
+
+                document.querySelectorAll(`tr[data-parent-id='${parentId}']`).forEach(row => {
+                    row.classList.toggle('d-none');
+                });
+
+                if (icon) {
+                    icon.classList.toggle('ri-arrow-down-s-line');
+                    icon.classList.toggle('ri-arrow-up-s-line');
+                }
+            });
+        });
+
+        const selectedParentId = '{{ request("parent_id") }}';
+        if (selectedParentId) {
+            const parentRow = document.querySelector(`tr[data-id='${selectedParentId}']`);
+            if (parentRow) {
+                document.querySelectorAll(`tr[data-parent-id='${selectedParentId}']`).forEach(row => {
+                    row.classList.remove('d-none');
+                });
+
+                const icon = parentRow.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('ri-arrow-down-s-line');
+                    icon.classList.add('ri-arrow-up-s-line');
+                }
+            }
+        }
+    });
+</script>
+@endpush

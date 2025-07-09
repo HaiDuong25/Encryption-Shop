@@ -19,28 +19,23 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-     $this->call([
-      UsersTableSeeder::class,
-    BrandsTableSeeder::class,
-    BannersTableSeeder::class,
-    ContactsTableSeeder::class,
-    CategoriesTableSeeder::class,
-    ProductsTableSeeder::class,
-    SizesTableSeeder::class,
-    ColorsTableSeeder::class,
-    CouponsTableSeeder::class,
-    CartsTableSeeder::class,
-
-     OrdersTableSeeder::class,
-         ProductVariantsTableSeeder::class, // Thêm dòng này
-
-     OrderDetailsTableSeeder::class,
-    PaymentMethodsTableSeeder::class,
-    PaymentsTableSeeder::class,         // Thêm dòng này
-
-      // Thêm dòng này
-    RatesTableSeeder::class,
-    RateRepliesTableSeeder::class,
-    ]);
+        $this->call([
+            CategorySeeder::class,
+            BrandSeeder::class,
+            AttributeSeeder::class,
+            ProductSeeder::class,
+            
+            UsersTableSeeder::class,
+            BannersTableSeeder::class,
+            ContactsTableSeeder::class,
+            CouponsTableSeeder::class,
+            OrdersTableSeeder::class,
+            OrderDetailsTableSeeder::class,
+            PaymentMethodsTableSeeder::class,
+            PaymentsTableSeeder::class,
+            RatesTableSeeder::class,
+            RateRepliesTableSeeder::class,
+            
+        ]);
     }
 }

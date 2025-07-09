@@ -16,7 +16,7 @@ class UsersTableSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                'name' => 'Admin User',
+                'name' => 'Admin',
                 'email' => 'admin@example.com',
                 'role' => 'admin',
                 'phone' => '1234567890',
@@ -29,24 +29,11 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Staff User',
-                'email' => 'staff@example.com',
-                'role' => 'staff',
-                'phone' => '0987654321',
-                'address' => '456 Staff Rd, Staff Town',
-                'status' => 'active',
-                'avatar' => null,
-                'email_verified_at' => now(),
-                'password' => bcrypt('password123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Regular User',
+                'name' => ' User',
                 'email' => 'user@example.com',
                 'role' => 'user',
-                'phone' => '1122334455',
-                'address' => '789 User Ave, User City',
+                'phone' => '0987654321',
+                'address' => '456 Staff Rd, Staff Town',
                 'status' => 'active',
                 'avatar' => null,
                 'email_verified_at' => now(),

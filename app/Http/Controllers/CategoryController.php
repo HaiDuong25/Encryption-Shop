@@ -8,11 +8,40 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
-    public function index()
-    {
-        $categories = Category::whereNotNull('parent_id')->get();
-        return view('admin.categories.index', compact('categories'));
+    public function index(Request $request)
+{
+    $query = Category::query();
+
+    if ($request->filled('parent_id')) {
+        $parent = Category::whereNull('parent_id')
+                          ->where('id', $request->parent_id)
+                          ->first();
+
+        $children = Category::where('parent_id', $request->parent_id)->get();
+
+        $categories = collect();
+        if ($parent) {
+            $categories->push($parent);
+        }
+        $categories = $categories->merge($children);
+    } else {
+        $query->when($request->filled('keyword'), function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->keyword . '%');
+        });
+
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            $q->where('status', $request->status);
+        });
+
+        $categories = $query->orderBy('parent_id')->orderBy('created_at', 'desc')->get();
+
     }
+
+    $parentCategories = Category::whereNull('parent_id')->get();
+
+    return view('admin.categories.index', compact('categories', 'parentCategories'));
+}
+
 
     public function create()
     {

@@ -223,4 +223,3 @@
     window.onload = calcTotal;
 </script>
 @endsection
-@endsection
