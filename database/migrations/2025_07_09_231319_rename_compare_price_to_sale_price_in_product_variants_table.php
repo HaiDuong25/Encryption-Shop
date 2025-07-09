@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_variants', function (Blueprint $table) {
-            $table->renameColumn('compare_price', 'sale_price');
+            //
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('product_variants', function (Blueprint $table) {
-            $table->renameColumn('sale_price', 'compare_price');
+            //
         });
     }
 };

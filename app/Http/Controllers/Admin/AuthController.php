@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     public function index()
     {
-        return view('admin.auth.auth');
+        return view('auth.auth');
     }
     public function register(Request $request)
     {

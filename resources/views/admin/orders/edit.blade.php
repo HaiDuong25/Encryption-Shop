@@ -56,66 +56,20 @@
                         @endforeach
                     </div>
                 </div>
-                <!-- Thông tin người đặt hàng -->
-                <div class="card mb-3">
-                    <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">Thông tin người đặt hàng</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="orderer_name" class="form-label">Tên người đặt</label>
-                                <input type="text" class="form-control" id="orderer_name" name="orderer_name" 
-                                    value="{{ old('orderer_name', $order->orderer_name) }}">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="orderer_phone" class="form-label">SĐT người đặt</label>
-                                <input type="text" class="form-control" id="orderer_phone" name="orderer_phone" 
-                                    value="{{ old('orderer_phone', $order->orderer_phone) }}">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="orderer_email" class="form-label">Email người đặt</label>
-                                <input type="email" class="form-control" id="orderer_email" name="orderer_email" 
-                                    value="{{ old('orderer_email', $order->orderer_email) }}">
-                            </div>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Tên khách hàng</label>
+                    <input type="text" class="form-control" id="name" name="name" required
+                        value="{{ old('name', $order->name) }}">
                 </div>
-
-                <!-- Thông tin người nhận hàng -->
-                <div class="card mb-3">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">Thông tin người nhận hàng</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="recipient_name" class="form-label">Tên người nhận</label>
-                                <input type="text" class="form-control" id="recipient_name" name="recipient_name" required
-                                    value="{{ old('recipient_name', $order->recipient_name) }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="recipient_phone" class="form-label">SĐT người nhận</label>
-                                <input type="text" class="form-control" id="recipient_phone" name="recipient_phone" required
-                                    value="{{ old('recipient_phone', $order->recipient_phone) }}">
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label for="recipient_email" class="form-label">Email người nhận</label>
-                                <input type="email" class="form-control" id="recipient_email" name="recipient_email" 
-                                    value="{{ old('recipient_email', $order->recipient_email) }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="recipient_address" class="form-label">Địa chỉ nhận hàng</label>
-                                <textarea class="form-control" id="recipient_address" name="recipient_address" required>{{ old('recipient_address', $order->recipient_address) }}</textarea>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <label for="order_notes" class="form-label">Ghi chú đơn hàng</label>
-                            <textarea class="form-control" id="order_notes" name="order_notes">{{ old('order_notes', $order->order_notes) }}</textarea>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Số điện thoại</label>
+                    <input type="text" class="form-control" id="phone" name="phone" required
+                        value="{{ old('phone', $order->phone) }}">
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Địa chỉ</label>
+                    <input type="text" class="form-control" id="address" name="address" required
+                        value="{{ old('address', $order->address) }}">
                 </div>
                 <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
