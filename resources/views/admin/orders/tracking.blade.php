@@ -8,7 +8,9 @@
         <div class="card-body">
             <h5 class="card-title">Chi tiết đơn hàng</h5>
             <p><strong>Mã đơn:</strong> {{ $order->id }}</p>
-            <p><strong>Khách hàng:</strong> {{ $order->name }} - {{ $order->phone }}</p>
+            <p><strong>Người đặt:</strong> {{ $order->orderer_name }} - {{ $order->orderer_phone }}</p>
+            <p><strong>Người nhận:</strong> {{ $order->recipient_name }} - {{ $order->recipient_phone }}</p>
+            <p><strong>Địa chỉ nhận:</strong> {{ $order->recipient_address }}</p>
             <p><strong>Phương thức thanh toán:</strong> {{ $order->paymentMethod->name ?? 'N/A' }}</p>
             <p><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
             <p><strong>Trạng thái hiện tại:</strong>
