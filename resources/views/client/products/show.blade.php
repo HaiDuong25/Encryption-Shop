@@ -197,6 +197,31 @@
             gap: 10px;
         }
     }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .quantity-control button {
+        width: 32px;
+        height: 32px;
+        background-color: #f5f5f5;
+        border: none;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .quantity-control input {
+        width: 50px;
+        text-align: center;
+        border: none;
+        outline: none;
+    }
 </style>
 
 <div class="container mt-4 mb-5">
@@ -278,12 +303,12 @@
                     @endif
             </div>
 
-                @php
-        $totalStock = $product->variants->sum('stock');
-    @endphp
-    <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
-        Số lượng còn lại: <strong>{{ $totalStock }}</strong>
-    </p>
+            @php
+            $totalStock = $product->variants->sum('stock');
+            @endphp
+            <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
+                Số lượng còn lại: <strong>{{ $totalStock }}</strong>
+            </p>
 
             @if ($sizes->count())
             <div class="variant-row mb-3 d-flex align-items-center">
@@ -315,17 +340,17 @@
 
             <div class="mb-3 d-flex align-items-center">
                 <label class="me-2 fw-bold">Số lượng:</label>
-                <div class="d-flex align-items-center border rounded px-2" style="width: fit-content;">
-                    <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(-1)">&#8722;</button>
-                    <input type="number" id="quantity" class="form-control text-center border-0" value="1" min="1" style="width: 50px;">
-                    <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(1)">&#43;</button>
+                <div class="quantity-control">
+                    <button onclick="changeQty(-1)">−</button>
+                    <input type="number" id="quantity" value="1" min="1">
+                    <button onclick="changeQty(1)">+</button>
                 </div>
             </div>
             <div class="mb-2" id="expected-price-block">
                 <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price" class="text-danger fw-bold">{{ number_format($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}</span> đ
             </div>
 
-            @if(session('success'))
+@if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
             @endif
             @if(session('error'))
@@ -340,14 +365,19 @@
                 </ul>
             </div>
             @endif
-            <div class="mb-4 d-flex" style="gap:10px;">
-                <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    <input type="hidden" name="quantity" id="form-quantity" value="1">
-                    <input type="hidden" name="variant_id" id="form-variant-id" value="">
-                    <button type="submit" class="btn btn-buy px-4 py-2">Thêm vào giỏ hàng</button>
-                </form>
-                <button class="btn btn-buy px-4 py-2" type="button" id="buy-now-btn">Mua ngay</button>
+            <div class="mb-4 d-flex">
+               <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2" id="add-to-cart-form">
+    @csrf
+    <input type="hidden" name="size_id" id="selected-size">
+    <input type="hidden" name="color_id" id="selected-color">
+    <input type="hidden" name="variant_id" id="selected-variant-id">
+    <input type="hidden" name="quantity" id="selected-quantity" value="1">
+
+    <button type="submit" class="btn btn-buy px-4 py-2">
+        <i class="fa-solid fa-plus me-1"></i> Thêm vào giỏ
+    </button>
+</form>
+                <button class="btn btn-buy px-4 py-2">Mua ngay</button>
             </div>
         </div>
     </div>
@@ -422,6 +452,15 @@
 
 @push('scripts')
 <script>
+    const variants = {!! json_encode(
+        $product->variants->map(function ($variant) {
+            return [
+                'id' => $variant->id,
+                'attribute_values' => $variant->attributeValues->pluck('id')->toArray()
+            ];
+        })
+    ) !!};
+
     let imageList = [];
     let currentIndex = 0;
 
@@ -544,44 +583,61 @@
     }
 
     function fetchStock() {
-    const { sizeId, colorId } = getSelectedVariant();
-    const productId = {{ $product->id }};
+        const { sizeId, colorId } = getSelectedVariant();
+        const productId = {{ $product->id }};
 
-    if (!sizeId || !colorId) return;
+        if (!sizeId || !colorId) return;
 
-    fetch(`/get-stock?product_id=${productId}&size_id=${sizeId}&color_id=${colorId}`)
-        .then(res => res.json())
-        .then(data => {
-            const stockEl = document.getElementById('stock-info');
-            stockEl.innerHTML = `Số lượng còn lại: <strong>${data.stock}</strong>`;
-            stockEl.dataset.stock = data.stock;
-        })
-        .catch(error => {
-            console.error('Lỗi lấy tồn kho:', error);
-        });
-}
+        fetch(`/get-stock?product_id=${productId}&size_id=${sizeId}&color_id=${colorId}`)
+            .then(res => res.json())
+            .then(data => {
+                const stockEl = document.getElementById('stock-info');
+                stockEl.innerHTML = `Số lượng còn lại: <strong>${data.stock}</strong>`;
+                stockEl.dataset.stock = data.stock;
+            })
+            .catch(error => {
+                console.error('Lỗi lấy tồn kho:', error);
+            });
+    }
 
     function changeImageByIndex(index) {
         currentIndex = index;
         updateMainImage();
     }
 
-    document.getElementById('buy-now-form').addEventListener('submit', function(e) {
-        // Lấy variant_id dựa trên lựa chọn size và color
-        const sizeId = document.querySelector('input[name="size"]:checked')?.id.replace('size-', '');
-        const colorId = document.querySelector('input[name="color"]:checked')?.id.replace('color-', '');
-        let variantId = '';
+    // Xử lý khi submit form thêm vào giỏ
+    const form = document.getElementById('add-to-cart-form');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const selectedSize = document.querySelector('input[name="size"]:checked');
+            const selectedColor = document.querySelector('input[name="color"]:checked');
+            const quantity = document.getElementById('quantity');
 
-        @foreach($product->variants as $variant)
-            if ("{{ $variant->attributeValues->where('attribute.name', 'Size')->first()?->id }}" == sizeId
-                && "{{ $variant->attributeValues->where('attribute.name', 'Màu')->first()?->id }}" == colorId) {
-                variantId = "{{ $variant->id }}";
+            if (!selectedSize || !selectedColor) {
+                e.preventDefault();
+                alert('Vui lòng chọn đầy đủ Size và Màu sắc trước khi thêm vào giỏ!');
+                return;
             }
-        @endforeach
 
-        document.getElementById('form-variant-id').value = variantId;
-        // Không ngăn reload, để form POST truyền thống
-    });
+            const sizeId = parseInt(selectedSize.id.replace('size-', ''));
+            const colorId = parseInt(selectedColor.id.replace('color-', ''));
+
+            const matched = variants.find(v =>
+                v.attribute_values.includes(sizeId) && v.attribute_values.includes(colorId)
+            );
+
+            if (!matched) {
+                e.preventDefault();
+                alert('Không tìm thấy biến thể phù hợp!');
+                return;
+            }
+
+            document.getElementById('selected-size').value = sizeId;
+            document.getElementById('selected-color').value = colorId;
+            document.getElementById('selected-quantity').value = quantity.value;
+            document.getElementById('selected-variant-id').value = matched.id;
+        });
+    }
 
     feather.replace();
 </script>

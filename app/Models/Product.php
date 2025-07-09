@@ -20,6 +20,7 @@ class Product extends Model
         'stock',
         'is_featured',
         'status',
+        'material',
     ];
     public function category()
     {
