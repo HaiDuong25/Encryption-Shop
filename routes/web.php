@@ -53,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.applyCoupon');
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.removeCoupon');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
     // Đơn hàng cho user
@@ -120,18 +122,6 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Route tạo và lưu mã giảm giá
     Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
     Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
-    // Route áp dụng mã giảm giá cho đơn hàng`
-    Route::post('/apply-coupon', function (Request $request) {
-        $coupon = Coupon::where('code', $request->code)->first();
-        if (!$coupon || !$coupon->isValid()) {
-            return back()->with('error', 'Mã giảm giá không hợp lệ hoặc đã hết hạn!');
-        }
-        session(['coupon' => [
-            'code' => $coupon->code,
-            'discount' => $coupon->discount
-        ]]);
-        return back()->with('success', 'Áp dụng mã thành công!');
-    })->name('apply.coupon');
     Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
     Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');

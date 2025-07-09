@@ -78,10 +78,28 @@
             <span><i class="fas fa-box text-primary"></i> {{ $order->orderDetails->sum('quantity') }} sản phẩm</span>
         </div>
         <div>
-            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
-                    style="color:#e11d48">{{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }}
-                    đ
-                </strong></span>
+            @php
+                $originalTotal = $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
+                $finalTotal = $order->total_price ?? $originalTotal;
+                $discount = $originalTotal - $finalTotal;
+            @endphp
+            
+            @if($discount > 0)
+                <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: 
+                    <span style="text-decoration: line-through; color: #6c757d; font-size: 0.9em;">
+                        {{ number_format($originalTotal, 0, ',', '.') }} đ
+                    </span>
+                    <strong style="color:#e11d48"> → {{ number_format($finalTotal, 0, ',', '.') }} đ</strong>
+                    <small class="text-success ms-2">
+                        <i class="fas fa-tag"></i> -{{ number_format($discount, 0, ',', '.') }} đ
+                    </small>
+                </span>
+            @else
+                <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
+                        style="color:#e11d48">{{ number_format($finalTotal, 0, ',', '.') }}
+                        đ
+                    </strong></span>
+            @endif
         </div>
     </div>
     <div class="row">
@@ -161,14 +179,39 @@
             <div class="card mb-4 p-3">
                 <h5 class="mb-3"><i class="fas fa-receipt me-2 text-primary"></i> Lịch sử thanh toán</h5>
                 <ul class="list-unstyled">
-                    <li>
-                        <i class="fas fa-money-bill-wave text-success"></i>
-                        Tổng tiền thanh toán:
-                        <span class="text-success fw-bold">
-                            {{ number_format($order->orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }}
-                            đ
-                        </span>
-                    </li>
+                    @php
+                        $originalTotal = $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
+                        $finalTotal = $order->total_price ?? $originalTotal;
+                        $discount = $originalTotal - $finalTotal;
+                    @endphp
+                    
+                    @if($discount > 0)
+                        <li>
+                            <i class="fas fa-calculator text-info"></i>
+                            Tạm tính:
+                            <span class="fw-bold">{{ number_format($originalTotal, 0, ',', '.') }} đ</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-tag text-success"></i>
+                            Giảm giá 
+                            @if($order->coupon_code)
+                                ({{ $order->coupon_code }})
+                            @endif
+                            :
+                            <span class="text-success fw-bold">-{{ number_format($discount, 0, ',', '.') }} đ</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-money-bill-wave text-primary"></i>
+                            <strong>Tổng tiền thanh toán:</strong>
+                            <span class="text-primary fw-bold">{{ number_format($finalTotal, 0, ',', '.') }} đ</span>
+                        </li>
+                    @else
+                        <li>
+                            <i class="fas fa-money-bill-wave text-success"></i>
+                            Tổng tiền thanh toán:
+                            <span class="text-success fw-bold">{{ number_format($finalTotal, 0, ',', '.') }} đ</span>
+                        </li>
+                    @endif
                     @php
                         $validPayments = $order->payments->whereNotNull('created_at');
                     @endphp
@@ -234,26 +277,56 @@
                     @endif
                 </p>
                 <hr>
-                <div class="summary-title">Thông tin khách hàng</div>
-                <p><strong>Khách hàng:</strong><br>{{ $order->name }}</p>
-                <p><strong>SĐT:</strong> {{ $order->phone }}</p>
-                <p><strong>Email:</strong> {{ $order->user->email ?? 'N/A' }}</p>
-                <p><strong>Địa chỉ:</strong><br>{{ $order->address }}</p>
+                <div class="summary-title">Thông tin người đặt hàng</div>
+                <p><strong>Người đặt:</strong><br>{{ $order->orderer_name }}</p>
+                <p><strong>SĐT:</strong> {{ $order->orderer_phone }}</p>
+                <p><strong>Email:</strong> {{ $order->orderer_email ?? $order->user->email ?? 'N/A' }}</p>
+                <hr>
+                <div class="summary-title">Thông tin người nhận hàng</div>
+                <p><strong>Người nhận:</strong><br>{{ $order->recipient_name }}</p>
+                <p><strong>SĐT:</strong> {{ $order->recipient_phone }}</p>
+                <p><strong>Email:</strong> {{ $order->recipient_email ?? 'N/A' }}</p>
+                <p><strong>Địa chỉ nhận:</strong><br>{{ $order->recipient_address }}</p>
+                @if($order->order_notes)
+                <p><strong>Ghi chú:</strong><br>{{ $order->order_notes }}</p>
+                @endif
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
-                <p><strong>Mã giảm giá:</strong> {{ $order->coupon->code ?? 'Không áp dụng' }}</p>
+                @if($order->coupon_code || $order->discount_amount > 0)
+                    <p><strong>Mã giảm giá:</strong> 
+                        @if($order->coupon_code)
+                            {{ $order->coupon_code }}
+                            @if($order->discount_amount > 0)
+                                <span class="text-success">(-{{ number_format($order->discount_amount, 0, ',', '.') }} đ)</span>
+                            @endif
+                        @else
+                            <span class="text-success">Giảm {{ number_format($order->discount_amount, 0, ',', '.') }} đ</span>
+                        @endif
+                    </p>
+                @else
+                    <p><strong>Mã giảm giá:</strong> Không áp dụng</p>
+                @endif
 
                 <!-- <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p> -->
             </div>
 
             <div class="summary-card mt-3">
                 <div class="summary-title">Chi tiết giao hàng</div>
-                <p><strong>Người nhận:</strong> {{ $order->shipping_name ?? $order->name }}</p>
-                <p><strong>Địa chỉ:</strong><br>
-                    {{ $order->shipping_address ?? $order->address }}
-                </p>
-                <p><strong>Số điện thoại:</strong> {{ $order->shipping_phone ?? $order->phone }}</p>
-                <p><strong>Email:</strong> {{ $order->user->email ?? 'N/A' }}</p>
+                <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
+                @if($order->coupon_code || $order->discount_amount > 0)
+                    <p><strong>Mã giảm giá:</strong> 
+                        @if($order->coupon_code)
+                            {{ $order->coupon_code }}
+                            @if($order->discount_amount > 0)
+                                <span class="text-success">(-{{ number_format($order->discount_amount, 0, ',', '.') }} đ)</span>
+                            @endif
+                        @else
+                            <span class="text-success">Giảm {{ number_format($order->discount_amount, 0, ',', '.') }} đ</span>
+                        @endif
+                    </p>
+                @else
+                    <p><strong>Mã giảm giá:</strong> Không áp dụng</p>
+                @endif
                 <p><strong>Phương thức vận chuyển:</strong> {{ $order->shipping_method ?? 'Miễn phí vận chuyển' }}</p>
             </div>
         </div>

@@ -16,7 +16,7 @@ class Product extends Model
         'short_description',
         'description',
         'price',
-        'compare_price',
+        'sale_price',
         'stock',
         'is_featured',
         'status',

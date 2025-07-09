@@ -270,8 +270,8 @@
             <p>Danh mục: <strong>{{ $product->category->name ?? 'Chưa phân loại' }}</strong></p>
 
             <div class="price-area mb-3">
-                @if ($product->compare_price && $product->compare_price < $product->price)
-                    <span class="price fs-3 text-danger fw-bold">{{ number_format($product->compare_price) }} đ</span>
+                @if ($product->sale_price && $product->sale_price < $product->price)
+                    <span class="price fs-3 text-danger fw-bold">{{ number_format($product->sale_price) }} đ</span>
                     <del class="old-price text-muted ms-2">{{ number_format($product->price) }} đ</del>
                     @else
                     <span class="price fs-3 text-danger fw-bold">{{ number_format($product->price) }} đ</span>
@@ -322,7 +322,7 @@
                 </div>
             </div>
             <div class="mb-2" id="expected-price-block">
-                <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price" class="text-danger fw-bold">{{ number_format($product->compare_price && $product->compare_price < $product->price ? $product->compare_price : $product->price) }}</span> đ
+                <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price" class="text-danger fw-bold">{{ number_format($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}</span> đ
             </div>
 
             @if(session('success'))
@@ -400,9 +400,9 @@
                     <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
                     <div class="card-body">
                         <h6 class="card-title">{{ $item->name }}</h6>
-                        @if($item->compare_price && $item->compare_price < $item->price)
+                        @if($item->sale_price && $item->sale_price < $item->price)
                             <p>
-                                <span class="text-danger fw-bold">{{ number_format($item->compare_price) }} đ</span>
+                                <span class="text-danger fw-bold">{{ number_format($item->sale_price) }} đ</span>
                                 <del class="text-muted ms-1">{{ number_format($item->price) }} đ</del>
                             </p>
                             @else
@@ -467,8 +467,8 @@
     }
 
     function getUnitPrice() {
-        // Lấy giá ưu tiên compare_price nếu có, không thì lấy price
-        return {{ $product->compare_price && $product->compare_price < $product->price ? $product->compare_price : $product->price }};
+        // Lấy giá ưu tiên sale_price nếu có, không thì lấy price
+        return {{ $product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price }};
     }
     function updateExpectedPrice() {
         const qty = parseInt(document.getElementById('quantity').value) || 1;

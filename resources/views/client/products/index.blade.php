@@ -185,7 +185,7 @@
                                     <h6 class="unit">{{ $product->material ?? 'Đang cập nhật' }}</h6>
 
                                     <h5 class="price">
-                                        @if($product->sale_price)
+                                        @if($product->sale_price && $product->sale_price < $product->price)
                                         <span class="theme-color">{{ number_format($product->sale_price) }} đ</span>
                                         <del>{{ number_format($product->price) }} đ</del>
                                         @else
@@ -256,7 +256,7 @@
                                                                     @foreach($product->variants as $variant)
                                                                     <option value="{{ $variant->id }}"
                                                                         data-price="{{ $variant->price }}"
-                                                                        data-compare-price="{{ $variant->compare_price }}"
+                                                                        data-sale-price="{{ $variant->sale_price }}"
                                                                         data-stock="{{ $variant->stock }}">
                                                                         {{ $variant->sku }} - {{ number_format($variant->price) }} đ (Tồn: {{ $variant->stock }})
                                                                     </option>
