@@ -15,12 +15,12 @@ class CouponController extends \App\Http\Controllers\Controller
             $query->where('discount', $request->discount);
         }
         $coupons = $query->paginate(15);
-        return view('coupons.index', compact('coupons'));
+        return view('admin.coupons.index', compact('coupons'));
     }
 
     public function create()
     {
-        return view('coupons.create');
+        return view('admin.coupons.create');
     }
 
     public function store(Request $request)
@@ -46,7 +46,7 @@ class CouponController extends \App\Http\Controllers\Controller
     public function edit($id)
     {
         $coupon = Coupon::findOrFail($id);
-        return view('coupons.edit', compact('coupon'));
+        return view('admin.coupons.edit', compact('coupon'));
     }
 
     public function update(Request $request, $id)
