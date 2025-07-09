@@ -140,15 +140,53 @@ public function update(Request $request, $id)
 
     public function checkout()
     {
-        $carts = Cart::where('user_id', Auth::id())->with('product')->get();
+        $carts = Cart::where('user_id', Auth::id())->with(['product.category', 'product.brand', 'variant'])->get();
+        $total = $carts->sum(function($cart){
+            return ($cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+        });
+        $payment_methods = \App\Models\PaymentMethod::all();
+        return view('client.cart.checkout', compact('carts', 'total', 'payment_methods'));
+    }
 
-        // Tính tổng tiền
-        $total = 0;
-        foreach ($carts as $cart) {
-            $total += ($cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+    public function processCheckout(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'payment_method_id' => 'required|exists:payment_methods,id',
+        ]);
+        $carts = Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
+        if ($carts->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống!');
         }
-
-        return view('client.cart.checkout', compact('carts', 'total'));
+        $total = $carts->sum(function($cart){
+            return ($cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
+        });
+        // Lưu đơn hàng
+        $order = new \App\Models\Order();
+        $order->user_id = Auth::id();
+        $order->name = $request->name;
+        $order->phone = $request->phone;
+        $order->address = $request->address;
+        $order->total_price = $total;
+        $order->status = 'pending';
+        $order->payment_method_id = $request->payment_method_id;
+        $order->save();
+        // Lưu chi tiết đơn hàng
+        foreach ($carts as $cart) {
+            $order->orderDetails()->create([
+                'product_id' => $cart->product_id,
+                'variant_id' => $cart->variant_id,
+                'quantity' => $cart->quantity,
+                'price' => $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price,
+            ]);
+        }
+        // Xóa giỏ hàng sau khi thanh toán
+        Cart::where('user_id', Auth::id())->delete();
+        session()->forget('cart');
+        // Chuyển hướng sang trang success, truyền mã đơn hàng
+        return redirect()->route('cart.success', ['order_id' => $order->id]);
     }
 
 }
