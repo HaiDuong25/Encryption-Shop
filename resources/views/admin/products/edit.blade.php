@@ -82,13 +82,13 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Giá khuyến mãi</label>
-                        <input type="number" step="0.01" name="compare_price" class="form-control @error('compare_price') is-invalid @enderror"
-                            value="{{ old('compare_price', $product->compare_price) }}">
-                        @error('compare_price')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="col-md-6 mb-3">                        <label class="form-label fw-semibold">Giá khuyến mãi (Sale Price)</label>
+                        <input type="number" step="0.01" name="sale_price" class="form-control @error('sale_price') is-invalid @enderror"
+                            value="{{ old('sale_price', $product->sale_price) }}">
+                        @error('sale_price')
+                            <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <small class="text-muted">Giá khuyến mãi (thường thấp hơn giá gốc)</small>
                     </div>
                 </div>
 

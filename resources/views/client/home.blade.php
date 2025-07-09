@@ -4,7 +4,15 @@
     <!-- Banner Section Start -->
     <section class="banner-section banner-large ratio_65 mb-5">
         <div class="container-fluid-lg">
-            <div id="mainBannerCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+            <div id="mainBannerCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" data-bs-pause="hover" data-bs-wrap="true">
+                <!-- Indicators -->
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#mainBannerCarousel" data-bs-slide-to="0" class="active"></button>
+                    <button type="button" data-bs-target="#mainBannerCarousel" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#mainBannerCarousel" data-bs-slide-to="2"></button>
+                    <button type="button" data-bs-target="#mainBannerCarousel" data-bs-slide-to="3"></button>
+                </div>
+                
                 <div class="carousel-inner rounded-4 shadow-lg">
                     <div class="carousel-item active">
                         <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80"
@@ -78,6 +86,30 @@
             max-width: 500px;
         }
 
+        .carousel-indicators {
+            bottom: 20px;
+            right: 30px;
+            left: auto;
+            justify-content: flex-end;
+            margin: 0;
+        }
+
+        .carousel-indicators button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background-color: transparent;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-indicators button.active {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.2);
+        }
+
         @media (max-width: 768px) {
             .banner-img-large {
                 min-height: 180px;
@@ -90,6 +122,31 @@
             }
         }
     </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra xem Bootstrap có sẵn không
+            if (typeof bootstrap !== 'undefined') {
+                // Khởi tạo carousel thủ công để đảm bảo hoạt động
+                var carouselElement = document.querySelector('#mainBannerCarousel');
+                if (carouselElement) {
+                    var carousel = new bootstrap.Carousel(carouselElement, {
+                        interval: 3000,
+                        ride: 'carousel',
+                        pause: 'hover',
+                        wrap: true
+                    });
+                    
+                    // Bắt đầu carousel ngay lập tức
+                    carousel.cycle();
+                    
+                    console.log('Carousel đã được khởi tạo với interval 3s');
+                }
+            } else {
+                console.error('Bootstrap chưa được load');
+            }
+        });
+    </script>
     <!-- Banner Section End -->
 
     <!-- Category Section Start -->
@@ -377,14 +434,18 @@
                                     </h5>
                                 </a>
                                 <div class="d-flex flex-column align-items-center gap-1 mb-2">
-                                    @if($product->compare_price)
-                                        <span class="text-muted" style="font-size: 1rem;">
-                                            <del>{{ number_format($product->compare_price) }}₫</del>
+                                    @if($product->sale_price && $product->sale_price < $product->price)
+                                        <span class="fw-bold text-danger" style="font-size: 1.3rem;">
+                                            {{ number_format($product->sale_price) }}₫
+                                        </span>
+                                        <span class="text-muted" style="font-size: 0.9rem;">
+                                            <del>{{ number_format($product->price) }}₫</del>
+                                        </span>
+                                    @else
+                                        <span class="fw-bold text-danger" style="font-size: 1.2rem;">
+                                            {{ number_format($product->price) }}₫
                                         </span>
                                     @endif
-                                    <span class="fw-bold text-danger" style="font-size: 1.2rem;">
-                                        {{ number_format($product->price) }}₫
-                                    </span>
                                 </div>
                                 <div class="d-flex justify-content-center gap-2 mt-2">
                                     <a href="{{ route('client.products.show', $product->id) }}" class="btn btn-outline-secondary btn-sm rounded-pill" title="Xem chi tiết">

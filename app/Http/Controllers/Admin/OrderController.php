@@ -23,7 +23,7 @@ class OrderController extends \App\Http\Controllers\Controller
             ->latest()
             ->paginate(10);
 
-        return view('orders.index', compact('orders'));
+        return view('admin.orders.index', compact('orders'));
     }
 
     public function create()
@@ -32,16 +32,21 @@ class OrderController extends \App\Http\Controllers\Controller
         $coupons = Coupon::all();
         $paymentMethods = PaymentMethod::all();
 
-        return view('orders.create', compact('users', 'coupons', 'paymentMethods'));
+        return view('admin.orders.create', compact('users', 'coupons', 'paymentMethods'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
+            'orderer_name' => 'nullable|string|max:255',
+            'orderer_phone' => 'nullable|string|max:20', 
+            'orderer_email' => 'nullable|email|max:255',
+            'recipient_name' => 'required|string|max:255',
+            'recipient_phone' => 'required|string|max:20',
+            'recipient_email' => 'nullable|email|max:255',
+            'recipient_address' => 'required|string',
+            'order_notes' => 'nullable|string',
             'total_price' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed',
             'discount_id' => 'nullable|exists:coupons,id',
@@ -56,9 +61,14 @@ class OrderController extends \App\Http\Controllers\Controller
         try {
             $order = Order::create([
                 'user_id' => $validated['user_id'],
-                'name' => $validated['name'],
-                'phone' => $validated['phone'],
-                'address' => $validated['address'],
+                'orderer_name' => $validated['orderer_name'],
+                'orderer_phone' => $validated['orderer_phone'],
+                'orderer_email' => $validated['orderer_email'],
+                'recipient_name' => $validated['recipient_name'],
+                'recipient_phone' => $validated['recipient_phone'],
+                'recipient_email' => $validated['recipient_email'],
+                'recipient_address' => $validated['recipient_address'],
+                'order_notes' => $validated['order_notes'],
                 'total_price' => $validated['total_price'],
                 'status' => $validated['status'],
                 'coupon_id' => $validated['discount_id'] ?? null,
@@ -91,7 +101,7 @@ class OrderController extends \App\Http\Controllers\Controller
             'coupon',
             'payments'
         ]);
-        return view('orders.show', compact('order'));
+        return view('admin.orders.show', compact('order'));
     }
 
     public function edit(Order $order)
@@ -99,36 +109,49 @@ class OrderController extends \App\Http\Controllers\Controller
         $users = User::all();
         $coupons = Coupon::all();
         $paymentMethods = PaymentMethod::all();
-        return view('orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
+        return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
     }
 
     public function update(Request $request, Order $order)
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
+            'orderer_name' => 'nullable|string|max:255',
+            'orderer_phone' => 'nullable|string|max:20', 
+            'orderer_email' => 'nullable|email|max:255',
+            'recipient_name' => 'required|string|max:255',
+            'recipient_phone' => 'required|string|max:20',
+            'recipient_email' => 'nullable|email|max:255',
+            'recipient_address' => 'required|string',
+            'order_notes' => 'nullable|string',
             'status' => 'required|string',
             'discount_id' => 'nullable|exists:coupons,id',
             'payment_method_id' => 'required|exists:payment_methods,id',
         ]);
+        
         $order->update([
             'user_id' => $validated['user_id'],
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'address' => $validated['address'],
+            'orderer_name' => $validated['orderer_name'],
+            'orderer_phone' => $validated['orderer_phone'],
+            'orderer_email' => $validated['orderer_email'],
+            'recipient_name' => $validated['recipient_name'],
+            'recipient_phone' => $validated['recipient_phone'],
+            'recipient_email' => $validated['recipient_email'],
+            'recipient_address' => $validated['recipient_address'],
+            'order_notes' => $validated['order_notes'],
             'status' => $validated['status'],
             'coupon_id' => $validated['discount_id'] ?? null,
             'payment_method_id' => $validated['payment_method_id'],
         ]);
+        
         return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
     }
 
     public function destroy(Order $order)
     {
+        // Observer sẽ tự động trả lại tồn kho khi xóa
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Đã xóa đơn hàng!');
+        return redirect()->route('orders.index')->with('success', 'Đã xóa đơn hàng và trả lại tồn kho thành công!');
     }
 
     public function tracking($id)
@@ -142,7 +165,7 @@ class OrderController extends \App\Http\Controllers\Controller
             'Đã nhận hàng',
             'Đơn hàng hoàn thành',
         ];
-        return view('orders.tracking', compact('order', 'locations'));
+        return view('admin.orders.tracking', compact('order', 'locations'));
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -150,8 +173,19 @@ class OrderController extends \App\Http\Controllers\Controller
         $request->validate([
             'status' => 'required|string'
         ]);
-        $order->status = $request->status;
+        
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+        
+        // Xử lý đặc biệt khi admin chuyển sang trạng thái cancelled
+        if ($newStatus === Order::STATUS_CANCELLED && $oldStatus !== Order::STATUS_CANCELLED) {
+            // Admin có thể hủy ở bất kỳ trạng thái nào
+            $order->restoreStock();
+        }
+        
+        $order->status = $newStatus;
         $order->save();
+        
         if ($order->status == 'completed' && $order->payments()->count() == 0) {
             Payment::create([
                 'order_id' => $order->id,
@@ -159,9 +193,33 @@ class OrderController extends \App\Http\Controllers\Controller
                 'note' => 'Thanh toán khi xác nhận',
             ]);
         }
+        
+        $message = 'Cập nhật trạng thái thành công!';
+        if ($newStatus === Order::STATUS_CANCELLED && $oldStatus !== Order::STATUS_CANCELLED) {
+            $message .= ' Đã trả lại tồn kho.';
+        }
+        
         return response()->json([
-            'message' => 'Cập nhật trạng thái thành công!',
+            'message' => $message,
             'status' => $order->status,
         ]);
+    }
+
+    /**
+     * Hủy đơn hàng và trả lại tồn kho (Admin có thể hủy ở mọi trạng thái)
+     */
+    public function cancel(Order $order)
+    {
+        try {
+            if (!$order->canBeCancelledByAdmin()) {
+                return redirect()->back()->with('error', 'Đơn hàng đã được hủy trước đó.');
+            }
+
+            $order->cancelOrderByAdmin();
+            
+            return redirect()->back()->with('success', 'Đã hủy đơn hàng và trả lại tồn kho thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 }

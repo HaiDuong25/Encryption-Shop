@@ -42,7 +42,7 @@
                     @foreach($payments as $payment)
                         <tr>
                             <td>{{ $payment->id }}</td>
-                            <td>{{ $payment->order->name ?? 'N/A' }}</td>
+                            <td>{{ $payment->order->recipient_name ?? 'N/A' }}</td>
                             <td>
                                 @php
                                     $orderDetails = $payment->order->orderDetails ?? collect();

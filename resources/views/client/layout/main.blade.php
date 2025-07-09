@@ -10,6 +10,7 @@
     <meta name="description" content="Fastkart">
     <meta name="keywords" content="Fastkart">
     <meta name="author" content="Fastkart">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets-front/images/favicon/5.png') }}" type="image/x-icon">
     <title>Shop Bán Quần Áo</title>
 

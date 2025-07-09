@@ -15,12 +15,12 @@ class BannerController extends \App\Http\Controllers\Controller
             $query->where('title', 'like', '%' . $request->title . '%');
         }
         $banners = $query->paginate(15);
-        return view('banners.index', compact('banners'));
+        return view('admin.banners.index', compact('banners'));
     }
 
     public function create()
     {
-        return view('banners.create');
+        return view('admin.banners.create');
     }
 
     public function store(Request $request)
@@ -51,10 +51,17 @@ class BannerController extends \App\Http\Controllers\Controller
         return redirect()->route('banners.index')->with('success', 'Tạo banner thành công!');
     }
 
+    public function show(Banner $banner)
+    {
+        // Decode images từ JSON
+        $banner->images = json_decode($banner->image, true) ?: [];
+        return view('admin.banners.show', compact('banner'));
+    }
+
     public function edit(Banner $banner)
     {
         $banner->images = json_decode($banner->image, true) ?: [];
-        return view('banners.edit', compact('banner'));
+        return view('admin.banners.edit', compact('banner'));
     }
 
     public function update(Request $request, $id)
