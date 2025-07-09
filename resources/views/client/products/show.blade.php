@@ -307,7 +307,11 @@
             $totalStock = $product->variants->sum('stock');
             @endphp
             <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
-                Số lượng còn lại: <strong>{{ $totalStock }}</strong>
+                @if($product->variants->count() > 0)
+                    <span class="text-warning">Vui lòng chọn size và màu để xem số lượng tồn kho</span>
+                @else
+                    Số lượng còn lại: <strong>{{ $totalStock }}</strong>
+                @endif
             </p>
 
             @if ($sizes->count())
@@ -366,7 +370,7 @@
             </div>
             @endif
             <div class="mb-4 d-flex">
-               <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2" id="add-to-cart-form">
+               <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2 me-2" id="add-to-cart-form">
     @csrf
     <input type="hidden" name="size_id" id="selected-size">
     <input type="hidden" name="color_id" id="selected-color">
@@ -377,7 +381,18 @@
         <i class="fa-solid fa-plus me-1"></i> Thêm vào giỏ
     </button>
 </form>
-                <button class="btn btn-buy px-4 py-2">Mua ngay</button>
+
+<form action="{{ route('cart.buyNow', $product->id) }}" method="POST" class="d-flex flex-column gap-2" id="buy-now-form">
+    @csrf
+    <input type="hidden" name="size_id" id="buy-now-size">
+    <input type="hidden" name="color_id" id="buy-now-color">
+    <input type="hidden" name="variant_id" id="buy-now-variant-id">
+    <input type="hidden" name="quantity" id="buy-now-quantity" value="1">
+
+    <button type="submit" class="btn btn-buy px-4 py-2">
+        <i class="fa-solid fa-bolt me-1"></i> Mua ngay
+    </button>
+</form>
             </div>
         </div>
     </div>
@@ -456,6 +471,7 @@
         $product->variants->map(function ($variant) {
             return [
                 'id' => $variant->id,
+                'stock' => $variant->stock,
                 'attribute_values' => $variant->attributeValues->pluck('id')->toArray()
             ];
         })
@@ -480,6 +496,8 @@
         document.querySelectorAll('input[name="size"], input[name="color"]').forEach(input => {
             input.addEventListener('change', fetchStock);
         });
+        
+        // Không tự động gọi fetchStock() khi load trang
     });
 
     function updateMainImage() {
@@ -520,14 +538,22 @@
         current += delta;
         if (current < 1) current = 1;
         input.value = current;
-        document.getElementById('form-quantity').value = current;
+        
+        // Đồng bộ số lượng cho cả 2 form
+        document.getElementById('selected-quantity').value = current;
+        document.getElementById('buy-now-quantity').value = current;
+        
         updateExpectedPrice();
     }
     document.getElementById('quantity').addEventListener('input', function() {
         let val = parseInt(this.value) || 1;
         if (val < 1) val = 1;
         this.value = val;
-        document.getElementById('form-quantity').value = val;
+        
+        // Đồng bộ số lượng cho cả 2 form
+        document.getElementById('selected-quantity').value = val;
+        document.getElementById('buy-now-quantity').value = val;
+        
         updateExpectedPrice();
     });
     // Khởi tạo giá dự kiến khi load trang
@@ -588,6 +614,31 @@
 
         if (!sizeId || !colorId) return;
 
+        // Tìm variant tương ứng
+        const matched = variants.find(v =>
+            v.attribute_values.includes(parseInt(sizeId)) && v.attribute_values.includes(parseInt(colorId))
+        );
+
+        if (matched) {
+            // Cập nhật thông tin stock
+            const stockEl = document.getElementById('stock-info');
+            stockEl.innerHTML = `Số lượng còn lại: <strong>${matched.stock}</strong>`;
+            stockEl.dataset.stock = matched.stock;
+            
+            // Set variant ID cho cả 2 form
+            document.getElementById('selected-variant-id').value = matched.id;
+            document.getElementById('buy-now-variant-id').value = matched.id;
+            
+            // Set size và color cho cả 2 form
+            document.getElementById('selected-size').value = sizeId;
+            document.getElementById('selected-color').value = colorId;
+            document.getElementById('buy-now-size').value = sizeId;
+            document.getElementById('buy-now-color').value = colorId;
+            
+            console.log('Selected variant:', matched.id, 'Stock:', matched.stock);
+        }
+
+        // Backup: fetch từ server nếu cần
         fetch(`/get-stock?product_id=${productId}&size_id=${sizeId}&color_id=${colorId}`)
             .then(res => res.json())
             .then(data => {
@@ -606,36 +657,58 @@
     }
 
     // Xử lý khi submit form thêm vào giỏ
-    const form = document.getElementById('add-to-cart-form');
-    if (form) {
-        form.addEventListener('submit', function (e) {
-            const selectedSize = document.querySelector('input[name="size"]:checked');
-            const selectedColor = document.querySelector('input[name="color"]:checked');
-            const quantity = document.getElementById('quantity');
+    const addToCartForm = document.getElementById('add-to-cart-form');
+    const buyNowForm = document.getElementById('buy-now-form');
+    
+    function validateAndSetVariant(formType) {
+        const selectedSize = document.querySelector('input[name="size"]:checked');
+        const selectedColor = document.querySelector('input[name="color"]:checked');
+        const quantity = document.getElementById('quantity');
 
-            if (!selectedSize || !selectedColor) {
+        if (!selectedSize || !selectedColor) {
+            alert('Vui lòng chọn đầy đủ Size và Màu sắc!');
+            return false;
+        }
+
+        const sizeId = parseInt(selectedSize.id.replace('size-', ''));
+        const colorId = parseInt(selectedColor.id.replace('color-', ''));
+
+        const matched = variants.find(v =>
+            v.attribute_values.includes(sizeId) && v.attribute_values.includes(colorId)
+        );
+
+        if (!matched) {
+            alert('Không tìm thấy biến thể phù hợp!');
+            return false;
+        }
+
+        // Set values cho CẢ HAI form luôn (để đảm bảo đồng bộ)
+        document.getElementById('selected-size').value = sizeId;
+        document.getElementById('selected-color').value = colorId;
+        document.getElementById('selected-quantity').value = quantity.value;
+        document.getElementById('selected-variant-id').value = matched.id;
+        
+        document.getElementById('buy-now-size').value = sizeId;
+        document.getElementById('buy-now-color').value = colorId;
+        document.getElementById('buy-now-quantity').value = quantity.value;
+        document.getElementById('buy-now-variant-id').value = matched.id;
+
+        return true;
+    }
+
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function (e) {
+            if (!validateAndSetVariant('add-to-cart')) {
                 e.preventDefault();
-                alert('Vui lòng chọn đầy đủ Size và Màu sắc trước khi thêm vào giỏ!');
-                return;
             }
+        });
+    }
 
-            const sizeId = parseInt(selectedSize.id.replace('size-', ''));
-            const colorId = parseInt(selectedColor.id.replace('color-', ''));
-
-            const matched = variants.find(v =>
-                v.attribute_values.includes(sizeId) && v.attribute_values.includes(colorId)
-            );
-
-            if (!matched) {
+    if (buyNowForm) {
+        buyNowForm.addEventListener('submit', function (e) {
+            if (!validateAndSetVariant('buy-now')) {
                 e.preventDefault();
-                alert('Không tìm thấy biến thể phù hợp!');
-                return;
             }
-
-            document.getElementById('selected-size').value = sizeId;
-            document.getElementById('selected-color').value = colorId;
-            document.getElementById('selected-quantity').value = quantity.value;
-            document.getElementById('selected-variant-id').value = matched.id;
         });
     }
 

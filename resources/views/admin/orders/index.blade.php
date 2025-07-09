@@ -175,8 +175,20 @@
                                             <i class="ri-pencil-line"></i>
                                         </a>
                                     </li>
+                                    @if($statusValue !== 'cancelled')
                                     <li>
-                                        <form action="{{ route('orders.destroy', $order->id) }}" method="POST" style="display:inline;">
+                                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" style="display:inline;" 
+                                              onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?\n\nAdmin có thể hủy đơn hàng ở bất kỳ trạng thái nào.\nSố lượng sản phẩm sẽ được trả lại kho.')">
+                                            @csrf
+                                            <button type="submit" style="border:none; background:none; padding:0.25rem; color:#ffc107;" title="Hủy đơn hàng">
+                                                <i class="ri-close-circle-line"></i>
+                                            </button>
+                                        </form>
+                                    </li>
+                                    @endif
+                                    <li>
+                                        <form action="{{ route('orders.destroy', $order->id) }}" method="POST" style="display:inline;"
+                                              onsubmit="return confirm('Bạn có chắc muốn xóa đơn hàng này? Số lượng sản phẩm sẽ được trả lại kho.')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" style="border:none; background:none; padding:0.25rem; color:#dc3545;" title="Xóa">

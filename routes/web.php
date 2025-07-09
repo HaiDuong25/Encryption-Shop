@@ -43,7 +43,6 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 //sản phẩm
 Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
-Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
 Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 'getStock'])->name('client.products.getStock');
 
@@ -51,6 +50,8 @@ Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 
 // Route chỉ user (và admin được truy cập luôn)
 Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/buy-now/{product}', [CartController::class, 'buyNow'])->name('cart.buyNow');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.applyCoupon');
@@ -59,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
     // Đơn hàng cho user
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
+    Route::get('/orders/{id}', [ClientOrderController::class, 'show'])->name('client.orders.show');
+    Route::post('/orders/{id}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::get('/checkout/success', function(Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
@@ -80,6 +83,7 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     //categories
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');

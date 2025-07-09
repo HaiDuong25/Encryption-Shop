@@ -32,7 +32,6 @@ public function add(Request $request, $productId)
     $product = Product::with('variants')->findOrFail($productId);
 
     if ($variantId) {
-
         $variant = $product->variants()->where('id', $variantId)->firstOrFail();
 
         $existing = Cart::where('user_id', Auth::id())
@@ -44,7 +43,7 @@ public function add(Request $request, $productId)
         $currentInCart = $existing ? $existing->quantity : 0;
 
         if ($totalQuantity > $variant->stock) {
-            return redirect()->back()->with('error', "Xin lỗi! Sản phẩm này chỉ còn {$variant->stock} sản phẩm trong kho. Bạn đã có {$currentInCart} trong giỏ hàng.");
+            return redirect()->back()->with('error', "Xin lỗi! Biến thể này chỉ còn {$variant->stock} sản phẩm trong kho. Bạn đã có {$currentInCart} trong giỏ hàng.");
         }
 
         if ($existing) {
@@ -60,6 +59,11 @@ public function add(Request $request, $productId)
             ]);
         }
     } else {
+        // Nếu sản phẩm có variants nhưng không có variant_id được gửi
+        if ($product->variants->count() > 0) {
+            return redirect()->back()->with('error', 'Vui lòng chọn size và màu sắc trước khi thêm vào giỏ hàng!');
+        }
+        
         // Nếu không có biến thể, kiểm tra tồn kho product
         $existing = Cart::where('user_id', Auth::id())
             ->where('product_id', $productId)
@@ -276,10 +280,16 @@ public function update(Request $request, $id)
         $coupon = Coupon::where('code', $couponCode)->first();
         
         if (!$coupon) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Mã giảm giá không tồn tại!']);
+            }
             return redirect()->back()->with('error', 'Mã giảm giá không tồn tại!');
         }
         
         if (!$coupon->isValid()) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết hạn hoặc không còn hiệu lực!']);
+            }
             return redirect()->back()->with('error', 'Mã giảm giá đã hết hạn hoặc không còn hiệu lực!');
         }
         
@@ -290,15 +300,43 @@ public function update(Request $request, $id)
             'discount' => $coupon->discount
         ]]);
         
+        if ($request->ajax()) {
+            // Tính toán lại totals để trả về cho frontend
+            $carts = Cart::where('user_id', Auth::id())->with(['product.category', 'product.brand', 'variant'])->get();
+            $totals = $this->calculateTotalWithCoupon($carts);
+            
+            return response()->json([
+                'success' => true, 
+                'message' => "Áp dụng mã giảm giá \"{$coupon->code}\" thành công!",
+                'totals' => $totals,
+                'coupon' => [
+                    'code' => $coupon->code,
+                    'discount' => $coupon->discount
+                ]
+            ]);
+        }
         return redirect()->back()->with('success', "Áp dụng mã giảm giá \"{$coupon->code}\" thành công!");
     }
 
     /**
      * Hủy mã giảm giá
      */
-    public function removeCoupon()
+    public function removeCoupon(Request $request)
     {
         session()->forget('applied_coupon');
+        
+        if ($request->ajax()) {
+            // Tính toán lại totals để trả về cho frontend
+            $carts = Cart::where('user_id', Auth::id())->with(['product.category', 'product.brand', 'variant'])->get();
+            $totals = $this->calculateTotalWithCoupon($carts);
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'Đã hủy mã giảm giá!',
+                'totals' => $totals
+            ]);
+        }
+        
         return redirect()->back()->with('success', 'Đã hủy mã giảm giá!');
     }
 
@@ -329,6 +367,26 @@ public function update(Request $request, $id)
             'discount' => $discount,
             'total' => max(0, $subtotal - $discount)
         ];
+    }
+
+    public function buyNow(Request $request, $productId)
+    {
+        // Clear session error trước khi thử add
+        session()->forget('error');
+        
+        // Gọi method add để thêm sản phẩm vào giỏ hàng
+        $addResult = $this->add($request, $productId);
+        
+        // Kiểm tra nếu add trả về redirect với lỗi
+        if ($addResult instanceof \Illuminate\Http\RedirectResponse) {
+            // Lấy session để kiểm tra có lỗi không
+            if (session()->has('error')) {
+                return $addResult; // Trả về lỗi nếu có
+            }
+        }
+        
+        // Nếu thêm thành công, chuyển hướng đến checkout
+        return redirect()->route('cart.checkout');
     }
 
 }
