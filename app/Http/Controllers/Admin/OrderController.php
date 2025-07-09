@@ -149,8 +149,9 @@ class OrderController extends \App\Http\Controllers\Controller
 
     public function destroy(Order $order)
     {
+        // Observer sẽ tự động trả lại tồn kho khi xóa
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Đã xóa đơn hàng!');
+        return redirect()->route('orders.index')->with('success', 'Đã xóa đơn hàng và trả lại tồn kho thành công!');
     }
 
     public function tracking($id)
@@ -172,8 +173,19 @@ class OrderController extends \App\Http\Controllers\Controller
         $request->validate([
             'status' => 'required|string'
         ]);
-        $order->status = $request->status;
+        
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+        
+        // Xử lý đặc biệt khi admin chuyển sang trạng thái cancelled
+        if ($newStatus === Order::STATUS_CANCELLED && $oldStatus !== Order::STATUS_CANCELLED) {
+            // Admin có thể hủy ở bất kỳ trạng thái nào
+            $order->restoreStock();
+        }
+        
+        $order->status = $newStatus;
         $order->save();
+        
         if ($order->status == 'completed' && $order->payments()->count() == 0) {
             Payment::create([
                 'order_id' => $order->id,
@@ -181,9 +193,33 @@ class OrderController extends \App\Http\Controllers\Controller
                 'note' => 'Thanh toán khi xác nhận',
             ]);
         }
+        
+        $message = 'Cập nhật trạng thái thành công!';
+        if ($newStatus === Order::STATUS_CANCELLED && $oldStatus !== Order::STATUS_CANCELLED) {
+            $message .= ' Đã trả lại tồn kho.';
+        }
+        
         return response()->json([
-            'message' => 'Cập nhật trạng thái thành công!',
+            'message' => $message,
             'status' => $order->status,
         ]);
+    }
+
+    /**
+     * Hủy đơn hàng và trả lại tồn kho (Admin có thể hủy ở mọi trạng thái)
+     */
+    public function cancel(Order $order)
+    {
+        try {
+            if (!$order->canBeCancelledByAdmin()) {
+                return redirect()->back()->with('error', 'Đơn hàng đã được hủy trước đó.');
+            }
+
+            $order->cancelOrderByAdmin();
+            
+            return redirect()->back()->with('success', 'Đã hủy đơn hàng và trả lại tồn kho thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 }

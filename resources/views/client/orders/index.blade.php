@@ -53,6 +53,13 @@
     <div class="card shadow-sm">
         <div class="card-header bg-white">
             <h3 class="mb-0">Đơn hàng của tôi</h3>
+            <small class="text-muted">
+                <i class="fa-solid fa-info-circle me-1"></i>
+                <strong>Lưu ý:</strong> Bạn chỉ có thể hủy đơn hàng khi đang ở trạng thái 
+                <span class="badge bg-warning text-dark">Chờ xử lý</span> hoặc 
+                <span class="badge bg-primary">Đã xác nhận</span>.
+                Từ khi đơn hàng được giao cho đơn vị vận chuyển sẽ không thể hủy.
+            </small>
         </div>
         <div class="card-body">
             @if($orders->count() > 0)
@@ -117,7 +124,20 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-outline-primary">Xem</a>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('client.orders.show', $order->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa-solid fa-eye me-1"></i>Xem
+                                    </a>
+                                    @if(in_array($statusValue, ['pending', 'confirmed']))
+                                    <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" style="display:inline;" 
+                                          onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?\n\nLưu ý: Chỉ có thể hủy khi đơn hàng đang ở trạng thái \'Chờ xử lý\' hoặc \'Đã xác nhận\'.')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            <i class="fa-solid fa-times me-1"></i>Hủy
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @endforeach

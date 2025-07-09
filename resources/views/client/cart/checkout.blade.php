@@ -4,6 +4,32 @@
 <div class="container py-5">
     <h2 class="mb-4 text-primary"><i class="fa-solid fa-cart-shopping me-2"></i>Thanh toán</h2>
 
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-exclamation-circle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     @if($carts->count() > 0)
     <form action="{{ route('cart.processCheckout') }}" method="POST">
         @csrf
@@ -47,17 +73,15 @@
                                 <tfoot class="table-dark">
                                     <tr>
                                         <td colspan="7" class="text-end fw-bold fs-6">Tạm tính:</td>
-                                        <td class="fw-bold text-info fs-6">{{ number_format($totals['subtotal']) }} đ</td>
+                                        <td class="fw-bold text-info fs-6" id="subtotal-amount">{{ number_format($totals['subtotal']) }} đ</td>
                                     </tr>
-                                    @if($totals['discount'] > 0)
-                                    <tr>
+                                    <tr id="discount-row" style="{{ $totals['discount'] > 0 ? '' : 'display: none;' }}">
                                         <td colspan="7" class="text-end fw-bold fs-6 text-success">Giảm giá:</td>
-                                        <td class="fw-bold text-success fs-6">-{{ number_format($totals['discount']) }} đ</td>
+                                        <td class="fw-bold text-success fs-6" id="discount-amount">-{{ number_format($totals['discount']) }} đ</td>
                                     </tr>
-                                    @endif
                                     <tr>
                                         <td colspan="7" class="text-end fw-bold fs-5">Tổng thanh toán:</td>
-                                        <td class="fw-bold text-warning fs-5">{{ number_format($totals['total']) }} đ</td>
+                                        <td class="fw-bold text-warning fs-5" id="total-amount">{{ number_format($totals['total']) }} đ</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -141,26 +165,28 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <!-- Voucher -->
-                                <div class="mb-4">
+                                <div class="mb-4" id="coupon-section">
                                     <label class="form-label fw-bold fs-6"><i class="fa-solid fa-ticket me-2 text-warning"></i>Mã giảm giá</label>
                                     
                                     @php $appliedCoupon = session('applied_coupon'); @endphp
                                     
-                                    @if($appliedCoupon)
-                                        <div class="alert alert-success d-flex justify-content-between align-items-center">
-                                            <span><i class="fa-solid fa-check-circle me-1"></i> <strong>{{ $appliedCoupon['code'] }}</strong> đã được áp dụng</span>
-                                            <form action="{{ route('cart.removeCoupon') }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Hủy</button>
-                                            </form>
-                                        </div>
-                                        <small class="text-success">Tiết kiệm: {{ number_format($totals['discount']) }} đ</small>
-                                    @else
-                                        <div class="alert alert-info">
-                                            <i class="fa-solid fa-info-circle me-1"></i>
-                                            Bạn có thể nhập mã giảm giá ở <a href="{{ route('cart.index') }}" class="text-decoration-none">trang giỏ hàng</a>
-                                        </div>
-                                    @endif
+                                    <div id="coupon-content">
+                                        @if($appliedCoupon)
+                                            <div class="alert alert-success d-flex justify-content-between align-items-center" id="applied-coupon-alert">
+                                                <span><i class="fa-solid fa-check-circle me-1"></i> <strong id="applied-coupon-code">{{ $appliedCoupon['code'] }}</strong> đã được áp dụng</span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCoupon()">Hủy</button>
+                                            </div>
+                                            <small class="text-success" id="coupon-savings">Tiết kiệm: {{ number_format($totals['discount']) }} đ</small>
+                                        @else
+                                            <div class="input-group mb-2" id="coupon-input-group">
+                                                <input type="text" id="coupon_code_input" class="form-control" placeholder="Nhập mã giảm giá..." maxlength="50" onkeypress="if(event.key==='Enter') applyCoupon()">
+                                                <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">
+                                                    <i class="fa-solid fa-plus me-1"></i>Áp dụng
+                                                </button>
+                                            </div>
+                                            <small class="text-muted" id="coupon-hint">Nhập mã giảm giá để tiết kiệm thêm!</small>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -181,15 +207,13 @@
                         
                         <!-- Tổng tiền và nút đặt hàng -->
                         <div class="text-center mt-4">
-                            <div class="mb-3">
-                                @if($totals['discount'] > 0)
-                                    <div class="mb-2">
-                                        <span class="fs-6 text-muted">Tạm tính: {{ number_format($totals['subtotal']) }} đ</span>
-                                        <br>
-                                        <span class="fs-6 text-success">Giảm giá: -{{ number_format($totals['discount']) }} đ</span>
-                                    </div>
-                                @endif
-                                <span class="fs-4 fw-bold text-danger">Tổng thanh toán: {{ number_format($totals['total']) }} đ</span>
+                            <div class="mb-3" id="bottom-totals">
+                                <div class="mb-2" id="bottom-subtotal-discount" style="{{ $totals['discount'] > 0 ? '' : 'display: none;' }}">
+                                    <span class="fs-6 text-muted" id="bottom-subtotal">Tạm tính: {{ number_format($totals['subtotal']) }} đ</span>
+                                    <br>
+                                    <span class="fs-6 text-success" id="bottom-discount">Giảm giá: -{{ number_format($totals['discount']) }} đ</span>
+                                </div>
+                                <span class="fs-4 fw-bold text-danger" id="bottom-total">Tổng thanh toán: {{ number_format($totals['total']) }} đ</span>
                             </div>
                             <button type="submit" class="btn btn-lg px-5 py-3 fw-bold fs-5 shadow-lg" 
                                     style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border: none; border-radius: 15px; min-width: 280px;">
@@ -248,5 +272,215 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Function để format số tiền
+function formatCurrency(amount) {
+    // Đảm bảo amount là số
+    const numAmount = parseInt(amount) || 0;
+    return new Intl.NumberFormat('vi-VN').format(numAmount) + ' đ';
+}
+
+// Function để cập nhật UI từ totals data
+function updateTotalsUI(totals) {
+    // Cập nhật các giá trị trong bảng
+    document.getElementById('subtotal-amount').textContent = formatCurrency(totals.subtotal);
+    document.getElementById('total-amount').textContent = formatCurrency(totals.total);
+    
+    // Cập nhật giảm giá trong bảng
+    const discountRow = document.getElementById('discount-row');
+    const discountAmount = document.getElementById('discount-amount');
+    
+    if (totals.discount > 0) {
+        discountRow.style.display = '';
+        discountAmount.textContent = '-' + formatCurrency(totals.discount);
+    } else {
+        discountRow.style.display = 'none';
+    }
+    
+    // Cập nhật tổng tiền ở cuối trang
+    const bottomSubtotalDiscount = document.getElementById('bottom-subtotal-discount');
+    const bottomSubtotal = document.getElementById('bottom-subtotal');
+    const bottomDiscount = document.getElementById('bottom-discount');
+    const bottomTotal = document.getElementById('bottom-total');
+    
+    // Cập nhật tổng thanh toán
+    bottomTotal.textContent = 'Tổng thanh toán: ' + formatCurrency(totals.total);
+    
+    // Cập nhật tạm tính và giảm giá
+    if (totals.discount > 0) {
+        bottomSubtotalDiscount.style.display = '';
+        bottomSubtotal.textContent = 'Tạm tính: ' + formatCurrency(totals.subtotal);
+        bottomDiscount.textContent = 'Giảm giá: -' + formatCurrency(totals.discount);
+    } else {
+        bottomSubtotalDiscount.style.display = 'none';
+    }
+}
+
+// Function để cập nhật UI coupon section
+function updateCouponUI(isApplied, couponData = null, discount = 0) {
+    const couponContent = document.getElementById('coupon-content');
+    
+    if (isApplied && couponData) {
+        // Hiển thị coupon đã áp dụng
+        couponContent.innerHTML = `
+            <div class="alert alert-success d-flex justify-content-between align-items-center" id="applied-coupon-alert">
+                <span><i class="fa-solid fa-check-circle me-1"></i> <strong id="applied-coupon-code">${couponData.code}</strong> đã được áp dụng</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCoupon()">Hủy</button>
+            </div>
+            <small class="text-success" id="coupon-savings">Tiết kiệm: ${formatCurrency(discount)}</small>
+        `;
+    } else {
+        // Hiển thị form nhập coupon
+        couponContent.innerHTML = `
+            <div class="input-group mb-2" id="coupon-input-group">
+                <input type="text" id="coupon_code_input" class="form-control" placeholder="Nhập mã giảm giá..." maxlength="50" onkeypress="if(event.key==='Enter') applyCoupon()">
+                <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">
+                    <i class="fa-solid fa-plus me-1"></i>Áp dụng
+                </button>
+            </div>
+            <small class="text-muted" id="coupon-hint">Nhập mã giảm giá để tiết kiệm thêm!</small>
+        `;
+    }
+}
+
+// Function để hiển thị thông báo
+function showMessage(message, type = 'success') {
+    // Kiểm tra nếu Bootstrap Toast có sẵn
+    if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+        // Tạo toast notification
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        // Tạo toast container nếu chưa có
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Thêm toast mới
+        const toastDiv = document.createElement('div');
+        toastDiv.innerHTML = toastHtml;
+        const toast = toastDiv.firstElementChild;
+        toastContainer.appendChild(toast);
+        
+        // Hiển thị toast
+        const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
+        bsToast.show();
+        
+        // Xóa toast sau khi ẩn
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    } else {
+        // Fallback với alert đơn giản
+        alert(message);
+    }
+}
+
+// Function để áp dụng mã giảm giá bằng AJAX
+function applyCoupon() {
+    const couponCode = document.getElementById('coupon_code_input').value.trim();
+    
+    if (!couponCode) {
+        showMessage('Vui lòng nhập mã giảm giá!', 'error');
+        return;
+    }
+
+    // Disable button để tránh click nhiều lần
+    const button = document.querySelector('button[onclick="applyCoupon()"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang xử lý...';
+
+    // Tạo form data
+    const formData = new FormData();
+    formData.append('coupon_code', couponCode);
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+    // Gửi AJAX request
+    fetch('{{ route("cart.applyCoupon") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Apply coupon response:', data); // Debug log
+        if (data.success) {
+            // Cập nhật UI mà không reload trang
+            updateTotalsUI(data.totals);
+            updateCouponUI(true, data.coupon, data.totals.discount);
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message || 'Có lỗi xảy ra khi áp dụng mã giảm giá!', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Có lỗi xảy ra khi áp dụng mã giảm giá!', 'error');
+    })
+    .finally(() => {
+        // Restore button
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+// Function để hủy mã giảm giá bằng AJAX
+function removeCoupon() {
+    // Disable button để tránh click nhiều lần
+    const button = document.querySelector('button[onclick="removeCoupon()"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    // Tạo form data
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+    // Gửi AJAX request
+    fetch('{{ route("cart.removeCoupon") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Remove coupon response:', data); // Debug log
+        if (data.success) {
+            // Cập nhật UI mà không reload trang
+            updateTotalsUI(data.totals);
+            updateCouponUI(false);
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message || 'Có lỗi xảy ra khi hủy mã giảm giá!', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Có lỗi xảy ra khi hủy mã giảm giá!', 'error');
+    })
+    .finally(() => {
+        // Restore button
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
 </script>
 @endsection
