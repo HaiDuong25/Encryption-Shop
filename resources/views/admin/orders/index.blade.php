@@ -83,17 +83,10 @@
                     <tbody>
                         @foreach ($orders as $order)
                         <tr>
-                            <td><strong>#{{ $order->id }}</strong></td>
-                            <td>
-                                <div class="text-truncate" style="max-width: 170px;" title="{{ $order->recipient_name ?? $order->orderer_name ?? 'N/A' }}">
-                                    {{ $order->recipient_name ?? $order->orderer_name ?? 'N/A' }}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="text-truncate" style="max-width: 170px;" title="{{ $order->recipient_address ?? 'N/A' }}">
-                                    {{ Str::limit($order->recipient_address ?? 'N/A', 30) }}
-                                </div>
-                            </td>
+
+                            <td>{{ $order->id }}</td>
+                             <td>{{ $order->recipient_name ?? $order->orderer_name ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_name -->
+                                <td>{{ $order->recipient_address ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_address -->
                             <td>{{ $order->created_at->format('d/m/Y') }}</td>
                             <td>
                                 {{ $order->paymentMethod->payment_type ?? 'N/A' }}
@@ -105,7 +98,7 @@
                                     if (is_numeric($statusValue)) {
                                         $statusMap = [
                                             '0' => 'pending',
-                                            '1' => 'confirmed', 
+                                            '1' => 'confirmed',
                                             '2' => 'shipping',
                                             '3' => 'delivering',
                                             '4' => 'received',
@@ -114,7 +107,7 @@
                                         $statusValue = $statusMap[$statusValue] ?? 'pending';
                                     }
                                 @endphp
-                                
+
                                 @if($statusValue == 'pending')
                                     <span class="badge bg-warning status-badge">Chờ xử lý</span>
                                 @elseif($statusValue == 'confirmed')
@@ -136,7 +129,7 @@
                             <td>
                                 @php
                                     $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
-                                    
+
                                     // Tính số tiền giảm thực tế
                                     $actualDiscountAmount = 0;
                                     if ($order->coupon_code && $order->coupon_discount > 0) {
@@ -146,10 +139,10 @@
                                             $actualDiscountAmount = min($order->coupon_discount, $subtotal);
                                         }
                                     }
-                                    
+
                                     $total = $order->total_price;
                                 @endphp
-                                
+
                                 <div class="price-info">
                                     @if($actualDiscountAmount > 0)
                                         <div class="subtotal text-muted">
@@ -181,16 +174,16 @@
                                     </li>
                                     @if($order->status !== 'cancelled')
                                     <li>
-                                        <button type="button" onclick="cancelOrder({{ $order->id }})" 
-                                                style="border:none; background:none; padding:0; color:#ffc107; font-size: 1.1rem;" 
+                                        <button type="button" onclick="cancelOrder({{ $order->id }})"
+                                                style="border:none; background:none; padding:0; color:#ffc107; font-size: 1.1rem;"
                                                 title="Hủy đơn hàng">
                                             <i class="ri-close-circle-line"></i>
                                         </button>
                                     </li>
                                     @endif
                                     <li>
-                                        <button type="button" onclick="deleteOrder({{ $order->id }})" 
-                                                style="border:none; background:none; padding:0; color:#dc3545; font-size: 1.1rem;" 
+                                        <button type="button" onclick="deleteOrder({{ $order->id }})"
+                                                style="border:none; background:none; padding:0; color:#dc3545; font-size: 1.1rem;"
                                                 title="Xóa đơn hàng">
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
