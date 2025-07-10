@@ -29,7 +29,9 @@ use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
+
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
 Route::get('/login', [AuthController::class, 'index'])->name('login.form');
@@ -51,6 +53,12 @@ Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client
 
 // --- Các chức năng cần đăng nhập ---
 Route::middleware(['auth'])->group(function () {
+    //Tài khoản người dùng
+    Route::get('/account', [AccountController::class, 'index'])->name('account.index');
+    Route::get('/account/edit', [AccountController::class, 'editProfile'])->name('account.editProfile');
+    Route::post('/account/update', [AccountController::class, 'updateProfile'])->name('account.updateProfile');
+    Route::get('/account/change-password', [AccountController::class, 'changePassword'])->name('account.changePassword');
+    Route::post('/account/update-password', [AccountController::class, 'updatePassword'])->name('account.updatePassword');
     // Yêu thích
     Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
