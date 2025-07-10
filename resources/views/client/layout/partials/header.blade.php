@@ -176,12 +176,12 @@
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </a>
                             </li>
-                            <li>
-                                <a href="compare.html" class="header-icon">
-                                    <small class="badge-number badge-light">2</small>
-                                    <i class="fa-solid fa-arrows-rotate"></i>
-                                </a>
-                            </li>
+                         <li>
+    <a href="{{ route('wishlist.index') }}" class="header-icon">
+        <i class="fa-solid fa-heart"></i>
+    </a>
+</li>
+
 
                             @php
                             $cartItems = collect([]);
@@ -210,19 +210,30 @@
                             </li>
                         </ul>
 
-                        <a href="user-dashboard.html" class="user-box">
+                        @if(Auth::check())
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="user-box">
+                                <span class="header-icon">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <div class="user-name">
+                                    <h6 class="text-content">Xin chào, {{ Auth::user()->name }}</h6>
+                                    <h4 class="mt-1">Đăng xuất</h4>
+                                </div>
+                            </button>
+                        </form>
+                        @else
+                        <a href="{{ route('login.form') }}" class="user-box">
                             <span class="header-icon">
                                 <i class="fa-solid fa-user"></i>
                             </span>
                             <div class="user-name">
                                 <h6 class="text-content">Tài khoản của bạn</h6>
-                                @if(Auth::check())
-                                    <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
-                                @else
-                                    <h4 class="mt-1">Đăng nhập</h4>
-                                @endif
+                                <h4 class="mt-1">Đăng nhập</h4>
                             </div>
                         </a>
+                        @endif
 
                     </div>
                 </div>
@@ -269,4 +280,27 @@
         font-size: 15px;
         margin: 0;
     }
+</style>
+<style>
+/* Loại bỏ khung viền và nền cho các icon */
+.header-icon,
+.user-box {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Nếu có border-radius */
+.header-icon,
+.user-box {
+    border-radius: 0 !important;
+}
+
+/* Đảm bảo icon bên trong không bị đóng khung */
+.header-icon i,
+.user-box .header-icon i {
+    box-shadow: none !important;
+    background: transparent !important;
+}
 </style>

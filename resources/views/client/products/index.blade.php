@@ -185,7 +185,7 @@
                                     <h6 class="unit">{{ $product->material ?? 'Đang cập nhật' }}</h6>
 
                                     <h5 class="price">
-                                        @if($product->sale_price)
+                                        @if($product->sale_price && $product->sale_price < $product->price)
                                         <span class="theme-color">{{ number_format($product->sale_price) }} đ</span>
                                         <del>{{ number_format($product->price) }} đ</del>
                                         @else
@@ -222,7 +222,12 @@
                                                 <div class="right-sidebar-modal">
                                                     <h4 class="title-name">{{ $product->name }}</h4>
                                                     <h4 class="price" id="price-{{ $product->id }}">
+                                                        @if($product->sale_price && $product->sale_price < $product->price)
+                                                        <span class="theme-color">{{ number_format($product->sale_price) }} đ</span>
+                                                        <del class="text-muted">{{ number_format($product->price) }} đ</del>
+                                                        @else
                                                         {{ number_format($product->price) }} đ
+                                                        @endif
                                                     </h4>
                                                     <div class="product-detail">
                                                         <h4>Product Details :</h4>
@@ -256,9 +261,15 @@
                                                                     @foreach($product->variants as $variant)
                                                                     <option value="{{ $variant->id }}"
                                                                         data-price="{{ $variant->price }}"
-                                                                        data-compare-price="{{ $variant->compare_price }}"
+                                                                        data-sale-price="{{ $variant->sale_price }}"
                                                                         data-stock="{{ $variant->stock }}">
-                                                                        {{ $variant->sku }} - {{ number_format($variant->price) }} đ (Tồn: {{ $variant->stock }})
+                                                                        {{ $variant->sku }} - 
+                                                                        @if($variant->sale_price && $variant->sale_price < $variant->price)
+                                                                            {{ number_format($variant->sale_price) }} đ
+                                                                        @else
+                                                                            {{ number_format($variant->price) }} đ
+                                                                        @endif
+                                                                        (Tồn: {{ $variant->stock }})
                                                                     </option>
                                                                     @endforeach
                                                                 </select>
@@ -342,6 +353,28 @@
                 }
             });
         }
+
+        // ========== Xử lý variant selection trong modal ==========
+        document.querySelectorAll('[id^="variant-select-"]').forEach(function(select) {
+            select.addEventListener('change', function() {
+                const selectedOption = select.options[select.selectedIndex];
+                const price = selectedOption.getAttribute('data-price');
+                const salePrice = selectedOption.getAttribute('data-sale-price');
+                const productId = select.id.replace('variant-select-', '');
+                const priceElement = document.getElementById('price-' + productId);
+                
+                if (priceElement) {
+                    if (salePrice && parseFloat(salePrice) < parseFloat(price)) {
+                        priceElement.innerHTML = '<span class="theme-color">' + 
+                            parseInt(salePrice).toLocaleString('vi-VN') + ' đ</span>' +
+                            '<del class="text-muted ms-2">' + 
+                            parseInt(price).toLocaleString('vi-VN') + ' đ</del>';
+                    } else {
+                        priceElement.innerHTML = parseInt(price).toLocaleString('vi-VN') + ' đ';
+                    }
+                }
+            });
+        });
 
     });
 </script>

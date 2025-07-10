@@ -1,11 +1,13 @@
 <?php
-
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\ProductVariant;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -16,8 +18,66 @@ class OrderController extends Controller
             ->orderByDesc('created_at')
             ->with('orderDetails.product')
             ->get();
+
         return view('client.orders.index', compact('orders'));
     }
 
-    // (Tùy chọn) Thêm các phương thức tạo mới, xem chi tiết, hủy đơn ...
+    // ✅ Phương thức chi tiết đơn hàng nằm trong class
+    public function show(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403); // Không cho truy cập nếu không phải chủ đơn hàng
+        }
+
+        $order->load(['orderDetails.variant.product', 'paymentMethod']); // load đầy đủ quan hệ
+
+        return view('client.orders.show', compact('order'));
+    }
+public function cancel(Request $request, Order $order)
+{
+    // Ép kiểu trạng thái
+    $status = is_numeric($order->status) ? (int)$order->status : ($order->status === 'pending' ? 0 : $order->status);
+
+    // Kiểm tra trạng thái đơn hàng
+    if ($status !== 0) {
+        return back()->with('error', 'Không thể hủy đơn hàng này.');
+    }
+
+    // Load orderDetails và variant
+    $order->load('orderDetails.variant');
+
+    // ✅ Cộng lại số lượng vào kho
+    foreach ($order->orderDetails as $detail) {
+        $variant = $detail->variant;
+        if ($variant) {
+            $variant->stock += $detail->quantity;
+            $variant->save();
+        }
+    }
+
+    // ✅ Cập nhật trạng thái và lý do hủy
+    $order->status = 6; // 6 = Đã hủy
+    $order->cancel_reason = $request->cancel_reason;
+    $order->cancel_note = $request->note;
+    $order->save();
+
+    return redirect()->route('client.orders.index')->with('success', 'Đơn hàng đã được hủy và cập nhật kho thành công.');
+}
+
+
+    /**
+     * Xác nhận đã nhận hàng → cập nhật trạng thái thành hoàn thành.
+     */
+    public function confirm($id)
+    {
+        $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
+        if ($order->status == 4) { // 4 = Đã nhận
+            $order->status = 5;    // 5 = Hoàn thành
+            $order->save();
+            return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành.');
+        }
+
+        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái Đã nhận.');
+    }
 }

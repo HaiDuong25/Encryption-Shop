@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('products', 'compare_price')) {
+                $table->renameColumn('compare_price', 'sale_price');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('products', 'sale_price')) {
+                $table->renameColumn('sale_price', 'compare_price');
+            }
         });
     }
 };

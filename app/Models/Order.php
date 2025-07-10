@@ -9,7 +9,7 @@ class Order extends Model
     public const STATUS_PENDING = 'pending';
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_SHIPPING = 'shipping';
-    public const STATUS_DELIVERING = 'delivering'; 
+    public const STATUS_DELIVERING = 'delivering';
     public const STATUS_RECEIVED = 'received';
     public const STATUS_COMPLETED = 'completed';
 
@@ -36,9 +36,10 @@ class Order extends Model
     }
 
     public function paymentMethod()
-    {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
-    }
+{
+    return $this->belongsTo(PaymentMethod::class);
+}
+
 
     public function payments()
     {
@@ -57,12 +58,22 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'orderer_name',
+        'orderer_email',
+        'orderer_phone',
+        'recipient_name',
+        'recipient_phone',
+        'recipient_address',
         'name',
         'phone',
         'address',
         'total_price',
+        'subtotal',
         'status',
         'discount_id',
+        'coupon_code',
+        'coupon_discount',
+        'coupon_type',
         'payment_method_id',
     ];
 }

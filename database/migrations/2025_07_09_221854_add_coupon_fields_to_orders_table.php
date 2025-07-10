@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            //
+            $table->string('coupon_code')->nullable()->after('discount_id');
+            $table->decimal('coupon_discount', 15, 2)->default(0)->after('coupon_code');
+            $table->enum('coupon_type', ['percentage', 'fixed'])->nullable()->after('coupon_discount');
+            $table->decimal('subtotal', 15, 2)->default(0)->after('coupon_type');
         });
     }
 
@@ -22,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            //
+            $table->dropColumn(['coupon_code', 'coupon_discount', 'coupon_type', 'subtotal']);
         });
     }
 };
