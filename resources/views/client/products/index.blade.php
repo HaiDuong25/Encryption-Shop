@@ -144,14 +144,6 @@
                                     <a href="{{ route('client.products.show', $product->id) }}">
                                         <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
                                     </a>
-
-                                    <ul class="product-option">
-                                        <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#view-{{ $product->id }}">
-                                                <i data-feather="eye"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
                                 </div>
                             </div>
                             <div class="product-footer">
@@ -198,103 +190,6 @@
 
                                         </button>
 
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal fade theme-modal view-modal" id="view-{{ $product->id }}" tabindex="-1">
-                            <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
-                                <div class="modal-content">
-                                    <div class="modal-header p-0">
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row g-sm-4 g-2">
-                                            <div class="col-lg-6">
-                                                <div class="slider-image">
-                                                    <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <div class="right-sidebar-modal">
-                                                    <h4 class="title-name">{{ $product->name }}</h4>
-                                                    <h4 class="price" id="price-{{ $product->id }}">
-                                                        @if($product->sale_price && $product->sale_price < $product->price)
-                                                        <span class="theme-color">{{ number_format($product->sale_price) }} đ</span>
-                                                        <del class="text-muted">{{ number_format($product->price) }} đ</del>
-                                                        @else
-                                                        {{ number_format($product->price) }} đ
-                                                        @endif
-                                                    </h4>
-                                                    <div class="product-detail">
-                                                        <h4>Product Details :</h4>
-                                                        <p>{{ $product->description }}</p>
-                                                    </div>
-
-                                                    <ul class="brand-list">
-                                                        <li>
-                                                            <div class="brand-box">
-                                                                <h5>Category:</h5>
-                                                                <h6>{{ $product->category->name ?? 'Chưa phân loại' }}</h6>
-                                                            </div>
-                                                        </li>
-                                                        <li>
-                                                            <div class="brand-box">
-                                                                <h5>Status:</h5>
-                                                                <h6>{{ $product->status == 'active' ? 'Còn hàng' : 'Hết hàng' }}</h6>
-                                                            </div>
-                                                        </li>
-                                                    </ul>
-
-                                                    <div class="modal-button">
-                                                        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2">
-                                                            @csrf
-
-                                                            <!-- Đưa select vào trong form -->
-                                                            @if($product->variants->count())
-                                                            <div class="select-variant mb-3">
-                                                                <h5>Chọn biến thể:</h5>
-                                                                <select name="variant_id" id="variant-select-{{ $product->id }}" class="form-select">
-                                                                    @foreach($product->variants as $variant)
-                                                                    <option value="{{ $variant->id }}"
-                                                                        data-price="{{ $variant->price }}"
-                                                                        data-sale-price="{{ $variant->sale_price }}"
-                                                                        data-stock="{{ $variant->stock }}">
-                                                                        {{ $variant->sku }} - 
-                                                                        @if($variant->sale_price && $variant->sale_price < $variant->price)
-                                                                            {{ number_format($variant->sale_price) }} đ
-                                                                        @else
-                                                                            {{ number_format($variant->price) }} đ
-                                                                        @endif
-                                                                        (Tồn: {{ $variant->stock }})
-                                                                    </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                            @endif
-
-                                                            <div class="input-group">
-                                                                <button type="button" class="btn qty-left-minus bg-gray" data-type="minus">
-                                                                    <i class="fa fa-minus"></i>
-                                                                </button>
-                                                                <input type="text" name="quantity" value="1" min="1" class="form-control text-center qty-input">
-                                                                <button type="button" class="btn qty-right-plus bg-gray" data-type="plus">
-                                                                    <i class="fa fa-plus"></i>
-                                                                </button>
-                                                            </div>
-
-                                                            <button type="submit" class="btn theme-bg-color btn-md text-white fw-bold">
-                                                                <i class="fa-solid fa-plus me-1"></i> Add To Cart
-                                                            </button>
-                                                        </form>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -362,12 +257,12 @@
                 const salePrice = selectedOption.getAttribute('data-sale-price');
                 const productId = select.id.replace('variant-select-', '');
                 const priceElement = document.getElementById('price-' + productId);
-                
+
                 if (priceElement) {
                     if (salePrice && parseFloat(salePrice) < parseFloat(price)) {
-                        priceElement.innerHTML = '<span class="theme-color">' + 
+                        priceElement.innerHTML = '<span class="theme-color">' +
                             parseInt(salePrice).toLocaleString('vi-VN') + ' đ</span>' +
-                            '<del class="text-muted ms-2">' + 
+                            '<del class="text-muted ms-2">' +
                             parseInt(price).toLocaleString('vi-VN') + ' đ</del>';
                     } else {
                         priceElement.innerHTML = parseInt(price).toLocaleString('vi-VN') + ' đ';
