@@ -161,6 +161,7 @@ public function update(Request $request, $id)
             'orderer_name' => 'required|string|max:255',
             'orderer_email' => 'required|email|max:255',
             'orderer_phone' => 'required|string|max:20',
+            'orderer_address' => 'required|string|max:500',
             
             // Thông tin người nhận hàng
             'recipient_name' => 'required|string|max:255',
@@ -227,6 +228,7 @@ public function update(Request $request, $id)
         $order->orderer_name = $request->orderer_name;
         $order->orderer_email = $request->orderer_email;
         $order->orderer_phone = $request->orderer_phone;
+        $order->orderer_address = $request->orderer_address;
         
         // Thông tin người nhận hàng
         $order->recipient_name = $request->recipient_name;
