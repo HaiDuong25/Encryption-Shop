@@ -88,11 +88,7 @@
         @if (session('coupon'))
             <p class="mb-1">Mã giảm giá: <span class="text-success">{{ session('coupon.code') }} ({{ session('coupon.discount') }}%)</span></p>
         @endif
-<<<<<<< HEAD
         <p class="mb-1">Phương thức: {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}</p>
-=======
-        <p class="mb-1">Phương thức: {{ $order->paymentMethod->name ?? 'Chưa chọn' }}</p>
->>>>>>> 66e22db (tạo lịch sử mua hàng)
         <p class="mb-1">Vận chuyển: {{ $order->shipping_method ?? 'Miễn phí' }}</p>
         <h5 class="text-danger mt-2">Tổng tiền: {{ number_format($order->total_price) }}₫</h5>
     </div>
