@@ -29,7 +29,7 @@ use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\WishlistController;
-
+use App\Http\Controllers\Client\ContactController as ClientContactController;
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
 Route::get('/login', [AuthController::class, 'index'])->name('login.form');
@@ -45,6 +45,9 @@ Route::get('/products', [ClientProductController::class, 'index'])->name('client
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
 Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
 Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('client.products.getStock');
+// --- Liên hệ ---
+Route::get('/lien-he', [ClientContactController::class, 'create'])->name('client.contact.create');
+Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client.contact.store');
 
 // --- Các chức năng cần đăng nhập ---
 Route::middleware(['auth'])->group(function () {

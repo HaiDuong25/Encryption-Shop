@@ -42,25 +42,25 @@
                                 @if($cart->variant)
                                 <br>
                                 <small class="text-muted">Biến thể: {{ $cart->variant->sku }}</small>
-                                
+
                                 @php
                                     // Lấy các attribute values của variant hiện tại
                                     $currentSize = $cart->variant->attributeValues->where('attribute.name', 'Size')->first();
                                     $currentColor = $cart->variant->attributeValues->where('attribute.name', 'Màu')->first();
-                                    
+
                                     // Lấy tất cả variants của sản phẩm này
                                     $productVariants = $cart->product->variants;
-                                    
+
                                     // Lấy tất cả sizes và colors available
                                     $availableSizes = $productVariants->flatMap(function ($variant) {
                                         return $variant->attributeValues->filter(fn($val) => $val->attribute->name === 'Size');
                                     })->unique('id');
-                                    
+
                                     $availableColors = $productVariants->flatMap(function ($variant) {
                                         return $variant->attributeValues->filter(fn($val) => $val->attribute->name === 'Màu');
                                     })->unique('id');
                                 @endphp
-                                
+
                                 @if($availableSizes->count() > 1 || $availableColors->count() > 1)
                                 <div class="variant-selector mt-2" data-cart-id="{{ $cart->id }}" data-product-id="{{ $cart->product->id }}">
                                     @if($availableSizes->count() > 1)
@@ -75,7 +75,7 @@
                                         </select>
                                     </div>
                                     @endif
-                                    
+
                                     @if($availableColors->count() > 1)
                                     <div class="mb-2">
                                         <small class="text-muted">Màu:</small>
@@ -88,10 +88,10 @@
                                         </select>
                                     </div>
                                     @endif
-                                    
+
                                     <button type="button" class="btn btn-outline-primary btn-sm update-variant-btn">Cập nhật</button>
                                 </div>
-                                
+
                                 {{-- Hidden data for JavaScript --}}
                                 <script type="application/json" class="variant-data">
                                     {!! $productVariants->map(function($variant) {
@@ -125,7 +125,7 @@
                                     $originalPrice = $cart->variant->price ?? $cart->product->price;
                                     $salePrice = $cart->variant->sale_price ?? $cart->product->sale_price;
                                 @endphp
-                                
+
                                 @if($salePrice && $salePrice < $originalPrice)
                                     <div class="price-display">
                                         <span class="text-primary fw-bold">{{ number_format($salePrice) }} đ</span>
@@ -172,12 +172,12 @@
                             $price = $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price;
                             return $price * $cart->quantity;
                         });
-                        
+
                         // Lấy thông tin voucher đã áp dụng từ session
                         $appliedCoupon = session('applied_coupon');
                         $voucherDiscount = session('coupon_discount', 0);
                         $couponInfo = session('coupon_info', null);
-                        
+
                         $finalTotal = max(0, $grandTotal - $voucherDiscount);
                     @endphp
 
@@ -200,7 +200,7 @@
                             </button>
                         </div>
                         <div id="coupon-message" class="mt-2"></div>
-                        
+
                         @if($appliedCoupon)
                         <div class="coupon-applied mt-2 p-2 bg-light rounded">
                             <small class="text-success">
@@ -254,16 +254,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const plus = form.querySelector('.qty-plus');
         const input = form.querySelector('input[name="quantity"]');
 
-                minus.addEventListener('click', function () {
-                    let val = parseInt(input.value) || 1;
-                    if (val > 1) input.value = val - 1;
-                });
+        minus.addEventListener('click', function () {
+            let val = parseInt(input.value) || 1;
+            if (val > 1) input.value = val - 1;
+        });
 
-                plus.addEventListener('click', function () {
-                    let val = parseInt(input.value) || 1;
-                    input.value = val + 1;
-                });
-            });
+        plus.addEventListener('click', function () {
+            let val = parseInt(input.value) || 1;
+            input.value = val + 1;
         });
     });
 
@@ -275,25 +273,25 @@ document.addEventListener("DOMContentLoaded", function() {
             const productId = variantSelector.dataset.productId;
             const sizeId = variantSelector.querySelector('.variant-size')?.value;
             const colorId = variantSelector.querySelector('.variant-color')?.value;
-            
+
             // Lấy dữ liệu variants
             const variantDataScript = variantSelector.parentElement.querySelector('.variant-data');
             const variants = JSON.parse(variantDataScript.textContent);
-            
+
             // Tìm variant phù hợp
             const selectedVariant = variants.find(v => {
                 return (!sizeId || v.size_id == sizeId) && (!colorId || v.color_id == colorId);
             });
-            
+
             if (!selectedVariant) {
                 alert('Không tìm thấy biến thể phù hợp!');
                 return;
             }
-            
+
             // Disable button
             btn.disabled = true;
             btn.textContent = 'Đang cập nhật...';
-            
+
             // Gửi AJAX request
             fetch(`/cart/update-variant/${cartId}`, {
                 method: 'POST',
@@ -334,7 +332,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (applyCouponBtn) {
         applyCouponBtn.addEventListener('click', function() {
             const couponCode = voucherInput.value.trim();
-            
+
             if (!couponCode) {
                 showCouponMessage('Vui lòng nhập mã giảm giá', 'error');
                 return;
@@ -363,12 +361,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (data.success) {
                     showCouponMessage(data.message, 'success');
                     updateOrderSummary(data.discount_amount, data.total);
-                    
+
                     // Lưu thông tin coupon vào session (client-side)
                     sessionStorage.setItem('applied_coupon', couponCode);
                     sessionStorage.setItem('coupon_discount', data.discount_amount);
                     sessionStorage.setItem('coupon_info', JSON.stringify(data.coupon_info));
-                    
+
                     // Reload trang để hiển thị coupon đã áp dụng
                     setTimeout(() => {
                         window.location.reload();
@@ -408,7 +406,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     sessionStorage.removeItem('applied_coupon');
                     sessionStorage.removeItem('coupon_discount');
                     sessionStorage.removeItem('coupon_info');
-                    
+
                     // Reload trang
                     window.location.reload();
                 }
@@ -421,7 +419,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function showCouponMessage(message, type) {
         couponMessage.innerHTML = `<small class="text-${type === 'success' ? 'success' : 'danger'}">${message}</small>`;
-        
+
         if (type === 'success') {
             setTimeout(() => {
                 couponMessage.innerHTML = '';
@@ -432,11 +430,11 @@ document.addEventListener("DOMContentLoaded", function() {
     function updateOrderSummary(discountAmount, finalTotal) {
         const discountEl = document.getElementById('discount-amount');
         const finalTotalEl = document.getElementById('final-total');
-        
+
         if (discountEl) {
             discountEl.textContent = `-${new Intl.NumberFormat('vi-VN').format(discountAmount)} đ`;
         }
-        
+
         if (finalTotalEl) {
             finalTotalEl.textContent = `${new Intl.NumberFormat('vi-VN').format(finalTotal)} đ`;
         }
@@ -444,6 +442,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 @endpush
+
 
 @push('styles')
 <style>
