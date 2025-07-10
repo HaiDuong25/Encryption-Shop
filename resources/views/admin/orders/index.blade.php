@@ -205,7 +205,7 @@ function cancelOrder(orderId) {
         return;
     }
 
-    fetch(`/admin/orders/${orderId}/cancel`, {
+    fetch(`/admin/admin/orders/${orderId}/cancel`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
