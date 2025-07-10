@@ -144,13 +144,7 @@ public function update(Request $request, $id)
         $subtotal = $carts->sum(function($cart){
             return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
         });
-<<<<<<< HEAD
-        $voucherDiscount = session('voucher_discount', 0);
-        $finalTotal = max(0, $total - $voucherDiscount);
-        $payment_methods = \App\Models\PaymentMethod::all();
-        return view('client.cart.checkout', compact('carts', 'total', 'voucherDiscount', 'finalTotal', 'payment_methods'));
-=======
-        
+
         // Lấy thông tin coupon từ session
         $appliedCoupon = session('applied_coupon');
         $couponDiscount = session('coupon_discount', 0);
@@ -158,7 +152,6 @@ public function update(Request $request, $id)
         
         $payment_methods = \App\Models\PaymentMethod::all();
         return view('client.cart.checkout', compact('carts', 'subtotal', 'total', 'payment_methods', 'appliedCoupon', 'couponDiscount'));
->>>>>>> e12784dd1e289d780cb45f983b1a2b6d17a2a610
     }
 
     public function processCheckout(Request $request)
@@ -190,17 +183,6 @@ public function update(Request $request, $id)
         $subtotal = $carts->sum(function($cart){
             return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
         });
-<<<<<<< HEAD
-        $voucherDiscount = session('voucher_discount', 0);
-        $finalTotal = max(0, $total - $voucherDiscount);
-        // Lưu đơn hàng
-        $order = new \App\Models\Order();
-        $order->user_id = Auth::id();
-        $order->name = $request->name;
-        $order->phone = $request->phone;
-        $order->address = $request->address;
-        $order->total_price = $finalTotal;
-=======
         
         // Xử lý mã giảm giá
         $discountAmount = 0;
@@ -258,7 +240,6 @@ public function update(Request $request, $id)
         $order->coupon_type = $couponType;
         $order->total_price = $totalPrice;
         $order->notes = $request->notes;
->>>>>>> e12784dd1e289d780cb45f983b1a2b6d17a2a610
         $order->status = 'pending';
         $order->payment_method_id = $request->payment_method_id;
         $order->save();
@@ -286,14 +267,11 @@ public function update(Request $request, $id)
         // Xóa giỏ hàng sau khi thanh toán
         Cart::where('user_id', Auth::id())->delete();
         session()->forget('cart');
-<<<<<<< HEAD
         session()->forget('voucher_discount');
         session()->forget('voucher_code');
         session()->forget('voucher_message');
         session()->forget('voucher_error');
-=======
         
->>>>>>> e12784dd1e289d780cb45f983b1a2b6d17a2a610
         // Chuyển hướng sang trang success, truyền mã đơn hàng
         return redirect()->route('cart.success', ['order_id' => $order->id])
             ->with('success', 'Đặt hàng thành công! Mã đơn hàng: #' . $order->id);
@@ -446,28 +424,4 @@ public function update(Request $request, $id)
             ]
         ]);
     }
-<<<<<<< HEAD
-public function applyVoucher(\Illuminate\Http\Request $request)
-{
-    $code = $request->input('voucher');
-    // Ví dụ: chỉ chấp nhận mã 'GIAM50K'
-    if ($code === 'GIAM50K') {
-        session([
-            'voucher_discount' => 50000,
-            'voucher_code' => $code,
-            'voucher_message' => 'Áp dụng mã thành công! Đã giảm 50.000đ.'
-        ]);
-        session()->forget('voucher_error');
-    } else {
-        session([
-            'voucher_discount' => 0,
-            'voucher_code' => $code,
-            'voucher_error' => 'Mã không hợp lệ hoặc đã hết hạn.'
-        ]);
-        session()->forget('voucher_message');
-    }
-    return redirect()->route('cart.index');
-=======
->>>>>>> e12784dd1e289d780cb45f983b1a2b6d17a2a610
-}
 }
