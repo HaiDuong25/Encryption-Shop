@@ -377,12 +377,18 @@
                                     </h5>
                                 </a>
                                 <div class="d-flex flex-column align-items-center gap-1 mb-2">
-                                    @if($product->compare_price)
+                                    @if($product->sale_price && $product->sale_price < $product->price)
+                                        <span class="fw-bold text-danger" style="font-size: 1.2rem;">
+                                            {{ number_format($product->sale_price) }}₫
+                                        </span>
                                         <span class="text-muted" style="font-size: 1rem;">
-                                            <del>{{ number_format($product->compare_price) }}₫</del>
+                                            <del>{{ number_format($product->price) }}₫</del>
+                                        </span>
+                                    @else
+                                        <span class="fw-bold text-danger" style="font-size: 1.2rem;">
+                                            {{ number_format($product->price) }}₫
                                         </span>
                                     @endif
-                                    <span class="fw-bold text-danger" style="font-size: 1.2rem;">
                                         {{ number_format($product->price) }}₫
                                     </span>
                                 </div>

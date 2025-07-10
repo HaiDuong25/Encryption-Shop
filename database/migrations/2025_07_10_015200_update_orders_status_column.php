@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if orders table exists before updating
+        if (!Schema::hasTable('orders')) {
+            throw new \Exception('Orders table does not exist. Please run create_orders_table migration first.');
+        }
+
         Schema::table('orders', function (Blueprint $table) {
             // First add new column
             $table->string('status_str')->default('pending')->after('status');
@@ -47,6 +52,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Check if orders table exists before reverting
+        if (!Schema::hasTable('orders')) {
+            return; // Table doesn't exist, nothing to revert
+        }
+
         Schema::table('orders', function (Blueprint $table) {
             // First add new column for old numeric status
             $table->integer('status_int')->default(0)->after('status');

@@ -28,8 +28,8 @@ class ProductSeeder extends Seeder
                 'category_id' => $category->id,
                 'brand_id' => $brand->id,
                 'sku' => "SKU00$i",
-                'price' => rand(100000, 500000),
-                'compare_price' => rand(600000, 900000),
+                'price' => rand(600000, 900000), // Giá gốc
+                'sale_price' => rand(400000, 550000), // Giá khuyến mãi (thấp hơn price)
                 'description' => "Đây là sản phẩm demo số $i.",
                 'status' => 'active',
                 'is_featured' => rand(0,1),
@@ -41,7 +41,8 @@ class ProductSeeder extends Seeder
                 foreach ($colors as $color_id) {
                     $variant = $product->variants()->create([
                         'sku' => "SKU00$i-{$size_id}-{$color_id}",
-                        'price' => rand(100000, 500000),
+                        'price' => rand(600000, 900000), // Giá gốc
+                        'sale_price' => rand(400000, 550000), // Giá khuyến mãi
                         'stock' => rand(10,50),
                     ]);
                     $variant->attributeValues()->attach([$size_id, $color_id]);

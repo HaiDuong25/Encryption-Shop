@@ -52,19 +52,20 @@ Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 
 Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/update-variant/{id}', [CartController::class, 'updateVariant'])->name('cart.update-variant');
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
     // Đơn hàng cho user
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
+    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::get('/checkout/success', function(Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');
-});
 
-
-Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
+    // ADMIN ROUTES - Auth được áp dụng chung, chỉ cần kiểm tra role
+    Route::prefix('admin')->middleware([RoleMiddleware::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     //products
     Route::resource('products', ProductController::class);
@@ -78,6 +79,7 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     //categories
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
@@ -140,8 +142,28 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
-    Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
     //user
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+    });
+});
+
+// Routes cho "Mua ngay" - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+});
+
+// Routes cho mã giảm giá AJAX - cần auth  
+Route::middleware(['auth'])->group(function () {
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
+});
+
+// Routes cho client orders - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
+    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
 });

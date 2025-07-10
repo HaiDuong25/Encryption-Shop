@@ -57,12 +57,22 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'orderer_name',
+        'orderer_email', 
+        'orderer_phone',
+        'recipient_name',
+        'recipient_phone',
+        'recipient_address',
         'name',
         'phone',
         'address',
         'total_price',
+        'subtotal',
         'status',
         'discount_id',
+        'coupon_code',
+        'coupon_discount',
+        'coupon_type',
         'payment_method_id',
     ];
 }

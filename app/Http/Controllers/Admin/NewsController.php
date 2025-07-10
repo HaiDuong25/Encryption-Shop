@@ -15,12 +15,12 @@ class NewsController extends \App\Http\Controllers\Controller
             $query->where('title', 'like', '%' . $request->title . '%');
         }
         $news = $query->get();
-        return view('news.index', compact('news'));
+        return view('admin.news.index', compact('news'));
     }
 
     public function create()
     {
-        return view('news.create');
+        return view('admin.news.create');
     }
 
     public function store(Request $request)
@@ -50,7 +50,13 @@ class NewsController extends \App\Http\Controllers\Controller
     public function edit($id)
     {
         $news = News::findOrFail($id);
-        return view('news.edit', compact('news'));
+        return view('admin.news.edit', compact('news'));
+    }
+
+    public function show($id)
+    {
+        $news = News::findOrFail($id);
+        return view('admin.news.show', compact('news'));
     }
 
     public function update(Request $request, $id)

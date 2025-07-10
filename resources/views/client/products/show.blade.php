@@ -197,31 +197,6 @@
             gap: 10px;
         }
     }
-
-    .quantity-control {
-        display: flex;
-        align-items: center;
-        width: fit-content;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        overflow: hidden;
-    }
-
-    .quantity-control button {
-        width: 32px;
-        height: 32px;
-        background-color: #f5f5f5;
-        border: none;
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .quantity-control input {
-        width: 50px;
-        text-align: center;
-        border: none;
-        outline: none;
-    }
 </style>
 
 <div class="container mt-4 mb-5">
@@ -294,21 +269,22 @@
 
             <p>Danh mục: <strong>{{ $product->category->name ?? 'Chưa phân loại' }}</strong></p>
 
-            <div class="price-area mb-3">
-                @if ($product->compare_price && $product->compare_price < $product->price)
-                    <span class="price fs-3 text-danger fw-bold">{{ number_format($product->compare_price) }} đ</span>
-                    <del class="old-price text-muted ms-2">{{ number_format($product->price) }} đ</del>
-                    @else
-                    <span class="price fs-3 text-danger fw-bold">{{ number_format($product->price) }} đ</span>
-                    @endif
+            <div class="price-area mb-3" id="price-display">
+                @if ($product->sale_price && $product->sale_price < $product->price)
+                    <span class="price fs-3 text-danger fw-bold" id="current-price">{{ number_format($product->sale_price) }} đ</span>
+                    <del class="old-price text-muted ms-2" id="original-price">{{ number_format($product->price) }} đ</del>
+                @else
+                    <span class="price fs-3 text-danger fw-bold" id="current-price">{{ number_format($product->price) }} đ</span>
+                    <del class="old-price text-muted ms-2 d-none" id="original-price">{{ number_format($product->price) }} đ</del>
+                @endif
             </div>
 
-            @php
-            $totalStock = $product->variants->sum('stock');
-            @endphp
-            <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
-                Số lượng còn lại: <strong>{{ $totalStock }}</strong>
-            </p>
+                @php
+        $totalStock = $product->variants->sum('stock');
+    @endphp
+    <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
+        Số lượng còn lại: <strong>{{ $totalStock }}</strong>
+    </p>
 
             @if ($sizes->count())
             <div class="variant-row mb-3 d-flex align-items-center">
@@ -340,17 +316,17 @@
 
             <div class="mb-3 d-flex align-items-center">
                 <label class="me-2 fw-bold">Số lượng:</label>
-                <div class="quantity-control">
-                    <button onclick="changeQty(-1)">−</button>
-                    <input type="number" id="quantity" value="1" min="1">
-                    <button onclick="changeQty(1)">+</button>
+                <div class="d-flex align-items-center border rounded px-2" style="width: fit-content;">
+                    <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(-1)">&#8722;</button>
+                    <input type="number" id="quantity" class="form-control text-center border-0" value="1" min="1" style="width: 50px;">
+                    <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(1)">&#43;</button>
                 </div>
             </div>
             <div class="mb-2" id="expected-price-block">
-                <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price" class="text-danger fw-bold">{{ number_format($product->compare_price && $product->compare_price < $product->price ? $product->compare_price : $product->price) }}</span> đ
+                <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price" class="text-danger fw-bold">{{ number_format($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}</span> đ
             </div>
 
-@if(session('success'))
+            @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
             @endif
             @if(session('error'))
@@ -365,20 +341,18 @@
                 </ul>
             </div>
             @endif
-            <div class="mb-4 d-flex">
-               <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex flex-column gap-2" id="add-to-cart-form">
-    @csrf
-    <input type="hidden" name="size_id" id="selected-size">
-    <input type="hidden" name="color_id" id="selected-color">
-    <input type="hidden" name="variant_id" id="selected-variant-id">
-    <input type="hidden" name="quantity" id="selected-quantity" value="1">
-
-    <button type="submit" class="btn btn-buy px-4 py-2">
-        <i class="fa-solid fa-plus me-1"></i> Thêm vào giỏ
-    </button>
-</form>
-                <button class="btn btn-buy px-4 py-2">Mua ngay</button>
+            <div class="mb-4 d-flex" style="gap:10px;">
+                <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <input type="hidden" name="quantity" id="form-quantity" value="1">
+                    <input type="hidden" name="variant_id" id="form-variant-id" value="">
+                    <button type="submit" class="btn btn-buy px-4 py-2">
+                        <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
+                    </button>
+                </form>
+                <button class="btn btn-buy px-4 py-2" type="button" id="buy-now-btn">Mua ngay</button>
             </div>
+            <div id="add-to-cart-success" class="alert d-none mt-2"></div>
         </div>
     </div>
 
@@ -430,9 +404,9 @@
                     <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
                     <div class="card-body">
                         <h6 class="card-title">{{ $item->name }}</h6>
-                        @if($item->compare_price && $item->compare_price < $item->price)
+                        @if($item->sale_price && $item->sale_price < $item->price)
                             <p>
-                                <span class="text-danger fw-bold">{{ number_format($item->compare_price) }} đ</span>
+                                <span class="text-danger fw-bold">{{ number_format($item->sale_price) }} đ</span>
                                 <del class="text-muted ms-1">{{ number_format($item->price) }} đ</del>
                             </p>
                             @else
@@ -452,17 +426,23 @@
 
 @push('scripts')
 <script>
-    const variants = {!! json_encode(
-        $product->variants->map(function ($variant) {
-            return [
-                'id' => $variant->id,
-                'attribute_values' => $variant->attributeValues->pluck('id')->toArray()
-            ];
-        })
-    ) !!};
-
     let imageList = [];
     let currentIndex = 0;
+
+    // Dữ liệu variants cho JavaScript
+    const variants = {!! $product->variants->map(function($variant) {
+        return [
+            'id' => $variant->id,
+            'price' => $variant->price,
+            'sale_price' => $variant->sale_price,
+            'stock' => $variant->stock,
+            'size_id' => optional($variant->attributeValues->where('attribute.name', 'Size')->first())->id,
+            'color_id' => optional($variant->attributeValues->where('attribute.name', 'Màu')->first())->id,
+        ];
+    })->values()->toJson() !!};
+
+    const defaultPrice = {{ $product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price }};
+    const defaultOriginalPrice = {{ $product->price }};
 
     document.addEventListener('DOMContentLoaded', function() {
         // Khởi tạo danh sách ảnh từ thumbnails
@@ -478,7 +458,10 @@
         });
 
         document.querySelectorAll('input[name="size"], input[name="color"]').forEach(input => {
-            input.addEventListener('change', fetchStock);
+            input.addEventListener('change', function() {
+                fetchStock();
+                updatePriceByVariant();
+            });
         });
     });
 
@@ -505,9 +488,57 @@
         }
     }
 
+    function updatePriceByVariant() {
+        const { sizeId, colorId } = getSelectedVariant();
+
+        if (!sizeId || !colorId) {
+            // Reset về giá mặc định của sản phẩm
+            updatePriceDisplay(defaultPrice, defaultOriginalPrice);
+            return;
+        }
+
+        // Tìm variant phù hợp
+        const variant = variants.find(v => v.size_id == sizeId && v.color_id == colorId);
+
+        if (variant) {
+            const currentPrice = variant.sale_price && variant.sale_price < variant.price ? variant.sale_price : variant.price;
+            const originalPrice = variant.price;
+            updatePriceDisplay(currentPrice, originalPrice, variant.sale_price);
+        } else {
+            // Nếu không tìm thấy variant, giữ nguyên giá mặc định
+            updatePriceDisplay(defaultPrice, defaultOriginalPrice);
+        }
+    }
+
+    function updatePriceDisplay(currentPrice, originalPrice, salePrice = null) {
+        const currentPriceEl = document.getElementById('current-price');
+        const originalPriceEl = document.getElementById('original-price');
+
+        currentPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(currentPrice) + ' đ';
+        originalPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(originalPrice) + ' đ';
+
+        if (salePrice && salePrice < originalPrice) {
+            originalPriceEl.classList.remove('d-none');
+        } else {
+            originalPriceEl.classList.add('d-none');
+        }
+
+        updateExpectedPrice();
+    }
+
     function getUnitPrice() {
-        // Lấy giá ưu tiên compare_price nếu có, không thì lấy price
-        return {{ $product->compare_price && $product->compare_price < $product->price ? $product->compare_price : $product->price }};
+        const { sizeId, colorId } = getSelectedVariant();
+
+        if (!sizeId || !colorId) {
+            return defaultPrice;
+        }
+
+        const variant = variants.find(v => v.size_id == sizeId && v.color_id == colorId);
+        if (variant) {
+            return variant.sale_price && variant.sale_price < variant.price ? variant.sale_price : variant.price;
+        }
+
+        return defaultPrice;
     }
     function updateExpectedPrice() {
         const qty = parseInt(document.getElementById('quantity').value) || 1;
@@ -583,61 +614,54 @@
     }
 
     function fetchStock() {
-        const { sizeId, colorId } = getSelectedVariant();
-        const productId = {{ $product->id }};
+    const { sizeId, colorId } = getSelectedVariant();
+    const productId = {{ $product->id }};
 
-        if (!sizeId || !colorId) return;
+    if (!sizeId || !colorId) return;
 
-        fetch(`/get-stock?product_id=${productId}&size_id=${sizeId}&color_id=${colorId}`)
-            .then(res => res.json())
-            .then(data => {
-                const stockEl = document.getElementById('stock-info');
-                stockEl.innerHTML = `Số lượng còn lại: <strong>${data.stock}</strong>`;
-                stockEl.dataset.stock = data.stock;
-            })
-            .catch(error => {
-                console.error('Lỗi lấy tồn kho:', error);
-            });
-    }
+    fetch(`/get-stock?product_id=${productId}&size_id=${sizeId}&color_id=${colorId}`)
+        .then(res => res.json())
+        .then(data => {
+            const stockEl = document.getElementById('stock-info');
+            stockEl.innerHTML = `Số lượng còn lại: <strong>${data.stock}</strong>`;
+            stockEl.dataset.stock = data.stock;
+        })
+        .catch(error => {
+            console.error('Lỗi lấy tồn kho:', error);
+        });
+}
 
     function changeImageByIndex(index) {
         currentIndex = index;
         updateMainImage();
     }
 
-    // Xử lý khi submit form thêm vào giỏ
-    const form = document.getElementById('add-to-cart-form');
-    if (form) {
-        form.addEventListener('submit', function (e) {
-            const selectedSize = document.querySelector('input[name="size"]:checked');
-            const selectedColor = document.querySelector('input[name="color"]:checked');
-            const quantity = document.getElementById('quantity');
+    document.getElementById('buy-now-form').addEventListener('submit', function(e) {
+    const sizeId = document.querySelector('input[name="size"]:checked')?.id.replace('size-', '');
+    const colorId = document.querySelector('input[name="color"]:checked')?.id.replace('color-', '');
+    let variantId = '';
 
-            if (!selectedSize || !selectedColor) {
-                e.preventDefault();
-                alert('Vui lòng chọn đầy đủ Size và Màu sắc trước khi thêm vào giỏ!');
-                return;
-            }
+    const alertBox = document.getElementById('add-to-cart-success');
 
-            const sizeId = parseInt(selectedSize.id.replace('size-', ''));
-            const colorId = parseInt(selectedColor.id.replace('color-', ''));
-
-            const matched = variants.find(v =>
-                v.attribute_values.includes(sizeId) && v.attribute_values.includes(colorId)
-            );
-
-            if (!matched) {
-                e.preventDefault();
-                alert('Không tìm thấy biến thể phù hợp!');
-                return;
-            }
-
-            document.getElementById('selected-size').value = sizeId;
-            document.getElementById('selected-color').value = colorId;
-            document.getElementById('selected-quantity').value = quantity.value;
-            document.getElementById('selected-variant-id').value = matched.id;
-        });
+    if (!sizeId || !colorId) {
+        e.preventDefault(); // ngăn submit
+        alertBox.textContent = 'Vui lòng chọn đầy đủ Size và Màu sắc trước khi thêm vào giỏ hàng!';
+        alertBox.className = 'alert alert-danger mt-2';
+        alertBox.classList.remove('d-none');
+        setTimeout(() => alertBox.classList.add('d-none'), 3000);
+        return;
     }
+
+    @foreach($product->variants as $variant)
+        if ("{{ $variant->attributeValues->where('attribute.name', 'Size')->first()?->id }}" == sizeId
+            && "{{ $variant->attributeValues->where('attribute.name', 'Màu')->first()?->id }}" == colorId) {
+            variantId = "{{ $variant->id }}";
+        }
+    @endforeach
+
+    document.getElementById('form-variant-id').value = variantId;
+});
+
 
     feather.replace();
 </script>

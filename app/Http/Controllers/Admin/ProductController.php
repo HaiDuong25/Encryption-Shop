@@ -42,7 +42,6 @@ class ProductController extends Controller
         return view('admin.products.index', compact('products', 'categories'));
     }
 
-
     public function show(Product $product)
     {
         $product->load('variants.attributeValues.attribute', 'category', 'brand');
@@ -68,7 +67,7 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+         $data = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => [
                 'nullable',
@@ -82,7 +81,7 @@ class ProductController extends Controller
             'brand_id' => 'nullable|integer',
             'sku' => 'nullable|string|max:100',
             'price' => 'nullable|numeric',
-            'compare_price' => 'nullable|numeric',
+            'sale_price' => 'nullable|numeric',
             'stock' => 'nullable|integer',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
@@ -97,6 +96,7 @@ class ProductController extends Controller
             'variant_sku' => 'array',
             'variant_image' => 'array',
             'material' => 'nullable|string|max:255',
+
         ]);
 
         if ($request->hasFile('image')) {
@@ -150,7 +150,7 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::whereNotNull('parent_id')->get(); 
+        $categories = Category::whereNotNull('parent_id')->get();
         $brands = \App\Models\Brand::all();
         $sizeAttr = Attribute::firstOrCreate(['name' => 'Size']);
         $colorAttr = Attribute::firstOrCreate(['name' => 'Màu']);
@@ -188,7 +188,7 @@ class ProductController extends Controller
             'brand_id' => 'nullable|integer|exists:brands,id',
             'sku' => 'nullable|string|max:100',
             'price' => 'nullable|numeric',
-            'compare_price' => 'nullable|numeric',
+            'sale_price' => 'nullable|numeric',
             'stock' => 'nullable|integer',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
