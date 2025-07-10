@@ -144,7 +144,7 @@ public function update(Request $request, $id)
         $subtotal = $carts->sum(function($cart){
             return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
         });
-        
+
         // Lấy thông tin coupon từ session
         $appliedCoupon = session('applied_coupon');
         $couponDiscount = session('coupon_discount', 0);
@@ -267,6 +267,10 @@ public function update(Request $request, $id)
         // Xóa giỏ hàng sau khi thanh toán
         Cart::where('user_id', Auth::id())->delete();
         session()->forget('cart');
+        session()->forget('voucher_discount');
+        session()->forget('voucher_code');
+        session()->forget('voucher_message');
+        session()->forget('voucher_error');
         
         // Chuyển hướng sang trang success, truyền mã đơn hàng
         return redirect()->route('cart.success', ['order_id' => $order->id])

@@ -162,7 +162,7 @@
                                         <a class="nav-link" href="about-us.html">Giới thiệu</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="contact-us.html">Liên hệ</a>
+                                        <a class="nav-link" href="{{ route('client.contact.create') }}">Liên hệ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -210,19 +210,34 @@
                             </li>
                         </ul>
 
+                        @if(Auth::check())
                         <a href="{{ route('account.index') }}" class="user-box">
+                        <button type="submit" class="user-box">
+                                <span class="header-icon">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                         </button>
+                         </a>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="user-box">
+                                <div class="user-name">
+                                    <h6 class="text-content">Xin chào, {{ Auth::user()->name }}</h6>
+                                    <h4 class="mt-1">Đăng xuất</h4>
+                                </div>
+                            </button>
+                        </form>
+                        @else
+                        <a href="{{ route('login.form') }}" class="user-box">
                             <span class="header-icon">
                                 <i class="fa-solid fa-user"></i>
                             </span>
                             <div class="user-name">
                                 <h6 class="text-content">Tài khoản của bạn</h6>
-                                @if(Auth::check())
-                                <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
-                                @else
                                 <h4 class="mt-1">Đăng nhập</h4>
-                                @endif
                             </div>
                         </a>
+                        @endif
 
                     </div>
                 </div>
@@ -272,4 +287,27 @@
         font-size: 15px;
         margin: 0;
     }
+</style>
+<style>
+/* Loại bỏ khung viền và nền cho các icon */
+.header-icon,
+.user-box {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Nếu có border-radius */
+.header-icon,
+.user-box {
+    border-radius: 0 !important;
+}
+
+/* Đảm bảo icon bên trong không bị đóng khung */
+.header-icon i,
+.user-box .header-icon i {
+    box-shadow: none !important;
+    background: transparent !important;
+}
 </style>
