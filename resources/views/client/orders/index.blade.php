@@ -146,13 +146,13 @@
                                             @endif
 
 
-                                            {{-- Nếu muốn cho phép hủy ở trạng thái chờ xử lý, thêm nút hủy ở đây --}}
-                                            {{-- @if ($statusValue == 'pending')
-                                                <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" style="display:inline;">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-danger btn-sm ms-1">Hủy đơn</button>
-                                                </form>
-                                            @endif --}}
+                                            {{-- Nút hủy đơn hàng cho trạng thái pending và confirmed --}}
+                                            @if (in_array($statusValue, ['pending', 'confirmed']))
+                                                <button type="button" onclick="cancelOrder({{ $order->id }})" 
+                                                    class="btn btn-danger btn-sm ms-1">
+                                                    Hủy đơn
+                                                </button>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -170,7 +170,7 @@
 @push('scripts')
     <script>
         function cancelOrder(orderId) {
-            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
+            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được trả lại kho.')) {
                 return;
             }
 
@@ -185,7 +185,11 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    },
+                    body: JSON.stringify({
+                        cancel_reason: 'Khách hàng hủy đơn',
+                        note: null
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {

@@ -11,6 +11,24 @@
             <form action="{{ route('orders.update', $order->id) }}" method="POST">
                 @csrf
                 @method('PUT')
+                
+                @if($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
                 <div class="mb-3">
                     <label for="user_id" class="form-label">Khách hàng</label>
                     <select class="form-select" id="user_id" name="user_id" required>
@@ -219,6 +237,32 @@
     </div>
 
     <script>
+        // Debug form submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            console.log('Form submit triggered');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            
+            // Kiểm tra các field required
+            var requiredFields = this.querySelectorAll('[required]');
+            var missingFields = [];
+            
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    missingFields.push(field.name || field.id);
+                }
+            });
+            
+            if (missingFields.length > 0) {
+                console.log('Missing required fields:', missingFields);
+                alert('Vui lòng điền đầy đủ các trường bắt buộc: ' + missingFields.join(', '));
+                e.preventDefault();
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting...');
+        });
+
         document.getElementById('user_id').addEventListener('change', function() {
             var selected = this.options[this.selectedIndex];
             // Cập nhật thông tin người đặt
