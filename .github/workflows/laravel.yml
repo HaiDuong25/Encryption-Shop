@@ -1,27 +1,75 @@
-name: Laravel CI
+name: Laravel
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+    - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
+      with:
+        php-version: '8.3'
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+        coverage: none
+        
+    - uses: actions/checkout@v4
+    
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+          
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      
+    - name: Copy .env.testing
+      run: php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist
+    - name: Generate key
+      run: php artisan key:generate
+      
+    - name: Generate testing key
+      run: php artisan key:generate --env=testing
 
-      - name: Copy .env
-        run: cp .env.example .env
+    - name: Clear config & route cache
+      run: |
+        php artisan config:clear
+        php artisan route:clear
 
-      - name: Generate Key
-        run: php artisan key:generate
-
-      - name: Run Laravel Tests
-        run: php artisan test
+    - name: Directory Permissions
+      run: chmod -R 777 storage bootstrap/cache
+      
+    - name: Create Database
+      run: |
+        mkdir -p database
+        touch database/database.sqlite
+        
+    - name: Run migrations
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
+      run: php artisan migrate --force
+      
+    - name: Seed database (optional)
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
+      run: php artisan db:seed --force || echo "No seeders found or seeding failed, continuing..."
+        
+    - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
+      run: php artisan test
