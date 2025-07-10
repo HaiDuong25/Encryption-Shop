@@ -29,3 +29,8 @@ php artisan test --env=testing
 
 echo "All tests completed!"
 echo "Ready to push to GitHub!"
+echo "Cleaning up test files..."
+rm -f .env.testing
+rm -f database/database.sqlite
+rm -f test_*.php
+rm -f test_*.html

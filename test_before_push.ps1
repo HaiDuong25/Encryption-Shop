@@ -36,5 +36,12 @@ try {
 Write-Host "Step 6: Running tests..." -ForegroundColor Blue
 php artisan test --env=testing
 
+
+Write-Host "Cleaning up test files..." -ForegroundColor Blue
+Remove-Item ".env.testing" -Force -ErrorAction SilentlyContinue
+Remove-Item "database/database.sqlite" -Force -ErrorAction SilentlyContinue
+Remove-Item "test_*.php" -Force -ErrorAction SilentlyContinue
+Remove-Item "test_*.html" -Force -ErrorAction SilentlyContinue
+
 Write-Host "All tests completed!" -ForegroundColor Green
 Write-Host "Ready to push to GitHub!" -ForegroundColor Green
