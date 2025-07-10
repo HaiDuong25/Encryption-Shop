@@ -97,6 +97,7 @@ class OrderController extends \App\Http\Controllers\Controller
 
     public function edit(Order $order)
     {
+        $order->load(['coupon']); // Load relationship với bảng coupons
         $users = User::all();
         $coupons = Coupon::all();
         $paymentMethods = PaymentMethod::all();
