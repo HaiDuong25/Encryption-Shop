@@ -50,8 +50,8 @@
     {{-- Địa chỉ nhận hàng --}}
     <div class="mb-4 p-3 bg-light rounded shadow-sm">
         <h5 class="mb-3"><i class="fas fa-map-marker-alt me-2"></i>Địa chỉ nhận hàng</h5>
-        <p class="mb-1"><strong>{{ $order->name }}</strong> | {{ $order->phone }}</p>
-        <p class="mb-0">{{ $order->address }}</p>
+        <p class="mb-1"><strong>{{ $order->orderer_name }}</strong> | {{ $order->orderer_phone }}</p>
+        <p class="mb-0">{{ $order->recipient_address }}</p>
     </div>
 
     {{-- Sản phẩm --}}
@@ -88,7 +88,7 @@
         @if (session('coupon'))
             <p class="mb-1">Mã giảm giá: <span class="text-success">{{ session('coupon.code') }} ({{ session('coupon.discount') }}%)</span></p>
         @endif
-        <p class="mb-1">Phương thức: {{ $order->paymentMethod->name ?? 'Chưa chọn' }}</p>
+        <p class="mb-1">Phương thức: {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}</p>
         <p class="mb-1">Vận chuyển: {{ $order->shipping_method ?? 'Miễn phí' }}</p>
         <h5 class="text-danger mt-2">Tổng tiền: {{ number_format($order->total_price) }}₫</h5>
     </div>

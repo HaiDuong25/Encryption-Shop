@@ -145,4 +145,22 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Users
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+    });
+
+
+// Routes cho "Mua ngay" - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+});
+
+// Routes cho mã giảm giá AJAX - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
+});
+
+// Routes cho client orders - cần auth
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
+    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
 });

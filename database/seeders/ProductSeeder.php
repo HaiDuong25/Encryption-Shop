@@ -41,7 +41,8 @@ class ProductSeeder extends Seeder
                 foreach ($colors as $color_id) {
                     $variant = $product->variants()->create([
                         'sku' => "SKU00$i-{$size_id}-{$color_id}",
-                        'price' => rand(100000, 500000),
+                        'price' => rand(600000, 900000), // Giá gốc
+                        'sale_price' => rand(400000, 550000), // Giá khuyến mãi
                         'stock' => rand(10,50),
                     ]);
                     $variant->attributeValues()->attach([$size_id, $color_id]);
