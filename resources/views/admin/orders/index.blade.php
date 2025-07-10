@@ -45,8 +45,8 @@
                         <tr>
 
                             <td>{{ $order->id }}</td>
-                             <td>{{ $order->name }}</td> <!-- Thêm -->
-                                <td>{{ $order->address }}</td> <!-- Thêm -->
+                             <td>{{ $order->recipient_name ?? $order->orderer_name ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_name -->
+                                <td>{{ $order->recipient_address ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_address -->
                             <td>{{ $order->created_at->format('d/m/Y') }}</td>
                             <td>
                                 {{-- Hiển thị phương thức thanh toán nếu có --}}

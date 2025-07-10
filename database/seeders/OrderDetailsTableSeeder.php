@@ -15,6 +15,7 @@ class OrderDetailsTableSeeder extends Seeder
         DB::table('order_details')->insert([
             [
                 'order_id' => 1,
+                'product_id' => 1,
                 'variant_id' => 1,
                 'product_id' => 1, // <-- Add this line
                 'price' => 100000,
@@ -25,6 +26,7 @@ class OrderDetailsTableSeeder extends Seeder
             ],
             [
                 'order_id' => 1,
+                'product_id' => 1,
                 'variant_id' => 2,
                 'product_id' => 1, // <-- Add this line (set correct product_id)
                 'price' => 50000,
@@ -35,6 +37,7 @@ class OrderDetailsTableSeeder extends Seeder
             ],
             [
                 'order_id' => 2,
+                'product_id' => 1,
                 'variant_id' => 1,
                 'product_id' => 1, // <-- Add this line (set correct product_id)
                 'price' => 100000,

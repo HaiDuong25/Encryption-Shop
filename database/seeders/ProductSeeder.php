@@ -29,7 +29,7 @@ class ProductSeeder extends Seeder
                 'brand_id' => $brand->id,
                 'sku' => "SKU00$i",
                 'price' => rand(100000, 500000),
-                'compare_price' => rand(600000, 900000),
+                'sale_price' => rand(600000, 900000),
                 'description' => "Đây là sản phẩm demo số $i.",
                 'status' => 'active',
                 'is_featured' => rand(0,1),

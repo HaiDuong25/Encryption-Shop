@@ -20,7 +20,7 @@
 
         {{-- Sign Up --}}
         <div class="form-container sign-up-container">
-            <form method="POST" action="{{ route('auth.register') }}">
+            <form method="POST" action="{{ route('register') }}">
                 @csrf
                 <h1>Create Account</h1>
                 <div class="social-container">
@@ -41,7 +41,7 @@
 
         {{-- Sign In --}}
         <div class="form-container sign-in-container">
-            <form method="POST" action="{{ route('auth.login') }}">
+            <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <h1>Sign in</h1>
                 <div class="social-container">
