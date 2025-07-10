@@ -11,28 +11,36 @@
     @endif
 
     @forelse ($wishlists as $item)
-        <div class="card mb-3">
-            <div class="row g-0 align-items-center">
-                <div class="col-md-2">
-                    <img src="{{ asset('storage/' . $item->product->image) }}" class="img-fluid rounded-start">
-                </div>
-                <div class="col-md-8">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $item->product->name }}</h5>
-                        <p class="card-text text-danger fw-bold">{{ number_format($item->product->price) }}₫</p>
-                    </div>
-                </div>
-                <div class="col-md-2 text-end pe-3">
-                    <form method="POST" action="{{ route('wishlist.remove', $item->product->id) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                    </form>
-                </div>
+        <div class="card mb-3 shadow-sm border-0">
+<div class="card mb-3">
+    <div class="row g-0 align-items-center">
+        <div class="col-md-2">
+            <a href="{{ route('client.products.show', $item->product->id) }}">
+                <img src="{{ asset('storage/' . $item->product->image) }}" class="img-fluid rounded-start">
+            </a>
+        </div>
+        <div class="col-md-8">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{{ route('client.products.show', $item->product->id) }}" class="text-decoration-none text-dark">
+                        {{ $item->product->name }}
+                    </a>
+                </h5>
+                <p class="card-text text-danger fw-bold">{{ number_format($item->product->price) }}₫</p>
             </div>
         </div>
+        <div class="col-md-2 text-end pe-3">
+            <form method="POST" action="{{ route('wishlist.remove', $item->product->id) }}">
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-sm btn-outline-danger">Xóa</button>
+            </form>
+        </div>
+    </div>
+</div>
+
     @empty
-        <p>Chưa có sản phẩm yêu thích.</p>
+        <div class="alert alert-info">Chưa có sản phẩm yêu thích nào.</div>
     @endforelse
 </div>
 @endsection
