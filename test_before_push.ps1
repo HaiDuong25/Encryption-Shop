@@ -12,19 +12,26 @@ composer install --no-interaction --prefer-dist --optimize-autoloader
 Write-Host "Step 2: Setting up environment..." -ForegroundColor Blue
 if (!(Test-Path ".env.testing")) {
     Copy-Item ".env.example" ".env.testing"
+    # Cập nhật database config cho testing - sử dụng SQLite riêng
+    $content = Get-Content ".env.testing"
+    $content = $content -replace "DB_CONNECTION=.*", "DB_CONNECTION=sqlite"
+    $testDbPath = (Get-Location).Path + "/database/test_database.sqlite"
+    $content = $content -replace "DB_DATABASE=.*", "DB_DATABASE=$testDbPath"
+    $content | Set-Content ".env.testing"
 }
 php artisan key:generate --env=testing
 
-Write-Host "Step 3: Setting up database..." -ForegroundColor Blue
+Write-Host "Step 3: Setting up test database..." -ForegroundColor Blue
 if (!(Test-Path "database")) {
     New-Item -ItemType Directory -Path "database"
 }
-if (!(Test-Path "database/database.sqlite")) {
-    New-Item -ItemType File -Path "database/database.sqlite"
+if (!(Test-Path "database/test_database.sqlite")) {
+    New-Item -ItemType File -Path "database/test_database.sqlite"
 }
 
 Write-Host "Step 4: Running migrations..." -ForegroundColor Blue
-php artisan migrate:fresh --env=testing --force
+# Chỉ chạy migrate (không fresh để tránh xóa data)
+php artisan migrate --env=testing --force
 
 Write-Host "Step 5: Running seeders (optional)..." -ForegroundColor Blue
 try {
@@ -36,12 +43,14 @@ try {
 Write-Host "Step 6: Running tests..." -ForegroundColor Blue
 php artisan test --env=testing
 
-
 Write-Host "Cleaning up test files..." -ForegroundColor Blue
 Remove-Item ".env.testing" -Force -ErrorAction SilentlyContinue
-Remove-Item "database/database.sqlite" -Force -ErrorAction SilentlyContinue
-Remove-Item "test_*.php" -Force -ErrorAction SilentlyContinue
+Remove-Item "database/test_database.sqlite" -Force -ErrorAction SilentlyContinue
+# Chỉ xóa các file test tạm thời, KHÔNG xóa migration/seeder
+Remove-Item "test_demo*.php" -Force -ErrorAction SilentlyContinue
+Remove-Item "test_logic*.php" -Force -ErrorAction SilentlyContinue
 Remove-Item "test_*.html" -Force -ErrorAction SilentlyContinue
+Remove-Item "demo_*.php" -Force -ErrorAction SilentlyContinue
 
 Write-Host "All tests completed!" -ForegroundColor Green
 Write-Host "Ready to push to GitHub!" -ForegroundColor Green
