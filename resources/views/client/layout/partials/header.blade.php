@@ -212,12 +212,10 @@
 
                         @if(Auth::check())
                         <a href="{{ route('account.index') }}" class="user-box">
-                        <button type="submit" class="user-box">
-                                <span class="header-icon">
-                                    <i class="fa-solid fa-user"></i>
-                                </span>
-                         </button>
-                         </a>
+                            <span class="header-icon">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                        </a>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit" class="user-box">
@@ -289,25 +287,25 @@
     }
 </style>
 <style>
-/* Loại bỏ khung viền và nền cho các icon */
-.header-icon,
-.user-box {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
+    /* Loại bỏ khung viền và nền cho các icon */
+    .header-icon,
+    .user-box {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
 
-/* Nếu có border-radius */
-.header-icon,
-.user-box {
-    border-radius: 0 !important;
-}
+    /* Nếu có border-radius */
+    .header-icon,
+    .user-box {
+        border-radius: 0 !important;
+    }
 
-/* Đảm bảo icon bên trong không bị đóng khung */
-.header-icon i,
-.user-box .header-icon i {
-    box-shadow: none !important;
-    background: transparent !important;
-}
+    /* Đảm bảo icon bên trong không bị đóng khung */
+    .header-icon i,
+    .user-box .header-icon i {
+        box-shadow: none !important;
+        background: transparent !important;
+    }
 </style>
