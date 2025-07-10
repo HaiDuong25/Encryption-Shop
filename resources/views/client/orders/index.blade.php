@@ -132,16 +132,19 @@
                                                 <form action="{{ route('orders.confirm', $order->id) }}" method="POST"
                                                     style="display:inline;">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-success btn-sm ms-1">Xác nhận hoàn thành
+                                                    <button type="submit" class="btn btn-success btn-sm ms-1">Xác nhận hoàn
+                                                        thành
                                                     </button>
                                                 </form>
                                             @endif
 
-                                            @if ($statusValue == 'completed')
-                                                <a href="{{ route('client.products.index') }}" class="btn btn-outline-primary btn-sm">
+                                            @if (in_array($statusValue, ['completed', 'cancelled']))
+                                                <a href="{{ route('client.products.index') }}"
+                                                    class="btn btn-outline-primary btn-sm">
                                                     🔁 Mua lại
                                                 </a>
                                             @endif
+
 
                                             {{-- Nếu muốn cho phép hủy ở trạng thái chờ xử lý, thêm nút hủy ở đây --}}
                                             {{-- @if ($statusValue == 'pending')
@@ -165,44 +168,44 @@
 @endsection
 
 @push('scripts')
-<script>
-function cancelOrder(orderId) {
-    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
-        return;
-    }
+    <script>
+        function cancelOrder(orderId) {
+            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
+                return;
+            }
 
-    // Disable button to prevent double click
-    const button = event.target.closest('button');
-    const originalContent = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang hủy...';
+            // Disable button to prevent double click
+            const button = event.target.closest('button');
+            const originalContent = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang hủy...';
 
-    fetch(`/orders/${orderId}/cancel`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            fetch(`/orders/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload(); // Refresh page to show updated status
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                        // Re-enable button on error
+                        button.disabled = false;
+                        button.innerHTML = originalContent;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi hủy đơn hàng');
+                    // Re-enable button on error
+                    button.disabled = false;
+                    button.innerHTML = originalContent;
+                });
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            location.reload(); // Refresh page to show updated status
-        } else {
-            alert('Lỗi: ' + data.message);
-            // Re-enable button on error
-            button.disabled = false;
-            button.innerHTML = originalContent;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi hủy đơn hàng');
-        // Re-enable button on error
-        button.disabled = false;
-        button.innerHTML = originalContent;
-    });
-}
-</script>
+    </script>
 @endpush
