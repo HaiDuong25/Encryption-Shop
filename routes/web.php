@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use App\Models\Coupon;
 
 // ADMIN CONTROLLERS
 use App\Http\Controllers\Admin\DashboardController;
@@ -20,109 +21,110 @@ use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Middleware\RoleMiddleware;
 
 // CLIENT CONTROLLERS
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
+use App\Http\Controllers\WishlistController;
 
-use Illuminate\Http\Request;
-use App\Models\Coupon;
+// --- Auth ---
+Route::view('/auth', 'auth.auth')->name('auth');
+Route::get('/login', [AuthController::class, 'index'])->name('login.form');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-
-Route::view('/auth', 'auth.auth')->name('auth'); // Giao diện login/register
-Route::get('/login', [AuthController::class, 'index'])->name('login.form'); // dùng để hiển thị form
-
-Route::post('/register', [AuthController::class, 'register'])->name('register'); // Đăng ký
-Route::post('/login', [AuthController::class, 'login'])->name('login');     // xử lý submit form
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout'); // Đăng xuất
-
-// client
+// --- Trang chính ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
-//sản phẩm
+
+// --- Sản phẩm ---
 Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
-Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
-Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 'getStock'])->name('client.products.getStock');
+Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('client.products.getStock');
 
-
-// Route chỉ user (và admin được truy cập luôn)
+// --- Các chức năng cần đăng nhập ---
 Route::middleware(['auth'])->group(function () {
+    // Yêu thích
+    Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+
+    // Giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/update-variant/{id}', [CartController::class, 'updateVariant'])->name('cart.update-variant');
-    Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+
+    // Thanh toán
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
-    // Đơn hàng cho user
-    Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
-    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
-    Route::get('/checkout/success', function(Request $request) {
+    Route::get('/checkout/success', function (Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');
 
-    // ADMIN ROUTES - Auth được áp dụng chung, chỉ cần kiểm tra role
-    Route::prefix('admin')->middleware([RoleMiddleware::class])->group(function () {
+    // Mua ngay
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+
+    // Mã giảm giá AJAX
+    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
+    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
+
+    // Đơn hàng (client)
+    Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
+    Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
+    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
+    Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
+});
+
+// --- Admin ---
+Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    //products
+
+    // Product
     Route::resource('products', ProductController::class);
-    //variant
+
+    // Variant attributes
     Route::post('/attributes/{attribute}/values', [AttributeValueController::class, 'storeAjax']);
-    // orders
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
-    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
-    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
-    //categories
-    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
-    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
-    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
-    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+
+    // Orders
+    Route::resource('orders', OrderController::class)->except(['tracking']);
+    Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
+    Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::post('/admin/orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
+
+    // Categories
+    Route::resource('categories', CategoryController::class);
     Route::get('categories/create-parent', [CategoryController::class, 'createParent'])->name('categories.create-parent');
     Route::post('categories/store-parent', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
-    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-    //brands
+
+    // Brands
     Route::resource('brands', BrandController::class);
-    Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
-    Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
-    Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
-    Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
-    Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
-    Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
-    //phương thức thanh toán
+
+    // Payment methods
     Route::resource('payment-methods', PaymentMethodController::class);
-    Route::get('payment-methods', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
-    // Quản lý thanh toán
+
+    // Payments
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
     Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
     Route::post('admin/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
-    //rate
-    Route::get('/rates', [RateController::class, 'index'])->name('rates.index');
-    Route::get('/rates/{rate}', [RateController::class, 'show'])->name('rates.show');
-    Route::get('/rates/{rate}/edit', [RateController::class, 'edit'])->name('rates.edit');
-    Route::put('/rates/{rate}', [RateController::class, 'update'])->name('rates.update');
-    Route::delete('/rates/{rate}', [RateController::class, 'destroy'])->name('rates.destroy');
-    // Route cho việc lưu phản hồi của Admin cho một Rate
+
+    // Rates & replies
+    Route::resource('rates', RateController::class)->except(['create', 'store']);
     Route::post('/rates/{rate}/replies', [RateReplyController::class, 'store'])->name('rates.replies.store');
-    // Routes cho Quản lý Liên hệ Khách hàng
-    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
-    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
-    //coupons
-    Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
-    // Route tạo và lưu mã giảm giá
+
+    // Contacts
+    Route::resource('contacts', ContactController::class)->only(['index', 'show', 'destroy']);
+
+    // Coupons
+    Route::resource('coupons', CouponController::class)->except(['show']);
     Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
-    Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
-    // Route áp dụng mã giảm giá cho đơn hàng`
+    Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
     Route::post('/apply-coupon', function (Request $request) {
         $coupon = Coupon::where('code', $request->code)->first();
         if (!$coupon || !$coupon->isValid()) {
@@ -134,29 +136,24 @@ Route::middleware(['auth'])->group(function () {
         ]]);
         return back()->with('success', 'Áp dụng mã thành công!');
     })->name('apply.coupon');
-    Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
-    Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
-    Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
-    Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+
+    // News & banners
     Route::resource('news', NewsController::class);
     Route::resource('banners', BannerController::class);
     Route::delete('/banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
-    Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
-    Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::post('orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
-    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
-    //user
+
+    // Users
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
     });
-});
+
 
 // Routes cho "Mua ngay" - cần auth
 Route::middleware(['auth'])->group(function () {
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
 });
 
-// Routes cho mã giảm giá AJAX - cần auth  
+// Routes cho mã giảm giá AJAX - cần auth
 Route::middleware(['auth'])->group(function () {
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');

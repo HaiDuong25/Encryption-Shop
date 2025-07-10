@@ -9,7 +9,6 @@
 </head>
 
 <body>
-
     <div class="container" id="container">
         @if ($errors->any())
         <div class="alert alert-danger">
