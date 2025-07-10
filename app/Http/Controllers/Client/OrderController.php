@@ -110,12 +110,27 @@ public function cancel(Request $request, Order $order)
     {
         $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-        if ($order->status == 4) { // 4 = Đã nhận
-            $order->status = 5;    // 5 = Hoàn thành
-            $order->save();
+        // Chuyển đổi trạng thái sang chuẩn để xử lý
+        $statusValue = $order->status;
+        if (is_numeric($statusValue)) {
+            $statusMap = [
+                '0' => 'pending',
+                '1' => 'confirmed',
+                '2' => 'shipping',
+                '3' => 'delivering',
+                '4' => 'received',
+                '5' => 'completed',
+                '6' => 'cancelled',
+            ];
+            $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
+        }
+
+        // Chỉ cho phép xác nhận khi đơn hàng ở trạng thái "Đã nhận"
+        if ($statusValue === 'received') {
+            $order->update(['status' => 'completed']);
             return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành.');
         }
 
-        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái Đã nhận.');
+        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái "Đã nhận".');
     }
 }
