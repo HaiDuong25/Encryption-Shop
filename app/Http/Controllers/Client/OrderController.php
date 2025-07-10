@@ -33,24 +33,37 @@ class OrderController extends Controller
 
         return view('client.orders.show', compact('order'));
     }
- public function cancel(Request $request, Order $order)
+public function cancel(Request $request, Order $order)
 {
-    // dd('vao cancel', $order->status, $request->all());
-
-    // Ép kiểu về số nguyên nếu cần
+    // Ép kiểu trạng thái
     $status = is_numeric($order->status) ? (int)$order->status : ($order->status === 'pending' ? 0 : $order->status);
 
+    // Kiểm tra trạng thái đơn hàng
     if ($status !== 0) {
         return back()->with('error', 'Không thể hủy đơn hàng này.');
     }
 
-    $order->status = 6; // Đã hủy
+    // Load orderDetails và variant
+    $order->load('orderDetails.variant');
+
+    // ✅ Cộng lại số lượng vào kho
+    foreach ($order->orderDetails as $detail) {
+        $variant = $detail->variant;
+        if ($variant) {
+            $variant->stock += $detail->quantity;
+            $variant->save();
+        }
+    }
+
+    // ✅ Cập nhật trạng thái và lý do hủy
+    $order->status = 6; // 6 = Đã hủy
     $order->cancel_reason = $request->cancel_reason;
     $order->cancel_note = $request->note;
     $order->save();
 
-    return redirect()->route('client.orders.index')->with('success', 'Đơn hàng đã được hủy thành công.');
+    return redirect()->route('client.orders.index')->with('success', 'Đơn hàng đã được hủy và cập nhật kho thành công.');
 }
+
 
     /**
      * Xác nhận đã nhận hàng → cập nhật trạng thái thành hoàn thành.
