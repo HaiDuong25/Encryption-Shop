@@ -346,10 +346,13 @@
                     @csrf
                     <input type="hidden" name="quantity" id="form-quantity" value="1">
                     <input type="hidden" name="variant_id" id="form-variant-id" value="">
-                    <button type="submit" class="btn btn-buy px-4 py-2">Thêm vào giỏ hàng</button>
+                    <button type="submit" class="btn btn-buy px-4 py-2">
+                        <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
+                    </button>
                 </form>
                 <button class="btn btn-buy px-4 py-2" type="button" id="buy-now-btn">Mua ngay</button>
             </div>
+            <div id="add-to-cart-success" class="alert d-none mt-2"></div>
         </div>
     </div>
 
@@ -425,7 +428,7 @@
 <script>
     let imageList = [];
     let currentIndex = 0;
-    
+
     // Dữ liệu variants cho JavaScript
     const variants = {!! $product->variants->map(function($variant) {
         return [
@@ -437,7 +440,7 @@
             'color_id' => optional($variant->attributeValues->where('attribute.name', 'Màu')->first())->id,
         ];
     })->values()->toJson() !!};
-    
+
     const defaultPrice = {{ $product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price }};
     const defaultOriginalPrice = {{ $product->price }};
 
@@ -487,16 +490,16 @@
 
     function updatePriceByVariant() {
         const { sizeId, colorId } = getSelectedVariant();
-        
+
         if (!sizeId || !colorId) {
             // Reset về giá mặc định của sản phẩm
             updatePriceDisplay(defaultPrice, defaultOriginalPrice);
             return;
         }
-        
+
         // Tìm variant phù hợp
         const variant = variants.find(v => v.size_id == sizeId && v.color_id == colorId);
-        
+
         if (variant) {
             const currentPrice = variant.sale_price && variant.sale_price < variant.price ? variant.sale_price : variant.price;
             const originalPrice = variant.price;
@@ -506,35 +509,35 @@
             updatePriceDisplay(defaultPrice, defaultOriginalPrice);
         }
     }
-    
+
     function updatePriceDisplay(currentPrice, originalPrice, salePrice = null) {
         const currentPriceEl = document.getElementById('current-price');
         const originalPriceEl = document.getElementById('original-price');
-        
+
         currentPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(currentPrice) + ' đ';
         originalPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(originalPrice) + ' đ';
-        
+
         if (salePrice && salePrice < originalPrice) {
             originalPriceEl.classList.remove('d-none');
         } else {
             originalPriceEl.classList.add('d-none');
         }
-        
+
         updateExpectedPrice();
     }
 
     function getUnitPrice() {
         const { sizeId, colorId } = getSelectedVariant();
-        
+
         if (!sizeId || !colorId) {
             return defaultPrice;
         }
-        
+
         const variant = variants.find(v => v.size_id == sizeId && v.color_id == colorId);
         if (variant) {
             return variant.sale_price && variant.sale_price < variant.price ? variant.sale_price : variant.price;
         }
-        
+
         return defaultPrice;
     }
     function updateExpectedPrice() {
@@ -634,21 +637,31 @@
     }
 
     document.getElementById('buy-now-form').addEventListener('submit', function(e) {
-        // Lấy variant_id dựa trên lựa chọn size và color
-        const sizeId = document.querySelector('input[name="size"]:checked')?.id.replace('size-', '');
-        const colorId = document.querySelector('input[name="color"]:checked')?.id.replace('color-', '');
-        let variantId = '';
+    const sizeId = document.querySelector('input[name="size"]:checked')?.id.replace('size-', '');
+    const colorId = document.querySelector('input[name="color"]:checked')?.id.replace('color-', '');
+    let variantId = '';
 
-        @foreach($product->variants as $variant)
-            if ("{{ $variant->attributeValues->where('attribute.name', 'Size')->first()?->id }}" == sizeId
-                && "{{ $variant->attributeValues->where('attribute.name', 'Màu')->first()?->id }}" == colorId) {
-                variantId = "{{ $variant->id }}";
-            }
-        @endforeach
+    const alertBox = document.getElementById('add-to-cart-success');
 
-        document.getElementById('form-variant-id').value = variantId;
-        // Không ngăn reload, để form POST truyền thống
-    });
+    if (!sizeId || !colorId) {
+        e.preventDefault(); // ngăn submit
+        alertBox.textContent = 'Vui lòng chọn đầy đủ Size và Màu sắc trước khi thêm vào giỏ hàng!';
+        alertBox.className = 'alert alert-danger mt-2';
+        alertBox.classList.remove('d-none');
+        setTimeout(() => alertBox.classList.add('d-none'), 3000);
+        return;
+    }
+
+    @foreach($product->variants as $variant)
+        if ("{{ $variant->attributeValues->where('attribute.name', 'Size')->first()?->id }}" == sizeId
+            && "{{ $variant->attributeValues->where('attribute.name', 'Màu')->first()?->id }}" == colorId) {
+            variantId = "{{ $variant->id }}";
+        }
+    @endforeach
+
+    document.getElementById('form-variant-id').value = variantId;
+});
+
 
     feather.replace();
 </script>
