@@ -165,6 +165,12 @@
                         <input type="text" name="orderer_phone" class="form-control" 
                                value="{{ auth()->user()->phone ?? '' }}" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Địa chỉ <span class="text-danger">*</span></label>
+                        <textarea name="orderer_address" class="form-control" rows="3" 
+                                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" 
+                                  required>{{ auth()->user()->address ?? '' }}</textarea>
+                    </div>
                 </div>
 
                 <!-- Thông tin người nhận -->
@@ -324,12 +330,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const ordererFields = {
         name: document.querySelector('input[name="orderer_name"]'),
         email: document.querySelector('input[name="orderer_email"]'),
-        phone: document.querySelector('input[name="orderer_phone"]')
+        phone: document.querySelector('input[name="orderer_phone"]'),
+        address: document.querySelector('textarea[name="orderer_address"]')
     };
     const recipientFields = {
         name: document.querySelector('input[name="recipient_name"]'),
         phone: document.querySelector('input[name="recipient_phone"]'),
-        email: document.querySelector('input[name="recipient_email"]')
+        email: document.querySelector('input[name="recipient_email"]'),
+        address: document.querySelector('textarea[name="recipient_address"]')
     };
 
     sameAsOrdererCheckbox.addEventListener('change', function() {
@@ -338,16 +346,19 @@ document.addEventListener('DOMContentLoaded', function() {
             recipientFields.name.value = ordererFields.name.value;
             recipientFields.phone.value = ordererFields.phone.value;
             recipientFields.email.value = ordererFields.email.value;
+            recipientFields.address.value = ordererFields.address.value;
             
-            // Disable các field người nhận (trừ địa chỉ)
+            // Disable các field người nhận
             recipientFields.name.readOnly = true;
             recipientFields.phone.readOnly = true;
             recipientFields.email.readOnly = true;
+            recipientFields.address.readOnly = true;
         } else {
             // Enable lại các field người nhận
             recipientFields.name.readOnly = false;
             recipientFields.phone.readOnly = false;
             recipientFields.email.readOnly = false;
+            recipientFields.address.readOnly = false;
         }
     });
 
@@ -356,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
         field.addEventListener('input', function() {
             if (sameAsOrdererCheckbox.checked) {
                 const fieldName = this.name.replace('orderer_', 'recipient_');
-                const recipientField = document.querySelector(`input[name="${fieldName}"]`);
+                const recipientField = document.querySelector(`input[name="${fieldName}"], textarea[name="${fieldName}"]`);
                 if (recipientField) {
                     recipientField.value = this.value;
                 }

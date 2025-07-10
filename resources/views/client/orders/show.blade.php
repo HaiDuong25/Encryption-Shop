@@ -5,6 +5,43 @@
 @php use Illuminate\Support\Str; @endphp
 
 @section('content')
+<style>
+.progress {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.progress-bar {
+    transition: all 0.3s ease;
+}
+.status-step {
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+}
+.status-step.current {
+    font-weight: bold;
+    color: #0d6efd !important;
+    position: relative;
+}
+.status-step.completed {
+    color: #198754 !important;
+    font-weight: 600;
+}
+.current-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #0d6efd;
+    border-radius: 50%;
+    margin-left: 5px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+</style>
+
 <div class="container py-5">
 
     {{-- Trạng thái đơn hàng --}}
@@ -13,12 +50,12 @@
 
         @php
             $statuses = [
-                0 => 'Chờ xử lý',
-                1 => 'Đã xác nhận',
-                2 => 'Đã giao cho ĐVVC',
-                3 => 'Đang giao',
-                4 => 'Đã nhận',
-                5 => 'Hoàn thành',
+                'pending' => 'Chờ xử lý',
+                'confirmed' => 'Đã xác nhận',
+                'shipping' => 'Đã giao cho ĐVVC',
+                'delivering' => 'Đang giao',
+                'received' => 'Đã nhận',
+                'completed' => 'Hoàn thành',
             ];
             
             // Chuyển đổi trạng thái sang chuẩn để xử lý
@@ -36,8 +73,14 @@
                 $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
             }
             
-            $orderStatus = (int) $order->status;
-            $isCancelled = $statusValue === 'cancelled' || $orderStatus === 6;
+            // Tìm index của trạng thái hiện tại
+            $statusKeys = array_keys($statuses);
+            $currentStatusIndex = array_search($statusValue, $statusKeys);
+            if ($currentStatusIndex === false) {
+                $currentStatusIndex = 0; // Default to pending
+            }
+            
+            $isCancelled = $statusValue === 'cancelled';
         @endphp
 
         @if ($isCancelled)
@@ -55,8 +98,12 @@
             </div>
         @else
             <div class="progress" style="height: 10px; background: #eee;">
-                @foreach ($statuses as $index => $status)
-                    <div class="progress-bar {{ $index <= $orderStatus ? 'bg-success' : 'bg-secondary' }}"
+                @foreach ($statuses as $statusKey => $statusLabel)
+                    @php
+                        $stepIndex = array_search($statusKey, array_keys($statuses));
+                        $isCompleted = $stepIndex <= $currentStatusIndex;
+                    @endphp
+                    <div class="progress-bar {{ $isCompleted ? 'bg-success' : 'bg-secondary' }}"
                          role="progressbar"
                          style="width: {{ 100 / count($statuses) }}%">
                     </div>
@@ -64,8 +111,18 @@
             </div>
 
             <div class="d-flex justify-content-between mt-2 small text-muted">
-                @foreach ($statuses as $status)
-                    <div>{{ $status }}</div>
+                @foreach ($statuses as $statusKey => $statusLabel)
+                    @php
+                        $stepIndex = array_search($statusKey, array_keys($statuses));
+                        $isCompleted = $stepIndex <= $currentStatusIndex;
+                        $isCurrent = $stepIndex === $currentStatusIndex;
+                    @endphp
+                    <div class="status-step {{ $isCompleted ? 'completed' : '' }} {{ $isCurrent ? 'current' : '' }}">
+                        {{ $statusLabel }}
+                        @if ($isCurrent)
+                            <span class="current-indicator"></span>
+                        @endif
+                    </div>
                 @endforeach
             </div>
         @endif
@@ -118,7 +175,7 @@
     </div>
 
     {{-- Hủy đơn hàng nếu đang ở trạng thái pending hoặc confirmed và chưa bị hủy --}}
-    @if (!$isCancelled && in_array($orderStatus, [0, 1]))
+    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
         <button class="btn btn-outline-danger mt-3" onclick="cancelOrder({{ $order->id }})">
             Hủy đơn hàng
         </button>
