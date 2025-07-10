@@ -469,6 +469,106 @@
                     });
                 });
             });
+
+            // Add to Cart functionality
+            document.querySelectorAll('.add-to-cart-form').forEach(function (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    
+                    const btn = form.querySelector('.add-to-cart-btn');
+                    const btnText = btn.querySelector('.btn-text');
+                    const btnLoading = btn.querySelector('.btn-loading');
+                    
+                    // Show loading state
+                    btn.disabled = true;
+                    btnText.classList.add('d-none');
+                    btnLoading.classList.remove('d-none');
+                    
+                    // Submit form with fetch
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Success state
+                            btnLoading.classList.add('d-none');
+                            btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Đã thêm vào giỏ';
+                            btn.style.backgroundColor = '#28a745';
+                            btn.style.borderColor = '#28a745';
+                            btn.style.color = 'white';
+                            
+                            // Show success notification
+                            showNotification('Đã thêm sản phẩm vào giỏ hàng!', 'success');
+                            
+                            // Reset button after 2 seconds
+                            setTimeout(function () {
+                                btn.disabled = false;
+                                btn.innerHTML = '<span class="btn-text"><i class="fa-solid fa-cart-plus me-2"></i>Thêm vào giỏ</span><span class="btn-loading d-none"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang thêm...</span>';
+                                btn.style.backgroundColor = 'transparent';
+                                btn.style.borderColor = '#007bff';
+                                btn.style.color = '#007bff';
+                            }, 2000);
+                        } else {
+                            throw new Error(data.message || 'Có lỗi xảy ra');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        
+                        // Error state
+                        btnLoading.classList.add('d-none');
+                        btnText.classList.remove('d-none');
+                        btn.disabled = false;
+                        
+                        showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'error');
+                    });
+                });
+            });
+            
+            // Notification function
+            function showNotification(message, type) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+                notification.style.cssText = `
+                    top: 20px;
+                    right: 20px;
+                    z-index: 9999;
+                    min-width: 300px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    border-radius: 8px;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                `;
+                notification.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                        <span>${message}</span>
+                        <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Show notification
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
         });
     </script>
     <!-- Product Section Start -->
@@ -571,13 +671,19 @@
 
                                 <!-- Action Buttons -->
                                 <div class="product-actions d-flex gap-2">
-                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-grow-1">
+                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-grow-1 add-to-cart-form">
                                         @csrf
-                                        <button class="btn btn-outline-primary w-100 rounded-pill fw-semibold position-relative overflow-hidden"
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-outline-primary w-100 rounded-pill fw-semibold position-relative overflow-hidden add-to-cart-btn"
                                                 style="transition: all 0.3s ease; border: 2px solid #007bff; backdrop-filter: blur(10px);"
                                                 onmouseover="this.style.backgroundColor='#007bff'; this.style.color='white'; this.style.borderColor='#007bff'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 123, 255, 0.3)';"
                                                 onmouseout="this.style.backgroundColor='transparent'; this.style.color='#007bff'; this.style.borderColor='#007bff'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                                            <i class="fa-solid fa-cart-plus me-2"></i>Thêm vào giỏ
+                                            <span class="btn-text">
+                                                <i class="fa-solid fa-cart-plus me-2"></i>Thêm vào giỏ
+                                            </span>
+                                            <span class="btn-loading d-none">
+                                                <i class="fa-solid fa-spinner fa-spin me-2"></i>Đang thêm...
+                                            </span>
                                         </button>
                                     </form>
                                     <a href="{{ route('client.products.show', $product->id) }}"
