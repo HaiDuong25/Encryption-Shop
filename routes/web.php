@@ -103,10 +103,10 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::post('/attributes/{attribute}/values', [AttributeValueController::class, 'storeAjax']);
 
     // Orders
-    Route::resource('orders', OrderController::class)->except(['tracking']);
+    Route::resource('orders', OrderController::class)->except(['create', 'store']);
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
-    Route::post('/admin/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::post('/admin/orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
+    Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
 
     // Categories
     Route::resource('categories', CategoryController::class);
@@ -159,43 +159,39 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     });
 
 
-// Routes cho "Mua ngay" - cần auth
-Route::middleware(['auth'])->group(function () {
-    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
-});
-
-// Routes cho mã giảm giá AJAX - cần auth
-Route::middleware(['auth'])->group(function () {
-    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
-    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
-});
-
-// Routes cho client orders - cần auth
-Route::middleware(['auth'])->group(function () {
-    Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
-    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
-});
-
-// client
+// --- Client Routes ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
-//sản phẩm
+
+// --- Sản phẩm ---
 Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
-Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
-Route::get('/get-stock', [App\Http\Controllers\Client\ProductController::class, 'getStock'])->name('client.products.getStock');
-Route::post('/cart/apply-voucher', [CartController::class, 'applyVoucher'])->name('cart.applyVoucher');
+Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('client.products.getStock');
+Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 
-
-// Route chỉ user (và admin được truy cập luôn)
+// --- Routes cần auth ---
 Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
-    // Đơn hàng cho user
+    
+    // Mua ngay
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+
+    // Mã giảm giá AJAX
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
+    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
+    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
+
+    // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
+    Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
+    Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
+    Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
+    
     Route::get('/checkout/success', function(Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
