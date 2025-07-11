@@ -16,7 +16,7 @@ class OrderController extends \App\Http\Controllers\Controller
     public function index()
     {
         $orders = Order::with([
-            'orderDetails.variant.product.productImages', 
+            'orderDetails.variant.product.productImages',
             'orderDetails.product.productImages',
             'paymentMethod'
         ])
@@ -147,7 +147,7 @@ class OrderController extends \App\Http\Controllers\Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi hủy đơn hàng: ' . $e->getMessage()
@@ -169,7 +169,7 @@ class OrderController extends \App\Http\Controllers\Controller
             // Xóa các bản ghi liên quan
             $order->orderDetails()->delete();
             $order->payments()->delete();
-            
+
             // Xóa đơn hàng
             $order->delete();
 
@@ -182,7 +182,7 @@ class OrderController extends \App\Http\Controllers\Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi xóa đơn hàng: ' . $e->getMessage()

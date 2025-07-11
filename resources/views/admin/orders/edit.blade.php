@@ -84,7 +84,7 @@
                                 'completed' => 'Hoàn thành',
                                 'cancelled' => 'Đã hủy',
                             ];
-                            
+
                             // Convert numeric status to string for backward compatibility
                             $currentStatus = $order->status;
                             if (is_numeric($currentStatus)) {
