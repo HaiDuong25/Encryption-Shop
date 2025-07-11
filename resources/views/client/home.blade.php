@@ -7,7 +7,7 @@
             <div id="mainBannerCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
                 <div class="carousel-inner rounded-4 shadow-lg">
                     <div class="carousel-item active">
-                        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80"
+                        <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1600&q=80"
                             class="d-block w-100 banner-img-large" alt="Banner 1">
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">BST Mùa Hè 2025</h2>
@@ -17,7 +17,7 @@
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80"
+                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1600&q=80"
                             class="d-block w-100 banner-img-large" alt="Banner 2">
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">Ưu đãi Đặc Biệt</h2>
@@ -27,7 +27,7 @@
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1600&q=80"
+                        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80"
                             class="d-block w-100 banner-img-large" alt="Banner 3">
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">BST Đầm Dạ Hội</h2>
@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=1600&q=80"
+                        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80"
                             class="d-block w-100 banner-img-large" alt="Banner 4">
                         <div class="carousel-caption d-none d-md-block text-start">
                             <h2 class="fw-bold display-5 mb-2">Áo Sơ Mi Nam Cao Cấp</h2>
