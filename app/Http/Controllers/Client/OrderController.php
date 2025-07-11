@@ -35,33 +35,71 @@ class OrderController extends Controller
     }
 public function cancel(Request $request, Order $order)
 {
-    // Ép kiểu trạng thái
-    $status = is_numeric($order->status) ? (int)$order->status : ($order->status === 'pending' ? 0 : $order->status);
-
-    // Kiểm tra trạng thái đơn hàng
-    if ($status !== 0) {
-        return back()->with('error', 'Không thể hủy đơn hàng này.');
+    // Kiểm tra quyền sở hữu đơn hàng
+    if ($order->user_id !== Auth::id()) {
+        abort(403, 'Bạn không có quyền thực hiện hành động này.');
     }
 
-    // Load orderDetails và variant
-    $order->load('orderDetails.variant');
+    // Chuyển đổi trạng thái sang chuẩn string để dễ xử lý
+    $statusValue = $order->status;
+    if (is_numeric($statusValue)) {
+        $statusMap = [
+            '0' => 'pending',
+            '1' => 'confirmed',
+            '2' => 'shipping',
+            '3' => 'delivering', 
+            '4' => 'received',
+            '5' => 'completed',
+            '6' => 'cancelled',
+        ];
+        $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
+    }
 
-    // ✅ Cộng lại số lượng vào kho
-    foreach ($order->orderDetails as $detail) {
-        $variant = $detail->variant;
-        if ($variant) {
-            $variant->stock += $detail->quantity;
-            $variant->save();
+    // Kiểm tra trạng thái đơn hàng - chỉ cho phép hủy khi pending hoặc confirmed
+    if (!in_array($statusValue, ['pending', 'confirmed'])) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Không thể hủy đơn hàng này. Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xử lý" hoặc "Đã xác nhận".'
+        ], 400);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        // Load orderDetails và variant để trả lại số lượng kho
+        $order->load('orderDetails.variant');
+
+        // Cộng lại số lượng vào kho
+        foreach ($order->orderDetails as $detail) {
+            $variant = $detail->variant;
+            if ($variant) {
+                $variant->stock += $detail->quantity;
+                $variant->save();
+            }
         }
+
+        // Cập nhật trạng thái và lý do hủy
+        $order->update([
+            'status' => 'cancelled',
+            'cancel_reason' => $request->cancel_reason ?? 'Khách hàng hủy đơn',
+            'cancel_note' => $request->note ?? null,
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.'
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Có lỗi xảy ra khi hủy đơn hàng: ' . $e->getMessage()
+        ], 500);
     }
-
-    // ✅ Cập nhật trạng thái và lý do hủy
-    $order->status = 6; // 6 = Đã hủy
-    $order->cancel_reason = $request->cancel_reason;
-    $order->cancel_note = $request->note;
-    $order->save();
-
-    return redirect()->route('client.orders.index')->with('success', 'Đơn hàng đã được hủy và cập nhật kho thành công.');
 }
 
 
@@ -72,12 +110,27 @@ public function cancel(Request $request, Order $order)
     {
         $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-        if ($order->status == 4) { // 4 = Đã nhận
-            $order->status = 5;    // 5 = Hoàn thành
-            $order->save();
+        // Chuyển đổi trạng thái sang chuẩn để xử lý
+        $statusValue = $order->status;
+        if (is_numeric($statusValue)) {
+            $statusMap = [
+                '0' => 'pending',
+                '1' => 'confirmed',
+                '2' => 'shipping',
+                '3' => 'delivering',
+                '4' => 'received',
+                '5' => 'completed',
+                '6' => 'cancelled',
+            ];
+            $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
+        }
+
+        // Chỉ cho phép xác nhận khi đơn hàng ở trạng thái "Đã nhận"
+        if ($statusValue === 'received') {
+            $order->update(['status' => 'completed']);
             return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành.');
         }
 
-        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái Đã nhận.');
+        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái "Đã nhận".');
     }
 }

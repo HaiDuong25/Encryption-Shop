@@ -31,26 +31,26 @@
 
                         <form action="{{ route('client.products.index') }}" method="GET" class="mb-4 search-form">
 
-                    @foreach(request('categories', []) as $categoryId)
-                    <input type="hidden" name="categories[]" value="{{ $categoryId }}">
-                    @endforeach
+                            @foreach(request('categories', []) as $categoryId)
+                            <input type="hidden" name="categories[]" value="{{ $categoryId }}">
+                            @endforeach
 
-                    @foreach(request('brands', []) as $brandId)
-                    <input type="hidden" name="brands[]" value="{{ $brandId }}">
-                    @endforeach
+                            @foreach(request('brands', []) as $brandId)
+                            <input type="hidden" name="brands[]" value="{{ $brandId }}">
+                            @endforeach
 
-                    <input type="hidden" name="min_price" value="{{ request('min_price') }}">
-                    <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                            <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                            <input type="hidden" name="max_price" value="{{ request('max_price') }}">
 
-                    <div class="input-group shadow rounded search-input-group">
-                        <input type="text" class="form-control border-0 search-input" id="search-product" name="keyword"
-                            placeholder="🔍 Tìm kiếm sản phẩm..." value="{{ request('keyword') }}">
-                        <button type="submit" class="btn btn-primary search-button">
-                            <i class="fa fa-search me-1"></i> Tìm kiếm
-                        </button>
-                    </div>
+                            <div class="input-group shadow rounded search-input-group">
+                                <input type="text" class="form-control border-0 search-input" id="search-product" name="keyword"
+                                    placeholder="🔍 Tìm kiếm sản phẩm..." value="{{ request('keyword') }}">
+                                <button type="submit" class="btn btn-primary search-button">
+                                    <i class="fa fa-search me-1"></i> Tìm kiếm
+                                </button>
+                            </div>
 
-                </form>
+                        </form>
 
                         <!-- <div class="rightside-menu support-sidemenu">
                                 <div class="support-box">
@@ -107,7 +107,7 @@
                                         <a class="nav-link" href="about-us.html">Giới thiệu</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="contact-us.html">Liên hệ</a>
+                                        <a class="nav-link" href="{{ route('client.contact.create') }}">Liên hệ</a>
                                     </li>
                                 </ul>
                             </div>
@@ -121,19 +121,19 @@
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                 </a>
                             </li>
-                         <li>
-    <a href="{{ route('wishlist.index') }}" class="header-icon">
-        <i class="fa-solid fa-heart"></i>
-    </a>
-</li>
+                            <li>
+                                <a href="{{ route('wishlist.index') }}" class="header-icon">
+                                    <i class="fa-solid fa-heart"></i>
+                                </a>
+                            </li>
 
 
                             @php
                             $cartItems = collect([]);
                             $totalQuantity = 0;
                             if(Auth::check()) {
-                                $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
-                                $totalQuantity = $cartItems->sum('quantity');
+                            $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
+                            $totalQuantity = $cartItems->sum('quantity');
                             }
                             @endphp
 
@@ -155,19 +155,32 @@
                             </li>
                         </ul>
 
-                        <a href="user-dashboard.html" class="user-box">
+                        @if(Auth::check())
+                        <a href="{{ route('account.index') }}" class="user-box">
+                            <span class="header-icon">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="user-box">
+                                <div class="user-name">
+                                    <h6 class="text-content">Xin chào, {{ Auth::user()->name }}</h6>
+                                    <h4 class="mt-1">Đăng xuất</h4>
+                                </div>
+                            </button>
+                        </form>
+                        @else
+                        <a href="{{ route('login.form') }}" class="user-box">
                             <span class="header-icon">
                                 <i class="fa-solid fa-user"></i>
                             </span>
                             <div class="user-name">
                                 <h6 class="text-content">Tài khoản của bạn</h6>
-                                @if(Auth::check())
-                                    <h4 class="mt-1">Xin chào, {{ Auth::user()->name }}</h4>
-                                @else
-                                    <h4 class="mt-1">Đăng nhập</h4>
-                                @endif
+                                <h4 class="mt-1">Đăng nhập</h4>
                             </div>
                         </a>
+                        @endif
 
                     </div>
                 </div>
@@ -198,20 +211,46 @@
         background: #fff;
         z-index: 9999;
         padding: 16px 12px 12px 12px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         position: relative;
     }
+
     .cart-list {
         min-height: 60px;
         margin-bottom: 8px;
         background: #f9f9f9;
     }
+
     .cart-list li {
         padding: 6px 0;
     }
+
     .cart-list p.text-center {
         color: #888;
         font-size: 15px;
         margin: 0;
+    }
+</style>
+<style>
+    /* Loại bỏ khung viền và nền cho các icon */
+    .header-icon,
+    .user-box {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    /* Nếu có border-radius */
+    .header-icon,
+    .user-box {
+        border-radius: 0 !important;
+    }
+
+    /* Đảm bảo icon bên trong không bị đóng khung */
+    .header-icon i,
+    .user-box .header-icon i {
+        box-shadow: none !important;
+        background: transparent !important;
     }
 </style>

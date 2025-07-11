@@ -58,12 +58,27 @@
     display: flex;
     gap: 2px;
 }
+.address-cell {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.address-cell:hover {
+    white-space: normal;
+    overflow: visible;
+    position: relative;
+    z-index: 10;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    padding: 0.4rem 0.3rem;
+    border-radius: 4px;
+}
 </style>
 <div class="card card-table">
     <div class="card-body">
         <div class="title-header option-title">
             <h5>Order List</h5>
-            <!-- <a href="{{ route('orders.create') }}" class="btn btn-solid">Tạo đơn hàng</a> -->
         </div>
         <div>
             <div class="table-responsive">
@@ -72,12 +87,12 @@
                         <tr>
                             <th width="5%">ID</th>
                             <th width="15%">Người nhận</th>
-                            <th width="20%">Địa chỉ</th>
+                            <th width="15%">Địa chỉ</th>
                             <th width="10%">Ngày đặt</th>
                             <th width="10%">Thanh toán</th>
-                            <th width="12%">Trạng thái</th>
-                            <th width="15%">Tổng tiền</th>
-                            <th width="13%">Thao tác</th>
+                            <th width="10%">Trạng thái</th>
+                            <th width="20%">Tổng tiền</th>
+                            <th width="15%">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,7 +101,7 @@
 
                             <td>{{ $order->id }}</td>
                              <td>{{ $order->recipient_name ?? $order->orderer_name ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_name -->
-                                <td>{{ $order->recipient_address ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_address -->
+                                <td class="address-cell" title="{{ $order->recipient_address ?? 'N/A' }}">{{ $order->recipient_address ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_address -->
                             <td>{{ $order->created_at->format('d/m/Y') }}</td>
                             <td>
                                 {{ $order->paymentMethod->payment_type ?? 'N/A' }}

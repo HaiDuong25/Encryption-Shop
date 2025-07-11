@@ -341,6 +341,7 @@
     <!-- theme setting js -->
     <script src="{{ asset('assets-front/js/theme-setting.js') }}"></script>
     @stack('scripts')
+    @yield('scripts')
 </body>
 
 

@@ -144,7 +144,7 @@ public function update(Request $request, $id)
         $subtotal = $carts->sum(function($cart){
             return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
         });
-        
+
         // Lấy thông tin coupon từ session
         $appliedCoupon = session('applied_coupon');
         $couponDiscount = session('coupon_discount', 0);
@@ -161,6 +161,7 @@ public function update(Request $request, $id)
             'orderer_name' => 'required|string|max:255',
             'orderer_email' => 'required|email|max:255',
             'orderer_phone' => 'required|string|max:20',
+            'orderer_address' => 'required|string|max:500',
             
             // Thông tin người nhận hàng
             'recipient_name' => 'required|string|max:255',
@@ -227,6 +228,7 @@ public function update(Request $request, $id)
         $order->orderer_name = $request->orderer_name;
         $order->orderer_email = $request->orderer_email;
         $order->orderer_phone = $request->orderer_phone;
+        $order->orderer_address = $request->orderer_address;
         
         // Thông tin người nhận hàng
         $order->recipient_name = $request->recipient_name;
@@ -267,6 +269,10 @@ public function update(Request $request, $id)
         // Xóa giỏ hàng sau khi thanh toán
         Cart::where('user_id', Auth::id())->delete();
         session()->forget('cart');
+        session()->forget('voucher_discount');
+        session()->forget('voucher_code');
+        session()->forget('voucher_message');
+        session()->forget('voucher_error');
         
         // Chuyển hướng sang trang success, truyền mã đơn hàng
         return redirect()->route('cart.success', ['order_id' => $order->id])

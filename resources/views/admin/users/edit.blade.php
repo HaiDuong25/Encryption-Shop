@@ -3,6 +3,20 @@
 <div class="container">
     <h3 class="mb-4">Sửa người dùng</h3>
 
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
     <form action="{{ route('users.update', $user) }}" method="POST" enctype="multipart/form-data">
         @csrf @method('PUT')
 
@@ -25,9 +39,10 @@
                 @endforeach
             </select>
             @else
-            <select name="role" class="form-select" disabled>
+            <select name="role" class="form-select" readonly>
                 <option value="admin" selected>Admin</option>
             </select>
+            <input type="hidden" name="role" value="admin">
             @endif
         </div>
 
@@ -59,7 +74,7 @@
         </div>
 
         <div class="d-flex justify-content-end">
-            <button class="btn btn-success px-5">Sửa</button>
+            <button type="submit" class="btn btn-success px-5">Sửa</button>
             <a href="{{ route('users.index') }}" class="btn btn-secondary ms-2 px-5">Quay lại</a>
         </div>
     </form>
