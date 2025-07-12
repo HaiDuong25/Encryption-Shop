@@ -150,6 +150,7 @@ public function update(Request $request, $id)
         // Lấy thông tin coupon từ session
         $appliedCoupon = session('applied_coupon');
         $couponDiscount = session('coupon_discount', 0);
+        $couponInfo = session('coupon_info', null);
         $total = $subtotal - $couponDiscount;
         
         $payment_methods = \App\Models\PaymentMethod::all();
@@ -175,7 +176,7 @@ public function update(Request $request, $id)
             }
         }
         
-        return view('client.cart.checkout', compact('carts', 'subtotal', 'total', 'payment_methods', 'appliedCoupon', 'couponDiscount', 'addresses', 'defaultAddress', 'provinces'));
+        return view('client.cart.checkout', compact('carts', 'subtotal', 'total', 'payment_methods', 'appliedCoupon', 'couponDiscount', 'couponInfo', 'addresses', 'defaultAddress', 'provinces'));
     }
 
     public function processCheckout(Request $request)

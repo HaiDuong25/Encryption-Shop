@@ -6,9 +6,10 @@
     background-color: #f8fff9;
     border-color: #28a745;
 }
-.coupon-applied .input-group {
+.coupon-applied {
     border: 2px solid #28a745;
     border-radius: 0.375rem;
+    background-color: #f8fff9;
 }
 .checkout-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -256,20 +257,38 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label fw-semibold"><i class="fa-solid fa-ticket me-1 text-warning"></i>Mã giảm giá</label>
-                    <div class="input-group" id="coupon-input-group">
+                    <div class="input-group {{ $appliedCoupon ? 'coupon-applied' : '' }}" id="coupon-input-group">
                         <input type="text" class="form-control" id="coupon-input" name="coupon_code" 
                                value="{{ $appliedCoupon ?? '' }}"
-                               placeholder="Nhập mã voucher...">
-                        <button class="btn btn-outline-secondary" type="button" id="apply-coupon">
-                            <i class="fa-solid fa-tags me-1"></i>Áp dụng
+                               placeholder="Nhập mã voucher..."
+                               {{ $appliedCoupon ? 'readonly' : '' }}>
+                        <button class="btn {{ $appliedCoupon ? 'btn-outline-danger' : 'btn-outline-secondary' }}" type="button" id="apply-coupon">
+                            @if($appliedCoupon)
+                                <i class="fa-solid fa-times me-1"></i>Hủy
+                            @else
+                                <i class="fa-solid fa-tags me-1"></i>Áp dụng
+                            @endif
                         </button>
                     </div>
                     <div id="coupon-result" class="mt-2">
                         @if($appliedCoupon)
-                        <small class="text-success">
-                            <i class="fa-solid fa-check-circle me-1"></i>
-                            Đã áp dụng mã: <strong>{{ $appliedCoupon }}</strong>
-                        </small>
+                        <div class="alert alert-success py-2 px-3 mb-0 rounded-3">
+                            <small>
+                                <i class="fa-solid fa-check-circle me-1"></i>
+                                <strong class="text-success">{{ $appliedCoupon }}</strong> - 
+                                @if(isset($couponInfo))
+                                    Giảm <span class="fw-bold">
+                                        @if($couponInfo['type'] === 'percentage')
+                                            {{ $couponInfo['value'] }}%
+                                        @else
+                                            {{ number_format($couponInfo['value']) }}đ
+                                        @endif
+                                    </span>
+                                @else
+                                    Mã giảm giá đã được áp dụng
+                                @endif
+                            </small>
+                        </div>
                         @endif
                     </div>
                 </div>
@@ -546,6 +565,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let appliedCoupon = null;
     let isInCancelMode = false;
+    
+    // Kiểm tra xem đã có mã giảm giá được áp dụng từ trước chưa
+    const hasAppliedCoupon = couponInput.value.trim() !== '';
+    if (hasAppliedCoupon) {
+        isInCancelMode = true;
+        appliedCoupon = {
+            code: couponInput.value,
+            // Lấy thông tin từ server nếu có
+        };
+        
+        // Cập nhật hidden input
+        const hiddenCouponInput = document.getElementById('hidden-coupon-code');
+        if (hiddenCouponInput) {
+            hiddenCouponInput.value = couponInput.value;
+        }
+    }
 
     // Function xử lý chung cho button
     function handleCouponButton() {

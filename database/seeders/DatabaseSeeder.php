@@ -31,7 +31,6 @@ class DatabaseSeeder extends Seeder
             // CartsTableSeeder::class,
             OrdersTableSeeder::class,
             OrderDetailsTableSeeder::class,
-            PaymentMethodsTableSeeder::class,
             PaymentsTableSeeder::class,
             RatesTableSeeder::class,
             RateRepliesTableSeeder::class,
