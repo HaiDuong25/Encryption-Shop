@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 class CartController extends Controller
 {
 
@@ -151,29 +153,51 @@ public function update(Request $request, $id)
         $total = $subtotal - $couponDiscount;
         
         $payment_methods = \App\Models\PaymentMethod::all();
-        return view('client.cart.checkout', compact('carts', 'subtotal', 'total', 'payment_methods', 'appliedCoupon', 'couponDiscount'));
+        
+        // Lấy địa chỉ của user hiện tại
+        $addresses = [];
+        $defaultAddress = null;
+        $provinces = [];
+        if (Auth::check()) {
+            $addresses = Auth::user()->shippingAddresses()->get();
+            $defaultAddress = $addresses->where('is_default', 1)->first();
+            
+            // Load provinces for quick address form
+            try {
+                $response = Http::timeout(10)->get('https://provinces.open-api.vn/api/p/');
+                if ($response->successful()) {
+                    $provinceData = $response->json();
+                    $provinces = collect($provinceData)->pluck('name')->sort()->values()->toArray();
+                }
+            } catch (\Exception $e) {
+                Log::error('Error loading provinces: ' . $e->getMessage());
+                $provinces = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng']; // Fallback
+            }
+        }
+        
+        return view('client.cart.checkout', compact('carts', 'subtotal', 'total', 'payment_methods', 'appliedCoupon', 'couponDiscount', 'addresses', 'defaultAddress', 'provinces'));
     }
 
     public function processCheckout(Request $request)
     {
         $request->validate([
-            // Thông tin người đặt hàng
-            'orderer_name' => 'required|string|max:255',
-            'orderer_email' => 'required|email|max:255',
-            'orderer_phone' => 'required|string|max:20',
-            'orderer_address' => 'required|string|max:500',
-            
-            // Thông tin người nhận hàng
-            'recipient_name' => 'required|string|max:255',
-            'recipient_phone' => 'required|string|max:20',
-            'recipient_email' => 'nullable|email|max:255',
-            'recipient_address' => 'required|string|max:500',
+            // Địa chỉ giao hàng
+            'shipping_address_id' => 'required|exists:shipping_addresses,id',
             
             // Thông tin khác
             'notes' => 'nullable|string|max:1000',
             'coupon_code' => 'nullable|string|max:50',
             'payment_method_id' => 'required|exists:payment_methods,id',
         ]);
+        
+        // Kiểm tra địa chỉ thuộc về user hiện tại
+        $shippingAddress = \App\Models\ShippingAddress::where('id', $request->shipping_address_id)
+            ->where('user_id', Auth::id())
+            ->first();
+            
+        if (!$shippingAddress) {
+            return redirect()->back()->with('error', 'Địa chỉ giao hàng không hợp lệ!');
+        }
         
         $carts = Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
         if ($carts->isEmpty()) {
@@ -185,13 +209,27 @@ public function update(Request $request, $id)
             return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
         });
         
-        // Xử lý mã giảm giá
+        // Xử lý mã giảm giá từ session hoặc request
         $discountAmount = 0;
         $couponCode = null;
         $couponType = null;
         $couponValue = 0; // Giá trị gốc của coupon (% hoặc số tiền)
         
-        if ($request->filled('coupon_code')) {
+        // Ưu tiên sử dụng coupon từ session (đã được validate qua AJAX)
+        $sessionCouponCode = session('applied_coupon');
+        $sessionDiscountAmount = session('coupon_discount', 0);
+        $sessionCouponInfo = session('coupon_info', []);
+        
+        if ($sessionCouponCode && $sessionDiscountAmount > 0) {
+            // Sử dụng thông tin coupon từ session
+            $couponCode = $sessionCouponCode;
+            $discountAmount = $sessionDiscountAmount;
+            if (isset($sessionCouponInfo['type'])) {
+                $couponType = $sessionCouponInfo['type'];
+                $couponValue = $sessionCouponInfo['value'];
+            }
+        } elseif ($request->filled('coupon_code')) {
+            // Fallback: validate coupon từ request (trường hợp không dùng AJAX)
             $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
                 ->where('is_active', 1)
                 ->where('start_date', '<=', now())
@@ -224,21 +262,22 @@ public function update(Request $request, $id)
         $order = new \App\Models\Order();
         $order->user_id = Auth::id();
         
-        // Thông tin người đặt hàng
-        $order->orderer_name = $request->orderer_name;
-        $order->orderer_email = $request->orderer_email;
-        $order->orderer_phone = $request->orderer_phone;
-        $order->orderer_address = $request->orderer_address;
+        // Thông tin người đặt hàng (từ user hiện tại)
+        $user = Auth::user();
+        $order->orderer_name = $user->name;
+        $order->orderer_email = $user->email;
+        $order->orderer_phone = $user->phone;
+        $order->orderer_address = $user->address ?? '';
         
-        // Thông tin người nhận hàng
-        $order->recipient_name = $request->recipient_name;
-        $order->recipient_phone = $request->recipient_phone;
-        $order->recipient_address = $request->recipient_address;
+        // Thông tin người nhận hàng (từ shipping address)
+        $order->recipient_name = $shippingAddress->name;
+        $order->recipient_phone = $shippingAddress->phone;
+        $order->recipient_address = $shippingAddress->address_detail . ', ' . $shippingAddress->ward . ', ' . $shippingAddress->district . ', ' . $shippingAddress->province;
         
         // Thông tin đơn hàng
         $order->subtotal = $subtotal;
         $order->coupon_code = $couponCode;
-        $order->coupon_discount = $couponValue; // Lưu giá trị gốc của coupon (% hoặc số tiền)
+        $order->coupon_discount = $discountAmount; // Lưu số tiền giảm thực tế
         $order->coupon_type = $couponType;
         $order->total_price = $totalPrice;
         $order->notes = $request->notes;
@@ -273,6 +312,9 @@ public function update(Request $request, $id)
         session()->forget('voucher_code');
         session()->forget('voucher_message');
         session()->forget('voucher_error');
+        
+        // Xóa session coupon sau khi đặt hàng thành công
+        session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
         
         // Chuyển hướng sang trang success, truyền mã đơn hàng
         return redirect()->route('cart.success', ['order_id' => $order->id])
