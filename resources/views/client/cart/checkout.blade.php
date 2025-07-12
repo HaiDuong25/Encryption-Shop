@@ -94,6 +94,51 @@
     border-color: #667eea;
     background-color: #f8f9ff;
 }
+.payment-method-item {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.payment-method-item:hover {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.15);
+}
+.payment-method-item .form-check-input:checked ~ .form-check-label {
+    color: #667eea;
+}
+.payment-method-item .form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+.payment-method-item:has(.form-check-input:checked) {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+    box-shadow: 0 2px 15px rgba(102, 126, 234, 0.2);
+}
+.momo-logo {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #d82d8b, #aa1467);
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    line-height: 20px;
+    font-weight: bold;
+    font-size: 10px;
+    margin-right: 8px;
+}
+.momo-logo-small {
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 8px;
+    margin-right: 4px;
+}
 </style>
 
 <div class="checkout-header">
@@ -294,14 +339,43 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label fw-semibold"><i class="fa-solid fa-credit-card me-1"></i>Phương thức thanh toán</label>
-                    <select name="payment_method_id" class="form-select" required>
-                        <option value="">-- Chọn phương thức thanh toán --</option>
+                    <div class="payment-methods">
                         @foreach($payment_methods as $method)
-                        <option value="{{ $method->id }}">
-                            {{ $method->payment_type }}
-                        </option>
+                        <div class="form-check payment-method-item mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method_id" 
+                                   id="payment_{{ $method->id }}" value="{{ $method->id }}" 
+                                   data-type="{{ strtolower($method->payment_type) }}" required>
+                            <label class="form-check-label w-100" for="payment_{{ $method->id }}">
+                                <div class="d-flex align-items-center">
+                                    @if($method->payment_type == 'COD')
+                                        <i class="fa-solid fa-money-bill-wave me-2 text-success"></i>
+                                    @elseif($method->payment_type == 'Ví Điện Tử MOMO')
+                                        <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png" 
+                                             alt="MoMo" class="me-2" style="width: 20px; height: 20px;"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                        <span class="momo-logo" style="display: none;">M</span>
+                                    @endif
+                                    <div>
+                                        <div class="fw-semibold">{{ $method->payment_type }}</div>
+                                        <small class="text-muted">
+                                            @if($method->payment_type == 'COD')
+                                                Thanh toán khi nhận hàng
+                                            @elseif($method->payment_type == 'Ví Điện Tử MOMO')
+                                                Thanh toán online tiện lợi bằng ví MOMO
+                                            @endif
+                                        </small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
                         @endforeach
-                    </select>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fa-solid fa-info-circle me-1"></i>
+                            Chọn phương thức thanh toán phù hợp với bạn
+                        </small>
+                    </div>
                 </div>
             </div>
 
@@ -375,7 +449,7 @@
             <!-- Các phương thức thanh toán -->
             <div class="text-center mt-3">
                 <p class="text-muted mb-2">Chúng tôi chấp nhận:</p>
-                <div class="d-flex justify-content-center gap-2">
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
                     <span class="badge bg-light text-dark px-2 py-1">
                         <i class="fa-solid fa-money-bill-wave me-1"></i>COD
                     </span>
@@ -384,6 +458,18 @@
                     </span>
                     <span class="badge bg-light text-dark px-2 py-1">
                         <i class="fa-brands fa-cc-mastercard me-1"></i>Mastercard
+                    </span>
+                    <span class="badge bg-light text-dark px-2 py-1">
+                        <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png" 
+                             alt="MoMo" style="width: 16px; height: 16px;" class="me-1"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                        <span class="momo-logo momo-logo-small" style="display: none;">M</span>MoMo
+                    </span>
+                    <span class="badge bg-light text-dark px-2 py-1">
+                        <i class="fa-solid fa-wallet me-1"></i>ZaloPay
+                    </span>
+                    <span class="badge bg-light text-dark px-2 py-1">
+                        <i class="fa-solid fa-credit-card me-1"></i>VNPay
                     </span>
                 </div>
             </div>
@@ -767,6 +853,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modalDistrict) {
         modalDistrict.addEventListener('change', loadModalWards);
     }
+    
+    // Handle payment method selection
+    const paymentMethodItems = document.querySelectorAll('.payment-method-item');
+    paymentMethodItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                // Remove active class from all items
+                paymentMethodItems.forEach(i => i.classList.remove('active'));
+                // Add active class to clicked item
+                this.classList.add('active');
+            }
+        });
+    });
     
     // Handle quick address form submission
     const quickAddressForm = document.getElementById('quick-address-form');

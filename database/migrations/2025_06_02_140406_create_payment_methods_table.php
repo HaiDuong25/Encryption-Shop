@@ -25,8 +25,8 @@ class CreatePaymentMethodsTable extends Migration
                 'updated_at' => now(),
             ],
             [
-                'payment_type' => 'Ví Điện Tử Momo',
-                'description' => 'Thanh toán qua ví điện tử Momo',
+                'payment_type' => 'Ví Điện Tử MOMO',
+                'description' => 'Thanh toán qua ví điện tử MOMO',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
