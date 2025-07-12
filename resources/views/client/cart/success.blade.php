@@ -45,9 +45,33 @@
                             </div>
 
                             <div class="order-contain">
-                                <h3 class="theme-color">Đơn hàng của bạn đã được đặt</h3>
-                                <h5 class="text-content">Đơn hàng của bạn sẽ sớm được giao, vui lòng kiểm tra tại mục Đơn hàng</h5>
-                                <h6>Mã đơn hàng: {{ $order_id ?? '---' }}</h6>
+                                <h3 class="theme-color">Đơn hàng của bạn đã được đặt thành công!</h3>
+                                <h5 class="text-content">
+                                    @if(isset($order) && $order->paymentMethod && $order->paymentMethod->payment_type === 'Ví Điện Tử MOMO')
+                                        Thanh toán MoMo thành công! Đơn hàng sẽ được xử lý ngay.
+                                    @else
+                                        Đơn hàng của bạn sẽ sớm được giao, vui lòng kiểm tra tại mục Đơn hàng.
+                                    @endif
+                                </h5>
+                                <h6>Mã đơn hàng: <span class="text-primary">#{{ $order->id ?? $order_id ?? '---' }}</span></h6>
+                                @if(isset($order))
+                                <div class="mt-3">
+                                    <p><strong>Tổng tiền:</strong> <span class="text-success">{{ number_format($order->total_price ?? $order->total) }}đ</span></p>
+                                    <p><strong>Phương thức thanh toán:</strong> {{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
+                                    @if($order->payment_status === 'paid')
+                                    <p><strong>Trạng thái:</strong> <span class="badge bg-success">Đã thanh toán</span></p>
+                                    @endif
+                                </div>
+                                @endif
+                                
+                                <div class="mt-4">
+                                    <a href="{{ route('client.orders.index') }}" class="btn btn-primary me-2">
+                                        <i class="fa-solid fa-list me-1"></i>Xem đơn hàng
+                                    </a>
+                                    <a href="{{ route('home') }}" class="btn btn-outline-secondary">
+                                        <i class="fa-solid fa-home me-1"></i>Tiếp tục mua sắm
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

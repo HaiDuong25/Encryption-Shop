@@ -259,6 +259,32 @@ public function update(Request $request, $id)
         
         $totalPrice = $subtotal - $discountAmount;
         
+        // Kiểm tra phương thức thanh toán
+        $paymentMethod = \App\Models\PaymentMethod::find($request->payment_method_id);
+        
+        if ($paymentMethod && $paymentMethod->payment_type === 'Ví Điện Tử MOMO') {
+            // Thanh toán MoMo - lưu thông tin vào session trước khi chuyển hướng
+            $orderData = [
+                'user_id' => Auth::id(),
+                'shipping_address_id' => $request->shipping_address_id,
+                'payment_method_id' => $request->payment_method_id,
+                'subtotal' => $subtotal,
+                'discount' => $discountAmount,
+                'total' => $totalPrice,
+                'notes' => $request->notes,
+                'coupon_code' => $couponCode,
+                'shipping_address' => $shippingAddress,
+                'carts' => $carts->toArray()
+            ];
+            
+            session(['order_data' => $orderData]);
+            
+            // Chuyển hướng đến MoMo payment
+            return redirect()->route('momo.create');
+        }
+        
+        // Thanh toán COD - xử lý bình thường
+        
         // Lưu đơn hàng
         $order = new \App\Models\Order();
         $order->user_id = Auth::id();
@@ -468,5 +494,21 @@ public function update(Request $request, $id)
                 'original_price' => $newVariant->price
             ]
         ]);
+    }
+    
+    public function success($order_id)
+    {
+        $order = \App\Models\Order::with(['paymentMethod', 'shippingAddress'])->find($order_id);
+        
+        if (!$order) {
+            return redirect()->route('home')->with('error', 'Không tìm thấy đơn hàng');
+        }
+        
+        // Kiểm tra đơn hàng thuộc về user hiện tại (nếu đã đăng nhập)
+        if (Auth::check() && $order->user_id !== Auth::id()) {
+            return redirect()->route('home')->with('error', 'Bạn không có quyền xem đơn hàng này');
+        }
+        
+        return view('client.cart.success', compact('order'));
     }
 }
