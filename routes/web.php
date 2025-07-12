@@ -205,6 +205,7 @@ Route::middleware(['auth'])->group(function () {
         'as' => 'client',
         'except' => []
     ]);
+    Route::patch('addresses/{address}/set-default', [ClientShippingAddressController::class, 'setDefault'])->name('client.addresses.set-default');
     
     Route::get('/checkout/success', function(Request $request) {
         $order_id = request('order_id');
