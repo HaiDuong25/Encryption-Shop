@@ -2,123 +2,304 @@
 
 @section('content')
 <style>
+/* Shopee-style Checkout Design - đồng màu với Cart */
+.checkout-header {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
+.checkout-header h1 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.checkout-header p {
+    color: #666;
+    margin: 0;
+}
+
+.product-item {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.product-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.section-title {
+    color: #333;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.form-control, .form-select {
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #ee4d2d;
+    box-shadow: 0 0 0 0.2rem rgba(238, 77, 45, 0.15);
+}
+
+.address-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.address-card:hover {
+    border-color: #ee4d2d;
+    box-shadow: 0 2px 8px rgba(238, 77, 45, 0.15);
+}
+
+.address-card.selected {
+    border-color: #ee4d2d;
+    background-color: #fff5f5;
+}
+
+.payment-method-item {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-method-item:hover {
+    border-color: #ee4d2d;
+    background-color: #fff5f5;
+}
+
+.payment-method-item:has(.form-check-input:checked) {
+    border-color: #ee4d2d;
+    background-color: #fff5f5;
+}
+
+.form-check-input:checked {
+    background-color: #ee4d2d;
+    border-color: #ee4d2d;
+}
+
+.form-check-input:focus {
+    border-color: #ee4d2d;
+    box-shadow: 0 0 0 0.2rem rgba(238, 77, 45, 0.25);
+}
+
+/* Voucher Section */
 .coupon-applied .form-control {
     background-color: #f8fff9;
     border-color: #28a745;
 }
+
 .coupon-applied {
-    border: 2px solid #28a745;
-    border-radius: 0.375rem;
+    border: 1px solid #28a745;
+    border-radius: 4px;
     background-color: #f8fff9;
 }
-.checkout-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem 0;
-    margin-bottom: 2rem;
-}
-.product-item {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-    padding: 1rem;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
-.product-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 25px rgba(0,0,0,0.12);
-}
-.form-section {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-.section-title {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-}
+
+/* Order Summary */
 .order-summary {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border-radius: 15px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
+.order-summary h5 {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.summary-row span:first-child {
+    color: #666;
+}
+
+.summary-row span:last-child {
+    color: #333;
+    font-weight: 500;
+}
+
+.total-amount-row {
+    border-top: 1px solid #e5e5e5;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.total-amount-row span:first-child {
+    color: #333;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.total-amount-row span:last-child {
+    color: #ee4d2d;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Buttons */
 .btn-primary-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ee4d2d;
     border: none;
-    border-radius: 25px;
-    padding: 15px 30px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-}
-.btn-primary-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-.form-control, .form-select {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 12px 15px;
-    transition: all 0.3s ease;
-}
-.form-control:focus, .form-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-.custom-checkbox {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 6px;
-    padding: 8px 15px;
+    border-radius: 4px;
+    padding: 12px 24px;
     color: white;
-    font-size: 0.9rem;
-}
-.address-card {
+    font-weight: 600;
+    font-size: 16px;
     transition: all 0.3s ease;
-    border: 2px solid #e9ecef;
 }
-.address-card:hover {
-    border-color: #667eea;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-}
-.address-card.selected {
-    border-color: #667eea;
-    background-color: #f8f9ff;
-}
-.payment-method-item {
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 12px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-.payment-method-item:hover {
-    border-color: #667eea;
-    background-color: #f8f9ff;
+
+.btn-primary-gradient:hover {
+    background: #d73527;
+    color: white;
     transform: translateY(-1px);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
 }
-.payment-method-item .form-check-input:checked ~ .form-check-label {
-    color: #667eea;
+
+.btn-outline-primary {
+    border: 1px solid #ee4d2d;
+    color: #ee4d2d;
+    background: transparent;
 }
-.payment-method-item .form-check-input:checked {
-    background-color: #667eea;
-    border-color: #667eea;
+
+.btn-outline-primary:hover {
+    background: #ee4d2d;
+    color: white;
 }
-.payment-method-item:has(.form-check-input:checked) {
-    border-color: #667eea;
-    background-color: #f8f9ff;
-    box-shadow: 0 2px 15px rgba(102, 126, 234, 0.2);
+
+.btn-outline-secondary {
+    border: 1px solid #e5e5e5;
+    color: #666;
+    background: transparent;
 }
+
+.btn-outline-secondary:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.btn-outline-danger {
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    background: transparent;
+}
+
+.btn-outline-danger:hover {
+    background: #dc3545;
+    color: white;
+}
+
+/* Badge */
+.badge {
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.badge.bg-light {
+    background-color: #f5f5f5 !important;
+    color: #666 !important;
+    border: 1px solid #e5e5e5;
+}
+
+/* Alert */
+.alert {
+    border-radius: 8px;
+    border: 1px solid;
+    font-size: 14px;
+}
+
+.alert-success {
+    background-color: #f8fff9;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #fff5f5;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fffbf0;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #f0f8ff;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+/* Product Image */
+.product-image {
+    max-height: 80px;
+    max-width: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e5e5;
+}
+
+/* Modal */
+.modal-content {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 16px 20px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid #e5e5e5;
+    padding: 16px 20px;
+}
+
+/* Momo Logo */
 .momo-logo {
     display: inline-block;
     width: 20px;
@@ -132,6 +313,7 @@
     font-size: 10px;
     margin-right: 8px;
 }
+
 .momo-logo-small {
     width: 16px;
     height: 16px;
@@ -139,18 +321,43 @@
     font-size: 8px;
     margin-right: 4px;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-section {
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .order-summary {
+        padding: 16px;
+    }
+    
+    .checkout-header {
+        padding: 1rem 0;
+    }
+    
+    .checkout-header h1 {
+        font-size: 20px;
+    }
+}
 </style>
 
 <div class="checkout-header">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="mb-2"><i class="fa-solid fa-shopping-cart me-3"></i>Thanh toán đơn hàng</h1>
-                <p class="mb-0 opacity-75">Vui lòng kiểm tra thông tin và hoàn tất đơn hàng của bạn</p>
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-shopping-cart me-3 text-primary" style="font-size: 28px; color: #ee4d2d !important;"></i>
+                    <div>
+                        <h1 class="mb-1">Thanh toán</h1>
+                        <p class="mb-0">Vui lòng kiểm tra thông tin và hoàn tất đơn hàng của bạn</p>
+                    </div>
+                </div>
             </div>
             <div class="col-md-4 text-end">
                 <div class="badge bg-light text-dark fs-6 px-3 py-2">
-                    <i class="fa-solid fa-box me-2"></i>{{ $carts->count() }} sản phẩm
+                    <i class="fa-solid fa-box me-2" style="color: #ee4d2d;"></i>{{ $carts->count() }} sản phẩm
                 </div>
             </div>
         </div>
@@ -179,12 +386,14 @@
     
     <!-- Danh sách sản phẩm -->
     <div class="form-section">
-        <h3 class="section-title"><i class="fa-solid fa-box-open me-2"></i>Chi tiết đơn hàng</h3>
+        <h3 class="section-title"><i class="fa-solid fa-box-open me-2 text-primary"></i>Sản phẩm đã chọn</h3>
         <div class="row">
             @php $subtotal = 0; @endphp
             @foreach($carts as $cart)
             @php
                 $price = $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price;
+                $originalPrice = $cart->variant->price ?? $cart->product->price;
+                $salePrice = $cart->variant->sale_price ?? $cart->product->sale_price;
                 $itemTotal = $price * $cart->quantity;
                 $subtotal += $itemTotal;
             @endphp
@@ -193,22 +402,42 @@
                     <div class="row align-items-center">
                         <div class="col-md-2 text-center">
                             <img src="{{ asset($cart->variant && $cart->variant->image ? 'storage/' . $cart->variant->image : 'storage/' . $cart->product->image) }}" 
-                                 class="img-fluid rounded-3" style="max-height: 80px; object-fit: cover;">
+                                 class="product-image">
                         </div>
                         <div class="col-md-4">
                             <h6 class="mb-1 fw-bold text-dark">{{ $cart->product->name }}</h6>
                             @if($cart->variant)
-                                <small class="text-muted"><i class="fa-solid fa-tag me-1"></i>{{ $cart->variant->sku }}</small>
+                                @php
+                                    $currentSize = $cart->variant->attributeValues->where('attribute.name', 'Size')->first();
+                                    $currentColor = $cart->variant->attributeValues->where('attribute.name', 'Màu')->first();
+                                    $variantInfo = [];
+                                    if($currentSize) $variantInfo[] = "Size: {$currentSize->value}";
+                                    if($currentColor) $variantInfo[] = "Màu: {$currentColor->value}";
+                                @endphp
+                                @if(!empty($variantInfo))
+                                    <small class="text-muted"><i class="fa-solid fa-tag me-1"></i>{{ implode(', ', $variantInfo) }}</small>
+                                @endif
                             @endif
                         </div>
                         <div class="col-md-2 text-center">
-                            <span class="badge bg-primary rounded-pill fs-6">{{ $cart->quantity }}</span>
+                            <div class="quantity-display">
+                                <span class="badge bg-light text-dark fs-6 px-2 py-1" style="border: 1px solid #e5e5e5;">
+                                    x{{ $cart->quantity }}
+                                </span>
+                            </div>
                         </div>
                         <div class="col-md-2 text-center">
-                            <div class="fw-semibold text-primary">{{ number_format($price) }}đ</div>
+                            <div class="price-display">
+                                @if($salePrice && $salePrice < $originalPrice)
+                                    <div class="fw-semibold text-primary">{{ number_format($salePrice) }} VNĐ</div>
+                                    <div class="text-muted small text-decoration-line-through">{{ number_format($originalPrice) }} VNĐ</div>
+                                @else
+                                    <div class="fw-semibold text-primary">{{ number_format($price) }} VNĐ</div>
+                                @endif
+                            </div>
                         </div>
                         <div class="col-md-2 text-center">
-                            <div class="fw-bold text-success fs-5">{{ number_format($itemTotal) }}đ</div>
+                            <div class="fw-bold fs-5" style="color: #ee4d2d;">{{ number_format($itemTotal) }} VNĐ</div>
                         </div>
                     </div>
                 </div>
@@ -221,6 +450,13 @@
     <div class="form-section">
         <form action="{{ route('cart.processCheckout') }}" method="POST" id="checkout-form">
             @csrf
+            
+            <!-- Hidden input để gửi selected cart items -->
+            @if(session('selected_cart_items'))
+                @foreach(session('selected_cart_items') as $cartId)
+                <input type="hidden" name="selected_cart_items[]" value="{{ $cartId }}">
+                @endforeach
+            @endif
             
             <!-- Hidden input để gửi coupon code -->
             <input type="hidden" name="coupon_code" id="hidden-coupon-code" value="{{ session('applied_coupon') ?? '' }}">
@@ -397,40 +633,46 @@
             </div>
 
             <!-- Tóm tắt thanh toán -->
-            <div class="order-summary">
+            <div class="order-summary mb-4">
                 <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <h5 class="section-title mb-4"><i class="fa-solid fa-receipt me-2"></i>Tóm tắt thanh toán</h5>
+                    <div class="col-md-8">
+                        <h5 class="section-title mb-3"><i class="fa-solid fa-receipt me-2 text-primary"></i>Tóm tắt đơn hàng</h5>
                         
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Tạm tính:</span>
-                            <span class="fw-semibold" id="subtotal">{{ number_format($subtotal) }}đ</span>
+                        <!-- Tổng tiền hàng -->
+                        <div class="summary-row">
+                            <span><i class="fa-solid fa-box me-2 text-muted"></i>Tổng tiền hàng:</span>
+                            <span class="fw-semibold" id="subtotal">{{ number_format($subtotal) }} VNĐ</span>
                         </div>
-                        @if($appliedCoupon && $couponDiscount > 0)
-                        <div class="d-flex justify-content-between mb-2" id="discount-row">
-                            <span class="text-success">
-                                <i class="fa-solid fa-ticket me-1"></i>Giảm giá:
+                        
+                        <!-- Tổng tiền phí vận chuyển -->
+                        <div class="summary-row">
+                            <span><i class="fa-solid fa-truck me-2 text-muted"></i>Tổng tiền phí vận chuyển:</span>
+                            <span class="text-success fw-semibold" id="shipping-fee">
+                                <i class="fa-solid fa-gift me-1"></i>Miễn phí
                             </span>
-                            <span class="text-success fw-semibold" id="discount-amount">-{{ number_format($couponDiscount) }}đ</span>
+                        </div>
+                        
+                        <!-- Tổng cộng Voucher giảm giá -->
+                        @if($appliedCoupon && $couponDiscount > 0)
+                        <div class="summary-row" id="discount-row">
+                            <span class="text-success">
+                                <i class="fa-solid fa-ticket me-2"></i>Tổng cộng Voucher giảm giá:
+                            </span>
+                            <span class="text-success fw-semibold" id="discount-amount">-{{ number_format($couponDiscount) }} VNĐ</span>
                         </div>
                         @else
-                        <div class="d-flex justify-content-between mb-2" id="discount-row" style="display: none !important;">
+                        <div class="summary-row" id="discount-row" style="display: none;">
                             <span class="text-success">
-                                <i class="fa-solid fa-ticket me-1"></i>Giảm giá:
+                                <i class="fa-solid fa-ticket me-2"></i>Tổng cộng Voucher giảm giá:
                             </span>
-                            <span class="text-success fw-semibold" id="discount-amount">0đ</span>
+                            <span class="text-success fw-semibold" id="discount-amount">-0 VNĐ</span>
                         </div>
                         @endif
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Phí vận chuyển:</span>
-                            <span class="text-success fw-semibold">
-                                <i class="fa-solid fa-shipping-fast me-1"></i>Miễn phí
-                            </span>
-                        </div>
-                        <hr class="my-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="h5 mb-0">Tổng cộng:</span>
-                            <span class="h4 mb-0 text-primary fw-bold" id="total-amount">{{ number_format($total) }}đ</span>
+                        
+                        <!-- Tổng thanh toán -->
+                        <div class="summary-row total-amount-row">
+                            <span><i class="fa-solid fa-calculator me-2"></i>Tổng thanh toán:</span>
+                            <span id="total-amount">{{ number_format($total) }} VNĐ</span>
                         </div>
                     </div>
                 </div>
@@ -464,17 +706,17 @@
             </div>
             
             <!-- Các phương thức thanh toán -->
-            <div class="text-center mt-3">
-                <p class="text-muted mb-2">Chúng tôi chấp nhận:</p>
+            <div class="text-center mt-4">
+                <p class="text-muted mb-2 small">Chúng tôi chấp nhận:</p>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                     <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-solid fa-money-bill-wave me-1"></i>COD
+                        <i class="fa-solid fa-money-bill-wave me-1 text-success"></i>COD
                     </span>
                     <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-brands fa-cc-visa me-1"></i>Visa
+                        <i class="fa-brands fa-cc-visa me-1 text-primary"></i>Visa
                     </span>
                     <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-brands fa-cc-mastercard me-1"></i>Mastercard
+                        <i class="fa-brands fa-cc-mastercard me-1 text-warning"></i>Mastercard
                     </span>
                     <span class="badge bg-light text-dark px-2 py-1">
                         <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png" 
@@ -483,10 +725,10 @@
                         <span class="momo-logo momo-logo-small" style="display: none;">M</span>MoMo
                     </span>
                     <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-solid fa-wallet me-1"></i>ZaloPay
+                        <i class="fa-solid fa-wallet me-1 text-info"></i>ZaloPay
                     </span>
                     <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-solid fa-credit-card me-1"></i>VNPay
+                        <i class="fa-solid fa-credit-card me-1 text-danger"></i>VNPay
                     </span>
                 </div>
             </div>
@@ -841,15 +1083,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let discountText = '';
             if (couponInfo && couponInfo.type === 'percentage') {
-                discountText = `-${parseInt(discountAmount).toLocaleString('vi-VN')}đ (${couponInfo.value}%)`;
+                discountText = `-${parseInt(discountAmount).toLocaleString('vi-VN')} VNĐ (${couponInfo.value}%)`;
             } else {
-                discountText = `-${parseInt(discountAmount).toLocaleString('vi-VN')}đ`;
+                discountText = `-${parseInt(discountAmount).toLocaleString('vi-VN')} VNĐ`;
             }
             
             discountAmountSpan.textContent = discountText;
-            totalAmountSpan.textContent = `${parseInt(newTotal).toLocaleString('vi-VN')}đ`;
+            totalAmountSpan.textContent = `${parseInt(newTotal).toLocaleString('vi-VN')} VNĐ`;
         } else {
             discountRow.style.display = 'none';
+            // Khi không có discount, tổng thanh toán = tổng tiền hàng
+            const subtotalText = document.getElementById('subtotal').textContent;
+            totalAmountSpan.textContent = subtotalText;
         }
     }
     
@@ -924,6 +1169,50 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // Thêm logic clear voucher khi rời khỏi trang checkout mà không hoàn tất đơn hàng
+    let isCheckoutCompleted = false;
+    
+    // Đánh dấu checkout hoàn tất khi submit form
+    document.addEventListener('submit', function(e) {
+        if (e.target.id === 'checkout-form') {
+            isCheckoutCompleted = true;
+        }
+    });
+    
+    // Clear voucher khi rời khỏi trang mà không hoàn tất checkout
+    window.addEventListener('beforeunload', function(e) {
+        if (!isCheckoutCompleted) {
+            // Gọi API để clear voucher session
+            fetch('/cart/clear-checkout-voucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                keepalive: true // Đảm bảo request được gửi kể cả khi trang đang đóng
+            }).catch(error => {
+                console.error('Error clearing coupon on page unload:', error);
+            });
+        }
+    });
+    
+    // Clear voucher khi nhấn nút "Quay lại giỏ hàng" hoặc navigate về cart
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('a[href*="cart"]');
+        if (target && !isCheckoutCompleted) {
+            // Gọi API để clear voucher session
+            fetch('/cart/clear-checkout-voucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }).catch(error => {
+                console.error('Error clearing coupon on back to cart:', error);
+            });
+        }
+    });
 });
 </script>
 @endpush
