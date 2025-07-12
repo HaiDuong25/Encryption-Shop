@@ -70,7 +70,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/update-quantity/{id}', [CartController::class, 'updateQuantityAjax'])->name('cart.updateQuantityAjax');
+    Route::post('/cart/update-variant/{id}', [CartController::class, 'updateVariant'])->name('cart.updateVariant');
+    Route::post('/cart/switch-variant/{id}', [CartController::class, 'switchVariant'])->name('cart.switchVariant');
     Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
+    Route::post('/cart/delete-selected', [CartController::class, 'deleteSelected'])->name('cart.deleteSelected');
 
     // Mua ngay
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
@@ -78,6 +82,7 @@ Route::middleware(['auth'])->group(function () {
     // Thanh toán (yêu cầu đăng nhập)
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
+    Route::post('/clear-checkout-voucher', [CartController::class, 'clearCheckoutVoucher'])->name('cart.clearCheckoutVoucher');
     Route::get('/checkout/success', function (Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
@@ -184,6 +189,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Mã giảm giá AJAX
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::post('/cart/validate-coupon', [CartController::class, 'validateCoupon'])->name('cart.validate-coupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 
     // MoMo Payment routes
