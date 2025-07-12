@@ -10,12 +10,14 @@
 6. ✅ **Success Page** - Hiển thị kết quả đặt hàng
 
 ## Test credentials MoMo (Sandbox):
-- **Partner Code**: MOMO_TEST_2021
-- **Access Key**: F8BBA842ECF85  
-- **Secret Key**: K951B6PE1waDMi640xX08PD3vg6EkVlz
+- **Partner Code**: MOMOBKUN20180529
+- **Access Key**: klm05TvNBzhg7h7j  
+- **Secret Key**: at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa
 - **Endpoint**: https://test-payment.momo.vn/v2/gateway/api/create
+- **Request Type**: captureWallet
 
 ## Cách test:
+**Cần phải có tài khoản MOMO UAT để thanh toán**
 
 1. **Thêm sản phẩm vào giỏ hàng**
 2. **Vào trang checkout** (`/checkout`)
@@ -28,27 +30,39 @@
 
 ## Flow xử lý:
 
-1. `CartController::processCheckout()` - Detect MoMo payment
-2. Lưu order data vào session  
+1. `CartController::processCheckout()` - Detect MoMo payment method
+2. Lưu order data vào session với đầy đủ thông tin (subtotal, discount, coupon)
 3. Redirect đến `MoMoController::createPayment()`
-4. Call MoMo API tạo payment URL
-5. Redirect user đến MoMo payment page
-6. User thanh toán trên MoMo
-7. MoMo redirect về `MoMoController::returnPayment()`
-8. Verify signature và tạo order trong database
-9. Redirect đến trang success
+4. Tạo signature theo format chuẩn MoMo với requestType="captureWallet"
+5. Call MoMo API tạo payment URL
+6. Redirect user đến MoMo payment page
+7. User thanh toán trên MoMo (test environment)
+8. MoMo redirect về `MoMoController::returnPayment()`
+9. Verify signature bảo mật và kiểm tra resultCode
+10. Tạo order và order details trong database
+11. Giảm stock sản phẩm và xóa giỏ hàng
+12. Xóa session data và redirect đến trang success
 
-## Tính năng:
+## Tính năng hiện có:
 
-- ✅ Thanh toán test MoMo
-- ✅ Verify signature bảo mật
+- ✅ Thanh toán test MoMo với credentials MOMOBKUN20180529
+- ✅ Xử lý signature bảo mật theo chuẩn MoMo v2
+- ✅ Support requestType "captureWallet" cho ví điện tử
 - ✅ Tạo đơn hàng tự động sau thanh toán thành công
 - ✅ Xóa giỏ hàng sau khi thanh toán
-- ✅ Giảm stock sản phẩm
-- ✅ Áp dụng mã giảm giá
-- ✅ Hiển thị trang success với thông tin đơn hàng
+- ✅ Giảm stock sản phẩm theo variant hoặc product
+- ✅ Áp dụng mã giảm giá với session handling
+- ✅ Xử lý coupon percentage và fixed amount
+- ✅ Kiểm tra đơn hàng tối thiểu cho coupon
+- ✅ Hiển thị trang success với thông tin đơn hàng chi tiết
+- ✅ Logging đầy đủ cho debug và monitoring
+- ✅ Error handling và rollback session khi lỗi
 
-## Lưu ý:
-- Đây là môi trường TEST, không có tiền thật
-- Chỉ dành cho demo và chấm điểm
-- Có thể mở rộng thêm các ví điện tử khác (ZaloPay, VNPay...)
+## Lưu ý quan trọng:
+- **Đây là môi trường TEST** - Không có tiền thật
+- **Credentials hiện tại**: MOMOBKUN20180529 (đã được cập nhật)
+- **Request Type**: captureWallet (ví điện tử)
+- **Chỉ dành cho demo và chấm điểm đồ án**
+- **Có thể mở rộng thêm**: ZaloPay, VNPay, Banking...
+- **Session handling**: Đảm bảo data consistency
+- **Error logging**: Hỗ trợ debug khi có vấn đề
