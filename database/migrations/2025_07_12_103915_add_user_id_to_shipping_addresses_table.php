@@ -9,13 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+public function up(): void
+{
+    if (!Schema::hasColumn('shipping_addresses', 'user_id')) {
         Schema::table('shipping_addresses', function (Blueprint $table) {
             $table->foreignId('user_id')->after('id')->constrained()->onDelete('cascade');
         });
     }
-
+}
     /**
      * Reverse the migrations.
      */
