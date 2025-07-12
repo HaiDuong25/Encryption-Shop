@@ -122,6 +122,21 @@
                         </ul>
                     </li>
 
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                            <i class="ri-map-pin-line"></i>
+                            <span>Quản lý địa chỉ giao hàng</span>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="{{ route('shipping-addresses.index') }}">Danh sách địa chỉ</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('shipping-addresses.create') }}">Thêm địa chỉ mới</a>
+                            </li>
+                        </ul>
+                    </li>
+
                     <!-- <ul class="sidebar-submenu">
                         <li>
                             <a href="{{ route('coupons.store') }}">Coupon List</a>

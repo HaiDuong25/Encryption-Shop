@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
+use App\Http\Controllers\Api\LocationController;
 
 // ADMIN CONTROLLERS
 use App\Http\Controllers\Admin\DashboardController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
+use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
 
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
@@ -70,7 +72,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
 
-    // Thanh toán
+    // Mua ngay
+    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+
+    // Thanh toán (yêu cầu đăng nhập)
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
     Route::get('/checkout/success', function (Request $request) {
@@ -78,18 +83,17 @@ Route::middleware(['auth'])->group(function () {
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');
 
-    // Mua ngay
-    Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
-
-    // Mã giảm giá AJAX
-    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
-    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
-
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
+
+    // Địa chỉ giao hàng (client)
+    Route::resource('addresses', ClientShippingAddressController::class, [
+        'as' => 'client',
+        'except' => []
+    ]);
 });
 
 // --- Admin ---
@@ -107,6 +111,11 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
+
+    // Shipping Addresses
+    Route::resource('shipping-addresses', \App\Http\Controllers\Admin\ShippingAddressController::class);
+    Route::get('shipping-addresses/user/{user}/addresses', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'userAddresses'])->name('shipping-addresses.user-addresses');
+    Route::patch('shipping-addresses/{shippingAddress}/set-default', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'setDefault'])->name('shipping-addresses.set-default');
 
     // Categories
     Route::resource('categories', CategoryController::class);
@@ -136,17 +145,6 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::resource('coupons', CouponController::class)->except(['show']);
     Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
-    Route::post('/apply-coupon', function (Request $request) {
-        $coupon = Coupon::where('code', $request->code)->first();
-        if (!$coupon || !$coupon->isValid()) {
-            return back()->with('error', 'Mã giảm giá không hợp lệ hoặc đã hết hạn!');
-        }
-        session(['coupon' => [
-            'code' => $coupon->code,
-            'discount' => $coupon->discount
-        ]]);
-        return back()->with('success', 'Áp dụng mã thành công!');
-    })->name('apply.coupon');
 
     // News & banners
     Route::resource('news', NewsController::class);
@@ -156,8 +154,12 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Users
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
-    });
+});
 
+
+// --- API Routes for Location ---
+Route::get('/api/districts', [LocationController::class, 'getDistricts'])->name('api.districts');
+Route::get('/api/wards', [LocationController::class, 'getWards'])->name('api.wards');
 
 // --- Client Routes ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -183,14 +185,18 @@ Route::middleware(['auth'])->group(function () {
     // Mã giảm giá AJAX
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
-    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
-    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
 
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
+    
+    // Địa chỉ giao hàng (client)
+    Route::resource('addresses', ClientShippingAddressController::class, [
+        'as' => 'client',
+        'except' => []
+    ]);
     
     Route::get('/checkout/success', function(Request $request) {
         $order_id = request('order_id');

@@ -28,7 +28,6 @@ class User extends Authenticatable
         'avatar'
     ];
 
-
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -39,6 +38,13 @@ class User extends Authenticatable
         return $this->status === 'active';
     }
 
+    /**
+     * Get all shipping addresses for the user.
+     */
+    public function shippingAddresses()
+    {
+        return $this->hasMany(ShippingAddress::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

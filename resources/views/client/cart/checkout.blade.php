@@ -80,6 +80,19 @@
     color: white;
     font-size: 0.9rem;
 }
+.address-card {
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+.address-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+.address-card.selected {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+}
 </style>
 
 <div class="checkout-header">
@@ -146,64 +159,93 @@
         <form action="{{ route('cart.processCheckout') }}" method="POST" id="checkout-form">
             @csrf
             
+            <!-- Hidden input để gửi coupon code -->
+            <input type="hidden" name="coupon_code" id="hidden-coupon-code" value="{{ session('applied_coupon') ?? '' }}">
+            
             <div class="row">
-                <!-- Thông tin người đặt -->
-                <div class="col-md-6 mb-4">
-                    <h4 class="section-title"><i class="fa-solid fa-user-tie me-2"></i>Thông tin người đặt hàng</h4>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
-                        <input type="text" name="orderer_name" class="form-control" 
-                               value="{{ auth()->user()->name ?? '' }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
-                        <input type="email" name="orderer_email" class="form-control" 
-                               value="{{ auth()->user()->email ?? '' }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
-                        <input type="text" name="orderer_phone" class="form-control" 
-                               value="{{ auth()->user()->phone ?? '' }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Địa chỉ <span class="text-danger">*</span></label>
-                        <textarea name="orderer_address" class="form-control" rows="3" 
-                                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" 
-                                  required>{{ auth()->user()->address ?? '' }}</textarea>
-                    </div>
-                </div>
-
-                <!-- Thông tin người nhận -->
-                <div class="col-md-6 mb-4">
+                <!-- Chọn địa chỉ giao hàng -->
+                <div class="col-12 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="section-title mb-0"><i class="fa-solid fa-truck me-2"></i>Thông tin người nhận hàng</h4>
-                        <div class="custom-checkbox rounded">
-                            <input class="form-check-input me-2" type="checkbox" id="same-as-orderer">
-                            <label class="form-check-label" for="same-as-orderer">
-                                <i class="fa-solid fa-copy me-1"></i>Trùng với người đặt
-                            </label>
+                        <h4 class="section-title mb-0"><i class="fa-solid fa-truck me-2"></i>Địa chỉ giao hàng</h4>
+                        @auth
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('client.addresses.create') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fa-solid fa-plus me-1"></i>Thêm địa chỉ mới
+                            </a>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                <i class="fa-solid fa-lightning me-1"></i>Thêm nhanh
+                            </button>
                         </div>
+                        @endauth
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
-                        <input type="text" name="recipient_name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
-                        <input type="text" name="recipient_phone" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Email</label>
-                        <input type="email" name="recipient_email" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Địa chỉ nhận hàng <span class="text-danger">*</span></label>
-                        <textarea name="recipient_address" class="form-control" rows="3" 
-                                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" required></textarea>
-                    </div>
+                    @auth
+                        @if($addresses->count() > 0)
+                            <div class="row">
+                                @foreach($addresses as $address)
+                                <div class="col-md-6 mb-3">
+                                    <div class="card address-card h-100 {{ $address->is_default ? 'border-primary' : '' }}" 
+                                         style="cursor: pointer;" onclick="selectAddress({{ $address->id }})">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="shipping_address_id" value="{{ $address->id }}"
+                                                           id="address_{{ $address->id }}" 
+                                                           {{ ($defaultAddress && $defaultAddress->id == $address->id) ? 'checked' : '' }}>
+                                                    <label class="form-check-label fw-bold" for="address_{{ $address->id }}">
+                                                        {{ $address->name }}
+                                                    </label>
+                                                </div>
+                                                @if($address->is_default)
+                                                    <span class="badge bg-primary">Mặc định</span>
+                                                @endif
+                                            </div>
+                                            <p class="text-muted small mb-2">
+                                                <i class="fa-solid fa-phone me-1"></i>{{ $address->phone }}
+                                            </p>
+                                            <p class="text-muted small mb-0">
+                                                <i class="fa-solid fa-map-marker-alt me-1"></i>
+                                                {{ $address->address_detail }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}
+                                            </p>
+                                            @if($address->note)
+                                            <p class="text-muted small mt-2 mb-0">
+                                                <i class="fa-solid fa-sticky-note me-1"></i>{{ $address->note }}
+                                            </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            
+                            @error('shipping_address_id')
+                                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                            @enderror
+                        @else
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-exclamation-triangle me-3 fs-4"></i>
+                                    <div>
+                                        <strong>Chưa có địa chỉ giao hàng!</strong>
+                                        <p class="mb-0">Bạn cần thêm ít nhất một địa chỉ giao hàng để tiếp tục đặt hàng.</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('client.addresses.create') }}" class="btn btn-warning mt-3 me-2">
+                                    <i class="fa-solid fa-plus me-1"></i>Thêm địa chỉ ngay
+                                </a>
+                                <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                    <i class="fa-solid fa-lightning me-1"></i>Thêm nhanh
+                                </button>
+                            </div>
+                        @endif
+                    @else
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            Vui lòng <a href="{{ route('auth') }}">đăng nhập</a> để sử dụng địa chỉ đã lưu.
+                        </div>
+                    @endauth
                 </div>
-            </div>
 
             <!-- Ghi chú và Voucher -->
             <div class="row mb-4">
@@ -286,9 +328,21 @@
 
             <!-- Nút đặt hàng -->
             <div class="d-flex justify-content-center">
-                <button type="submit" class="btn btn-primary-gradient btn-lg px-5 py-3 fw-bold">
-                    <i class="fa-solid fa-lock me-2"></i>Đặt hàng ngay
-                </button>
+                @auth
+                    @if($addresses->count() > 0)
+                        <button type="submit" class="btn btn-primary-gradient btn-lg px-5 py-3 fw-bold">
+                            <i class="fa-solid fa-lock me-2"></i>Đặt hàng ngay
+                        </button>
+                    @else
+                        <a href="{{ route('client.addresses.create') }}" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                            <i class="fa-solid fa-plus me-2"></i>Thêm địa chỉ để đặt hàng
+                        </a>
+                    @endif
+                @else
+                    <a href="{{ route('auth') }}" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
+                        <i class="fa-solid fa-sign-in-alt me-2"></i>Đăng nhập để đặt hàng
+                    </a>
+                @endauth
             </div>
                 
             <!-- Thông tin bảo mật -->
@@ -320,76 +374,184 @@
     <div class="alert alert-warning text-center">Giỏ hàng trống.</div>
     @endif
 </div>
+
+<!-- Modal thêm địa chỉ nhanh -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAddressModalLabel">
+                    <i class="fa-solid fa-plus me-2"></i>Thêm địa chỉ mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('client.addresses.store') }}" method="POST" id="quick-address-form">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_name" class="form-label">Họ tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modal_name" name="name" 
+                                   value="{{ Auth::user()->name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modal_phone" name="phone" 
+                                   value="{{ Auth::user()->phone }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_province" class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modal_province" name="province" required>
+                                <option value="">Chọn Tỉnh/Thành phố</option>
+                                @foreach($provinces ?? [] as $province)
+                                    <option value="{{ $province }}">{{ $province }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_district" class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modal_district" name="district" required disabled>
+                                <option value="">Chọn Quận/Huyện</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="modal_ward" class="form-label">Phường/Xã <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modal_ward" name="ward" required disabled>
+                                <option value="">Chọn Phường/Xã</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="modal_address_detail" class="form-label">Địa chỉ chi tiết <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="modal_address_detail" name="address_detail" 
+                                  rows="3" placeholder="Số nhà, tên đường..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="modal_is_default" 
+                                   name="is_default" value="1" checked>
+                            <label class="form-check-label" for="modal_is_default">
+                                Đặt làm địa chỉ mặc định
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-save me-2"></i>Lưu địa chỉ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý checkbox "Trùng với người đặt"
-    const sameAsOrdererCheckbox = document.getElementById('same-as-orderer');
-    const ordererFields = {
-        name: document.querySelector('input[name="orderer_name"]'),
-        email: document.querySelector('input[name="orderer_email"]'),
-        phone: document.querySelector('input[name="orderer_phone"]'),
-        address: document.querySelector('textarea[name="orderer_address"]')
-    };
-    const recipientFields = {
-        name: document.querySelector('input[name="recipient_name"]'),
-        phone: document.querySelector('input[name="recipient_phone"]'),
-        email: document.querySelector('input[name="recipient_email"]'),
-        address: document.querySelector('textarea[name="recipient_address"]')
-    };
-
-    sameAsOrdererCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            // Copy thông tin từ người đặt sang người nhận
-            recipientFields.name.value = ordererFields.name.value;
-            recipientFields.phone.value = ordererFields.phone.value;
-            recipientFields.email.value = ordererFields.email.value;
-            recipientFields.address.value = ordererFields.address.value;
-            
-            // Disable các field người nhận
-            recipientFields.name.readOnly = true;
-            recipientFields.phone.readOnly = true;
-            recipientFields.email.readOnly = true;
-            recipientFields.address.readOnly = true;
-        } else {
-            // Enable lại các field người nhận
-            recipientFields.name.readOnly = false;
-            recipientFields.phone.readOnly = false;
-            recipientFields.email.readOnly = false;
-            recipientFields.address.readOnly = false;
-        }
+// Global functions for address selection and modal
+function selectAddress(addressId) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.address-card').forEach(card => {
+        card.classList.remove('selected');
     });
+    
+    // Add selected class to clicked card
+    const selectedCard = document.querySelector(`#address_${addressId}`).closest('.address-card');
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+    }
+    
+    // Check the radio button
+    const radioButton = document.getElementById(`address_${addressId}`);
+    if (radioButton) {
+        radioButton.checked = true;
+    }
+}
 
-    // Đồng bộ thông tin khi người đặt thay đổi (nếu checkbox được check)
-    Object.values(ordererFields).forEach(field => {
-        field.addEventListener('input', function() {
-            if (sameAsOrdererCheckbox.checked) {
-                const fieldName = this.name.replace('orderer_', 'recipient_');
-                const recipientField = document.querySelector(`input[name="${fieldName}"], textarea[name="${fieldName}"]`);
-                if (recipientField) {
-                    recipientField.value = this.value;
+function loadModalDistricts() {
+    const province = document.getElementById('modal_province').value;
+    const districtSelect = document.getElementById('modal_district');
+    const wardSelect = document.getElementById('modal_ward');
+    
+    // Reset districts and wards
+    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+    districtSelect.disabled = true;
+    wardSelect.disabled = true;
+    
+    if (province) {
+        fetch(`/api/districts?province=${encodeURIComponent(province)}`)
+            .then(response => response.json())
+            .then(districts => {
+                if (Array.isArray(districts) && districts.length > 0) {
+                    districts.forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district;
+                        option.textContent = district;
+                        districtSelect.appendChild(option);
+                    });
+                    districtSelect.disabled = false;
                 }
-            }
-        });
-    });
+            })
+            .catch(error => console.error('Error loading districts:', error));
+    }
+}
 
+function loadModalWards() {
+    const district = document.getElementById('modal_district').value;
+    const province = document.getElementById('modal_province').value;
+    const wardSelect = document.getElementById('modal_ward');
+    
+    // Reset wards
+    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+    wardSelect.disabled = true;
+    
+    if (district) {
+        const url = `/api/wards?district=${encodeURIComponent(district)}&province=${encodeURIComponent(province)}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(wards => {
+                if (Array.isArray(wards) && wards.length > 0) {
+                    wards.forEach(ward => {
+                        const option = document.createElement('option');
+                        option.value = ward;
+                        option.textContent = ward;
+                        wardSelect.appendChild(option);
+                    });
+                    wardSelect.disabled = false;
+                }
+            })
+            .catch(error => console.error('Error loading wards:', error));
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     // Xử lý áp dụng mã giảm giá
     const applyCouponBtn = document.getElementById('apply-coupon');
     const couponInput = document.getElementById('coupon-input');
     const couponResult = document.getElementById('coupon-result');
-    let appliedCoupon = null; // Lưu thông tin coupon đã áp dụng
-
-    let isInCancelMode = false; // Flag để track trạng thái
+    
+    // Kiểm tra xem các elements có tồn tại không
+    if (!applyCouponBtn || !couponInput || !couponResult) {
+        console.error('Coupon elements not found');
+        return;
+    }
+    
+    let appliedCoupon = null;
+    let isInCancelMode = false;
 
     // Function xử lý chung cho button
     function handleCouponButton() {
         if (isInCancelMode) {
-            // Đang ở chế độ hủy
             handleCancelCoupon();
         } else {
-            // Đang ở chế độ áp dụng
             handleApplyCoupon();
         }
     }
@@ -399,6 +561,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleApplyCoupon() {
         const couponCode = couponInput.value.trim();
+        console.log('Applying coupon:', couponCode);
+        
         if (!couponCode) {
             showCouponMessage('Vui lòng nhập mã giảm giá', 'warning');
             return;
@@ -417,10 +581,14 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ coupon_code: couponCode })
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             if (data.success) {
-                appliedCoupon = data; // Lưu thông tin coupon
+                appliedCoupon = data;
                 showCouponSuccess(data.message, data.coupon_info);
                 updateOrderSummary(data.discount_amount, data.total, data.coupon_info);
                 switchToCancelMode();
@@ -430,51 +598,64 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
+            console.error('Error:', error);
             showCouponMessage('Có lỗi xảy ra, vui lòng thử lại', 'danger');
             resetCouponButton();
         });
     }
 
     function switchToCancelMode() {
-        // Đổi input group thành màu xanh
         const inputGroup = document.getElementById('coupon-input-group');
         inputGroup.classList.add('coupon-applied');
         couponInput.readOnly = true;
         
-        // Đổi button thành "Hủy" màu đỏ
         applyCouponBtn.innerHTML = '<i class="fa-solid fa-times me-1"></i>Hủy';
         applyCouponBtn.className = 'btn btn-outline-danger';
         applyCouponBtn.disabled = false;
         
-        // Chuyển flag
+        // Cập nhật hidden input
+        const hiddenCouponInput = document.getElementById('hidden-coupon-code');
+        if (hiddenCouponInput) {
+            hiddenCouponInput.value = couponInput.value;
+        }
+        
         isInCancelMode = true;
     }
 
-    // Xử lý hủy coupon
     function handleCancelCoupon() {
         appliedCoupon = null;
         couponInput.value = '';
         couponResult.innerHTML = '';
         
-        // Reset về trạng thái ban đầu
         const inputGroup = document.getElementById('coupon-input-group');
         inputGroup.classList.remove('coupon-applied');
         couponInput.readOnly = false;
         
-        // Ẩn discount row
         const discountRow = document.getElementById('discount-row');
         discountRow.style.display = 'none';
         
-        // Reset tổng tiền về subtotal
         const subtotalText = document.getElementById('subtotal').textContent;
         document.getElementById('total-amount').textContent = subtotalText;
         
-        // Đổi button về "Áp dụng"
         applyCouponBtn.innerHTML = '<i class="fa-solid fa-tags me-1"></i>Áp dụng';
         applyCouponBtn.className = 'btn btn-outline-secondary';
         applyCouponBtn.disabled = false;
         
-        // Chuyển flag về trạng thái ban đầu
+        // Xóa hidden input
+        const hiddenCouponInput = document.getElementById('hidden-coupon-code');
+        if (hiddenCouponInput) {
+            hiddenCouponInput.value = '';
+        }
+        
+        // Gọi API để xóa coupon khỏi session
+        fetch('{{ route("cart.remove-coupon") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        }).catch(error => console.log('Error removing coupon:', error));
+        
         isInCancelMode = false;
     }
 
@@ -520,7 +701,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (discountAmount > 0) {
             discountRow.style.display = 'flex';
             
-            // Hiển thị giảm giá theo loại coupon
             let discountText = '';
             if (couponInfo && couponInfo.type === 'percentage') {
                 discountText = `-${parseInt(discountAmount).toLocaleString('vi-VN')}đ (${couponInfo.value}%)`;
@@ -533,6 +713,63 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             discountRow.style.display = 'none';
         }
+    }
+    
+    // Auto-select default address on page load
+    const defaultAddressRadio = document.querySelector('input[name="shipping_address_id"]:checked');
+    if (defaultAddressRadio) {
+        const addressId = defaultAddressRadio.value;
+        selectAddress(addressId);
+    }
+    
+    // Add event listeners for modal selects
+    const modalProvince = document.getElementById('modal_province');
+    const modalDistrict = document.getElementById('modal_district');
+    
+    if (modalProvince) {
+        modalProvince.addEventListener('change', loadModalDistricts);
+    }
+    if (modalDistrict) {
+        modalDistrict.addEventListener('change', loadModalWards);
+    }
+    
+    // Handle quick address form submission
+    const quickAddressForm = document.getElementById('quick-address-form');
+    if (quickAddressForm) {
+        quickAddressForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang lưu...';
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi lưu địa chỉ. Vui lòng thử lại.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
     }
 });
 </script>

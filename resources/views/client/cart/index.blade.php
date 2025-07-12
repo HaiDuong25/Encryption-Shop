@@ -192,31 +192,20 @@
                     <!-- Voucher -->
                     <div class="mb-3">
                         <label for="voucher" class="form-label fw-semibold"><i class="fa-solid fa-ticket me-1 text-warning"></i> Mã giảm giá</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="voucher" placeholder="Nhập mã voucher..." value="{{ $appliedCoupon }}">
-                            <button class="btn btn-primary" type="button" id="apply-coupon-btn">
-                                <span class="btn-text">Áp dụng</span>
-                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        <div class="input-group" id="coupon-input-group">
+                            <input type="text" class="form-control" id="coupon-input" placeholder="Nhập mã voucher..." value="{{ $appliedCoupon }}">
+                            <button class="btn btn-outline-secondary" type="button" id="apply-coupon">
+                                <i class="fa-solid fa-tags me-1"></i>Áp dụng
                             </button>
                         </div>
-                        <div id="coupon-message" class="mt-2"></div>
-
-                        @if($appliedCoupon)
-                        <div class="coupon-applied mt-2 p-2 bg-light rounded">
+                        <div id="coupon-result" class="mt-2">
+                            @if($appliedCoupon)
                             <small class="text-success">
                                 <i class="fa-solid fa-check-circle me-1"></i>
                                 Đã áp dụng mã: <strong>{{ $appliedCoupon }}</strong>
-                                @if($couponInfo)
-                                    @if($couponInfo['type'] === 'percentage')
-                                        (Giảm {{ $couponInfo['value'] }}%)
-                                    @else
-                                        (Giảm {{ number_format($couponInfo['value']) }}đ)
-                                    @endif
-                                @endif
                             </small>
-                            <button type="button" class="btn btn-link btn-sm text-danger p-0 ms-2" id="remove-coupon-btn">Bỏ mã</button>
+                            @endif
                         </div>
-                        @endif
                     </div>
 
                     <p class="d-flex justify-content-between text-success mb-2">
@@ -232,7 +221,14 @@
                         <span class="text-primary" id="final-total">{{ number_format($finalTotal) }} đ</span>
                     </p>
 
-                    <a href="{{ route('cart.checkout') }}" class="btn w-100 py-2 mt-3" style="background:#222;color:#fff;">
+                    <!-- Quản lý địa chỉ -->
+                    @auth
+                    <a href="{{ route('client.addresses.index') }}" class="btn btn-outline-primary w-100 py-2 mb-2">
+                        <i class="fa-solid fa-map-marker-alt me-1"></i> Quản lý địa chỉ giao hàng
+                    </a>
+                    @endauth
+                    
+                    <a href="{{ route('cart.checkout') }}" class="btn w-100 py-2 mt-1" style="background:#222;color:#fff;">
                         <i class="fa-solid fa-credit-card me-1"></i> Tiến hành thanh toán
                     </a>
                 </div>
@@ -323,27 +319,38 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // Xử lý áp dụng voucher
-    const applyCouponBtn = document.getElementById('apply-coupon-btn');
-    const voucherInput = document.getElementById('voucher');
-    const couponMessage = document.getElementById('coupon-message');
-    const removeCouponBtn = document.getElementById('remove-coupon-btn');
+    // Xử lý áp dụng mã giảm giá
+    const applyCouponBtn = document.getElementById('apply-coupon');
+    const couponInput = document.getElementById('coupon-input');
+    const couponResult = document.getElementById('coupon-result');
 
-    if (applyCouponBtn) {
-        applyCouponBtn.addEventListener('click', function() {
-            const couponCode = voucherInput.value.trim();
+    if (applyCouponBtn && couponInput && couponResult) {
+        let appliedCoupon = null;
+        let isInCancelMode = false;
 
+        // Function xử lý chung cho button
+        function handleCouponButton() {
+            if (isInCancelMode) {
+                handleCancelCoupon();
+            } else {
+                handleApplyCoupon();
+            }
+        }
+
+        // Gán event listener duy nhất
+        applyCouponBtn.addEventListener('click', handleCouponButton);
+
+        function handleApplyCoupon() {
+            const couponCode = couponInput.value.trim();
+            
             if (!couponCode) {
-                showCouponMessage('Vui lòng nhập mã giảm giá', 'error');
+                showCouponMessage('Vui lòng nhập mã giảm giá', 'warning');
                 return;
             }
 
-            // Hiển thị loading
-            const btnText = applyCouponBtn.querySelector('.btn-text');
-            const spinner = applyCouponBtn.querySelector('.spinner-border');
-            btnText.textContent = 'Đang xử lý...';
-            spinner.classList.remove('d-none');
+            // Disable button và hiển thị loading
             applyCouponBtn.disabled = true;
+            applyCouponBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
 
             // Gửi AJAX request
             fetch('{{ route("cart.apply-coupon") }}', {
@@ -352,78 +359,108 @@ document.addEventListener("DOMContentLoaded", function() {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({
-                    coupon_code: couponCode
-                })
+                body: JSON.stringify({ coupon_code: couponCode })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showCouponMessage(data.message, 'success');
+                    appliedCoupon = data;
+                    showCouponSuccess(data.message, data.coupon_info);
                     updateOrderSummary(data.discount_amount, data.total);
-
-                    // Lưu thông tin coupon vào session (client-side)
-                    sessionStorage.setItem('applied_coupon', couponCode);
-                    sessionStorage.setItem('coupon_discount', data.discount_amount);
-                    sessionStorage.setItem('coupon_info', JSON.stringify(data.coupon_info));
-
-                    // Reload trang để hiển thị coupon đã áp dụng
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    switchToCancelMode();
                 } else {
-                    showCouponMessage(data.message, 'error');
+                    showCouponMessage(data.message, 'danger');
+                    resetCouponButton();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showCouponMessage('Có lỗi xảy ra, vui lòng thử lại', 'error');
-            })
-            .finally(() => {
-                // Ẩn loading
-                btnText.textContent = 'Áp dụng';
-                spinner.classList.add('d-none');
-                applyCouponBtn.disabled = false;
+                showCouponMessage('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+                resetCouponButton();
             });
-        });
-    }
+        }
 
-    // Xử lý bỏ mã giảm giá
-    if (removeCouponBtn) {
-        removeCouponBtn.addEventListener('click', function() {
-            // Xóa session
+        function switchToCancelMode() {
+            const inputGroup = document.getElementById('coupon-input-group');
+            inputGroup.classList.add('coupon-applied');
+            couponInput.readOnly = true;
+            
+            applyCouponBtn.innerHTML = '<i class="fa-solid fa-times me-1"></i>Hủy';
+            applyCouponBtn.className = 'btn btn-outline-danger';
+            applyCouponBtn.disabled = false;
+            
+            isInCancelMode = true;
+        }
+
+        function handleCancelCoupon() {
+            appliedCoupon = null;
+            couponInput.value = '';
+            couponResult.innerHTML = '';
+            
+            const inputGroup = document.getElementById('coupon-input-group');
+            inputGroup.classList.remove('coupon-applied');
+            couponInput.readOnly = false;
+            
+            applyCouponBtn.innerHTML = '<i class="fa-solid fa-tags me-1"></i>Áp dụng';
+            applyCouponBtn.className = 'btn btn-outline-secondary';
+            applyCouponBtn.disabled = false;
+            
+            // Gọi API để xóa coupon khỏi session
             fetch('{{ route("cart.remove-coupon") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Xóa client-side storage
-                    sessionStorage.removeItem('applied_coupon');
-                    sessionStorage.removeItem('coupon_discount');
-                    sessionStorage.removeItem('coupon_info');
-
-                    // Reload trang
-                    window.location.reload();
+            }).then(() => {
+                // Reset về subtotal
+                const subtotalEl = document.getElementById('subtotal-amount');
+                const finalTotalEl = document.getElementById('final-total');
+                const discountEl = document.getElementById('discount-amount');
+                
+                if (subtotalEl && finalTotalEl) {
+                    finalTotalEl.textContent = subtotalEl.textContent;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
-    }
+                if (discountEl) {
+                    discountEl.textContent = '-0 đ';
+                }
+            }).catch(error => console.log('Error removing coupon:', error));
+            
+            isInCancelMode = false;
+        }
 
-    function showCouponMessage(message, type) {
-        couponMessage.innerHTML = `<small class="text-${type === 'success' ? 'success' : 'danger'}">${message}</small>`;
+        function showCouponMessage(message, type) {
+            const iconMap = {
+                'success': 'check-circle',
+                'danger': 'exclamation-triangle',
+                'warning': 'info-circle'
+            };
+            couponResult.innerHTML = `
+                <div class="alert alert-${type} py-2 px-3 mb-0 rounded-3">
+                    <small>
+                        <i class="fa-solid fa-${iconMap[type]} me-1"></i>
+                        ${message}
+                    </small>
+                </div>
+            `;
+        }
 
-        if (type === 'success') {
-            setTimeout(() => {
-                couponMessage.innerHTML = '';
-            }, 3000);
+        function showCouponSuccess(message, couponInfo) {
+            const discountText = couponInfo.type === 'percentage' ? `${couponInfo.value}%` : `${parseInt(couponInfo.value).toLocaleString('vi-VN')}đ`;
+            couponResult.innerHTML = `
+                <div class="alert alert-success py-2 px-3 mb-0 rounded-3">
+                    <small>
+                        <i class="fa-solid fa-check-circle me-1"></i>
+                        <strong class="text-success">${couponInfo.code}</strong> - Giảm <span class="fw-bold">${discountText}</span>
+                    </small>
+                </div>
+            `;
+        }
+
+        function resetCouponButton() {
+            applyCouponBtn.disabled = false;
+            applyCouponBtn.innerHTML = '<i class="fa-solid fa-tags me-1"></i>Áp dụng';
+            applyCouponBtn.className = 'btn btn-outline-secondary';
         }
     }
 
@@ -446,6 +483,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
 @push('styles')
 <style>
+    .coupon-applied .form-control {
+        background-color: #f8fff9;
+        border-color: #28a745;
+    }
+    .coupon-applied .input-group {
+        border: 2px solid #28a745;
+        border-radius: 0.375rem;
+    }
     .quantity-form button.qty-minus,
     .quantity-form button.qty-plus {
         width: 32px;
@@ -456,7 +501,7 @@ document.addEventListener("DOMContentLoaded", function() {
     .card-header h5 i {
         opacity: 0.9;
     }
-    .input-group input#voucher::placeholder {
+    .input-group input#coupon-input::placeholder {
         font-style: italic;
         color: #999;
     }
