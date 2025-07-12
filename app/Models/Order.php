@@ -56,6 +56,11 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function shippingAddress()
+    {
+        return $this->belongsTo(ShippingAddress::class);
+    }
+
     protected $fillable = [
         'user_id',
         'orderer_name',
@@ -79,5 +84,11 @@ class Order extends Model
         'coupon_discount',
         'coupon_type',
         'payment_method_id',
+        'shipping_address_id',
+        'notes',
+        'payment_status',
+        'transaction_id',
+        'total',
+        'discount',
     ];
 }

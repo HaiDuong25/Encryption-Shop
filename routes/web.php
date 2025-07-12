@@ -186,6 +186,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 
+    // MoMo Payment routes
+    Route::get('/momo/payment', [\App\Http\Controllers\MoMoController::class, 'createPayment'])->name('momo.create');
+    Route::get('/momo/return', [\App\Http\Controllers\MoMoController::class, 'returnPayment'])->name('momo.return');
+    Route::post('/momo/notify', [\App\Http\Controllers\MoMoController::class, 'notifyPayment'])->name('momo.notify');
+
+    // Cart success
+    Route::get('/cart/success/{order_id}', [CartController::class, 'success'])->name('cart.success');
+
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
