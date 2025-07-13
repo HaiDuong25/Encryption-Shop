@@ -35,6 +35,7 @@ use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
 use App\Http\Controllers\Client\CouponController as ClientCouponController;
 use App\Http\Controllers\Client\CouponHistoryController;
+use App\Http\Controllers\Client\NewsController as ClientNewsController;
 
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
@@ -54,6 +55,10 @@ Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('cl
 // --- Liên hệ ---
 Route::get('/lien-he', [ClientContactController::class, 'create'])->name('client.contact.create');
 Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client.contact.store');
+
+// --- Tin tức ---
+Route::get('/tin-tuc', [ClientNewsController::class, 'index'])->name('client.news.index');
+Route::get('/tin-tuc/{id}', [ClientNewsController::class, 'show'])->name('client.news.show');
 
 // --- Coupon Routes (không cần đăng nhập để xem) ---
 Route::get('/api/coupons/available', [ClientCouponController::class, 'getAvailableCoupons'])->name('client.coupons.available');
