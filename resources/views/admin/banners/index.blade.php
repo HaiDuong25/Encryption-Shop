@@ -37,6 +37,7 @@
                             <tr>
                                 <th>Ảnh</th>
                                 <th>Tiêu đề</th>
+                                <th>Mô tả</th>
                                 <th>Link</th>
                                 <th>Vị trí</th>
                                 <th>Kích hoạt</th>
@@ -67,6 +68,15 @@
                                                             @endif
                                                         </td>
                                                         <td><strong>{{ $banner->title }}</strong></td>
+                                                        <td style="max-width: 200px;">
+                                                            @if($banner->description)
+                                                                <span class="text-truncate d-block" title="{{ $banner->description }}">
+                                                                    {{ Str::limit($banner->description, 50) }}
+                                                                </span>
+                                                            @else
+                                                                <span class="text-muted fst-italic">Không có mô tả</span>
+                                                            @endif
+                                                        </td>
                                                         <td style="max-width: 200px;">
                                                             @if($banner->link)
                                                                 <a href="{{ $banner->link }}" target="_blank" class="text-truncate d-block"
