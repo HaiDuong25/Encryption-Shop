@@ -38,6 +38,21 @@ class CategoryController extends \App\Http\Controllers\Controller
         $categories = Category::whereNull('parent_id')->get();
         return view('admin.categories.form', compact('categories'));
     }
+    
+    public function show(Category $category)
+    {
+        $category->load('children', 'parent');
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'category' => $category
+            ]);
+        }
+        
+        return view('admin.categories.index', compact('category'));
+    }
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -49,7 +64,15 @@ class CategoryController extends \App\Http\Controllers\Controller
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
-        Category::create($validated);
+        $category = Category::create($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Danh mục được tạo thành công.',
+                'category' => $category
+            ]);
+        }
         return redirect()->route('categories.index')->with('success', 'Danh mục được tạo thành công.');
     }
     public function edit(Category $category)
@@ -74,6 +97,14 @@ class CategoryController extends \App\Http\Controllers\Controller
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
         $category->update($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Danh mục được cập nhật thành công.',
+                'category' => $category
+            ]);
+        }
         return redirect()->route('categories.index')->with('success', 'Danh mục được cập nhật thành công.');
     }
     public function destroy(Category $category)
@@ -82,6 +113,13 @@ class CategoryController extends \App\Http\Controllers\Controller
             Storage::disk('public')->delete($category->image);
         }
         $category->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Danh mục được xóa thành công.'
+            ]);
+        }
         return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
     }
 }

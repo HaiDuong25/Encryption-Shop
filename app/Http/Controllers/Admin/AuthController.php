@@ -22,7 +22,7 @@ class AuthController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -30,6 +30,13 @@ class AuthController extends Controller
             'status' => 'active',
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đăng ký thành công. Hãy đăng nhập!',
+                'user' => $user
+            ]);
+        }
         return redirect('/auth')->with('success', 'Đăng ký thành công. Hãy đăng nhập!');
     }
 
@@ -43,6 +50,12 @@ class AuthController extends Controller
             // Kiểm tra trạng thái
             if ($user->status !== 'active') {
                 Auth::logout();
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với chúng tôi để được hỗ trợ!'
+                    ]);
+                }
                 return back()->withErrors([
                     'email' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với chúng tôi để được hỗ trợ!',
                 ]);
@@ -51,6 +64,15 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             // Phân quyền chuyển hướng
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đăng nhập thành công!',
+                    'redirect' => $user->role === 'admin' ? '/admin/dashboard' : '/',
+                    'user' => $user
+                ]);
+            }
+            
             if ($user->role === 'admin') {
                 return redirect()->intended('/admin/dashboard');
             } else {
@@ -58,6 +80,12 @@ class AuthController extends Controller
             }
         }
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email hoặc mật khẩu không đúng.'
+            ]);
+        }
         return back()->withErrors([
             'email' => 'Email hoặc mật khẩu không đúng.',
         ]);

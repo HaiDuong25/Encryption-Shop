@@ -31,7 +31,7 @@ class CouponController extends \App\Http\Controllers\Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        Coupon::create([
+        $coupon = Coupon::create([
             'code' => strtoupper(Str::random(10)),
             'discount' => $request->discount,
             'start_date' => $request->start_date,
@@ -40,7 +40,14 @@ class CouponController extends \App\Http\Controllers\Controller
             'is_active' => true
         ]);
 
-        return redirect()->route('coupons.index')->with('success', 'Đã tạo mã: ' . $request->code);
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã tạo mã: ' . $coupon->code,
+                'coupon' => $coupon
+            ]);
+        }
+        return redirect()->route('coupons.index')->with('success', 'Đã tạo mã: ' . $coupon->code);
     }
 
     public function edit($id)
@@ -65,6 +72,13 @@ class CouponController extends \App\Http\Controllers\Controller
         $coupon->expires_at = $request->expires_at;
         $coupon->save();
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật thành công!',
+                'coupon' => $coupon
+            ]);
+        }
         return redirect()->route('coupons.index')->with('success', 'Cập nhật thành công!');
     }
 
@@ -72,6 +86,13 @@ class CouponController extends \App\Http\Controllers\Controller
     {
         $coupon = Coupon::findOrFail($id);
         $coupon->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa mã thành công!'
+            ]);
+        }
         return redirect()->route('coupons.index')->with('success', 'Xóa mã thành công!');
     }
 }

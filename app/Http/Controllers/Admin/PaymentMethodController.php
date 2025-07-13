@@ -26,7 +26,15 @@ class PaymentMethodController extends Controller
             'payment_type' => 'required|max:255',
             'description' => 'nullable'
         ]);
-        PaymentMethod::create($request->only('payment_type', 'description'));
+        $paymentMethod = PaymentMethod::create($request->only('payment_type', 'description'));
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Thêm phương thức thành công',
+                'payment_method' => $paymentMethod
+            ]);
+        }
         return redirect()->route('payment-methods.index')->with('success', 'Thêm phương thức thành công');
     }
 
@@ -43,12 +51,27 @@ class PaymentMethodController extends Controller
         ]);
 
         $payment_method->update($request->only('payment_type', 'description'));
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật thành công',
+                'payment_method' => $payment_method
+            ]);
+        }
         return redirect()->route('payment-methods.index')->with('success', 'Cập nhật thành công');
     }
 
     public function destroy(PaymentMethod $payment_method)
     {
         $payment_method->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa thành công'
+            ]);
+        }
         return back()->with('success', 'Xóa thành công');
     }
 }

@@ -64,8 +64,15 @@ class ShippingAddressController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['is_default'] = $validated['is_default'] ?? false;
 
-        ShippingAddress::create($validated);
+        $address = ShippingAddress::create($validated);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Địa chỉ giao hàng đã được thêm thành công!',
+                'address' => $address
+            ]);
+        }
         return redirect()->route('client.addresses.index')
             ->with('success', 'Địa chỉ giao hàng đã được thêm thành công!');
     }
@@ -129,6 +136,13 @@ class ShippingAddressController extends Controller
         $validated['is_default'] = $validated['is_default'] ?? false;
         $address->update($validated);
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Địa chỉ giao hàng đã được cập nhật thành công!',
+                'address' => $address
+            ]);
+        }
         return redirect()->route('client.addresses.index')
             ->with('success', 'Địa chỉ giao hàng đã được cập nhật thành công!');
     }
@@ -145,6 +159,12 @@ class ShippingAddressController extends Controller
 
         $address->delete();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Địa chỉ giao hàng đã được xóa thành công!'
+            ]);
+        }
         return redirect()->route('client.addresses.index')
             ->with('success', 'Địa chỉ giao hàng đã được xóa thành công!');
     }

@@ -8,9 +8,10 @@
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
-            <form action="{{ route('coupons.update', $coupon->id) }}" method="POST">
+            <form id="couponEditForm">
                 @csrf
-                @method('PUT')
+                <input type="hidden" name="_method" value="PUT">
+                <input type="hidden" id="couponId" value="{{ $coupon->id }}">
                 <div class="mb-4">
                     <label for="discount" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Giảm giá
                         (%)</label>
@@ -45,10 +46,60 @@
                 <div class="d-flex justify-content-between mt-4">
                     <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary btn-lg px-4">Quay lại</a>
                     <button type="submit" class="btn btn-lg px-4"
-                        style="background-color: #009966; color: #fff; font-weight: 600; font-size: 1.2rem;">Cập
-                        nhật</button>
+                        style="background-color: #009966; color: #fff; font-weight: 600; font-size: 1.2rem;">
+                        <span class="btn-text">Cập nhật</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('couponEditForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    const couponId = document.getElementById('couponId').value;
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.textContent = 'Đang cập nhật...';
+        spinner.classList.remove('d-none');
+        
+        const formData = new FormData(form);
+        
+        fetch(`/admin/coupons/${couponId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{{ route('coupons.index') }}';
+            } else {
+                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra, vui lòng thử lại!');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Cập nhật';
+            spinner.classList.add('d-none');
+        });
+    });
+});
+</script>
 @endsection

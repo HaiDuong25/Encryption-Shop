@@ -13,7 +13,7 @@
                 </a>
             </div>
 
-            <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="productForm" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 {{-- Thông báo lỗi --}}
@@ -27,6 +27,9 @@
                         </ul>
                     </div>
                 @endif
+
+                {{-- Alert container for AJAX responses --}}
+                <div id="alert-container"></div>
 
                 {{-- THÔNG TIN SẢN PHẨM --}}
                 <div class="row g-3 mb-2">
@@ -204,7 +207,7 @@
                     <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
                         <i data-feather="x"></i> Huỷ
                     </a>
-                    <button type="submit" class="btn btn-success ms-2">
+                    <button type="submit" class="btn btn-success ms-2" id="submitBtn">
                         <i data-feather="save"></i> Lưu
                     </button>
                 </div>
@@ -282,6 +285,96 @@ function renderVariants() {
     document.getElementById('variant-area').innerHTML = html;
 }
 
+// AJAX form submission
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = document.getElementById('submitBtn');
+    const alertContainer = document.getElementById('alert-container');
+    
+    // Show loading state
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i data-feather="loader" class="rotating"></i> Đang lưu...';
+    submitBtn.disabled = true;
+    
+    // Clear previous alerts
+    alertContainer.innerHTML = '';
+    
+    // Create FormData for file upload
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            alertContainer.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show">
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Redirect after success
+            setTimeout(() => {
+                window.location.href = data.redirect || '{{ route("products.index") }}';
+            }, 1500);
+        } else {
+            // Show error messages
+            if (data.errors) {
+                let errorHtml = '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
+                Object.values(data.errors).flat().forEach(error => {
+                    errorHtml += `<li>${error}</li>`;
+                });
+                errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                alertContainer.innerHTML = errorHtml;
+            } else {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        ${data.message || 'Có lỗi xảy ra khi lưu sản phẩm!'}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            }
+            
+            // Restore button state
+            submitBtn.innerHTML = originalContent;
+            submitBtn.disabled = false;
+            feather.replace();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alertContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show">
+                Có lỗi xảy ra khi lưu sản phẩm!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Restore button state
+        submitBtn.innerHTML = originalContent;
+        submitBtn.disabled = false;
+        feather.replace();
+    });
+});
+
 if(window.feather) feather.replace();
 </script>
+<style>
+    .rotating {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
 @endsection

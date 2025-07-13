@@ -130,6 +130,13 @@ class ProductController extends Controller
             $variant->attributeValues()->attach($combo);
         }
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã tạo sản phẩm và biến thể!',
+                'product' => $product
+            ]);
+        }
         return redirect()->route('products.index')->with('success', 'Đã tạo sản phẩm và biến thể!');
     }
 
@@ -250,12 +257,26 @@ class ProductController extends Controller
             }
         }
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã cập nhật sản phẩm!',
+                'product' => $product
+            ]);
+        }
         return redirect()->route('products.index')->with('success', 'Đã cập nhật sản phẩm!');
     }
 
     public function destroy(Product $product)
     {
         $product->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa sản phẩm!'
+            ]);
+        }
         return back()->with('success', 'Đã xóa sản phẩm!');
     }
 }

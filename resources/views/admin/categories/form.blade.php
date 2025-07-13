@@ -7,10 +7,11 @@
     <h3 class="mt-3 mb-3">{{ isset($category) ? 'Chỉnh sửa' : 'Thêm mới' }} Danh mục</h3>
     <div class="card">
         <div class="card-body">
-            <form action="{{ isset($category) ? route('categories.update', $category) : route('categories.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="categoryForm" enctype="multipart/form-data">
                 @csrf
                 @if(isset($category))
-                    @method('PUT')
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="hidden" id="categoryId" value="{{ $category->id }}">
                 @endif
 
                 <div class="mb-3">
@@ -73,10 +74,73 @@
 
                 <div class="d-flex justify-content-end">
                     <a href="{{ route('categories.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">{{ isset($category) ? 'Cập nhật' : 'Lưu' }}</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('categoryForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.textContent = 'Đang xử lý...';
+        spinner.classList.remove('d-none');
+        
+        const formData = new FormData(form);
+        const isEdit = document.getElementById('categoryId');
+        
+        let url, method;
+        if (isEdit) {
+            url = '/admin/categories/' + isEdit.value;
+            method = 'POST'; // Laravel sẽ xử lý _method=PUT
+        } else {
+            url = '{{ route('categories.store') }}';
+            method = 'POST';
+        }
+        
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alert(data.message);
+                // Redirect to index
+                window.location.href = '{{ route('categories.index') }}';
+            } else {
+                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra, vui lòng thử lại!');
+        })
+        .finally(() => {
+            // Hide loading state
+            submitBtn.disabled = false;
+            btnText.textContent = isEdit ? 'Cập nhật' : 'Lưu';
+            spinner.classList.add('d-none');
+        });
+    });
+});
+</script>
 @endsection
