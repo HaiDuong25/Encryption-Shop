@@ -36,7 +36,7 @@ class NewsController extends \App\Http\Controllers\Controller
             $imagePath = $request->file('image')->store('news', 'public');
         }
 
-        News::create([
+        $news = News::create([
             'title' => $request->title,
             'content' => $request->content,
             'image' => $imagePath,
@@ -44,6 +44,13 @@ class NewsController extends \App\Http\Controllers\Controller
             'is_published' => $request->has('is_published'),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Thêm tin tức thành công!',
+                'news' => $news
+            ]);
+        }
         return redirect()->route('news.index')->with('success', 'Thêm tin tức thành công!');
     }
 
@@ -82,6 +89,33 @@ class NewsController extends \App\Http\Controllers\Controller
             'is_published' => $request->has('is_published'),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật tin tức thành công!',
+                'news' => $news
+            ]);
+        }
         return redirect()->route('news.index')->with('success', 'Cập nhật tin tức thành công!');
+    }
+
+    public function destroy($id)
+    {
+        $news = News::findOrFail($id);
+        
+        // Delete image file if exists
+        if ($news->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($news->image)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($news->image);
+        }
+        
+        $news->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa tin tức thành công!'
+            ]);
+        }
+        return redirect()->route('news.index')->with('success', 'Xóa tin tức thành công!');
     }
 }

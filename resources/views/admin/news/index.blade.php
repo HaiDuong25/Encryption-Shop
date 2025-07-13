@@ -89,13 +89,12 @@
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <form action="{{ route('news.destroy', $item->id) }}" method="POST"
-                                                            onsubmit="return confirm('Xác nhận xoá?');">
-                                                            @csrf @method('DELETE')
-                                                            <button type="submit" class="btn btn-link p-0 text-danger">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                            </button>
-                                                        </form>
+                                                        <button class="btn btn-link p-0 text-danger delete-btn"
+                                                                data-id="{{ $item->id }}"
+                                                                data-name="{{ $item->title }}"
+                                                                title="Xoá">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
                                                     </li>
                                                 </ul>
                                             </td>
@@ -125,3 +124,76 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    // AJAX Delete functionality
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const newsId = this.dataset.id;
+            const newsTitle = this.dataset.name;
+            
+            if (confirm(`Bạn có chắc muốn xóa tin tức "${newsTitle}"?`)) {
+                // Show loading state
+                const icon = this.querySelector('i');
+                const originalContent = this.innerHTML;
+                this.innerHTML = '<i class="ri-loader-line rotating"></i>';
+                this.disabled = true;
+                
+                fetch(`/admin/news/${newsId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the row from table
+                        const row = this.closest('tr');
+                        row.remove();
+                        
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = `
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.card'));
+                        
+                        // Auto hide after 3 seconds
+                        setTimeout(() => {
+                            if (alertDiv.parentNode) {
+                                alertDiv.remove();
+                            }
+                        }, 3000);
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra khi xóa tin tức!');
+                        // Restore button state
+                        this.innerHTML = originalContent;
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa tin tức!');
+                    // Restore button state
+                    this.innerHTML = originalContent;
+                    this.disabled = false;
+                });
+            }
+        });
+    });
+</script>
+<style>
+    .rotating {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+@endpush

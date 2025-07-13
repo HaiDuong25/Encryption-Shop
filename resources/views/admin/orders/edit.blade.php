@@ -8,7 +8,7 @@
             <h5 class="mb-0">Chỉnh sửa đơn hàng #{{ $order->id }}</h5>
         </div>
         <div class="card-body">
-            <form action="{{ route('orders.update', $order->id) }}" method="POST">
+            <form id="orderEditForm" action="{{ route('orders.update', $order->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 
@@ -29,6 +29,9 @@
                 @if(session('error'))
                     <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
+
+                {{-- Alert container for AJAX responses --}}
+                <div id="alert-container"></div>
                 <div class="mb-3">
                     <label for="user_id" class="form-label">Khách hàng</label>
                     <select class="form-select" id="user_id" name="user_id" required>
@@ -230,7 +233,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Cập nhật</button>
                 <a href="{{ route('orders.index') }}" class="btn btn-secondary">Quay lại</a>
             </form>
         </div>
@@ -276,6 +279,86 @@
             document.getElementById('recipient_address').value = selected.getAttribute('data-address') || '';
         });
 
+        // AJAX form submission
+        document.getElementById('orderEditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const submitBtn = document.getElementById('submitBtn');
+            const alertContainer = document.getElementById('alert-container');
+            
+            // Show loading state
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i data-feather="loader" class="rotating"></i> Đang cập nhật...';
+            submitBtn.disabled = true;
+            
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+            
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success alert-dismissible fade show">
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    
+                    // Redirect after success
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '{{ route("orders.index") }}';
+                    }, 1500);
+                } else {
+                    // Show error messages
+                    if (data.errors) {
+                        let errorHtml = '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
+                        Object.values(data.errors).flat().forEach(error => {
+                            errorHtml += `<li>${error}</li>`;
+                        });
+                        errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                        alertContainer.innerHTML = errorHtml;
+                    } else {
+                        alertContainer.innerHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                ${data.message || 'Có lỗi xảy ra khi cập nhật đơn hàng!'}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
+                    }
+                    
+                    // Restore button state
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.disabled = false;
+                    feather.replace();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        Có lỗi xảy ra khi cập nhật đơn hàng!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                // Restore button state
+                submitBtn.innerHTML = originalContent;
+                submitBtn.disabled = false;
+                feather.replace();
+            });
+        });
+
         document.getElementById('status').addEventListener('change', function() {
             var cancelFields = document.querySelectorAll('[id^="cancel_"]');
             var showCancelFields = this.value === 'cancelled';
@@ -289,4 +372,13 @@
         // Initialize cancel fields visibility
         document.getElementById('status').dispatchEvent(new Event('change'));
     </script>
+    <style>
+        .rotating {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
 @endsection

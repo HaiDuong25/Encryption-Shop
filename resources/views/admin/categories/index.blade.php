@@ -86,10 +86,9 @@
                                             <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
                                                 <li><a href="{{ route('categories.edit', $parent) }}"><i class="ri-pencil-line"></i></a></li>
                                                 <li>
-                                                    <form action="{{ route('categories.destroy', $parent) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-link p-0 text-danger"><i class="ri-delete-bin-line"></i></button>
-                                                    </form>
+                                                    <button type="button" class="btn btn-link p-0 text-danger delete-btn" data-id="{{ $parent->id }}" data-name="{{ $parent->name }}">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
                                                 </li>
                                             </ul>
                                         </td>
@@ -113,10 +112,9 @@
                                                 <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
                                                     <li><a href="{{ route('categories.edit', $child) }}"><i class="ri-pencil-line"></i></a></li>
                                                     <li>
-                                                        <form action="{{ route('categories.destroy', $child) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
-                                                            @csrf @method('DELETE')
-                                                            <button type="submit" class="btn btn-link p-0 text-danger"><i class="ri-delete-bin-line"></i></button>
-                                                        </form>
+                                                        <button type="button" class="btn btn-link p-0 text-danger delete-btn" data-id="{{ $child->id }}" data-name="{{ $child->name }}">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
                                                     </li>
                                                 </ul>
                                             </td>
@@ -171,6 +169,64 @@
                 }
             }
         }
+        
+        // AJAX Delete functionality
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const categoryId = this.dataset.id;
+                const categoryName = this.dataset.name;
+                
+                if (confirm(`Bạn có chắc muốn xóa danh mục "${categoryName}"?`)) {
+                    // Show loading state
+                    this.innerHTML = '<i class="ri-loader-4-line"></i>';
+                    this.disabled = true;
+                    
+                    fetch(`/admin/categories/${categoryId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove the row from table
+                            const row = this.closest('tr');
+                            row.remove();
+                            
+                            // Show success message
+                            const alertDiv = document.createElement('div');
+                            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                            alertDiv.innerHTML = `
+                                ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            `;
+                            document.querySelector('.table-responsive').before(alertDiv);
+                            
+                            // Auto hide after 3 seconds
+                            setTimeout(() => {
+                                if (alertDiv.parentNode) {
+                                    alertDiv.remove();
+                                }
+                            }, 3000);
+                        } else {
+                            alert(data.message || 'Có lỗi xảy ra khi xóa danh mục!');
+                            // Restore button state
+                            this.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                            this.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi xóa danh mục!');
+                        // Restore button state
+                        this.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                        this.disabled = false;
+                    });
+                }
+            });
+        });
     });
 </script>
 @endpush

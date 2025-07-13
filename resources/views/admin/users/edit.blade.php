@@ -17,8 +17,10 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <form action="{{ route('users.update', $user) }}" method="POST" enctype="multipart/form-data">
-        @csrf @method('PUT')
+    <form id="userEditForm" enctype="multipart/form-data">
+        @csrf 
+        <input type="hidden" name="_method" value="PUT">
+        <input type="hidden" id="userId" value="{{ $user->id }}">
 
         <div class="mb-3">
             <label class="form-label">Họ tên</label>
@@ -74,9 +76,62 @@
         </div>
 
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-success px-5">Sửa</button>
+            <button type="submit" class="btn btn-success px-5">
+                <span class="btn-text">Cập nhật</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
             <a href="{{ route('users.index') }}" class="btn btn-secondary ms-2 px-5">Quay lại</a>
         </div>
     </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('userEditForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    const userId = document.getElementById('userId').value;
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.textContent = 'Đang xử lý...';
+        spinner.classList.remove('d-none');
+        
+        const formData = new FormData(form);
+        
+        fetch(`/admin/users/${userId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{{ route('users.index') }}';
+            } else {
+                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra, vui lòng thử lại!');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Cập nhật';
+            spinner.classList.add('d-none');
+        });
+    });
+});
+</script>
+@endsection
 </div>
 @endsection
