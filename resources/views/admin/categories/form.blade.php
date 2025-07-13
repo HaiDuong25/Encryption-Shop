@@ -19,8 +19,10 @@
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
                            value="{{ old('name', $category->name ?? '') }}">
                     @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $errors->first('name') }}</div>
                     @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
                 </div>
 
                 @if(!isset($category) || ($category && $category->parent_id !== null))
@@ -38,8 +40,10 @@
                                 @endforeach
                             </select>
                             @error('parent_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $errors->first('parent_id') }}</div>
                             @enderror
+                            {{-- Error container for AJAX validation --}}
+                            <div class="invalid-feedback ajax-error" style="display: none;"></div>
                         </div>
                     @else
                         <div class="alert alert-warning">
@@ -57,8 +61,10 @@
                     @endif
                     <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
                     @error('image')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $errors->first('image') }}</div>
                     @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
                 </div>
 
                 <div class="mb-3">
@@ -68,8 +74,10 @@
                         <option value="0" {{ old('status', $category->status ?? 1) == 0 ? 'selected' : '' }}>Ẩn</option>
                     </select>
                     @error('status')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $errors->first('status') }}</div>
                     @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
                 </div>
 
                 <div class="d-flex justify-content-end">
@@ -94,6 +102,13 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // Clear previous error messages
+        document.querySelectorAll('.invalid-feedback.ajax-error').forEach(el => {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+        document.querySelectorAll('.form-control, .form-select').forEach(el => el.classList.remove('is-invalid'));
+        
         // Show loading state
         submitBtn.disabled = true;
         btnText.textContent = 'Đang xử lý...';
@@ -102,37 +117,75 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(form);
         const isEdit = document.getElementById('categoryId');
         
-        let url, method;
+        // Add CSRF token to FormData
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+        
+        let url;
         if (isEdit) {
-            url = '/admin/categories/' + isEdit.value;
-            method = 'POST'; // Laravel sẽ xử lý _method=PUT
+            url = `/admin/categories/${isEdit.value}`;
+            formData.append('_method', 'PUT');
         } else {
-            url = '{{ route('categories.store') }}';
-            method = 'POST';
+            url = '/admin/categories';
         }
         
         fetch(url, {
-            method: method,
+            method: 'POST',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // Show success message
-                alert(data.message);
-                // Redirect to index
-                window.location.href = '{{ route('categories.index') }}';
+                // Show success message with better UX
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.insertBefore(alertDiv, form.firstChild);
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/admin/categories';
+                }, 1500);
             } else {
-                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+                throw new Error(data.message || 'Có lỗi xảy ra!');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Có lỗi xảy ra, vui lòng thử lại!');
+            
+            // Handle validation errors
+            if (error.errors) {
+                Object.keys(error.errors).forEach(field => {
+                    const input = document.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.parentNode.querySelector('.invalid-feedback.ajax-error');
+                        if (feedback) {
+                            feedback.textContent = error.errors[field][0];
+                            feedback.style.display = 'block';
+                        }
+                    }
+                });
+            } else {
+                // Show general error
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    ${error.message || 'Có lỗi xảy ra, vui lòng thử lại!'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.insertBefore(alertDiv, form.firstChild);
+            }
         })
         .finally(() => {
             // Hide loading state
