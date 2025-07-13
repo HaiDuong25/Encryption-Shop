@@ -33,6 +33,8 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
+use App\Http\Controllers\Client\CouponController as ClientCouponController;
+use App\Http\Controllers\Client\CouponHistoryController;
 
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
@@ -52,6 +54,10 @@ Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('cl
 // --- Liên hệ ---
 Route::get('/lien-he', [ClientContactController::class, 'create'])->name('client.contact.create');
 Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client.contact.store');
+
+// --- Coupon Routes (không cần đăng nhập để xem) ---
+Route::get('/api/coupons/available', [ClientCouponController::class, 'getAvailableCoupons'])->name('client.coupons.available');
+Route::post('/api/coupons/validate', [ClientCouponController::class, 'validateCoupon'])->name('client.coupons.validate');
 
 // --- Các chức năng cần đăng nhập ---
 Route::middleware(['auth'])->group(function () {
@@ -78,6 +84,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Mua ngay
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+
+    // Coupon sử dụng (cần đăng nhập)
+    Route::post('/api/coupons/use', [ClientCouponController::class, 'useCoupon'])->name('client.coupons.use');
+
+    // Lịch sử sử dụng coupon
+    Route::get('/coupon-history', [CouponHistoryController::class, 'index'])->name('client.coupon.history');
 
     // Thanh toán (yêu cầu đăng nhập)
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
@@ -183,9 +195,15 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
-    
+
     // Mua ngay
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
+
+    // Coupon sử dụng (cần đăng nhập)
+    Route::post('/api/coupons/use', [ClientCouponController::class, 'useCoupon'])->name('client.coupons.use');
+
+    // Lịch sử sử dụng coupon
+    Route::get('/coupon-history', [CouponHistoryController::class, 'index'])->name('client.coupon.history');
 
     // Mã giảm giá AJAX
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
@@ -205,15 +223,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
-    
+
     // Địa chỉ giao hàng (client)
     Route::resource('addresses', ClientShippingAddressController::class, [
         'as' => 'client',
         'except' => []
     ]);
     Route::patch('addresses/{address}/set-default', [ClientShippingAddressController::class, 'setDefault'])->name('client.addresses.set-default');
-    
-    Route::get('/checkout/success', function(Request $request) {
+
+    Route::get('/checkout/success', function (Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');

@@ -47,6 +47,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all coupon uses for the user.
+     */
+    public function couponUses()
+    {
+        return $this->hasMany(CouponUse::class);
+    }
+
+    /**
+     * Kiểm tra user đã sử dụng coupon này chưa
+     */
+    public function hasUsedCoupon($couponId)
+    {
+        return $this->couponUses()->where('coupon_id', $couponId)->exists();
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

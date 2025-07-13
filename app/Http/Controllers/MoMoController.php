@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Cart;
+use App\Models\CouponUse;
 
 class MoMoController extends Controller
 {
@@ -17,7 +18,7 @@ class MoMoController extends Controller
     private $accessKey = 'klm05TvNBzhg7h7j';
     private $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
     private $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
-    
+
     public function createPayment(Request $request)
     {
         try {
@@ -28,7 +29,7 @@ class MoMoController extends Controller
             }
 
             $orderId = time() . '_' . $orderData['user_id']; // Tạo orderId unique với format đúng
-            $amount = (int)$orderData['total']; // Đảm bảo amount là integer
+            $amount = (int) $orderData['total']; // Đảm bảo amount là integer
             $orderInfo = 'Thanh toán đơn hàng Encryption Shop #' . $orderId;
             $redirectUrl = route('momo.return');
             $ipnUrl = route('momo.notify');
@@ -39,22 +40,22 @@ class MoMoController extends Controller
 
             // Tạo signature theo đúng format MoMo yêu cầu
             // Format: accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=$requestType
-            $rawHash = "accessKey=" . $this->accessKey . 
-                      "&amount=" . $amount . 
-                      "&extraData=" . $extraData . 
-                      "&ipnUrl=" . $ipnUrl . 
-                      "&orderId=" . $orderId . 
-                      "&orderInfo=" . $orderInfo . 
-                      "&partnerCode=" . $this->partnerCode . 
-                      "&redirectUrl=" . $redirectUrl . 
-                      "&requestId=" . $requestId . 
-                      "&requestType=" . $requestType;
+            $rawHash = "accessKey=" . $this->accessKey .
+                "&amount=" . $amount .
+                "&extraData=" . $extraData .
+                "&ipnUrl=" . $ipnUrl .
+                "&orderId=" . $orderId .
+                "&orderInfo=" . $orderInfo .
+                "&partnerCode=" . $this->partnerCode .
+                "&redirectUrl=" . $redirectUrl .
+                "&requestId=" . $requestId .
+                "&requestType=" . $requestType;
             $signature = hash_hmac("sha256", $rawHash, $this->secretKey);
 
             $data = array(
                 'partnerCode' => $this->partnerCode,
                 'partnerName' => "EncryptionShop",
-                'storeId' => "EncryptionShopStore", 
+                'storeId' => "EncryptionShopStore",
                 'requestId' => $requestId,
                 'amount' => $amount,
                 'orderId' => $orderId,
@@ -87,24 +88,24 @@ class MoMoController extends Controller
                 return redirect($jsonResult['payUrl']);
             } else {
                 Log::error('MoMo Payment Error: ', $jsonResult);
-                
+
                 // Xóa order_data khỏi session để tránh vòng lặp
                 Session::forget('order_data');
-                
+
                 $errorMessage = 'Có lỗi xảy ra khi tạo thanh toán MoMo';
                 if (isset($jsonResult['message'])) {
                     $errorMessage .= ': ' . $jsonResult['message'];
                 }
-                
+
                 return redirect()->route('cart.checkout')->with('error', $errorMessage);
             }
 
         } catch (\Exception $e) {
             Log::error('MoMo Payment Exception: ' . $e->getMessage());
-            
+
             // Xóa order_data khỏi session để tránh vòng lặp
             Session::forget('order_data');
-            
+
             return redirect()->route('cart.checkout')->with('error', 'Có lỗi xảy ra khi xử lý thanh toán: ' . $e->getMessage());
         }
     }
@@ -199,7 +200,7 @@ class MoMoController extends Controller
                 // Thông tin người nhận
                 'recipient_name' => $shippingAddress ? $shippingAddress->name : $user->name,
                 'recipient_phone' => $shippingAddress ? $shippingAddress->phone : $user->phone,
-                'recipient_address' => $shippingAddress ? 
+                'recipient_address' => $shippingAddress ?
                     $shippingAddress->address_detail . ', ' . $shippingAddress->ward . ', ' . $shippingAddress->district . ', ' . $shippingAddress->province :
                     ($user->address ?? ''),
             ]);
@@ -207,7 +208,7 @@ class MoMoController extends Controller
             // Tạo chi tiết đơn hàng
             foreach ($carts as $cart) {
                 $price = $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price;
-                
+
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $cart->product_id,
@@ -228,6 +229,32 @@ class MoMoController extends Controller
             // Xóa giỏ hàng
             Cart::where('user_id', $user->id)->delete();
 
+            // GHI NHẬN VIỆC SỬ DỤNG COUPON VÀO DATABASE
+            if (!empty($orderData['coupon_code']) && $orderData['discount'] > 0) {
+                try {
+                    // Tìm coupon để ghi nhận việc sử dụng
+                    $coupon = \App\Models\Coupon::where('code', $orderData['coupon_code'])->first();
+                    if ($coupon) {
+                        // Tạo bản ghi sử dụng coupon
+                        \App\Models\CouponUse::create([
+                            'user_id' => $user->id,
+                            'coupon_id' => $coupon->id,
+                            'order_id' => $order->id,
+                            'discount_amount' => $orderData['discount'],
+                            'used_at' => now()
+                        ]);
+
+                        // Tăng số lần sử dụng của coupon
+                        $coupon->increment('used_count');
+
+                        Log::info("Coupon {$orderData['coupon_code']} used by user {$user->id} for order {$order->id} (MoMo payment)");
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error recording coupon usage in MoMo payment: ' . $e->getMessage());
+                    // Không return error để không ảnh hưởng đến việc đặt hàng
+                }
+            }
+
             // Xóa coupon khỏi session
             Session::forget(['applied_coupon', 'coupon_discount']);
 
@@ -245,20 +272,24 @@ class MoMoController extends Controller
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt(
+            $ch,
+            CURLOPT_HTTPHEADER,
+            array(
                 'Content-Type: application/json; charset=UTF-8', // Đúng theo tài liệu MoMo
-                'Content-Length: ' . strlen($data))
+                'Content-Length: ' . strlen($data)
+            )
         );
         curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Tối thiểu 30s theo tài liệu MoMo
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Tạm thời cho test environment
         $result = curl_exec($ch);
-        
+
         // Log curl error nếu có
         if (curl_error($ch)) {
             Log::error('CURL Error: ' . curl_error($ch));
         }
-        
+
         curl_close($ch);
         return $result;
     }
