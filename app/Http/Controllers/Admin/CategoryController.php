@@ -122,4 +122,38 @@ class CategoryController extends \App\Http\Controllers\Controller
         }
         return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
     }
+
+    /**
+     * Show form to create parent category
+     */
+    public function createParent()
+    {
+        return view('admin.categories.create-parent');
+    }
+
+    /**
+     * Store parent category
+     */
+    public function storeParent(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|boolean',
+        ]);
+
+        // Parent category has no parent_id
+        $validated['parent_id'] = null;
+
+        $category = Category::create($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Danh mục cha được tạo thành công.',
+                'category' => $category
+            ]);
+        }
+
+        return redirect()->route('categories.index')->with('success', 'Danh mục cha được tạo thành công.');
+    }
 }
