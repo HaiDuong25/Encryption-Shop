@@ -3,6 +3,7 @@
 
 
 <!-- Mirrored from themes.pixelstrap.com/fastkart/front-end/index-5.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 06 Nov 2024 13:12:21 GMT -->
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -35,9 +36,10 @@
 
     <!-- Template css -->
     <link id="color-link" rel="stylesheet" type="text/css" href="{{ asset('assets-front/css/style.css') }}">
-     @stack('style')
+    @stack('style')
 </head>
 @include('client.layout.partials.header')
+
 <body class="theme-color-3 dark">
 
     <!-- Loader Start -->
@@ -56,44 +58,44 @@
     <div class="mobile-menu d-md-none d-block mobile-cart">
         <ul>
             <li class="active">
-                <a href="index.html">
+                <a href="{{ route('home') }}">
                     <i class="iconly-Home icli"></i>
-                    <span>Home</span>
+                    <span>Trang chủ</span>
                 </a>
             </li>
 
             <li class="mobile-category">
-                <a href="javascript:void(0)">
+                <a href="{{ route('client.products.index') }}">
                     <i class="iconly-Category icli js-link"></i>
-                    <span>Category</span>
+                    <span>Sản phẩm</span>
                 </a>
             </li>
 
             <li>
-                <a href="search.html" class="search-box">
-                    <i class="iconly-Search icli"></i>
-                    <span>Search</span>
+                <a href="{{ route('client.news.index') }}">
+                    <i class="iconly-Document icli"></i>
+                    <span>Tin tức</span>
                 </a>
             </li>
 
             <li>
-                <a href="wishlist.html" class="notifi-wishlist">
+                <a href="{{ route('wishlist.index') }}" class="notifi-wishlist">
                     <i class="iconly-Heart icli"></i>
-                    <span>My Wish</span>
+                    <span>Yêu thích</span>
                 </a>
             </li>
 
             <li>
-                <a href="cart.html">
+                <a href="{{ route('cart.index') }}">
                     <i class="iconly-Bag-2 icli fly-cate"></i>
-                    <span>Cart</span>
+                    <span>Giỏ hàng</span>
                 </a>
             </li>
         </ul>
     </div>
     <!-- mobile fix menu end -->
 
-  @yield('content')
+    @yield('content')
     <!-- Service Section End -->
 
     <!-- Footer Start -->
@@ -113,8 +115,8 @@
                     <div class="row g-sm-4 g-2">
                         <div class="col-lg-6">
                             <div class="slider-image">
-                                <img src="{{ asset('assets-front') }}/images/product/category/1.jpg" class="img-fluid blur-up lazyload"
-                                    alt="">
+                                <img src="{{ asset('assets-front') }}/images/product/category/1.jpg"
+                                    class="img-fluid blur-up lazyload" alt="">
                             </div>
                         </div>
 
@@ -345,4 +347,5 @@
 
 
 <!-- Mirrored from themes.pixelstrap.com/fastkart/front-end/index-5.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 06 Nov 2024 13:12:43 GMT -->
+
 </html>

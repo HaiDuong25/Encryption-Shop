@@ -32,19 +32,20 @@
                         <form action="{{ route('client.products.index') }}" method="GET" class="mb-4 search-form">
 
                             @foreach(request('categories', []) as $categoryId)
-                            <input type="hidden" name="categories[]" value="{{ $categoryId }}">
+                                <input type="hidden" name="categories[]" value="{{ $categoryId }}">
                             @endforeach
 
                             @foreach(request('brands', []) as $brandId)
-                            <input type="hidden" name="brands[]" value="{{ $brandId }}">
+                                <input type="hidden" name="brands[]" value="{{ $brandId }}">
                             @endforeach
 
                             <input type="hidden" name="min_price" value="{{ request('min_price') }}">
                             <input type="hidden" name="max_price" value="{{ request('max_price') }}">
 
                             <div class="input-group shadow rounded search-input-group">
-                                <input type="text" class="form-control border-0 search-input" id="search-product" name="keyword"
-                                    placeholder="🔍 Tìm kiếm sản phẩm..." value="{{ request('keyword') }}">
+                                <input type="text" class="form-control border-0 search-input" id="search-product"
+                                    name="keyword" placeholder="🔍 Tìm kiếm sản phẩm..."
+                                    value="{{ request('keyword') }}">
                                 <button type="submit" class="btn btn-primary search-button">
                                     <i class="fa fa-search me-1"></i> Tìm kiếm
                                 </button>
@@ -142,20 +143,8 @@
                                         </div>
                                     </li>
 
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="javascript:void(0)"
-                                            data-bs-toggle="dropdown">Tin tức</a>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <a class="dropdown-item" href="#">Xu hướng thời trang</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="#">Bí quyết phối đồ</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="#">Khuyến mãi</a>
-                                            </li>
-                                        </ul>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('client.news.index') }}">Tin tức</a>
                                     </li>
 
                                     <li class="nav-item">
@@ -184,21 +173,21 @@
 
 
                             @php
-                            $cartItems = collect([]);
-                            $totalQuantity = 0;
-                            $totalOrders = 0;
-                            if(Auth::check()) {
-                            $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
-                            $totalQuantity = $cartItems->sum('quantity');
-                            $totalOrders = \App\Models\Order::where('user_id', Auth::id())->count();
-                            }
+                                $cartItems = collect([]);
+                                $totalQuantity = 0;
+                                $totalOrders = 0;
+                                if (Auth::check()) {
+                                    $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
+                                    $totalQuantity = $cartItems->sum('quantity');
+                                    $totalOrders = \App\Models\Order::where('user_id', Auth::id())->count();
+                                }
                             @endphp
 
                             <li>
                                 <a href="{{ route('cart.index') }}" class="header-icon swap-icon">
                                     <i class="fa-solid fa-cart-shopping"></i>
                                     @if($totalQuantity > 0)
-                                    <small class="badge-number badge-light">{{ $totalQuantity }}</small>
+                                        <small class="badge-number badge-light">{{ $totalQuantity }}</small>
                                     @endif
                                 </a>
                             </li>
@@ -207,7 +196,7 @@
                             <li>
                                 <a href="{{ route('client.orders.index') }}" class="header-icon bag-icon">
                                     @if(Auth::check() && $totalOrders > 0)
-                                    <small class="badge-number badge-light">{{ $totalOrders }}</small>
+                                        <small class="badge-number badge-light">{{ $totalOrders }}</small>
                                     @endif
                                     <i class="fa-solid fa-bag-shopping"></i>
                                 </a>
@@ -215,30 +204,30 @@
                         </ul>
 
                         @if(Auth::check())
-                        <a href="{{ route('account.index') }}" class="user-box">
-                            <span class="header-icon">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-                        </a>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="user-box">
-                                <div class="user-name">
-                                    <h6 class="text-content">Xin chào, {{ Auth::user()->name }}</h6>
-                                    <h4 class="mt-1">Đăng xuất</h4>
-                                </div>
-                            </button>
-                        </form>
+                            <a href="{{ route('account.index') }}" class="user-box">
+                                <span class="header-icon">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="user-box">
+                                    <div class="user-name">
+                                        <h6 class="text-content">Xin chào, {{ Auth::user()->name }}</h6>
+                                        <h4 class="mt-1">Đăng xuất</h4>
+                                    </div>
+                                </button>
+                            </form>
                         @else
-                        <a href="{{ route('login.form') }}" class="user-box">
-                            <span class="header-icon">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-                            <div class="user-name">
-                                <h6 class="text-content">Tài khoản của bạn</h6>
-                                <h4 class="mt-1">Đăng nhập</h4>
-                            </div>
-                        </a>
+                            <a href="{{ route('login.form') }}" class="user-box">
+                                <span class="header-icon">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <div class="user-name">
+                                    <h6 class="text-content">Tài khoản của bạn</h6>
+                                    <h4 class="mt-1">Đăng nhập</h4>
+                                </div>
+                            </a>
                         @endif
 
                     </div>
