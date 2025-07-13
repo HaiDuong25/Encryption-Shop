@@ -11,6 +11,10 @@
             <input type="text" name="title" class="form-control" value="{{ old('title', $banner->title) }}" required>
         </div>
         <div class="mb-3">
+            <label class="form-label">Mô tả</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Nhập mô tả banner">{{ old('description', $banner->description) }}</textarea>
+        </div>
+        <div class="mb-3">
             <label class="form-label">Ảnh banner hiện tại</label><br>
             @if(!empty($banner->images) && is_array($banner->images))
                 <div class="d-flex flex-wrap gap-2">
