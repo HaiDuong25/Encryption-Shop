@@ -6,55 +6,72 @@
         <div class="container-fluid-lg">
             <div id="mainBannerCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
                 <div class="carousel-inner rounded-4 shadow-lg">
-                    <div class="carousel-item active">
-                        <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1600&q=80"
-                            class="d-block w-100 banner-img-large" alt="Banner 1">
-                        <div class="carousel-caption d-none d-md-block text-start">
-                            <h2 class="fw-bold display-5 mb-2">BST Mùa Hè 2025</h2>
-                            <p class="lead mb-3">Khám phá phong cách mới, trẻ trung &amp; năng động</p>
-                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a> --}}
+                    @if($banners && $banners->count() > 0)
+                                @foreach($banners as $index => $banner)
+                                            <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
+                                                @php
+                                                    $images = json_decode($banner->image, true);
+                                                    $mainImage = is_array($images) && !empty($images) ? $images[0] : $banner->image;
+                                                @endphp
+                                                <img src="{{ asset('storage/' . $mainImage) }}" class="d-block w-100 banner-img-large"
+                                                    alt="{{ $banner->title }}">
+                                                <div class="carousel-caption d-none d-md-block text-start">
+                                                    <h2 class="fw-bold display-5 mb-2">{{ $banner->title }}</h2>
+                                                    @if($banner->link)
+                                                        <a href="{{ $banner->link }}" class="btn btn-lg btn-primary px-4 py-2">
+                                                            Xem ngay
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                @endforeach
+                    @else
+                        <!-- Fallback banners nếu không có dữ liệu -->
+                        <div class="carousel-item active">
+                            <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1600&q=80"
+                                class="d-block w-100 banner-img-large" alt="Banner 1">
+                            <div class="carousel-caption d-none d-md-block text-start">
+                                <h2 class="fw-bold display-5 mb-2">BST Mùa Hè 2025</h2>
+                                <p class="lead mb-3">Khám phá phong cách mới, trẻ trung &amp; năng động</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1600&q=80"
-                            class="d-block w-100 banner-img-large" alt="Banner 2">
-                        <div class="carousel-caption d-none d-md-block text-start">
-                            <h2 class="fw-bold display-5 mb-2">Ưu đãi Đặc Biệt</h2>
-                            <p class="lead mb-3">Giảm giá lên đến 50% cho các sản phẩm hot trend</p>
-                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a> --}}
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1600&q=80"
+                                class="d-block w-100 banner-img-large" alt="Banner 2">
+                            <div class="carousel-caption d-none d-md-block text-start">
+                                <h2 class="fw-bold display-5 mb-2">Ưu đãi Đặc Biệt</h2>
+                                <p class="lead mb-3">Giảm giá lên đến 50% cho các sản phẩm hot trend</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80"
-                            class="d-block w-100 banner-img-large" alt="Banner 3">
-                        <div class="carousel-caption d-none d-md-block text-start">
-                            <h2 class="fw-bold display-5 mb-2">BST Đầm Dạ Hội</h2>
-                            <p class="lead mb-3">Sang trọng, quyến rũ cho mọi sự kiện</p>
-                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a> --}}
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80"
+                                class="d-block w-100 banner-img-large" alt="Banner 3">
+                            <div class="carousel-caption d-none d-md-block text-start">
+                                <h2 class="fw-bold display-5 mb-2">BST Đầm Dạ Hội</h2>
+                                <p class="lead mb-3">Sang trọng, quyến rũ cho mọi sự kiện</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80"
-                            class="d-block w-100 banner-img-large" alt="Banner 4">
-                        <div class="carousel-caption d-none d-md-block text-start">
-                            <h2 class="fw-bold display-5 mb-2">Áo Sơ Mi Nam Cao Cấp</h2>
-                            <p class="lead mb-3">Lịch lãm, trẻ trung cho phái mạnh</p>
-                            {{-- <a href="{{ route('client.products.index') }}" class="btn btn-lg btn-primary px-4 py-2">Mua
-                                ngay</a>
-                        </div> --}}
-                    </div>
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80"
+                                class="d-block w-100 banner-img-large" alt="Banner 4">
+                            <div class="carousel-caption d-none d-md-block text-start">
+                                <h2 class="fw-bold display-5 mb-2">Áo Sơ Mi Nam Cao Cấp</h2>
+                                <p class="lead mb-3">Lịch lãm, trẻ trung cho phái mạnh</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#mainBannerCarousel"
-                    data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#mainBannerCarousel"
-                    data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
+
+                @if($banners && $banners->count() > 1)
+                    <button class="carousel-control-prev" type="button" data-bs-target="#mainBannerCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#mainBannerCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                @endif
             </div>
         </div>
     </section>
@@ -367,102 +384,227 @@
                 <p class="text-muted" style="font-size: 1.1rem;">Chọn mã phù hợp để nhận ưu đãi khi thanh toán!</p>
             </div>
             <div class="row row-cols-1 row-cols-md-3 g-5 justify-content-center">
-                <!-- Voucher 1 -->
-                <div class="col">
-                    <div class="voucher-card h-100 text-center"
-                        style="background: linear-gradient(135deg, #fff9e6 0%, #ffe0b3 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(255, 193, 7, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
-                        onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(255, 193, 7, 0.3)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(255, 193, 7, 0.2)';">
-                        <div class="voucher-decoration"
-                            style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255, 193, 7, 0.1); border-radius: 50%; transform: rotate(45deg);">
-                        </div>
-                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
-                            style="position: relative; z-index: 1;">
-                            <div class="voucher-icon mb-3">
-                                <i class="fa-solid fa-gift fa-3x text-warning"
-                                    style="background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);"></i>
+                @if($coupons && $coupons->count() > 0)
+                        @foreach($coupons->take(3) as $index => $coupon)
+                                <div class="col">
+                                    @php
+                                        $colors = [
+                                            ['bg' => 'linear-gradient(135deg, #fff9e6 0%, #ffe0b3 100%)', 'shadow' => 'rgba(255, 193, 7, 0.2)', 'shadow_hover' => 'rgba(255, 193, 7, 0.3)', 'decoration' => 'rgba(255, 193, 7, 0.1)', 'icon_bg' => 'linear-gradient(135deg, #fff3cd 0%, #ffe082 100%)', 'icon_shadow' => 'rgba(255, 193, 7, 0.3)', 'icon_color' => 'text-warning', 'badge_class' => 'bg-warning text-dark', 'text_color' => 'text-danger', 'btn_class' => 'btn-danger', 'border_class' => 'border-warning text-warning'],
+                                            ['bg' => 'linear-gradient(135deg, #e8f5e8 0%, #c3e6c3 100%)', 'shadow' => 'rgba(40, 167, 69, 0.2)', 'shadow_hover' => 'rgba(40, 167, 69, 0.3)', 'decoration' => 'rgba(40, 167, 69, 0.1)', 'icon_bg' => 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', 'icon_shadow' => 'rgba(40, 167, 69, 0.3)', 'icon_color' => 'text-success', 'badge_class' => 'bg-success text-white', 'text_color' => 'text-success', 'btn_class' => 'btn-success', 'border_class' => 'border-success text-success'],
+                                            ['bg' => 'linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%)', 'shadow' => 'rgba(0, 123, 255, 0.2)', 'shadow_hover' => 'rgba(0, 123, 255, 0.3)', 'decoration' => 'rgba(0, 123, 255, 0.1)', 'icon_bg' => 'linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%)', 'icon_shadow' => 'rgba(0, 123, 255, 0.3)', 'icon_color' => 'text-primary', 'badge_class' => 'bg-primary text-white', 'text_color' => 'text-primary', 'btn_class' => 'btn-primary', 'border_class' => 'border-primary text-primary']
+                                        ];
+                                        $colorScheme = $colors[$index % 3];
+
+                                        // Format discount value
+                                        $discountText = '';
+                                        if ($coupon->discount_type === 'percentage') {
+                                            $discountText = "Giảm {$coupon->discount}%";
+                                        } else {
+                                            $discountText = "Giảm " . number_format($coupon->discount) . "₫";
+                                        }
+
+                                        // Generate badge labels
+                                        $badges = ['🔥 Hot', '⚡ Giới hạn', '🚚 Freeship', '💎 VIP', '⭐ Đặc biệt', '🎁 Khuyến mãi'];
+                                    @endphp
+
+                                    <div class="voucher-card h-100 text-center"
+                                        style="background: {{ $colorScheme['bg'] }}; border-radius: 2rem; box-shadow: 0 10px 30px {{ $colorScheme['shadow'] }}; transition: all 0.3s ease; overflow: hidden; position: relative;"
+                                        onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px {{ $colorScheme['shadow_hover'] }}';"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px {{ $colorScheme['shadow'] }}';">
+                                        <div class="voucher-decoration"
+                                            style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: {{ $colorScheme['decoration'] }}; border-radius: 50%; transform: rotate(45deg);">
+                                        </div>
+                                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
+                                            style="position: relative; z-index: 1;">
+                                            <div class="voucher-icon mb-3">
+                                                <i class="fa-solid fa-gift fa-3x {{ $colorScheme['icon_color'] }}"
+                                                    style="background: {{ $colorScheme['icon_bg'] }}; border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px {{ $colorScheme['icon_shadow'] }};"></i>
+                                            </div>
+                                            <div class="voucher-code mb-3">
+                                                <span
+                                                    class="badge {{ $colorScheme['badge_class'] }} px-4 py-2 rounded-pill shadow-sm fw-bold"
+                                                    style="font-size:1.2rem; letter-spacing: 1px;">{{ $coupon->code }}</span>
+                                            </div>
+                                            <h4 class="fw-bold {{ $colorScheme['text_color'] }} mb-3" style="font-size:1.4rem;">
+                                                {{ $discountText }}</h4>
+                                            @if($coupon->start_date && $coupon->end_date)
+                                                <p class="text-muted mb-2" style="font-size:1.1rem;">
+                                                    Từ {{ $coupon->start_date->format('d/m/Y') }} đến {{ $coupon->end_date->format('d/m/Y') }}
+                                                </p>
+                                            @elseif($coupon->expires_at)
+                                                <p class="text-muted mb-2" style="font-size:1.1rem;">
+                                                    Hết hạn: {{ $coupon->expires_at->format('d/m/Y') }}
+                                                </p>
+                                            @else
+                                                <p class="text-muted mb-2" style="font-size:1.1rem;">Không giới hạn thời gian</p>
+                                            @endif
+
+                                            @if($coupon->usage_limit > 0)
+                                                            @php
+                                                                $remaining = $coupon->remainingUsage();
+                                                                $usagePercent = ($coupon->used_count / $coupon->usage_limit) * 100;
+                                                                $hasUsed = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
+                                                            @endphp
+                                                            <div class="mb-3">
+                                                                @if($hasUsed)
+                                                                    <div class="alert alert-info py-2 px-3 mb-2"
+                                                                        style="border-radius: 15px; font-size: 0.9rem;">
+                                                                        <i class="fa-solid fa-check-circle me-1"></i> Bạn đã sử dụng mã này rồi
+                                                                    </div>
+                                                                @endif
+                                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                    <small class="text-muted">Còn lại:
+                                                                        <strong>{{ $remaining }}/{{ $coupon->usage_limit }}</strong></small>
+                                                                    <small class="text-muted">{{ round($usagePercent) }}% đã dùng</small>
+                                                                </div>
+                                                                <div class="progress" style="height: 6px; border-radius: 3px;">
+                                                                    <div class="progress-bar {{ $remaining <= 5 ? 'bg-danger' : ($remaining <= 15 ? 'bg-warning' : 'bg-success') }}"
+                                                                        role="progressbar" style="width: {{ $usagePercent }}%; transition: width 0.3s ease;"
+                                                                        aria-valuenow="{{ $usagePercent }}" aria-valuemin="0" aria-valuemax="100">
+                                                                    </div>
+                                                                </div>
+                                                                @if($remaining <= 5)
+                                                                    <small class="text-danger fw-bold mt-1 d-block">
+                                                                        <i class="fa-solid fa-fire"></i> Sắp hết!
+                                                                    </small>
+                                                                @elseif($remaining <= 15)
+                                                                    <small class="text-warning fw-bold mt-1 d-block">
+                                                                        <i class="fa-solid fa-clock"></i> Còn ít!
+                                                                    </small>
+                                                                @endif
+                                                            </div>
+                                            @else
+                                                            @php
+                                                                $hasUsed = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
+                                                            @endphp
+                                                            @if($hasUsed)
+                                                                <div class="alert alert-info py-2 px-3 mb-3" style="border-radius: 15px; font-size: 0.9rem;">
+                                                                    <i class="fa-solid fa-check-circle me-1"></i> Bạn đã sử dụng mã này rồi
+                                                                </div>
+                                                            @else
+                                                                <p class="text-success mb-3" style="font-size:0.9rem;">
+                                                                    <i class="fa-solid fa-infinity"></i> Không giới hạn số lần sử dụng
+                                                                </p>
+                                                            @endif
+                                            @endif
+                                            @php
+                                                $isDisabled = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
+                                            @endphp
+                                <button
+                                                class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
+                                                data-code="{{ $coupon->code }}"
+                                                style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
+                                                {{ $isDisabled ? 'disabled' : '' }}
+                                                onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
+                                                onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
+                                                <i class="fa-solid fa-{{ $isDisabled ? 'check' : 'copy' }} me-2"></i>
+                                                {{ $isDisabled ? 'Đã sử dụng' : 'Sao chép mã' }}
+                                            </button>
+                                            <span class="badge bg-white {{ $colorScheme['border_class'] }} border px-3 py-1 shadow-sm"
+                                                style="font-size: 0.9rem; font-weight: 600;">{{ $badges[$index % count($badges)] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                        @endforeach
+                @else
+                    <!-- Fallback vouchers nếu không có dữ liệu -->
+                    <!-- Voucher 1 -->
+                    <div class="col">
+                        <div class="voucher-card h-100 text-center"
+                            style="background: linear-gradient(135deg, #fff9e6 0%, #ffe0b3 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(255, 193, 7, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
+                            onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(255, 193, 7, 0.3)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(255, 193, 7, 0.2)';">
+                            <div class="voucher-decoration"
+                                style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255, 193, 7, 0.1); border-radius: 50%; transform: rotate(45deg);">
                             </div>
-                            <div class="voucher-code mb-3">
-                                <span class="badge bg-warning text-dark px-4 py-2 rounded-pill shadow-sm fw-bold"
-                                    style="font-size:1.2rem; letter-spacing: 1px;">JUL10</span>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
+                                style="position: relative; z-index: 1;">
+                                <div class="voucher-icon mb-3">
+                                    <i class="fa-solid fa-gift fa-3x text-warning"
+                                        style="background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);"></i>
+                                </div>
+                                <div class="voucher-code mb-3">
+                                    <span class="badge bg-warning text-dark px-4 py-2 rounded-pill shadow-sm fw-bold"
+                                        style="font-size:1.2rem; letter-spacing: 1px;">WELCOME10</span>
+                                </div>
+                                <h4 class="fw-bold text-danger mb-3" style="font-size:1.4rem;">Giảm 10%</h4>
+                                <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn hàng đầu tiên</p>
+                                <button class="btn btn-danger btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
+                                    data-code="WELCOME10" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.transform='scale(1)';">
+                                    <i class="fa-solid fa-copy me-2"></i> Sao chép mã
+                                </button>
+                                <span class="badge bg-white text-warning border border-warning px-3 py-1 shadow-sm"
+                                    style="font-size: 0.9rem; font-weight: 600;">🔥 Hot</span>
                             </div>
-                            <h4 class="fw-bold text-danger mb-3" style="font-size:1.4rem;">Giảm 10% (tối đa 10K)</h4>
-                            <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn từ 200.000₫</p>
-                            <button class="btn btn-danger btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
-                                data-code="JUL10" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
-                                onmouseover="this.style.transform='scale(1.05)';"
-                                onmouseout="this.style.transform='scale(1)';">
-                                <i class="fa-solid fa-copy me-2"></i> Sao chép mã
-                            </button>
-                            <span class="badge bg-white text-warning border border-warning px-3 py-1 shadow-sm"
-                                style="font-size: 0.9rem; font-weight: 600;">🔥 Hot</span>
                         </div>
                     </div>
-                </div>
-                <!-- Voucher 2 -->
-                <div class="col">
-                    <div class="voucher-card h-100 text-center"
-                        style="background: linear-gradient(135deg, #e8f5e8 0%, #c3e6c3 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(40, 167, 69, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
-                        onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(40, 167, 69, 0.3)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(40, 167, 69, 0.2)';">
-                        <div class="voucher-decoration"
-                            style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(40, 167, 69, 0.1); border-radius: 50%; transform: rotate(45deg);">
-                        </div>
-                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
-                            style="position: relative; z-index: 1;">
-                            <div class="voucher-icon mb-3">
-                                <i class="fa-solid fa-gift fa-3x text-success"
-                                    style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);"></i>
+                    <!-- Voucher 2 -->
+                    <div class="col">
+                        <div class="voucher-card h-100 text-center"
+                            style="background: linear-gradient(135deg, #e8f5e8 0%, #c3e6c3 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(40, 167, 69, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
+                            onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(40, 167, 69, 0.3)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(40, 167, 69, 0.2)';">
+                            <div class="voucher-decoration"
+                                style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(40, 167, 69, 0.1); border-radius: 50%; transform: rotate(45deg);">
                             </div>
-                            <div class="voucher-code mb-3">
-                                <span class="badge bg-success text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
-                                    style="font-size:1.2rem; letter-spacing: 1px;">HOT20</span>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
+                                style="position: relative; z-index: 1;">
+                                <div class="voucher-icon mb-3">
+                                    <i class="fa-solid fa-gift fa-3x text-success"
+                                        style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);"></i>
+                                </div>
+                                <div class="voucher-code mb-3">
+                                    <span class="badge bg-success text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
+                                        style="font-size:1.2rem; letter-spacing: 1px;">SAVE20</span>
+                                </div>
+                                <h4 class="fw-bold text-success mb-3" style="font-size:1.4rem;">Giảm 20%</h4>
+                                <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn từ 1.000.000₫</p>
+                                <button class="btn btn-success btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
+                                    data-code="SAVE20" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.transform='scale(1)';">
+                                    <i class="fa-solid fa-copy me-2"></i> Sao chép mã
+                                </button>
+                                <span class="badge bg-white text-success border border-success px-3 py-1 shadow-sm"
+                                    style="font-size: 0.9rem; font-weight: 600;">⚡ Giới hạn</span>
                             </div>
-                            <h4 class="fw-bold text-success mb-3" style="font-size:1.4rem;">Giảm 20%</h4>
-                            <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn từ 1.000.000₫</p>
-                            <button class="btn btn-success btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
-                                data-code="HOT20" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
-                                onmouseover="this.style.transform='scale(1.05)';"
-                                onmouseout="this.style.transform='scale(1)';">
-                                <i class="fa-solid fa-copy me-2"></i> Sao chép mã
-                            </button>
-                            <span class="badge bg-white text-success border border-success px-3 py-1 shadow-sm"
-                                style="font-size: 0.9rem; font-weight: 600;">⚡ Giới hạn</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Voucher 3 -->
-                <div class="col">
-                    <div class="voucher-card h-100 text-center"
-                        style="background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
-                        onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0, 123, 255, 0.3)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 123, 255, 0.2)';">
-                        <div class="voucher-decoration"
-                            style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(0, 123, 255, 0.1); border-radius: 50%; transform: rotate(45deg);">
-                        </div>
-                        <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
-                            style="position: relative; z-index: 1;">
-                            <div class="voucher-icon mb-3">
-                                <i class="fa-solid fa-gift fa-3x text-primary"
-                                    style="background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);"></i>
-                            </div>
-                            <div class="voucher-code mb-3">
-                                <span class="badge bg-primary text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
-                                    style="font-size:1.2rem; letter-spacing: 1px;">FREESHIP</span>
-                            </div>
-                            <h4 class="fw-bold text-primary mb-3" style="font-size:1.4rem;">Freeship toàn quốc</h4>
-                            <p class="text-muted mb-3" style="font-size:1.1rem;">Không giới hạn giá trị đơn</p>
-                            <button class="btn btn-primary btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
-                                data-code="FREESHIP" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
-                                onmouseover="this.style.transform='scale(1.05)';"
-                                onmouseout="this.style.transform='scale(1)';">
-                                <i class="fa-solid fa-copy me-2"></i> Sao chép mã
-                            </button>
-                            <span class="badge bg-white text-primary border border-primary px-3 py-1 shadow-sm"
-                                style="font-size: 0.9rem; font-weight: 600;">🚚 Freeship</span>
                         </div>
                     </div>
-                </div>
+                    <!-- Voucher 3 -->
+                    <div class="col">
+                        <div class="voucher-card h-100 text-center"
+                            style="background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
+                            onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0, 123, 255, 0.3)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 123, 255, 0.2)';">
+                            <div class="voucher-decoration"
+                                style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(0, 123, 255, 0.1); border-radius: 50%; transform: rotate(45deg);">
+                            </div>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
+                                style="position: relative; z-index: 1;">
+                                <div class="voucher-icon mb-3">
+                                    <i class="fa-solid fa-gift fa-3x text-primary"
+                                        style="background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);"></i>
+                                </div>
+                                <div class="voucher-code mb-3">
+                                    <span class="badge bg-primary text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
+                                        style="font-size:1.2rem; letter-spacing: 1px;">FREESHIP</span>
+                                </div>
+                                <h4 class="fw-bold text-primary mb-3" style="font-size:1.4rem;">Freeship toàn quốc</h4>
+                                <p class="text-muted mb-3" style="font-size:1.1rem;">Không giới hạn giá trị đơn</p>
+                                <button class="btn btn-primary btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
+                                    data-code="FREESHIP" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.transform='scale(1)';">
+                                    <i class="fa-solid fa-copy me-2"></i> Sao chép mã
+                                </button>
+                                <span class="badge bg-white text-primary border border-primary px-3 py-1 shadow-sm"
+                                    style="font-size: 0.9rem; font-weight: 600;">🚚 Freeship</span>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </section>
@@ -470,12 +612,18 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.copy-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
+                    // Kiểm tra nếu button bị disabled
+                    if (btn.disabled || btn.classList.contains('disabled')) {
+                        return;
+                    }
+
                     const code = btn.getAttribute('data-code');
                     navigator.clipboard.writeText(code).then(function () {
+                        const originalHTML = btn.innerHTML;
                         btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Đã sao chép';
                         btn.disabled = true;
                         setTimeout(function () {
-                            btn.innerHTML = '<i class="fa-solid fa-copy me-1"></i> Sao chép mã';
+                            btn.innerHTML = originalHTML;
                             btn.disabled = false;
                         }, 2000);
                     });
@@ -878,135 +1026,200 @@
                 <h2 class="fw-bold" style="font-size: 2rem;">Tin tức nổi bật</h2>
             </div>
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5 justify-content-center">
-                <!-- News 1 -->
-                <div class="col">
-                    <div class="card border-0 shadow-lg h-100"
-                        style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
-                        onmouseover="this.style.transform='translateY(-10px)'"
-                        onmouseout="this.style.transform='translateY(0)'">
-                        <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
-                            <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80"
-                                class="card-img-top img-fluid" alt="Tin tức 1"
-                                style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
-                                onmouseover="this.style.transform='scale(1.05)';"
-                                onmouseout="this.style.transform='scale(1)';">
-                            <div class="position-absolute top-0 start-0 p-3">
-                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm fw-bold">Xu
-                                    hướng</span>
-                            </div>
-                        </div>
-                        <div class="card-body d-flex flex-column justify-content-between p-4">
-                            <div class="mb-3">
-                                <div class="text-muted small mb-2">
-                                    <i class="fa-solid fa-calendar-days me-2"></i>10 Tháng 7, 2025
+                @if($news && $news->count() > 0)
+                        @foreach($news->take(3) as $index => $article)
+                                <div class="col">
+                                    <div class="card border-0 shadow-lg h-100"
+                                        style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
+                                        onmouseover="this.style.transform='translateY(-10px)'"
+                                        onmouseout="this.style.transform='translateY(0)'">
+                                        <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
+                                            @php
+                                                $newsImages = json_decode($article->image, true);
+                                                $mainNewsImage = is_array($newsImages) && !empty($newsImages) ? $newsImages[0] : $article->image;
+                                                // Fallback images nếu không có ảnh
+                                                $fallbackImages = [
+                                                    'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80',
+                                                    'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
+                                                    'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80'
+                                                ];
+                                                $imageUrl = $mainNewsImage ? asset('storage/' . $mainNewsImage) : $fallbackImages[$index % 3];
+                                            @endphp
+                                            <img src="{{ $imageUrl }}" class="card-img-top img-fluid" alt="{{ $article->title }}"
+                                                style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
+                                                onmouseover="this.style.transform='scale(1.05)';"
+                                                onmouseout="this.style.transform='scale(1)';">
+                                            <div class="position-absolute top-0 start-0 p-3">
+                                                @php
+                                                    $badges = ['Xu hướng', 'Bí quyết', 'Hot', 'Mới', 'Thời trang', 'Style'];
+                                                    $badgeColors = ['bg-warning text-dark', 'bg-success text-white', 'bg-primary text-white', 'bg-info text-white', 'bg-secondary text-white', 'bg-danger text-white'];
+                                                    $badgeIndex = $index % count($badges);
+                                                @endphp
+                                                <span
+                                                    class="badge {{ $badgeColors[$badgeIndex] }} px-3 py-2 rounded-pill shadow-sm fw-bold">
+                                                    {{ $badges[$badgeIndex] }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-body d-flex flex-column justify-content-between p-4">
+                                            <div class="mb-3">
+                                                <div class="text-muted small mb-2">
+                                                    <i
+                                                        class="fa-solid fa-calendar-days me-2"></i>{{ $article->created_at->format('j \T\h\á\n\g n, Y') }}
+                                                </div>
+                                                <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                                    {{ $article->title }}
+                                                </h4>
+                                                <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
+                                                    {{ Str::limit(strip_tags($article->content), 150) }}
+                                                </p>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
+                                                    style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
+                                                    Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                                </a>
+                                                <div class="d-flex align-items-center text-muted">
+                                                    <i class="fa-solid fa-eye me-1"></i>
+                                                    <span>{{ rand(200, 2000) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
-                                    BST Thu Đông 2025: Xu hướng mới lên ngôi
-                                </h4>
-                                <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
-                                    Khám phá những mẫu thiết kế mới nhất cho mùa thu đông, mang phong cách sang trọng và
-                                    hiện đại cùng những gam màu ấm áp.
-                                </p>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
-                                    style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
-                                    Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
-                                </a>
-                                <div class="d-flex align-items-center text-muted">
-                                    <i class="fa-solid fa-eye me-1"></i>
-                                    <span>1.2k</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- News 2 -->
-                <div class="col">
-                    <div class="card border-0 shadow-lg h-100"
-                        style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
-                        onmouseover="this.style.transform='translateY(-10px)'"
-                        onmouseout="this.style.transform='translateY(0)'">
-                        <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
-                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80"
-                                class="card-img-top img-fluid" alt="Tin tức 2"
-                                style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
-                                onmouseover="this.style.transform='scale(1.05)';"
-                                onmouseout="this.style.transform='scale(1)';">
-                            <div class="position-absolute top-0 start-0 p-3">
-                                <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Bí
-                                    quyết</span>
-                            </div>
-                        </div>
-                        <div class="card-body d-flex flex-column justify-content-between p-4">
-                            <div class="mb-3">
-                                <div class="text-muted small mb-2">
-                                    <i class="fa-solid fa-calendar-days me-2"></i>8 Tháng 7, 2025
-                                </div>
-                                <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
-                                    Bí quyết phối đồ công sở thanh lịch
-                                </h4>
-                                <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
-                                    Gợi ý cách phối đồ công sở giúp bạn tự tin và nổi bật mỗi ngày tại nơi làm việc với
-                                    phong cách chuyên nghiệp.
-                                </p>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
-                                    style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
-                                    Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
-                                </a>
-                                <div class="d-flex align-items-center text-muted">
-                                    <i class="fa-solid fa-eye me-1"></i>
-                                    <span>856</span>
+                        @endforeach
+                @else
+                    <!-- Fallback news nếu không có dữ liệu -->
+                    <!-- News 1 -->
+                    <div class="col">
+                        <div class="card border-0 shadow-lg h-100"
+                            style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-10px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
+                                <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80"
+                                    class="card-img-top img-fluid" alt="Tin tức 1"
+                                    style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
+                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.transform='scale(1)';">
+                                <div class="position-absolute top-0 start-0 p-3">
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm fw-bold">Xu
+                                        hướng</span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- News 3 -->
-                <div class="col">
-                    <div class="card border-0 shadow-lg h-100"
-                        style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
-                        onmouseover="this.style.transform='translateY(-10px)'"
-                        onmouseout="this.style.transform='translateY(0)'">
-                        <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
-                            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
-                                class="card-img-top img-fluid" alt="Tin tức 3"
-                                style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
-                                onmouseover="this.style.transform='scale(1.05)';"
-                                onmouseout="this.style.transform='scale(1)';">
-                            <div class="position-absolute top-0 start-0 p-3">
-                                <span
-                                    class="badge bg-primary text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Hot</span>
-                            </div>
-                        </div>
-                        <div class="card-body d-flex flex-column justify-content-between p-4">
-                            <div class="mb-3">
-                                <div class="text-muted small mb-2">
-                                    <i class="fa-solid fa-calendar-days me-2"></i>5 Tháng 7, 2025
+                            <div class="card-body d-flex flex-column justify-content-between p-4">
+                                <div class="mb-3">
+                                    <div class="text-muted small mb-2">
+                                        <i class="fa-solid fa-calendar-days me-2"></i>10 Tháng 7, 2025
+                                    </div>
+                                    <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                        BST Thu Đông 2025: Xu hướng mới lên ngôi
+                                    </h4>
+                                    <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
+                                        Khám phá những mẫu thiết kế mới nhất cho mùa thu đông, mang phong cách sang trọng và
+                                        hiện đại cùng những gam màu ấm áp.
+                                    </p>
                                 </div>
-                                <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
-                                    Phong cách hè 2025: Đơn giản mà nổi bật
-                                </h4>
-                                <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
-                                    Cập nhật các xu hướng phối đồ đơn giản, trẻ trung cho mùa hè năm nay với những gam màu
-                                    tươi mới.
-                                </p>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
-                                    style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
-                                    Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
-                                </a>
-                                <div class="d-flex align-items-center text-muted">
-                                    <i class="fa-solid fa-eye me-1"></i>
-                                    <span>2.1k</span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
+                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
+                                        Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                    <div class="d-flex align-items-center text-muted">
+                                        <i class="fa-solid fa-eye me-1"></i>
+                                        <span>1.2k</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <!-- News 2 -->
+                    <div class="col">
+                        <div class="card border-0 shadow-lg h-100"
+                            style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-10px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
+                                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80"
+                                    class="card-img-top img-fluid" alt="Tin tức 2"
+                                    style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
+                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.transform='scale(1)';">
+                                <div class="position-absolute top-0 start-0 p-3">
+                                    <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Bí
+                                        quyết</span>
+                                </div>
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-between p-4">
+                                <div class="mb-3">
+                                    <div class="text-muted small mb-2">
+                                        <i class="fa-solid fa-calendar-days me-2"></i>8 Tháng 7, 2025
+                                    </div>
+                                    <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                        Bí quyết phối đồ công sở thanh lịch
+                                    </h4>
+                                    <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
+                                        Gợi ý cách phối đồ công sở giúp bạn tự tin và nổi bật mỗi ngày tại nơi làm việc với
+                                        phong cách chuyên nghiệp.
+                                    </p>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
+                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
+                                        Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                    <div class="d-flex align-items-center text-muted">
+                                        <i class="fa-solid fa-eye me-1"></i>
+                                        <span>856</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- News 3 -->
+                    <div class="col">
+                        <div class="card border-0 shadow-lg h-100"
+                            style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-10px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
+                                <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
+                                    class="card-img-top img-fluid" alt="Tin tức 3"
+                                    style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
+                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.transform='scale(1)';">
+                                <div class="position-absolute top-0 start-0 p-3">
+                                    <span
+                                        class="badge bg-primary text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Hot</span>
+                                </div>
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-between p-4">
+                                <div class="mb-3">
+                                    <div class="text-muted small mb-2">
+                                        <i class="fa-solid fa-calendar-days me-2"></i>5 Tháng 7, 2025
+                                    </div>
+                                    <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                        Phong cách hè 2025: Đơn giản mà nổi bật
+                                    </h4>
+                                    <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
+                                        Cập nhật xu hướng thời trang hè với những gam màu tươi sáng và thiết kế thoải mái, phù
+                                        hợp cho mọi hoạt động.
+                                    </p>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
+                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
+                                        Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                    <div class="d-flex align-items-center text-muted">
+                                        <i class="fa-solid fa-eye me-1"></i>
+                                        <span>679</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
             <!-- View More Button -->
             <div class="d-flex justify-content-center mt-5">

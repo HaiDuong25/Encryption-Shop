@@ -12,10 +12,28 @@
             <form id="couponForm">
                 @csrf
                 <div class="mb-4">
-                    <label for="discount" class="form-label fw-semibold" style="color: #009966; font-size: 1.1rem;">Giảm giá
-                        (%)</label>
+                    <label for="discount_type" class="form-label fw-semibold"
+                        style="color: #009966; font-size: 1.1rem;">Loại giảm giá</label>
+                    <select name="discount_type" id="discount_type" class="form-control form-control-lg" required
+                        style="color: #222; font-size: 1.2rem;">
+                        <option value="percentage">Phần trăm (%)</option>
+                        <option value="fixed">Số tiền cố định (₫)</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="discount" class="form-label fw-semibold" style="color: #009966; font-size: 1.1rem;">
+                        <span id="discount-label">Giảm giá (%)</span>
+                    </label>
                     <input type="number" name="discount" id="discount" class="form-control form-control-lg" required min="1"
-                        max="100" placeholder="Nhập % giảm giá" style="color: #222; font-size: 1.2rem;">
+                        max="100" placeholder="Nhập giá trị giảm giá" style="color: #222; font-size: 1.2rem;">
+                    <small id="discount-help" class="form-text text-muted">Nhập giá trị từ 1 đến 100</small>
+                </div>
+                <div class="mb-4">
+                    <label for="usage_limit" class="form-label fw-semibold" style="color: #009966; font-size: 1.1rem;">Giới
+                        hạn số lần sử dụng</label>
+                    <input type="number" name="usage_limit" id="usage_limit" class="form-control form-control-lg" min="0"
+                        placeholder="0 = không giới hạn" style="color: #222; font-size: 1.2rem;" value="0">
+                    <small class="form-text text-muted">Để trống hoặc 0 để không giới hạn số lần sử dụng</small>
                 </div>
                 <div class="mb-4">
                     <label for="start_date" class="form-label fw-semibold" style="color: #009966; font-size: 1.1rem;">Ngày
@@ -41,50 +59,69 @@
         </div>
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('couponForm');
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const spinner = submitBtn.querySelector('.spinner-border');
-    
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        btnText.textContent = 'Đang tạo...';
-        spinner.classList.remove('d-none');
-        
-        const formData = new FormData(form);
-        
-        fetch('{{ route('coupons.store') }}', {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                window.location.href = '{{ route('coupons.index') }}';
-            } else {
-                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra, vui lòng thử lại!');
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            btnText.textContent = 'Tạo mã giảm giá';
-            spinner.classList.add('d-none');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('couponForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const spinner = submitBtn.querySelector('.spinner-border');
+            const discountType = document.getElementById('discount_type');
+            const discountInput = document.getElementById('discount');
+            const discountLabel = document.getElementById('discount-label');
+            const discountHelp = document.getElementById('discount-help');
+
+            // Handle discount type change
+            discountType.addEventListener('change', function () {
+                if (this.value === 'percentage') {
+                    discountLabel.textContent = 'Giảm giá (%)';
+                    discountInput.placeholder = 'Nhập giá trị từ 1-100';
+                    discountInput.max = '100';
+                    discountHelp.textContent = 'Nhập giá trị từ 1 đến 100';
+                } else {
+                    discountLabel.textContent = 'Giảm giá (₫)';
+                    discountInput.placeholder = 'Nhập số tiền giảm giá';
+                    discountInput.max = '10000000';
+                    discountHelp.textContent = 'Nhập số tiền giảm giá (tối đa 10.000.000₫)';
+                }
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Show loading state
+                submitBtn.disabled = true;
+                btnText.textContent = 'Đang tạo...';
+                spinner.classList.remove('d-none');
+
+                const formData = new FormData(form);
+
+                fetch('{{ route('coupons.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            window.location.href = '{{ route('coupons.index') }}';
+                        } else {
+                            alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra, vui lòng thử lại!');
+                    })
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        btnText.textContent = 'Tạo mã giảm giá';
+                        spinner.classList.add('d-none');
+                    });
+            });
         });
-    });
-});
-</script>
+    </script>
 @endsection
