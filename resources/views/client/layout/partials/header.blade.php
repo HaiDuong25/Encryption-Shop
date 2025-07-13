@@ -148,9 +148,6 @@
                                     </li>
 
                                     <li class="nav-item">
-                                        <a class="nav-link" href="about-us.html">Giới thiệu</a>
-                                    </li>
-                                    <li class="nav-item">
                                         <a class="nav-link" href="{{ route('client.contact.create') }}">Liên hệ</a>
                                     </li>
                                 </ul>
