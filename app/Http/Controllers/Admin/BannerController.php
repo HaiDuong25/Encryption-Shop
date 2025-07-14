@@ -40,7 +40,7 @@ class BannerController extends \App\Http\Controllers\Controller
             }
         }
 
-        Banner::create([
+        $banner = Banner::create([
             'title' => $request->title,
             'image' => json_encode($imagePaths),
             'link' => $request->link,
@@ -48,6 +48,13 @@ class BannerController extends \App\Http\Controllers\Controller
             'is_active' => $request->is_active ? true : false,
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Tạo banner thành công!',
+                'banner' => $banner
+            ]);
+        }
         return redirect()->route('banners.index')->with('success', 'Tạo banner thành công!');
     }
 
@@ -94,6 +101,14 @@ class BannerController extends \App\Http\Controllers\Controller
         $banner->position = $request->position ?? 0;
         $banner->is_active = $request->is_active ? true : false;
         $banner->save();
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật banner thành công!',
+                'banner' => $banner
+            ]);
+        }
         return redirect()->route('banners.index')->with('success', 'Cập nhật banner thành công!');
     }
 
@@ -115,6 +130,13 @@ class BannerController extends \App\Http\Controllers\Controller
             }
         }
         $banner->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa banner thành công!'
+            ]);
+        }
         return redirect()->route('banners.index')->with('success', 'Xóa banner thành công!');
     }
 }

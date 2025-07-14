@@ -80,7 +80,7 @@
         <div>
             @php
                 $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
-                
+
                 // Tính số tiền giảm thực tế
                 $actualDiscountAmount = 0;
                 if ($order->coupon_code && $order->coupon_discount > 0) {
@@ -90,10 +90,10 @@
                         $actualDiscountAmount = min($order->coupon_discount, $subtotal);
                     }
                 }
-                
+
                 $total = $order->total_price;
             @endphp
-            
+
             @if($actualDiscountAmount > 0)
                 <span><i class="fas fa-calculator text-info"></i> Tạm tính: <strong>{{ number_format($subtotal, 0, ',', '.') }} đ</strong></span>
                 <span><i class="fas fa-tag text-success"></i> Giảm giá: <strong style="color:#10b981">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</strong>
@@ -129,7 +129,7 @@
                                         @php
                                             $product = null;
                                             $productImages = collect();
-                                            
+
                                             // Ưu tiên lấy từ variant trước
                                             if ($detail->variant && $detail->variant->product) {
                                                 $product = $detail->variant->product;
@@ -141,7 +141,7 @@
                                                 $productImages = $product->productImages ?? collect();
                                             }
                                         @endphp
-                                        
+
                                         @if($product && $productImages->isNotEmpty())
                                             <img src="{{ asset('storage/' . $productImages->first()->image_path) }}"
                                                 width="60" height="60" style="border-radius:8px; object-fit:cover;">
@@ -186,8 +186,6 @@
                 <ul class="list-unstyled">
                     @php
                         $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
-                        
-                        // Tính số tiền giảm thực tế
                         $actualDiscountAmount = 0;
                         if ($order->coupon_code && $order->coupon_discount > 0) {
                             if ($order->coupon_type == 'percentage') {
@@ -196,10 +194,10 @@
                                 $actualDiscountAmount = min($order->coupon_discount, $subtotal);
                             }
                         }
-                        
                         $total = $order->total_price;
+                        $isPaid = $order->payments->where('status', 'confirmed')->count() > 0;
                     @endphp
-                    
+
                     @if($actualDiscountAmount > 0)
                         <li>
                             <i class="fas fa-calculator text-info"></i>
@@ -208,7 +206,7 @@
                         </li>
                         <li>
                             <i class="fas fa-tag text-success"></i>
-                            Giảm giá 
+                            Giảm giá
                             @if($order->coupon_code)
                                 ({{ $order->coupon_code }})
                             @endif
@@ -216,11 +214,16 @@
                             <span class="text-success fw-bold">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</span>
                         </li>
                     @endif
-                    
+
                     <li>
                         <i class="fas fa-money-bill-wave text-success"></i>
                         Tổng tiền thanh toán:
                         <span class="text-success fw-bold">{{ number_format($total, 0, ',', '.') }} đ</span>
+                        @if($isPaid)
+                            <span class="badge bg-success ms-2">Đã thanh toán</span>
+                        @else
+                            <span class="badge bg-warning text-dark ms-2">Chưa thanh toán</span>
+                        @endif
                     </li>
                     @php
                         $validPayments = $order->payments->whereNotNull('created_at');
@@ -232,14 +235,14 @@
                             <small class="text-muted">({{ $payment->note ?? '' }})</small>
                         </li>
                     @empty
-                        <li><span class="text-danger">Chưa có thanh toán</span></li>
+
                     @endforelse
                 </ul>
             </div>
-
-            <!-- <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
+{{--
+            <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
                         <i class="fas fa-truck"></i> Theo dõi đơn hàng
-                    </a> -->
+                    </a> --}}
 
             <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -258,7 +261,7 @@
                         if (is_numeric($statusValue)) {
                             $statusMap = [
                                 '0' => 'pending',
-                                '1' => 'confirmed', 
+                                '1' => 'confirmed',
                                 '2' => 'shipping',
                                 '3' => 'delivering',
                                 '4' => 'received',
@@ -267,7 +270,7 @@
                             $statusValue = $statusMap[$statusValue] ?? 'pending';
                         }
                     @endphp
-                    
+
                     @if($statusValue == 'pending')
                         <span class="badge bg-warning">Chờ xử lý</span>
                     @elseif($statusValue == 'confirmed')
@@ -290,18 +293,18 @@
                 <div class="summary-title">Thông tin người đặt hàng</div>
                 <p><strong>Người đặt:</strong><br>{{ $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
                 <p><strong>Email:</strong> {{ $order->orderer_email ?? ($order->user->email ?? 'N/A') }}</p>
-                <p><strong>SĐT:</strong> {{ $order->orderer_phone ?? 'N/A' }}</p>
-                
+                <p><strong>SĐT:</strong> {{ $order->recipient_phone ?? 'N/A' }}</p>
+
                 <hr>
                 <div class="summary-title">Thông tin người nhận hàng</div>
                 <p><strong>Người nhận:</strong><br>{{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
                 <p><strong>SĐT:</strong> {{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</p>
                 <p><strong>Địa chỉ:</strong><br>{{ $order->recipient_address ?? $order->address ?? 'N/A' }}</p>
-                
+
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
                 @if($order->coupon_code)
-                    <p><strong>Mã giảm giá:</strong> 
+                    <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>
                         @if($order->coupon_type == 'percentage')
                             ({{ $order->coupon_discount }}%)
@@ -313,7 +316,7 @@
                     <p><strong>Mã giảm giá:</strong> Không áp dụng</p>
                 @endif
 
-                <!-- <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(2)->format('d/m/Y') }}</p> -->
+                 <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(3)->format('d/m/Y') }}</p>
             </div>
 
             <div class="summary-card mt-3">

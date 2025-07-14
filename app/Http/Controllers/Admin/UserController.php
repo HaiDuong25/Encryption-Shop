@@ -41,7 +41,7 @@ class UserController extends Controller
             $path = null;
         }
 
-        User::create([
+        $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
@@ -52,6 +52,13 @@ class UserController extends Controller
             'avatar'   => $path
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm người dùng',
+                'user' => $user
+            ]);
+        }
         return redirect()->route('users.index')->with('success', 'Đã thêm người dùng');
     }
 
@@ -93,18 +100,38 @@ class UserController extends Controller
 
         $user->update($updateData);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã cập nhật người dùng',
+                'user' => $user
+            ]);
+        }
         return redirect()->route('users.index')->with('success', 'Đã cập nhật người dùng');
     }
 
     public function toggle(User $user)
     {
         if ($user->role === 'admin') {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể khóa/mở khóa admin!'
+                ]);
+            }
             return back()->with('error', 'Không thể khóa/mở khóa admin!');
         }
         // Toggle status giữa active và inactive
         $user->status = $user->status === 'active' ? 'inactive' : 'active';
         $user->save();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $user->status === 'active' ? 'Đã mở khóa!' : 'Đã khóa!',
+                'status' => $user->status
+            ]);
+        }
         return back()->with('success', $user->status === 'active' ? 'Đã mở khóa!' : 'Đã khóa!');
     }
 
@@ -113,6 +140,12 @@ class UserController extends Controller
     {
         // Nếu user là admin thì không cho xóa
         if ($user->role === 'admin') {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xóa tài khoản admin!'
+                ]);
+            }
             return redirect()->route('users.index')->with('error', 'Không thể xóa tài khoản admin!');
         }
 
@@ -120,6 +153,13 @@ class UserController extends Controller
             Storage::disk('public')->delete($user->avatar);
         }
         $user->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xoá người dùng'
+            ]);
+        }
         return redirect()->route('users.index')->with('success', 'Đã xoá người dùng');
     }
 }

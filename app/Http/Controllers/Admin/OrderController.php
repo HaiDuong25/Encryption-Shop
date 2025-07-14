@@ -124,6 +124,14 @@ class OrderController extends \App\Http\Controllers\Controller
             }
 
             DB::commit();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cập nhật đơn hàng thành công!',
+                    'order' => $order
+                ]);
+            }
             return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
 
         } catch (\Exception $e) {

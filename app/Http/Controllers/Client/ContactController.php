@@ -23,7 +23,7 @@ class ContactController extends Controller
             'content' => 'required|string|max:1000',
         ]);
 
-        Contact::create([
+        $contact = Contact::create([
             'user_id' => Auth::id(),
             'name'    => $request->name,
             'email'   => $request->email,
@@ -31,6 +31,13 @@ class ContactController extends Controller
             'content' => $request->content,
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cảm ơn bạn đã liên hệ với chúng tôi!',
+                'contact' => $contact
+            ]);
+        }
         return redirect()->route('client.contact.create')->with('success', 'Cảm ơn bạn đã liên hệ với chúng tôi!');
     }
 }

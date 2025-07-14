@@ -16,7 +16,7 @@
     </div>
     @endif -->
 
-    <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="row g-3">
+    <form id="userForm" enctype="multipart/form-data" class="row g-3">
         @csrf
 
         <div class="col-md-6">
@@ -104,9 +104,59 @@
         </div>
 
         <div class="col-12 d-flex justify-content-end">
-            <button class="btn btn-primary px-5">Thêm mới</button>
+            <button type="submit" class="btn btn-primary px-5">
+                <span class="btn-text">Thêm mới</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
             <a href="{{ route('users.index') }}" class="btn btn-secondary ms-2 px-5">Quay lại</a>
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('userForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.textContent = 'Đang xử lý...';
+        spinner.classList.remove('d-none');
+        
+        const formData = new FormData(form);
+        
+        fetch('{{ route('users.store') }}', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{{ route('users.index') }}';
+            } else {
+                alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra, vui lòng thử lại!');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Thêm mới';
+            spinner.classList.add('d-none');
+        });
+    });
+});
+</script>
 @endsection

@@ -16,17 +16,17 @@ class CreatePaymentMethodsTable extends Migration
             $table->timestamps();
         });
 
-        // Thêm 2 phương thức thanh toán mặc định
+        // Thêm các phương thức thanh toán mặc định
         DB::table('payment_methods')->insert([
             [
-                'payment_type' => 'Chuyển Khoản',
-                'description' => 'Thanh toán qua chuyển khoản ngân hàng',
+                'payment_type' => 'COD',
+                'description' => 'Thanh toán khi nhận hàng (COD)',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'payment_type' => 'COD',
-                'description' => 'Thanh toán khi nhận hàng (COD)',
+                'payment_type' => 'Ví Điện Tử MOMO',
+                'description' => 'Thanh toán qua ví điện tử MOMO',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

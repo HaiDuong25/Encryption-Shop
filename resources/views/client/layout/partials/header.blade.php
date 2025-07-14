@@ -131,9 +131,11 @@
                             @php
                             $cartItems = collect([]);
                             $totalQuantity = 0;
+                            $totalOrders = 0;
                             if(Auth::check()) {
                             $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
                             $totalQuantity = $cartItems->sum('quantity');
+                            $totalOrders = \App\Models\Order::where('user_id', Auth::id())->count();
                             }
                             @endphp
 
@@ -149,7 +151,9 @@
 
                             <li>
                                 <a href="{{ route('client.orders.index') }}" class="header-icon bag-icon">
-                                    {{-- <small class="badge-number badge-light">2</small> --}}
+                                    @if(Auth::check() && $totalOrders > 0)
+                                    <small class="badge-number badge-light">{{ $totalOrders }}</small>
+                                    @endif
                                     <i class="fa-solid fa-bag-shopping"></i>
                                 </a>
                             </li>

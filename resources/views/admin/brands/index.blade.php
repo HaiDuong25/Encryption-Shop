@@ -54,12 +54,9 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <form action="{{ route('brands.destroy', $brand) }}" method="POST" onsubmit="return confirm('Xác nhận xoá?');">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-link p-0 text-danger">
-                                                        <i class="ri-delete-bin-line"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-link p-0 text-danger delete-btn" data-id="{{ $brand->id }}" data-name="{{ $brand->name }}">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
                                             </li>
                                         </ul>
                                     </td>
@@ -78,4 +75,66 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AJAX Delete functionality
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const brandId = this.dataset.id;
+            const brandName = this.dataset.name;
+            
+            if (confirm(`Bạn có chắc muốn xóa thương hiệu "${brandName}"?`)) {
+                // Show loading state
+                this.innerHTML = '<i class="ri-loader-4-line"></i>';
+                this.disabled = true;
+                
+                fetch(`/admin/brands/${brandId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the row from table
+                        const row = this.closest('tr');
+                        row.remove();
+                        
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                        alertDiv.innerHTML = `
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('.table-responsive').before(alertDiv);
+                        
+                        // Auto hide after 3 seconds
+                        setTimeout(() => {
+                            if (alertDiv.parentNode) {
+                                alertDiv.remove();
+                            }
+                        }, 3000);
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra khi xóa thương hiệu!');
+                        // Restore button state
+                        this.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa thương hiệu!');
+                    // Restore button state
+                    this.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                    this.disabled = false;
+                });
+            }
+        });
+    });
+});
+</script>
 @endsection

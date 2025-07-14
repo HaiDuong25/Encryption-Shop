@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
+use App\Http\Controllers\Api\LocationController;
 
 // ADMIN CONTROLLERS
 use App\Http\Controllers\Admin\DashboardController;
@@ -31,6 +32,9 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
+use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
+use App\Http\Controllers\Client\CouponController as ClientCouponController;
+use App\Http\Controllers\Client\CouponHistoryController;
 
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
@@ -51,6 +55,10 @@ Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('cl
 Route::get('/lien-he', [ClientContactController::class, 'create'])->name('client.contact.create');
 Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client.contact.store');
 
+// --- Coupon Routes (không cần đăng nhập để xem) ---
+Route::get('/api/coupons/available', [ClientCouponController::class, 'getAvailableCoupons'])->name('client.coupons.available');
+Route::post('/api/coupons/validate', [ClientCouponController::class, 'validateCoupon'])->name('client.coupons.validate');
+
 // --- Các chức năng cần đăng nhập ---
 Route::middleware(['auth'])->group(function () {
     //Tài khoản người dùng
@@ -68,28 +76,41 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/update-quantity/{id}', [CartController::class, 'updateQuantityAjax'])->name('cart.updateQuantityAjax');
+    Route::post('/cart/update-variant/{id}', [CartController::class, 'updateVariant'])->name('cart.updateVariant');
+    Route::post('/cart/switch-variant/{id}', [CartController::class, 'switchVariant'])->name('cart.switchVariant');
     Route::delete('/cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
-
-    // Thanh toán
-    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-    Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
-    Route::get('/checkout/success', function (Request $request) {
-        $order_id = request('order_id');
-        return view('client.cart.success', compact('order_id'));
-    })->name('cart.success');
+    Route::post('/cart/delete-selected', [CartController::class, 'deleteSelected'])->name('cart.deleteSelected');
 
     // Mua ngay
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
 
-    // Mã giảm giá AJAX
-    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
-    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
+    // Coupon sử dụng (cần đăng nhập)
+    Route::post('/api/coupons/use', [ClientCouponController::class, 'useCoupon'])->name('client.coupons.use');
+
+    // Lịch sử sử dụng coupon
+    Route::get('/coupon-history', [CouponHistoryController::class, 'index'])->name('client.coupon.history');
+
+    // Thanh toán (yêu cầu đăng nhập)
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
+    Route::post('/clear-checkout-voucher', [CartController::class, 'clearCheckoutVoucher'])->name('cart.clearCheckoutVoucher');
+    Route::get('/checkout/success', function (Request $request) {
+        $order_id = request('order_id');
+        return view('client.cart.success', compact('order_id'));
+    })->name('cart.success');
 
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
+
+    // Địa chỉ giao hàng (client)
+    Route::resource('addresses', ClientShippingAddressController::class, [
+        'as' => 'client',
+        'except' => []
+    ]);
 });
 
 // --- Admin ---
@@ -108,6 +129,11 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
 
+    // Shipping Addresses
+    Route::resource('shipping-addresses', \App\Http\Controllers\Admin\ShippingAddressController::class);
+    Route::get('shipping-addresses/user/{user}/addresses', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'userAddresses'])->name('shipping-addresses.user-addresses');
+    Route::patch('shipping-addresses/{shippingAddress}/set-default', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'setDefault'])->name('shipping-addresses.set-default');
+
     // Categories
     Route::resource('categories', CategoryController::class);
     Route::get('categories/create-parent', [CategoryController::class, 'createParent'])->name('categories.create-parent');
@@ -123,6 +149,7 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
     Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
+    Route::get('payments/export-pdf/{id}', [PaymentController::class, 'exportPdf'])->name('admin.payments.export-pdf');
     Route::post('admin/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
 
     // Rates & replies
@@ -136,17 +163,6 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::resource('coupons', CouponController::class)->except(['show']);
     Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
     Route::get('/coupons/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupons.edit');
-    Route::post('/apply-coupon', function (Request $request) {
-        $coupon = Coupon::where('code', $request->code)->first();
-        if (!$coupon || !$coupon->isValid()) {
-            return back()->with('error', 'Mã giảm giá không hợp lệ hoặc đã hết hạn!');
-        }
-        session(['coupon' => [
-            'code' => $coupon->code,
-            'discount' => $coupon->discount
-        ]]);
-        return back()->with('success', 'Áp dụng mã thành công!');
-    })->name('apply.coupon');
 
     // News & banners
     Route::resource('news', NewsController::class);
@@ -156,8 +172,12 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Users
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
-    });
+});
 
+
+// --- API Routes for Location ---
+Route::get('/api/districts', [LocationController::class, 'getDistricts'])->name('api.districts');
+Route::get('/api/wards', [LocationController::class, 'getWards'])->name('api.wards');
 
 // --- Client Routes ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -176,23 +196,43 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
-    
+
     // Mua ngay
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
 
+    // Coupon sử dụng (cần đăng nhập)
+    Route::post('/api/coupons/use', [ClientCouponController::class, 'useCoupon'])->name('client.coupons.use');
+
+    // Lịch sử sử dụng coupon
+    Route::get('/coupon-history', [CouponHistoryController::class, 'index'])->name('client.coupon.history');
+
     // Mã giảm giá AJAX
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::post('/cart/validate-coupon', [CartController::class, 'validateCoupon'])->name('cart.validate-coupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
-    Route::post('/apply-coupon', [CartController::class, 'applyCoupon'])->name('apply.coupon');
-    Route::post('/remove-coupon', [CartController::class, 'removeCoupon'])->name('remove.coupon');
+
+    // MoMo Payment routes
+    Route::get('/momo/payment', [\App\Http\Controllers\MoMoController::class, 'createPayment'])->name('momo.create');
+    Route::get('/momo/return', [\App\Http\Controllers\MoMoController::class, 'returnPayment'])->name('momo.return');
+    Route::post('/momo/notify', [\App\Http\Controllers\MoMoController::class, 'notifyPayment'])->name('momo.notify');
+
+    // Cart success
+    Route::get('/cart/success/{order_id}', [CartController::class, 'success'])->name('cart.success');
 
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
-    
-    Route::get('/checkout/success', function(Request $request) {
+
+    // Địa chỉ giao hàng (client)
+    Route::resource('addresses', ClientShippingAddressController::class, [
+        'as' => 'client',
+        'except' => []
+    ]);
+    Route::patch('addresses/{address}/set-default', [ClientShippingAddressController::class, 'setDefault'])->name('client.addresses.set-default');
+
+    Route::get('/checkout/success', function (Request $request) {
         $order_id = request('order_id');
         return view('client.cart.success', compact('order_id'));
     })->name('cart.success');

@@ -7,7 +7,7 @@
     <h3 class="mb-4">Chỉnh sửa sản phẩm</h3>
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
+            <form id="productEditForm" action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -22,6 +22,9 @@
                     </ul>
                 </div>
                 @endif
+
+                {{-- Alert container for AJAX responses --}}
+                <div id="alert-container"></div>
 
                 {{-- Thông tin sản phẩm --}}
                 <div class="row">
@@ -224,7 +227,7 @@
 
                 <div class="text-end mt-4">
                     <a href="{{ route('products.index') }}" class="btn btn-outline-secondary col-md-2">Huỷ</a>
-                    <button type="submit" class="btn btn-primary ms-2">Cập nhật</button>
+                    <button type="submit" class="btn btn-primary ms-2" id="submitBtn">Cập nhật</button>
                 </div>
         </div>
         </form>
@@ -326,5 +329,95 @@
             });
         });
     });
+
+    // AJAX form submission
+    document.getElementById('productEditForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const submitBtn = document.getElementById('submitBtn');
+        const alertContainer = document.getElementById('alert-container');
+        
+        // Show loading state
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i data-feather="loader" class="rotating"></i> Đang cập nhật...';
+        submitBtn.disabled = true;
+        
+        // Clear previous alerts
+        alertContainer.innerHTML = '';
+        
+        // Create FormData for file upload
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alertContainer.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show">
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                // Redirect after success
+                setTimeout(() => {
+                    window.location.href = data.redirect || '{{ route("products.index") }}';
+                }, 1500);
+            } else {
+                // Show error messages
+                if (data.errors) {
+                    let errorHtml = '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
+                    Object.values(data.errors).flat().forEach(error => {
+                        errorHtml += `<li>${error}</li>`;
+                    });
+                    errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    alertContainer.innerHTML = errorHtml;
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            ${data.message || 'Có lỗi xảy ra khi cập nhật sản phẩm!'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                }
+                
+                // Restore button state
+                submitBtn.innerHTML = originalContent;
+                submitBtn.disabled = false;
+                feather.replace();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show">
+                    Có lỗi xảy ra khi cập nhật sản phẩm!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Restore button state
+            submitBtn.innerHTML = originalContent;
+            submitBtn.disabled = false;
+            feather.replace();
+        });
+    });
 </script>
+<style>
+    .rotating {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
 @endsection

@@ -7,10 +7,11 @@
     <h3 class="mt-3 mb-3">{{ isset($category) ? 'Chỉnh sửa' : 'Thêm mới' }} Danh mục</h3>
     <div class="card">
         <div class="card-body">
-            <form action="{{ isset($category) ? route('categories.update', $category) : route('categories.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="categoryForm" enctype="multipart/form-data">
                 @csrf
                 @if(isset($category))
-                    @method('PUT')
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="hidden" id="categoryId" value="{{ $category->id }}">
                 @endif
 
                 <div class="mb-3">
@@ -18,8 +19,10 @@
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
                            value="{{ old('name', $category->name ?? '') }}">
                     @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $errors->first('name') }}</div>
                     @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
                 </div>
 
                 @if(!isset($category) || ($category && $category->parent_id !== null))
@@ -37,8 +40,10 @@
                                 @endforeach
                             </select>
                             @error('parent_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $errors->first('parent_id') }}</div>
                             @enderror
+                            {{-- Error container for AJAX validation --}}
+                            <div class="invalid-feedback ajax-error" style="display: none;"></div>
                         </div>
                     @else
                         <div class="alert alert-warning">
@@ -56,8 +61,10 @@
                     @endif
                     <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
                     @error('image')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $errors->first('image') }}</div>
                     @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
                 </div>
 
                 <div class="mb-3">
@@ -67,16 +74,126 @@
                         <option value="0" {{ old('status', $category->status ?? 1) == 0 ? 'selected' : '' }}>Ẩn</option>
                     </select>
                     @error('status')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $errors->first('status') }}</div>
                     @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
                 </div>
 
                 <div class="d-flex justify-content-end">
                     <a href="{{ route('categories.index') }}" class="btn btn-secondary me-2">Huỷ</a>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">{{ isset($category) ? 'Cập nhật' : 'Lưu' }}</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('categoryForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous error messages
+        document.querySelectorAll('.invalid-feedback.ajax-error').forEach(el => {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+        document.querySelectorAll('.form-control, .form-select').forEach(el => el.classList.remove('is-invalid'));
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.textContent = 'Đang xử lý...';
+        spinner.classList.remove('d-none');
+        
+        const formData = new FormData(form);
+        const isEdit = document.getElementById('categoryId');
+        
+        // Add CSRF token to FormData
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+        
+        let url;
+        if (isEdit) {
+            url = `/admin/categories/${isEdit.value}`;
+            formData.append('_method', 'PUT');
+        } else {
+            url = '/admin/categories';
+        }
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Show success message with better UX
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.insertBefore(alertDiv, form.firstChild);
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/admin/categories';
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Có lỗi xảy ra!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            // Handle validation errors
+            if (error.errors) {
+                Object.keys(error.errors).forEach(field => {
+                    const input = document.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.parentNode.querySelector('.invalid-feedback.ajax-error');
+                        if (feedback) {
+                            feedback.textContent = error.errors[field][0];
+                            feedback.style.display = 'block';
+                        }
+                    }
+                });
+            } else {
+                // Show general error
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    ${error.message || 'Có lỗi xảy ra, vui lòng thử lại!'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.insertBefore(alertDiv, form.firstChild);
+            }
+        })
+        .finally(() => {
+            // Hide loading state
+            submitBtn.disabled = false;
+            btnText.textContent = isEdit ? 'Cập nhật' : 'Lưu';
+            spinner.classList.add('d-none');
+        });
+    });
+});
+</script>
 @endsection

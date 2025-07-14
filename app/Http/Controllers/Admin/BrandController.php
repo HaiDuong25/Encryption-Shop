@@ -27,7 +27,15 @@ class BrandController extends \App\Http\Controllers\Controller
             $path = $request->file('image')->store('brands', 'public');
             $validated['image'] = $path;
         }
-        Brand::create($validated);
+        $brand = Brand::create($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Thương hiệu được thêm thành công.',
+                'brand' => $brand
+            ]);
+        }
         return redirect()->route('brands.index')->with('success', 'Thương hiệu được thêm thành công.');
     }
     public function edit(Brand $brand)
@@ -48,6 +56,14 @@ class BrandController extends \App\Http\Controllers\Controller
             $validated['image'] = $path;
         }
         $brand->update($validated);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Thương hiệu được sửa thành công.',
+                'brand' => $brand
+            ]);
+        }
         return redirect()->route('brands.index')->with('success', 'Thương hiệu được sửa thành công.');
     }
     public function destroy(Brand $brand)
@@ -56,6 +72,13 @@ class BrandController extends \App\Http\Controllers\Controller
             Storage::disk('public')->delete($brand->image);
         }
         $brand->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Thương hiệu được xóa thành công.'
+            ]);
+        }
         return redirect()->route('brands.index')->with('success', 'Thương hiệu được xóa thành công.');
     }
 }
