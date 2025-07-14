@@ -11,6 +11,7 @@ class Banner extends Model
 
     protected $fillable = [
         'title',
+        'description',
         'image',
         'link',
         'position',
@@ -20,6 +21,6 @@ class Banner extends Model
     // Nếu muốn đảm bảo luôn là kiểu boolean khi lấy từ DB
     protected $casts = [
         'is_active' => 'boolean',
-        'position'  => 'integer',
+        'position' => 'integer',
     ];
 }

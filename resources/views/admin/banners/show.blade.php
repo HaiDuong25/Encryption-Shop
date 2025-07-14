@@ -4,6 +4,12 @@
 @section('content')
     <div class="container">
         <h2 style="font-size:2rem; font-weight:bold;">{{ $banner->title }}</h2>
+        @if($banner->description)
+            <div class="mb-3">
+                <strong>Mô tả:</strong>
+                <p class="mt-1">{{ $banner->description }}</p>
+            </div>
+        @endif
         <div class="mb-3">
             <strong>Vị trí:</strong> {{ $banner->position }}
         </div>

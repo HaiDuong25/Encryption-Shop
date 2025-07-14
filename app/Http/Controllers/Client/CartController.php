@@ -252,16 +252,19 @@ class CartController extends Controller
 
         // Validate voucher nếu có - đảm bảo voucher vẫn hợp lệ
         if ($appliedCoupon) {
-            $coupon = \App\Models\Coupon::where('code', $appliedCoupon)
-                ->where('is_active', 1)
-                ->where('start_date', '<=', now())
-                ->where('end_date', '>=', now())
-                ->first();
+            $coupon = \App\Models\Coupon::where('code', $appliedCoupon)->first();
 
-            if (!$coupon) {
+            if (!$coupon || !$coupon->canBeUsed()) {
                 // Voucher không còn hợp lệ, clear session và thông báo
                 session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
                 session()->flash('warning', 'Mã giảm giá không còn hợp lệ và đã được xóa. Vui lòng chọn mã khác.');
+                return redirect()->route('cart.index');
+            }
+
+            // Kiểm tra user đã sử dụng coupon này chưa
+            if ($coupon->hasBeenUsedByUser(Auth::id())) {
+                session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
+                session()->flash('warning', 'Bạn đã sử dụng mã giảm giá này rồi. Mã đã được xóa.');
                 return redirect()->route('cart.index');
             }
 
@@ -510,10 +513,10 @@ class CartController extends Controller
                         'used_at' => now()
                     ]);
 
-                    // Tăng số lần sử dụng của coupon
-                    $coupon->increment('used_count');
+                    // Sử dụng method mới để tăng số lần sử dụng
+                    $coupon->incrementUsage();
 
-                    Log::info("Coupon {$couponCode} used by user " . Auth::id() . " for order {$order->id}");
+                    Log::info("Coupon {$couponCode} used by user " . Auth::id() . " for order {$order->id}. Remaining usage: " . $coupon->remainingUsage());
                 }
             } catch (\Exception $e) {
                 Log::error('Error recording coupon usage: ' . $e->getMessage());
@@ -552,10 +555,10 @@ class CartController extends Controller
         ]);
 
         $couponCode = $request->coupon_code;
-        $selectedSubtotal = $request->input('subtotal'); // Subtotal của sản phẩm được chọn        // Tìm mã giảm giá
-        $coupon = \App\Models\Coupon::where('code', $couponCode)
-            ->where('is_active', 1)
-            ->first();
+        $selectedSubtotal = $request->input('subtotal'); // Subtotal của sản phẩm được chọn
+
+        // Tìm mã giảm giá
+        $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
 
         if (!$coupon) {
             return response()->json([
@@ -564,43 +567,29 @@ class CartController extends Controller
             ]);
         }
 
-        // Kiểm tra mã giảm giá có thể sử dụng không (bao gồm cả thời gian và giới hạn)
+        // Sử dụng method canBeUsed() mới của Model
         if (!$coupon->canBeUsed()) {
-            if ($coupon->expires_at && $coupon->expires_at->isPast()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Mã giảm giá đã hết hạn!'
-                ]);
-            }
-
-            if ($coupon->start_date && $coupon->start_date->isFuture()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Mã giảm giá chưa có hiệu lực!'
-                ]);
-            }
-
-            if ($coupon->end_date && $coupon->end_date->isPast()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Mã giảm giá đã hết hạn!'
-                ]);
-            }
+            $message = 'Mã giảm giá không thể sử dụng!';
 
             if ($coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Mã giảm giá đã hết lượt sử dụng!'
-                ]);
+                $message = 'Mã giảm giá đã hết lượt sử dụng!';
+            } elseif ($coupon->expires_at && $coupon->expires_at < now()) {
+                $message = 'Mã giảm giá đã hết hạn!';
+            } elseif ($coupon->start_date && $coupon->start_date > now()) {
+                $message = 'Mã giảm giá chưa có hiệu lực!';
+            } elseif ($coupon->end_date && $coupon->end_date < now()) {
+                $message = 'Mã giảm giá đã hết hạn!';
+            } elseif (!$coupon->is_active) {
+                $message = 'Mã giảm giá đã bị vô hiệu hóa!';
             }
 
             return response()->json([
                 'success' => false,
-                'message' => 'Mã giảm giá hiện tại không thể sử dụng!'
+                'message' => $message
             ]);
         }
 
-        // Kiểm tra xem user đã sử dụng coupon này chưa
+        // Kiểm tra xem user đã sử dụng coupon này chưa sử dụng method mới
         $hasUsed = $coupon->hasBeenUsedByUser(Auth::id());
         if ($hasUsed) {
             return response()->json([
@@ -626,7 +615,7 @@ class CartController extends Controller
             ]);
         }
 
-        // Tính giảm giá
+        // Tính giảm giá với logic mới
         $discountAmount = 0;
         if ($coupon->discount_type === 'percentage') {
             $discountAmount = ($subtotal * $coupon->discount) / 100;
@@ -651,7 +640,11 @@ class CartController extends Controller
                 'value' => $coupon->discount,
                 'discount' => $coupon->discount,
                 'max_discount_amount' => $coupon->max_discount_amount,
-                'min_order_amount' => $coupon->min_order_amount
+                'min_order_amount' => $coupon->min_order_amount,
+                'remaining_usage' => $coupon->remainingUsage(),
+                'discount_text' => $coupon->discount_type === 'percentage'
+                    ? "Giảm {$coupon->discount}%"
+                    : "Giảm " . number_format($coupon->discount) . "₫"
             ]
         ]);
 
@@ -663,7 +656,11 @@ class CartController extends Controller
             'coupon_info' => [
                 'code' => $coupon->code,
                 'type' => $coupon->discount_type,
-                'value' => $coupon->discount
+                'value' => $coupon->discount,
+                'remaining_usage' => $coupon->remainingUsage(),
+                'discount_text' => $coupon->discount_type === 'percentage'
+                    ? "Giảm {$coupon->discount}%"
+                    : "Giảm " . number_format($coupon->discount) . "₫"
             ]
         ]);
     }
@@ -896,16 +893,42 @@ class CartController extends Controller
         $subtotal = $request->subtotal;
 
         // Tìm mã giảm giá
-        $coupon = \App\Models\Coupon::where('code', $couponCode)
-            ->where('is_active', 1)
-            ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->first();
+        $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
 
         if (!$coupon) {
             return response()->json([
                 'success' => false,
-                'message' => 'Mã giảm giá không tồn tại hoặc đã hết hạn'
+                'message' => 'Mã giảm giá không tồn tại!'
+            ]);
+        }
+
+        // Sử dụng method canBeUsed() mới
+        if (!$coupon->canBeUsed()) {
+            $message = 'Mã giảm giá không thể sử dụng!';
+
+            if ($coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) {
+                $message = 'Mã giảm giá đã hết lượt sử dụng!';
+            } elseif ($coupon->expires_at && $coupon->expires_at < now()) {
+                $message = 'Mã giảm giá đã hết hạn!';
+            } elseif ($coupon->start_date && $coupon->start_date > now()) {
+                $message = 'Mã giảm giá chưa có hiệu lực!';
+            } elseif ($coupon->end_date && $coupon->end_date < now()) {
+                $message = 'Mã giảm giá đã hết hạn!';
+            } elseif (!$coupon->is_active) {
+                $message = 'Mã giảm giá đã bị vô hiệu hóa!';
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $message
+            ]);
+        }
+
+        // Kiểm tra user đã sử dụng coupon này chưa
+        if ($coupon->hasBeenUsedByUser(Auth::id())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn đã sử dụng mã giảm giá này rồi!'
             ]);
         }
 
@@ -942,9 +965,85 @@ class CartController extends Controller
                 'max_discount' => $coupon->max_discount_amount,
                 'min_order_value' => $coupon->min_order_amount,
                 'original_subtotal' => $subtotal,
-                'original_discount' => $discountAmount
+                'original_discount' => $discountAmount,
+                'remaining_usage' => $coupon->remainingUsage(),
+                'discount_text' => $coupon->discount_type === 'percentage'
+                    ? "Giảm {$coupon->discount}%"
+                    : "Giảm " . number_format($coupon->discount) . "₫"
             ]
         ]);
+    }
+
+    /**
+     * Lấy danh sách coupon khả dụng cho user hiện tại
+     */
+    public function getAvailableCoupons()
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để xem mã giảm giá!'
+            ]);
+        }
+
+        // Sử dụng scope mới availableForUser
+        $coupons = \App\Models\Coupon::availableForUser(Auth::id())
+            ->latest()
+            ->get();
+
+        $coupons = $coupons->map(function ($coupon) {
+            return [
+                'id' => $coupon->id,
+                'code' => $coupon->code,
+                'discount_text' => $coupon->discount_type === 'percentage'
+                    ? "Giảm {$coupon->discount}%"
+                    : "Giảm " . number_format($coupon->discount) . "₫",
+                'discount_type' => $coupon->discount_type,
+                'discount_value' => $coupon->discount,
+                'min_order_amount' => $coupon->min_order_amount,
+                'max_discount_amount' => $coupon->max_discount_amount,
+                'usage_limit' => $coupon->usage_limit,
+                'used_count' => $coupon->used_count,
+                'remaining_usage' => $coupon->remainingUsage(),
+                'expires_at' => $coupon->expires_at ? date('d/m/Y', strtotime((string)$coupon->expires_at)) : null,
+                'start_date' => $coupon->start_date ? date('d/m/Y', strtotime((string)$coupon->start_date)) : null,
+                'end_date' => $coupon->end_date ? date('d/m/Y', strtotime((string)$coupon->end_date)) : null,
+                'can_use' => !$coupon->hasBeenUsedByUser(Auth::id()),
+                'description' => $this->generateCouponDescription($coupon)
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'coupons' => $coupons
+        ]);
+    }
+
+    /**
+     * Tạo mô tả cho coupon
+     */
+    private function generateCouponDescription($coupon)
+    {
+        $description = '';
+        
+        if ($coupon->discount_type === 'percentage') {
+            $description = "Giảm {$coupon->discount}%";
+            if ($coupon->max_discount_amount) {
+                $description .= " (tối đa " . number_format($coupon->max_discount_amount) . "₫)";
+            }
+        } else {
+            $description = "Giảm " . number_format($coupon->discount) . "₫";
+        }
+
+        if ($coupon->min_order_amount) {
+            $description .= " cho đơn hàng từ " . number_format($coupon->min_order_amount) . "₫";
+        }
+
+        if ($coupon->remainingUsage() > 0) {
+            $description .= ". Còn lại " . $coupon->remainingUsage() . " lượt sử dụng";
+        }
+
+        return $description;
     }
 
     public function clearCheckoutVoucher(Request $request)

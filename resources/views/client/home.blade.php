@@ -1,6 +1,98 @@
 @extends('client.layout.main')
 
 @section('content')
+    <style>
+        /* News Section Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200px 0;
+            }
+
+            100% {
+                background-position: calc(200px + 100%) 0;
+            }
+        }
+
+        .news-card {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .news-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .news-card:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .news-card .btn:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 0.6s ease-in-out;
+        }
+
+        .news-card .card-title {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .news-card:hover .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: expandLine 0.3s ease-out forwards;
+        }
+
+        @keyframes expandLine {
+            to {
+                transform: scaleX(1);
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
     <!-- Banner Section Start -->
     <section class="banner-section banner-large ratio_65 mb-5">
         <div class="container-fluid-lg">
@@ -17,6 +109,9 @@
                                                     alt="{{ $banner->title }}">
                                                 <div class="carousel-caption d-none d-md-block text-start">
                                                     <h2 class="fw-bold display-5 mb-2">{{ $banner->title }}</h2>
+                                                    @if($banner->description)
+                                                        <p class="lead mb-3">{{ $banner->description }}</p>
+                                                    @endif
                                                     @if($banner->link)
                                                         <a href="{{ $banner->link }}" class="btn btn-lg btn-primary px-4 py-2">
                                                             Xem ngay
@@ -426,7 +521,8 @@
                                                     style="font-size:1.2rem; letter-spacing: 1px;">{{ $coupon->code }}</span>
                                             </div>
                                             <h4 class="fw-bold {{ $colorScheme['text_color'] }} mb-3" style="font-size:1.4rem;">
-                                                {{ $discountText }}</h4>
+                                                {{ $discountText }}
+                                            </h4>
                                             @if($coupon->start_date && $coupon->end_date)
                                                 <p class="text-muted mb-2" style="font-size:1.1rem;">
                                                     Từ {{ $coupon->start_date->format('d/m/Y') }} đến {{ $coupon->end_date->format('d/m/Y') }}
@@ -490,7 +586,7 @@
                                             @php
                                                 $isDisabled = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
                                             @endphp
-                                <button
+                                            <button
                                                 class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
                                                 data-code="{{ $coupon->code }}"
                                                 style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
@@ -1075,7 +1171,8 @@
                                                 </p>
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
+                                                <a href="{{ route('client.news.show', $article->id) }}"
+                                                    class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
                                                     style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
                                                     Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
                                                 </a>
@@ -1091,43 +1188,65 @@
                 @else
                     <!-- Fallback news nếu không có dữ liệu -->
                     <!-- News 1 -->
+                    <!-- News 1 -->
                     <div class="col">
-                        <div class="card border-0 shadow-lg h-100"
-                            style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
-                            onmouseover="this.style.transform='translateY(-10px)'"
-                            onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card border-0 shadow-lg h-100 news-card"
+                            style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
+                            onmouseover="this.style.transform='translateY(-15px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
+                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
                             <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
                                 <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80"
                                     class="card-img-top img-fluid" alt="Tin tức 1"
-                                    style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
-                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    style="object-fit:cover; height:300px; transition: transform 0.4s ease;"
+                                    onmouseover="this.style.transform='scale(1.08)';"
                                     onmouseout="this.style.transform='scale(1)';">
                                 <div class="position-absolute top-0 start-0 p-3">
-                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm fw-bold">Xu
-                                        hướng</span>
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm fw-bold"
+                                        style="backdrop-filter: blur(10px); background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%) !important;">
+                                        ✨ Xu hướng
+                                    </span>
+                                </div>
+                                <div class="position-absolute bottom-0 start-0 end-0 p-3"
+                                    style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                                    <div class="d-flex align-items-center text-white">
+                                        <i class="fa-solid fa-heart me-2"></i>
+                                        <span class="me-3">234</span>
+                                        <i class="fa-solid fa-share me-2"></i>
+                                        <span>56</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-body d-flex flex-column justify-content-between p-4">
                                 <div class="mb-3">
-                                    <div class="text-muted small mb-2">
-                                        <i class="fa-solid fa-calendar-days me-2"></i>10 Tháng 7, 2025
+                                    <div class="text-muted small mb-3 d-flex align-items-center">
+                                        <i class="fa-solid fa-calendar-days me-2 text-warning"></i>
+                                        <span>10 Tháng 7, 2025</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fa-solid fa-clock me-1"></i>
+                                        <span>5 phút đọc</span>
                                     </div>
-                                    <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                    <h4 class="card-title fw-bold text-dark mb-3"
+                                        style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         BST Thu Đông 2025: Xu hướng mới lên ngôi
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
                                         Khám phá những mẫu thiết kế mới nhất cho mùa thu đông, mang phong cách sang trọng và
-                                        hiện đại cùng những gam màu ấm áp.
+                                        hiện đại cùng những gam màu ấm áp. ✨
                                     </p>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
-                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
-                                        Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    <a href="{{ route('client.news.index') }}"
+                                        class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
+                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; 
+                                                                                      box-shadow: 0 8px 25px rgba(249, 168, 37, 0.4); transition: all 0.3s ease;">
+                                        <span class="position-relative z-index-2">
+                                            Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                        </span>
                                     </a>
                                     <div class="d-flex align-items-center text-muted">
-                                        <i class="fa-solid fa-eye me-1"></i>
-                                        <span>1.2k</span>
+                                        <i class="fa-solid fa-eye me-1 text-primary"></i>
+                                        <span class="fw-semibold">1.2k</span>
                                     </div>
                                 </div>
                             </div>
@@ -1135,42 +1254,63 @@
                     </div>
                     <!-- News 2 -->
                     <div class="col">
-                        <div class="card border-0 shadow-lg h-100"
-                            style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
-                            onmouseover="this.style.transform='translateY(-10px)'"
-                            onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card border-0 shadow-lg h-100 news-card"
+                            style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
+                            onmouseover="this.style.transform='translateY(-15px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
+                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
                             <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
                                 <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80"
                                     class="card-img-top img-fluid" alt="Tin tức 2"
-                                    style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
-                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    style="object-fit:cover; height:300px; transition: transform 0.4s ease;"
+                                    onmouseover="this.style.transform='scale(1.08)';"
                                     onmouseout="this.style.transform='scale(1)';">
                                 <div class="position-absolute top-0 start-0 p-3">
-                                    <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Bí
-                                        quyết</span>
+                                    <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold"
+                                        style="backdrop-filter: blur(10px); background: linear-gradient(135deg, #00b894 0%, #00cec9 100%) !important;">
+                                        💡 Bí quyết
+                                    </span>
+                                </div>
+                                <div class="position-absolute bottom-0 start-0 end-0 p-3"
+                                    style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                                    <div class="d-flex align-items-center text-white">
+                                        <i class="fa-solid fa-heart me-2"></i>
+                                        <span class="me-3">189</span>
+                                        <i class="fa-solid fa-share me-2"></i>
+                                        <span>43</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-body d-flex flex-column justify-content-between p-4">
                                 <div class="mb-3">
-                                    <div class="text-muted small mb-2">
-                                        <i class="fa-solid fa-calendar-days me-2"></i>8 Tháng 7, 2025
+                                    <div class="text-muted small mb-3 d-flex align-items-center">
+                                        <i class="fa-solid fa-calendar-days me-2 text-success"></i>
+                                        <span>8 Tháng 7, 2025</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fa-solid fa-clock me-1"></i>
+                                        <span>3 phút đọc</span>
                                     </div>
-                                    <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                    <h4 class="card-title fw-bold text-dark mb-3"
+                                        style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
+                                                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         Bí quyết phối đồ công sở thanh lịch
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
                                         Gợi ý cách phối đồ công sở giúp bạn tự tin và nổi bật mỗi ngày tại nơi làm việc với
-                                        phong cách chuyên nghiệp.
+                                        phong cách chuyên nghiệp. 💼
                                     </p>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
-                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
-                                        Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    <a href="{{ route('client.news.index') }}"
+                                        class="btn btn-success rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
+                                        style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); border: none; 
+                                                                                      box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); transition: all 0.3s ease;">
+                                        <span class="position-relative z-index-2">
+                                            Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                        </span>
                                     </a>
                                     <div class="d-flex align-items-center text-muted">
-                                        <i class="fa-solid fa-eye me-1"></i>
-                                        <span>856</span>
+                                        <i class="fa-solid fa-eye me-1 text-success"></i>
+                                        <span class="fw-semibold">856</span>
                                     </div>
                                 </div>
                             </div>
@@ -1178,42 +1318,64 @@
                     </div>
                     <!-- News 3 -->
                     <div class="col">
-                        <div class="card border-0 shadow-lg h-100"
-                            style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
-                            onmouseover="this.style.transform='translateY(-10px)'"
-                            onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card border-0 shadow-lg h-100 news-card"
+                            style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
+                            onmouseover="this.style.transform='translateY(-15px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
+                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
                             <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
                                 <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
                                     class="card-img-top img-fluid" alt="Tin tức 3"
-                                    style="object-fit:cover; height:300px; transition: transform 0.3s ease;"
-                                    onmouseover="this.style.transform='scale(1.05)';"
+                                    style="object-fit:cover; height:300px; transition: transform 0.4s ease;"
+                                    onmouseover="this.style.transform='scale(1.08)';"
                                     onmouseout="this.style.transform='scale(1)';">
                                 <div class="position-absolute top-0 start-0 p-3">
                                     <span
-                                        class="badge bg-primary text-white px-3 py-2 rounded-pill shadow-sm fw-bold">Hot</span>
+                                        class="badge bg-primary text-white px-3 py-2 rounded-pill shadow-sm fw-bold position-relative"
+                                        style="backdrop-filter: blur(10px); background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%) !important; animation: pulse 2s infinite;">
+                                        🔥 Hot
+                                    </span>
+                                </div>
+                                <div class="position-absolute bottom-0 start-0 end-0 p-3"
+                                    style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                                    <div class="d-flex align-items-center text-white">
+                                        <i class="fa-solid fa-heart me-2"></i>
+                                        <span class="me-3">312</span>
+                                        <i class="fa-solid fa-share me-2"></i>
+                                        <span>78</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-body d-flex flex-column justify-content-between p-4">
                                 <div class="mb-3">
-                                    <div class="text-muted small mb-2">
-                                        <i class="fa-solid fa-calendar-days me-2"></i>5 Tháng 7, 2025
+                                    <div class="text-muted small mb-3 d-flex align-items-center">
+                                        <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
+                                        <span>5 Tháng 7, 2025</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fa-solid fa-clock me-1"></i>
+                                        <span>7 phút đọc</span>
                                     </div>
-                                    <h4 class="card-title fw-bold text-dark mb-3" style="font-size:1.4rem; line-height: 1.4;">
+                                    <h4 class="card-title fw-bold text-dark mb-3"
+                                        style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); 
+                                                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         Phong cách hè 2025: Đơn giản mà nổi bật
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
                                         Cập nhật xu hướng thời trang hè với những gam màu tươi sáng và thiết kế thoải mái, phù
-                                        hợp cho mọi hoạt động.
+                                        hợp cho mọi hoạt động. ☀️
                                     </p>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <a href="#" class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
-                                        style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; box-shadow: 0 4px 15px rgba(249, 168, 37, 0.4);">
-                                        Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    <a href="{{ route('client.news.index') }}"
+                                        class="btn btn-primary rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
+                                        style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); border: none; 
+                                                                                      box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); transition: all 0.3s ease;">
+                                        <span class="position-relative z-index-2">
+                                            Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                        </span>
                                     </a>
                                     <div class="d-flex align-items-center text-muted">
-                                        <i class="fa-solid fa-eye me-1"></i>
-                                        <span>679</span>
+                                        <i class="fa-solid fa-eye me-1 text-primary"></i>
+                                        <span class="fw-semibold">679</span>
                                     </div>
                                 </div>
                             </div>
@@ -1223,7 +1385,8 @@
             </div>
             <!-- View More Button -->
             <div class="d-flex justify-content-center mt-5">
-                <a href="#" class="btn btn-outline-primary btn-lg rounded-pill px-5 py-3 fw-semibold"
+                <a href="{{ route('client.news.index') }}"
+                    class="btn btn-outline-primary btn-lg rounded-pill px-5 py-3 fw-semibold"
                     style="border: 2px solid #007bff; transition: all 0.3s ease;"
                     onmouseover="this.style.backgroundColor='#007bff'; this.style.color='white';"
                     onmouseout="this.style.backgroundColor='transparent'; this.style.color='#007bff';">
