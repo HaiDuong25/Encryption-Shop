@@ -35,13 +35,15 @@ class BannerController extends \App\Http\Controllers\Controller
         if ($request->hasFile('images')) {
             $files = $request->file('images');
             foreach ($files as $index => $file) {
-                if ($index >= 8) break;
+                if ($index >= 8)
+                    break;
                 $imagePaths[] = $file->store('banners', 'public');
             }
         }
 
         $banner = Banner::create([
             'title' => $request->title,
+            'description' => $request->description,
             'image' => json_encode($imagePaths),
             'link' => $request->link,
             'position' => $request->position ?? 0,
@@ -74,6 +76,7 @@ class BannerController extends \App\Http\Controllers\Controller
     {
         $banner = Banner::findOrFail($id);
         $banner->title = $request->title;
+        $banner->description = $request->description;
         if ($request->hasFile('images')) {
             if ($banner->image) {
                 $images = json_decode($banner->image, true);
@@ -92,7 +95,8 @@ class BannerController extends \App\Http\Controllers\Controller
             $files = $request->file('images');
             $imagePaths = [];
             foreach ($files as $index => $file) {
-                if ($index >= 8) break;
+                if ($index >= 8)
+                    break;
                 $imagePaths[] = $file->store('banners', 'public');
             }
             $banner->image = json_encode($imagePaths);
@@ -101,7 +105,7 @@ class BannerController extends \App\Http\Controllers\Controller
         $banner->position = $request->position ?? 0;
         $banner->is_active = $request->is_active ? true : false;
         $banner->save();
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -130,7 +134,7 @@ class BannerController extends \App\Http\Controllers\Controller
             }
         }
         $banner->delete();
-        
+
         if (request()->ajax()) {
             return response()->json([
                 'success' => true,
