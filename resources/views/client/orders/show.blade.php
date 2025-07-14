@@ -20,7 +20,68 @@
         $isCancelled = $statusValue === 'cancelled';
         $isPaid = $order->payments && $order->payments->where('status', 'confirmed')->count() > 0;
     @endphp
+ <div class="mb-4">
+        @php
+            $trackerSteps = [
+                'pending' => 'Chờ xử lý',
+                'confirmed' => 'Đã xác nhận',
+                'shipping' => 'Giao cho ĐVVC',
+                'delivering' => 'Đang giao',
+                'received' => 'Đã nhận',
+                'completed' => 'Hoàn thành',
+            ];
+            $trackerKeys = array_keys($trackerSteps);
+            $currentStep = array_search($statusValue, $trackerKeys);
+        @endphp
+        @if($isCancelled)
+            <div class="alert alert-danger text-center mb-2"><i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy</div>
+        @else
+            <div class="progress" style="height: 10px;">
+                @foreach ($trackerSteps as $key => $label)
+                    <div class="progress-bar {{ array_search($key, $trackerKeys) <= $currentStep ? 'bg-success' : 'bg-secondary' }}"
+                        style="width: {{ 100 / count($trackerSteps) }}%"></div>
+                @endforeach
+            </div>
+            <div class="d-flex justify-content-between mt-2 small">
+                @foreach ($trackerSteps as $key => $label)
+                    <div class="text-center {{ array_search($key, $trackerKeys) <= $currentStep ? 'text-success fw-bold' : 'text-muted' }}" style="width: {{ 100 / count($trackerSteps) }}%">
+                        {{ $label }}
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+       {{-- Timeline chi tiết lịch sử trạng thái --}}
+    @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
+        <div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+        <ul class="list-unstyled">
+            @foreach($order->statusHistories->sortByDesc('created_at') as $history)
+                <li class="mb-3 d-flex">
+                    <div class="me-3">
+                        @if($history->new_status === $statusValue)
+                            <i class="fas fa-check-circle text-success"></i>
+                        @else
+                            <i class="far fa-circle text-muted"></i>
+                        @endif
+                    </div>
+                    <div>
+                        <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
+                        <div class="text-muted small">
+                            {{ $history->created_at->format('H:i d/m/Y') }}
+                            @if($history->description)
+                                <br><span>{{ $history->description }}</span>
+                            @endif
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+</div>
 
+    @endif
     <div class="row g-4">
         <div class="col-lg-5 col-12">
             <div class="card shadow-sm mb-4">
@@ -186,12 +247,6 @@
             </div>
         </div>
     </div>
-
-
-
-
-
-
 
 
 </div>

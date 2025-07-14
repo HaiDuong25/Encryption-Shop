@@ -80,11 +80,19 @@ public function cancel(Request $request, Order $order)
             }
         }
 
-        // Cập nhật trạng thái và lý do hủy
+        $oldStatus = $order->getOriginal('status');
         $order->update([
             'status' => 'cancelled',
             'cancel_reason' => $request->cancel_reason ?? 'Khách hàng hủy đơn',
             'cancel_note' => $request->note ?? null,
+        ]);
+
+        // Lưu lịch sử thay đổi trạng thái
+        $order->statusHistories()->create([
+            'old_status' => $oldStatus,
+            'new_status' => 'cancelled',
+            'description' => $request->cancel_reason ?? 'Khách hàng hủy đơn',
+            'changed_by' => Auth::id(),
         ]);
 
         DB::commit();
@@ -140,7 +148,16 @@ public function cancel(Request $request, Order $order)
         if ($statusValue === 'received') {
             DB::beginTransaction();
             try {
+                $oldStatus = $order->getOriginal('status');
                 $order->update(['status' => 'completed']);
+
+                // Lưu lịch sử thay đổi trạng thái
+                $order->statusHistories()->create([
+                    'old_status' => $oldStatus,
+                    'new_status' => 'completed',
+                    'description' => 'Khách xác nhận đã nhận hàng',
+                    'changed_by' => Auth::id(),
+                ]);
 
                 // Nếu là COD thì cập nhật trạng thái thanh toán
                 if ($order->paymentMethod && strtolower($order->paymentMethod->payment_type) === 'cod') {
