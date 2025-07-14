@@ -50,6 +50,10 @@ class Order extends Model
     {
         return $this->belongsTo(Coupon::class, 'discount_id');
     }
+public function statusHistories()
+{
+    return $this->hasMany(OrderStatusHistory::class);
+}
 
     public function user()
     {

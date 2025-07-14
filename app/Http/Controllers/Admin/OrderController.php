@@ -76,6 +76,7 @@ class OrderController extends \App\Http\Controllers\Controller
         try {
             DB::beginTransaction();
 
+            $oldStatus = $order->getOriginal('status');
             // Cập nhật thông tin đơn hàng
             $order->update([
                 'user_id' => $validated['user_id'],
@@ -91,6 +92,16 @@ class OrderController extends \App\Http\Controllers\Controller
                 'discount_id' => $validated['discount_id'] ?? null,
                 'payment_method_id' => $validated['payment_method_id'],
             ]);
+
+            // Lưu lịch sử thay đổi trạng thái nếu có thay đổi
+            if ($oldStatus !== $validated['status']) {
+                $order->statusHistories()->create([
+                    'old_status' => $oldStatus,
+                    'new_status' => $validated['status'],
+                    'description' => $request->input('note') ?? null,
+                    'changed_by' => auth()->id(),
+                ]);
+            }
 
             // Cập nhật số lượng order details nếu có
             if (isset($validated['order_detail_ids']) && isset($validated['quantities'])) {

@@ -70,8 +70,95 @@
             margin-bottom: 15px;
             font-size: 1.1rem;
         }
+
+        .timeline-admin {
+            position: relative;
+            padding-left: 0;
+        }
+
+        .timeline-admin::before {
+            content: '';
+            position: absolute;
+            left: 23px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+            z-index: 0;
+        }
     </style>
 
+    {{-- Timeline tiến trình trạng thái --}}
+    @php
+        $statuses = [
+            'pending' => 'Chờ xử lý',
+            'confirmed' => 'Đã xác nhận',
+            'shipping' => 'Đã giao cho ĐVVC',
+            'delivering' => 'Đang giao',
+            'received' => 'Đã nhận',
+            'completed' => 'Hoàn thành',
+        ];
+        $statusMap = ['0' => 'pending', '1' => 'confirmed', '2' => 'shipping', '3' => 'delivering', '4' => 'received', '5' => 'completed', '6' => 'cancelled'];
+        $statusValue = is_numeric($order->status) ? $statusMap[(string)$order->status] ?? 'pending' : $order->status;
+        $statusKeys = array_keys($statuses);
+        $currentStatusIndex = array_search($statusValue, $statusKeys);
+        $isCancelled = $statusValue === 'cancelled';
+    @endphp
+
+    @if (!$isCancelled)
+        <div class="progress" style="height: 10px; margin-top: -10px; margin-bottom: 10px;">
+            @foreach ($statuses as $key => $label)
+                <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-success' : 'bg-secondary' }}"
+                    style="width: {{ 100 / count($statuses) }}%"></div>
+            @endforeach
+        </div>
+        <div class="d-flex justify-content-between small mb-4 px-1">
+            @foreach ($statuses as $key => $label)
+                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}" style="width: {{ 100 / count($statuses) }}%">
+                    {{ $label }}
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="alert alert-danger text-center mb-4">
+            <i class="fas fa-times-circle me-2"></i> Đơn hàng đã bị hủy
+        </div>
+    @endif
+
+    {{-- Đặt timeline ngay dưới đây --}}
+    @if($order->statusHistories && $order->statusHistories->count())
+        <div class="card mb-4 p-3">
+            <h5 class="mb-3"><i class="fas fa-shipping-fast me-2 text-success"></i>Tiến trình vận chuyển</h5>
+            <ul class="list-unstyled mb-0 position-relative timeline-admin">
+                @foreach($order->statusHistories->sortByDesc('created_at') as $history)
+                    <li class="d-flex align-items-start mb-4 position-relative" style="min-height:40px;">
+                        <div class="me-3 d-flex flex-column align-items-center" style="min-width:24px;">
+                            <span class="rounded-circle {{ $history->new_status === $order->status ? 'bg-success' : 'bg-secondary' }}"
+                                  style="display:inline-block;width:16px;height:16px;border:2px solid #fff;z-index:1;"></span>
+                            @if(!$loop->last)
+                                <span style="width:2px;flex:1 1 auto;background:#dee2e6;min-height:20px;display:block;margin:2px 0 0 7px;"></span>
+                            @endif
+                        </div>
+                        <div>
+                            <div>
+                                <strong class="{{ $history->new_status === $order->status ? 'text-success' : '' }}">
+                                    {{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}
+                                </strong>
+                                <span class="text-muted small ms-2">
+                                    {{ $history->created_at->format('H:i d/m/Y') }}
+                                </span>
+                            </div>
+                            @if(!empty($history->description))
+                                <div class="text-muted small fst-italic">{{ $history->description }}</div>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- Phần còn lại giữ nguyên --}}
     <div class="order-header-bar">
         <div>
             <span><i class="fas fa-calendar-alt text-info"></i> {{ $order->created_at->format('d/m/Y H:i') }}</span>
@@ -81,7 +168,6 @@
             @php
                 $subtotal = $order->subtotal ?? $order->orderDetails->sum(fn($d) => $d->price * $d->quantity);
 
-                // Tính số tiền giảm thực tế
                 $actualDiscountAmount = 0;
                 if ($order->coupon_code && $order->coupon_discount > 0) {
                     if ($order->coupon_type == 'percentage') {
@@ -102,10 +188,12 @@
                     @endif
                 </span>
             @endif
-            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
-                    style="color:#e11d48">{{ number_format($total, 0, ',', '.') }} đ
-                </strong></span>
+            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong style="color:#e11d48">{{ number_format($total, 0, ',', '.') }} đ</strong></span>
         </div>
+    </div>
+
+
+
     </div>
     <div class="row">
         <div class="col-md-8">
@@ -333,4 +421,7 @@
             </div>
         </div>
     </div>
+
+    {{-- Tiến trình vận chuyển (timeline trạng thái) --}}
+
 @endsection
