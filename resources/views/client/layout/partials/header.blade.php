@@ -94,54 +94,16 @@
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="javascript:void(0)"
                                             data-bs-toggle="dropdown">Danh mục quần áo</a>
-                                        <div class="dropdown-menu dropdown-menu-3 dropdown-menu-2">
-                                            <div class="row">
-                                                <div class="col-xl-3">
-                                                    <div class="dropdown-column m-0">
-                                                        <h5 class="dropdown-header">Áo Nam</h5>
-                                                        <a class="dropdown-item" href="#">Áo Thun</a>
-                                                        <a class="dropdown-item" href="#">Áo Sơ Mi</a>
-                                                        <a class="dropdown-item" href="#">Áo Polo</a>
-                                                        <a class="dropdown-item" href="#">Áo Khoác</a>
-                                                        <h5 class="custom-mt dropdown-header">Quần Nam</h5>
-                                                        <a class="dropdown-item" href="#">Quần Jean</a>
-                                                        <a class="dropdown-item" href="#">Quần Tây</a>
-                                                        <a class="dropdown-item" href="#">Quần Short</a>
-                                                    </div>
-                                                </div>
-                                                <div class="col-xl-3">
-                                                    <div class="dropdown-column m-0">
-                                                        <h5 class="dropdown-header">Áo Nữ</h5>
-                                                        <a class="dropdown-item" href="#">Đầm/Váy</a>
-                                                        <a class="dropdown-item" href="#">Áo Kiểu</a>
-                                                        <a class="dropdown-item" href="#">Áo Sơ Mi Nữ</a>
-                                                        <a class="dropdown-item" href="#">Áo Khoác Nữ</a>
-                                                        <h5 class="custom-mt dropdown-header">Quần Nữ</h5>
-                                                        <a class="dropdown-item" href="#">Quần Jean Nữ</a>
-                                                        <a class="dropdown-item" href="#">Quần Tây Nữ</a>
-                                                        <a class="dropdown-item" href="#">Chân Váy</a>
-                                                    </div>
-                                                </div>
-                                                <div class="col-xl-3">
-                                                    <div class="dropdown-column m-0">
-                                                        <h5 class="custom-mt dropdown-header">Bộ sưu tập</h5>
-                                                        <a class="dropdown-item" href="#">Hè 2025</a>
-                                                        <a class="dropdown-item" href="#">Thu Đông 2025</a>
-                                                    </div>
-                                                </div>
-                                                <div class="col-xl-3 d-xl-block d-none">
-                                                    <div class="dropdown-column m-0">
-                                                        <div class="menu-img-banner">
-                                                            <a class="text-title" href="#">
-                                                                <img src="{{ asset('assets-front/images/mega-menu-fashion.png') }}"
-                                                                    alt="banner thời trang">
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+
+
                                     </li>
+
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="javascript:void(0)"
+                                            data-bs-toggle="dropdown">Tin tức</a>
+
+                                    </li>
+
 
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ route('client.news.index') }}">Tin tức</a>

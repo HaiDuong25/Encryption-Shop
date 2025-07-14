@@ -11,7 +11,7 @@
             <form id="orderEditForm" action="{{ route('orders.update', $order->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                
+
                 @if($errors->any())
                     <div class="alert alert-danger">
                         <ul class="mb-0">
@@ -55,20 +55,26 @@
                         <div class="mb-3">
                             <label for="orderer_name" class="form-label">Tên người đặt</label>
                             <input type="text" class="form-control" id="orderer_name" name="orderer_name" maxlength="255" required
-                                value="{{ old('orderer_name', $order->orderer_name) }}">
+                                value="{{ old('orderer_name', $order->orderer_name ?? ($order->user->name ?? '') ) }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="orderer_email" class="form-label">Email người đặt</label>
+                            <input type="email" class="form-control" id="orderer_email" name="orderer_email" maxlength="255"
+                                value="{{ old('orderer_email', $order->orderer_email ?? ($order->user->email ?? '') ) }}">
                         </div>
 
                         <div class="mb-3">
                             <label for="orderer_phone" class="form-label">Số điện thoại người đặt</label>
-                            <input type="text" class="form-control" id="orderer_phone" name="orderer_phone" 
+                            <input type="text" class="form-control" id="orderer_phone" name="orderer_phone"
                                 pattern="[0-9]{10,11}" maxlength="11" required
-                                value="{{ old('orderer_phone', $order->orderer_phone) }}">
+                                value="{{ old('orderer_phone', $order->orderer_phone ?? ($order->user->phone ?? '') ) }}">
                         </div>
 
                         <div class="mb-3">
                             <label for="orderer_address" class="form-label">Địa chỉ người đặt</label>
                             <input type="text" class="form-control" id="orderer_address" name="orderer_address" maxlength="255" required
-                                value="{{ old('orderer_address', $order->orderer_address) }}">
+                                value="{{ old('orderer_address', $order->orderer_address ?? ($order->user->address ?? '') ) }}">
                         </div>
                     </div>
                 </div>
@@ -87,7 +93,7 @@
 
                         <div class="mb-3">
                             <label for="recipient_phone" class="form-label">Số điện thoại người nhận</label>
-                            <input type="text" class="form-control" id="recipient_phone" name="recipient_phone" 
+                            <input type="text" class="form-control" id="recipient_phone" name="recipient_phone"
                                 pattern="[0-9]{10,11}" maxlength="11" required
                                 value="{{ old('recipient_phone', $order->recipient_phone) }}">
                         </div>
@@ -148,7 +154,7 @@
                                 'completed' => 'Hoàn thành',
                                 'cancelled' => 'Đã hủy',
                             ];
-                            
+
                             // Convert numeric status to string for backward compatibility
                             $currentStatus = $order->status;
                             if (is_numeric($currentStatus)) {
@@ -164,9 +170,21 @@
                                 $currentStatus = $statusMap[$currentStatus] ?? 'pending';
                             }
                         @endphp
+                        @php
+                            $statusKeys = array_keys($statuses);
+                            $currentIndex = array_search($currentStatus, $statusKeys);
+                        @endphp
                         @foreach ($statuses as $value => $label)
+                            @php
+                                $optionIndex = array_search($value, $statusKeys);
+                                // Disable nếu trạng thái đã qua (nhỏ hơn current)
+                                $disabled = $optionIndex < $currentIndex;
+                                // Không cho phép chọn "Đã hủy" nếu đã ở shipping, delivering, received, completed
+                                $forbidCancel = in_array($currentStatus, ['shipping', 'delivering', 'received', 'completed']) && $value === 'cancelled';
+                            @endphp
                             <option value="{{ $value }}"
-                                {{ old('status', $currentStatus) == $value ? 'selected' : '' }}>
+                                {{ old('status', $currentStatus) == $value ? 'selected' : '' }}
+                                @if($disabled || $forbidCancel) disabled @endif>
                                 {{ $label }}
                             </option>
                         @endforeach
@@ -196,7 +214,7 @@
                                 $isNotStarted = $coupon->start_date && $coupon->start_date->isFuture();
                                 $isValid = !$isExpired && !$isNotStarted && $coupon->is_active;
                                 $isSelected = $order->discount_id == $coupon->id || $order->coupon_code == $coupon->code;
-                                
+
                                 $statusText = '';
                                 if ($isExpired) {
                                     $statusText = ' (Hết hạn)';
@@ -205,7 +223,7 @@
                                 } elseif (!$coupon->is_active) {
                                     $statusText = ' (Không khả dụng)';
                                 }
-                                
+
                                 $dateRange = '';
                                 if ($coupon->start_date && $coupon->end_date) {
                                     $dateRange = ' (' . $coupon->start_date->format('d/m/Y') . ' - ' . $coupon->end_date->format('d/m/Y') . ')';
@@ -245,24 +263,24 @@
             console.log('Form submit triggered');
             console.log('Form action:', this.action);
             console.log('Form method:', this.method);
-            
+
             // Kiểm tra các field required
             var requiredFields = this.querySelectorAll('[required]');
             var missingFields = [];
-            
+
             requiredFields.forEach(function(field) {
                 if (!field.value.trim()) {
                     missingFields.push(field.name || field.id);
                 }
             });
-            
+
             if (missingFields.length > 0) {
                 console.log('Missing required fields:', missingFields);
                 alert('Vui lòng điền đầy đủ các trường bắt buộc: ' + missingFields.join(', '));
                 e.preventDefault();
                 return false;
             }
-            
+
             console.log('Form validation passed, submitting...');
         });
 
@@ -272,7 +290,7 @@
             document.getElementById('orderer_name').value = selected.getAttribute('data-name') || '';
             document.getElementById('orderer_phone').value = selected.getAttribute('data-phone') || '';
             document.getElementById('orderer_address').value = selected.getAttribute('data-address') || '';
-            
+
             // Cập nhật thông tin người nhận (mặc định giống người đặt)
             document.getElementById('recipient_name').value = selected.getAttribute('data-name') || '';
             document.getElementById('recipient_phone').value = selected.getAttribute('data-phone') || '';
@@ -282,21 +300,21 @@
         // AJAX form submission
         document.getElementById('orderEditForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const form = this;
             const submitBtn = document.getElementById('submitBtn');
             const alertContainer = document.getElementById('alert-container');
-            
+
             // Show loading state
             const originalContent = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i data-feather="loader" class="rotating"></i> Đang cập nhật...';
             submitBtn.disabled = true;
-            
+
             // Clear previous alerts
             alertContainer.innerHTML = '';
-            
+
             const formData = new FormData(form);
-            
+
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
@@ -314,7 +332,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     `;
-                    
+
                     // Redirect after success
                     setTimeout(() => {
                         window.location.href = data.redirect || '{{ route("orders.index") }}';
@@ -336,7 +354,7 @@
                             </div>
                         `;
                     }
-                    
+
                     // Restore button state
                     submitBtn.innerHTML = originalContent;
                     submitBtn.disabled = false;
@@ -351,7 +369,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 `;
-                
+
                 // Restore button state
                 submitBtn.innerHTML = originalContent;
                 submitBtn.disabled = false;
@@ -362,7 +380,7 @@
         document.getElementById('status').addEventListener('change', function() {
             var cancelFields = document.querySelectorAll('[id^="cancel_"]');
             var showCancelFields = this.value === 'cancelled';
-            
+
             cancelFields.forEach(function(field) {
                 field.closest('.mb-3').style.display = showCancelFields ? 'block' : 'none';
                 field.required = showCancelFields;

@@ -2,235 +2,198 @@
 
 @section('title', 'Chi tiết đơn hàng')
 
-@php use Illuminate\Support\Str; @endphp
-
 @section('content')
-<style>
-.progress {
-    border-radius: 15px;
-    overflow: hidden;
-}
-.progress-bar {
-    transition: all 0.3s ease;
-}
-.status-step {
-    transition: all 0.3s ease;
-    font-size: 0.8rem;
-}
-.status-step.current {
-    font-weight: bold;
-    color: #0d6efd !important;
-    position: relative;
-}
-.status-step.completed {
-    color: #198754 !important;
-    font-weight: 600;
-}
-.current-indicator {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: #0d6efd;
-    border-radius: 50%;
-    margin-left: 5px;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-</style>
+<div class="container py-4">
+    @php
+        $statuses = [
+            'pending' => 'Chờ xử lý',
+            'confirmed' => 'Đã xác nhận',
+            'shipping' => 'Đã giao cho ĐVVC',
+            'delivering' => 'Đang giao',
+            'received' => 'Đã nhận',
+            'completed' => 'Hoàn thành',
+        ];
+        $statusMap = ['0' => 'pending', '1' => 'confirmed', '2' => 'shipping', '3' => 'delivering', '4' => 'received', '5' => 'completed', '6' => 'cancelled'];
+        $statusValue = is_numeric($order->status) ? $statusMap[(string)$order->status] ?? 'pending' : $order->status;
+        $statusKeys = array_keys($statuses);
+        $currentStatusIndex = array_search($statusValue, $statusKeys);
+        $isCancelled = $statusValue === 'cancelled';
+        $isPaid = $order->payments && $order->payments->where('status', 'confirmed')->count() > 0;
+    @endphp
 
-<div class="container py-5">
-
-    {{-- Trạng thái đơn hàng --}}
-    <div class="mb-4">
-        <h4 class="fw-bold mb-2">Đơn hàng {{ $order->id }}</h4>
-
-        @php
-            $statuses = [
-                'pending' => 'Chờ xử lý',
-                'confirmed' => 'Đã xác nhận',
-                'shipping' => 'Đã giao cho ĐVVC',
-                'delivering' => 'Đang giao',
-                'received' => 'Đã nhận',
-                'completed' => 'Hoàn thành',
-            ];
-            
-            // Chuyển đổi trạng thái sang chuẩn để xử lý
-            $statusValue = $order->status;
-            if (is_numeric($statusValue)) {
-                $statusMap = [
-                    '0' => 'pending',
-                    '1' => 'confirmed',
-                    '2' => 'shipping',
-                    '3' => 'delivering',
-                    '4' => 'received',
-                    '5' => 'completed',
-                    '6' => 'cancelled',
-                ];
-                $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
-            }
-            
-            // Tìm index của trạng thái hiện tại
-            $statusKeys = array_keys($statuses);
-            $currentStatusIndex = array_search($statusValue, $statusKeys);
-            if ($currentStatusIndex === false) {
-                $currentStatusIndex = 0; // Default to pending
-            }
-            
-            $isCancelled = $statusValue === 'cancelled';
-        @endphp
-
-        @if ($isCancelled)
-            <div class="alert alert-danger d-flex align-items-center" role="alert">
-                <i class="fas fa-ban me-2"></i>
-                <div>
-                    <strong>Đơn hàng đã bị hủy</strong>
-                    @if($order->cancel_reason)
-                        <br><small>Lý do: {{ $order->cancel_reason }}</small>
-                    @endif
-                    @if($order->cancel_note)
-                        <br><small>Ghi chú: {{ $order->cancel_note }}</small>
-                    @endif
-                </div>
-            </div>
-        @else
-            <div class="progress" style="height: 10px; background: #eee;">
-                @foreach ($statuses as $statusKey => $statusLabel)
-                    @php
-                        $stepIndex = array_search($statusKey, array_keys($statuses));
-                        $isCompleted = $stepIndex <= $currentStatusIndex;
-                    @endphp
-                    <div class="progress-bar {{ $isCompleted ? 'bg-success' : 'bg-secondary' }}"
-                         role="progressbar"
-                         style="width: {{ 100 / count($statuses) }}%">
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="d-flex justify-content-between mt-2 small text-muted">
-                @foreach ($statuses as $statusKey => $statusLabel)
-                    @php
-                        $stepIndex = array_search($statusKey, array_keys($statuses));
-                        $isCompleted = $stepIndex <= $currentStatusIndex;
-                        $isCurrent = $stepIndex === $currentStatusIndex;
-                    @endphp
-                    <div class="status-step {{ $isCompleted ? 'completed' : '' }} {{ $isCurrent ? 'current' : '' }}">
-                        {{ $statusLabel }}
-                        @if ($isCurrent)
-                            <span class="current-indicator"></span>
+    <div class="row g-4">
+        <div class="col-lg-5 col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <h4 class="fw-bold mb-0 flex-grow-1">Đơn hàng #{{ $order->id }}</h4>
+                        @if($isCancelled)
+                            <span class="badge bg-danger">Đã hủy</span>
+                        @elseif($statusValue == 'pending')
+                            <span class="badge bg-warning">Chờ xử lý</span>
+                        @elseif($statusValue == 'confirmed')
+                            <span class="badge bg-primary">Đã xác nhận</span>
+                        @elseif($statusValue == 'shipping')
+                            <span class="badge bg-info">Giao cho ĐVVC</span>
+                        @elseif($statusValue == 'delivering')
+                            <span class="badge bg-purple">Đang giao</span>
+                        @elseif($statusValue == 'received')
+                            <span class="badge bg-cyan">Đã nhận</span>
+                        @elseif($statusValue == 'completed')
+                            <span class="badge bg-success">Hoàn thành</span>
+                        @else
+                            <span class="badge bg-secondary">{{ $statusValue }}</span>
                         @endif
                     </div>
-                @endforeach
-            </div>
-        @endif
-    </div>
-
-    {{-- Địa chỉ nhận hàng --}}
-    <div class="mb-4 p-3 bg-light rounded shadow-sm">
-        <h5 class="mb-3"><i class="fas fa-map-marker-alt me-2"></i>Địa chỉ nhận hàng</h5>
-        <p class="mb-1"><strong>{{ $order->orderer_name }}</strong> | {{ $order->orderer_phone }}</p>
-        <p class="mb-0">{{ $order->recipient_address }}</p>
-    </div>
-
-    {{-- Sản phẩm --}}
-    <div class="mb-4 p-3 bg-white rounded shadow-sm">
-        <h5 class="mb-3"><i class="fas fa-box me-2"></i>Sản phẩm</h5>
-        @foreach ($order->orderDetails as $item)
-            <div class="d-flex border-bottom py-3">
-                @php
-                    $image = $item->variant->product->image ?? null;
-                    $isExternal = Str::startsWith($image, ['http://', 'https://']);
-                    $imageUrl = $image
-                        ? ($isExternal ? $image : asset('storage/' . $image))
-                        : 'https://via.placeholder.com/80?text=No+Image';
-                @endphp
-
-                <img src="{{ $imageUrl }}" width="80" height="80" class="me-3 rounded" alt="Ảnh sản phẩm">
-
-                <div class="flex-grow-1">
-                    <h6 class="mb-1">{{ $item->variant->product->name ?? 'Sản phẩm đã xóa' }}</h6>
-                    <div class="text-muted small">Phân loại: {{ $item->variant->name ?? 'Mặc định' }}</div>
-                    <div class="text-muted small">Giá: {{ number_format($item->price) }}₫ x {{ $item->quantity }}</div>
-                </div>
-                <div class="text-end fw-bold">
-                    {{ number_format($item->total_price) }}₫
+                    <div class="mb-2 text-muted small"><i class="fas fa-calendar-alt me-1"></i> Ngày đặt: {{ $order->created_at->format('d/m/Y H:i') }}</div>
+                    <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
+                        @if($isPaid)
+                            <span class="badge bg-success">Đã thanh toán</span>
+                        @else
+                            <span class="badge bg-warning text-dark">Chưa thanh toán</span>
+                        @endif
+                    </div>
+                    <div class="mb-2"><strong>Phương thức thanh toán:</strong> {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}</div>
+                    <div class="mb-2"><strong>Phương thức vận chuyển:</strong> {{ $order->shipping_method ?? 'Giao hàng tận nơi' }}</div>
+                    <div class="mb-2"><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(3)->format('d/m/Y') }}</div>
+                    <hr>
+                    <div class="mb-2"><strong>Người nhận:</strong> {{ $order->recipient_name ?? $order->orderer_name }}</div>
+                    <div class="mb-2"><strong>SĐT:</strong> {{ $order->recipient_phone ?? $order->orderer_phone }}</div>
+                    <div class="mb-2"><strong>Địa chỉ:</strong> {{ $order->recipient_address }}</div>
+                    <div class="mb-2"><strong>Email:</strong> {{ $order->orderer_email ?? ($order->user->email ?? 'N/A') }}</div>
+                    @if($isCancelled)
+                        <div class="alert alert-danger mt-3 mb-0 p-2 small">
+                            <div><strong>Lý do hủy:</strong> {{ $order->cancel_reason ?? 'Không có' }}</div>
+                            <div><strong>Ghi chú:</strong> {{ $order->cancel_note ?? 'Không có' }}</div>
+                        </div>
+                    @endif
                 </div>
             </div>
-        @endforeach
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán</h5>
+                    <div class="mb-2">Tạm tính: <strong>{{ number_format($order->subtotal) }}₫</strong></div>
+                    @if ($order->coupon || $order->coupon_code)
+                        <div class="mb-2">
+                            Mã giảm giá:
+                            <span class="badge bg-success">{{ $order->coupon->code ?? $order->coupon_code }}</span>
+                            @php
+                                $discountValue = $order->coupon->discount ?? $order->coupon_discount;
+                                $discountType = $order->coupon->discount_type ?? $order->coupon_type ?? null;
+                            @endphp
+                            @if (!empty($discountValue))
+                                -
+                                @if($discountType === 'percentage')
+                                    {{ rtrim(rtrim($discountValue, '0'), '.') }}%
+                                @else
+                                    {{ number_format($discountValue, 0, ',', '.') }}₫
+                                @endif
+                            @endif
+                        </div>
+                        <div class="mb-2">Số tiền giảm: <strong>-{{ number_format($order->coupon_discount, 0, ',', '.') }}₫</strong></div>
+                    @endif
+                    <div class="alert alert-warning fw-bold mt-3 mb-2">
+                        Tổng tiền: {{ number_format($order->total_price) }}₫
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-between justify-content-lg-end mt-3 flex-wrap">
+                @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
+                    <button class="btn btn-outline-danger flex-grow-1 flex-lg-grow-0" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                    </button>
+                    <!-- Modal Hủy đơn hàng -->
+                    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" class="w-100">
+                                @csrf
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger bg-opacity-10 border-0">
+                                        <h5 class="modal-title w-100 text-center text-danger fw-bold d-flex align-items-center justify-content-center gap-2" id="cancelModalLabel">
+                                            <i class="fas fa-exclamation-triangle me-2"></i> Hủy đơn hàng
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                    </div>
+                                    <div class="modal-body px-4 py-3">
+                                        <div class="mb-3">
+                                            <label for="reason" class="form-label fw-semibold">Lý do hủy đơn hàng <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="cancel_reason" id="reason" required>
+                                                <option value="">-- Chọn lý do --</option>
+                                                <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
+                                                <option value="Muốn thay đổi địa chỉ">Muốn thay đổi địa chỉ</option>
+                                                <option value="Không còn nhu cầu">Không còn nhu cầu</option>
+                                                <option value="Lý do khác">Lý do khác</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="note" class="form-label fw-semibold">Ghi chú thêm <span class="text-muted">(không bắt buộc)</span></label>
+                                            <textarea class="form-control" name="note" id="note" rows="2" placeholder="Ghi chú nếu có..."></textarea>
+                                        </div>
+                                        <div class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0" role="alert">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span>Bạn chỉ có thể hủy đơn khi đơn hàng chưa được giao cho đơn vị vận chuyển.</span>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-0 justify-content-between px-4 pb-4">
+                                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Đóng</button>
+                                        <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                            <i class="fas fa-times-circle me-1"></i> Xác nhận hủy
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+                <a href="{{ route('client.orders.index') }}" class="btn btn-outline-secondary flex-grow-1 flex-lg-grow-0">
+                    ← Quay lại danh sách đơn hàng
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-7 col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-box me-2"></i>Sản phẩm trong đơn hàng</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($order->orderDetails as $item)
+                                    @php
+                                        $image = $item->variant->product->image ?? null;
+                                        $imageUrl = $image ? (Str::startsWith($image, ['http://', 'https://']) ? $image : asset('storage/' . $image)) : 'https://via.placeholder.com/80?text=No+Image';
+                                    @endphp
+                                    <tr>
+                                        <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
+                                        <td>
+                                            <strong>{{ $item->variant->product->name ?? 'Sản phẩm đã xóa' }}</strong><br>
+                                            <small>Phân loại: {{ $item->variant->name ?? 'Mặc định' }}</small><br>
+                                            <small>Giá: {{ number_format($item->price) }}₫ x {{ $item->quantity }}</small>
+                                        </td>
+                                        <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    {{-- Thông tin thanh toán --}}
-    <div class="p-3 bg-white rounded shadow-sm">
-        <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Thanh toán</h5>
-        <p class="mb-1">Tạm tính: {{ number_format($order->total_price) }}₫</p>
-        @if (session('coupon'))
-            <p class="mb-1">Mã giảm giá: <span class="text-success">{{ session('coupon.code') }} ({{ session('coupon.discount') }}%)</span></p>
-        @endif
-        <p class="mb-1">Phương thức: {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}</p>
-        <p class="mb-1">Vận chuyển: {{ $order->shipping_method ?? 'Miễn phí' }}</p>
-        <h5 class="text-danger mt-2">Tổng tiền: {{ number_format($order->total_price) }}₫</h5>
-    </div>
 
-    {{-- Hủy đơn hàng nếu đang ở trạng thái pending hoặc confirmed và chưa bị hủy --}}
-    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
-        <button class="btn btn-outline-danger mt-3" onclick="cancelOrder({{ $order->id }})">
-            Hủy đơn hàng
-        </button>
-    @endif
 
-    {{-- Quay lại --}}
-    <div class="mt-4">
-        <a href="{{ route('client.orders.index') }}" class="btn btn-outline-secondary">
-            ← Quay lại đơn hàng
-        </a>
-    </div>
+
+
+
+
+
 </div>
 
-<script>
-function cancelOrder(orderId) {
-    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được trả lại kho.')) {
-        return;
-    }
-
-    // Disable button to prevent double click
-    const button = event.target.closest('button');
-    const originalContent = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang hủy...';
-
-    fetch(`/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                cancel_reason: 'Khách hàng hủy đơn',
-                note: null
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload(); // Refresh page to show updated status
-            } else {
-                alert('Lỗi: ' + data.message);
-                // Re-enable button on error
-                button.disabled = false;
-                button.innerHTML = originalContent;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi hủy đơn hàng');
-            // Re-enable button on error
-            button.disabled = false;
-            button.innerHTML = originalContent;
-        });
-}
-</script>
 @endsection

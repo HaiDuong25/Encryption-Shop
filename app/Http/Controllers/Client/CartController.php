@@ -465,6 +465,19 @@ class CartController extends Controller
         $order->payment_method_id = $request->payment_method_id;
         $order->save();
 
+        // Tạo bản ghi thanh toán cho đơn hàng COD
+        try {
+            \App\Models\Payment::create([
+                'order_id' => $order->id,
+                'payment_method_id' => $order->payment_method_id,
+                'amount' => $order->total_price,
+                'status' => 'pending', // Chờ xác nhận
+                // KHÔNG có 'confirmed_at'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Lỗi tạo bản ghi thanh toán (COD): ' . $e->getMessage());
+        }
+
         // Lưu chi tiết đơn hàng và giảm tồn kho
         foreach ($carts as $cart) {
             $price = $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price;

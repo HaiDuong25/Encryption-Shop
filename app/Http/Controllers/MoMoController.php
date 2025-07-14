@@ -258,6 +258,20 @@ class MoMoController extends Controller
             // Xóa coupon khỏi session
             Session::forget(['applied_coupon', 'coupon_discount']);
 
+            // Tạo bản ghi payment cho đơn hàng (hiển thị ở quản lý thanh toán)
+            try {
+                \App\Models\Payment::create([
+                    'order_id' => $order->id,
+                    'payment_method_id' => $order->payment_method_id,
+                    'amount' => $order->total_price,
+                    'status' => 'confirmed', // Đã thanh toán luôn vì MoMo đã trả về thành công
+                    'confirmed_at' => now(),
+                    'transaction_id' => $transactionId,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Create Payment Exception (MoMo): ' . $e->getMessage());
+            }
+
             return $order;
 
         } catch (\Exception $e) {

@@ -22,10 +22,16 @@ class PaymentController extends Controller
         $payment->confirmed_at = now();
         $payment->save();
 
+
         // Cập nhật trạng thái đơn hàng
         $order = $payment->order;
         if ($order) {
-            $order->status = 1; // 1 = Xác nhận
+            // Nếu là COD thì chuyển sang hoàn thành, còn lại thì xác nhận
+            if ($payment->paymentMethod && strtolower($payment->paymentMethod->payment_type) === 'cod') {
+                $order->status = 'completed';
+            } else {
+                $order->status = 1; // 1 = Xác nhận
+            }
             $order->save();
         }
 
@@ -53,5 +59,12 @@ class PaymentController extends Controller
         return redirect()->route('payments.index')->with('success', 'Đã hủy đơn thành công!');
     }
     return redirect()->route('payments.index')->with('error', 'Đơn này đã bị hủy trước đó.');
+}
+public function exportPdf($id)
+{
+    $payment = Payment::with(['order', 'paymentMethod', 'order.orderDetails.product'])->findOrFail($id);
+    $pdf = \PDF::loadView('admin.payments.invoice_pdf', compact('payment'));
+    $fileName = 'hoa-don-thanh-toan-' . $payment->id . '.pdf';
+    return $pdf->download($fileName);
 }
 }

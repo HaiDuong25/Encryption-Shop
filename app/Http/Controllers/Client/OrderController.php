@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
@@ -23,16 +24,17 @@ class OrderController extends Controller
     }
 
     // ✅ Phương thức chi tiết đơn hàng nằm trong class
-    public function show(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            abort(403); // Không cho truy cập nếu không phải chủ đơn hàng
-        }
-
-        $order->load(['orderDetails.variant.product', 'paymentMethod']); // load đầy đủ quan hệ
-
-        return view('client.orders.show', compact('order'));
+   public function show(Order $order)
+{
+    if ($order->user_id !== Auth::id()) {
+        abort(403); // Không cho truy cập nếu không phải chủ đơn hàng
     }
+
+    $order->load(['orderDetails.variant.product', 'paymentMethod', 'coupon']);
+
+    return view('client.orders.show', compact('order'));
+}
+
 public function cancel(Request $request, Order $order)
 {
     // Kiểm tra quyền sở hữu đơn hàng
@@ -47,7 +49,7 @@ public function cancel(Request $request, Order $order)
             '0' => 'pending',
             '1' => 'confirmed',
             '2' => 'shipping',
-            '3' => 'delivering', 
+            '3' => 'delivering',
             '4' => 'received',
             '5' => 'completed',
             '6' => 'cancelled',
@@ -87,18 +89,27 @@ public function cancel(Request $request, Order $order)
 
         DB::commit();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.'
-        ]);
+        // Nếu là AJAX thì trả về JSON, còn lại thì redirect về trang chi tiết đơn hàng
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.'
+            ]);
+        }
+        // Redirect về trang chi tiết đơn hàng với flash message
+        return redirect()->route('client.orders.show', $order->id)
+            ->with('success', 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.');
 
     } catch (\Exception $e) {
         DB::rollBack();
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Có lỗi xảy ra khi hủy đơn hàng: ' . $e->getMessage()
-        ], 500);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi hủy đơn hàng: ' . $e->getMessage()
+            ], 500);
+        }
+        return redirect()->back()->with('error', 'Có lỗi xảy ra khi hủy đơn hàng: ' . $e->getMessage());
     }
 }
 
@@ -127,8 +138,34 @@ public function cancel(Request $request, Order $order)
 
         // Chỉ cho phép xác nhận khi đơn hàng ở trạng thái "Đã nhận"
         if ($statusValue === 'received') {
-            $order->update(['status' => 'completed']);
-            return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành.');
+            DB::beginTransaction();
+            try {
+                $order->update(['status' => 'completed']);
+
+                // Nếu là COD thì cập nhật trạng thái thanh toán
+                if ($order->paymentMethod && strtolower($order->paymentMethod->payment_type) === 'cod') {
+                    // Tìm payment chưa xác nhận hoặc tạo mới nếu chưa có
+                    $payment = $order->payments()->where('status', 'pending')->first();
+                    if (!$payment) {
+                        $payment = $order->payments()->create([
+                            'amount' => $order->total_price,
+                            'payment_method_id' => $order->payment_method_id,
+                            'status' => 'confirmed',
+                            'confirmed_at' => now(),
+                        ]);
+                    } else {
+                        $payment->update([
+                            'status' => 'confirmed',
+                            'confirmed_at' => now(),
+                        ]);
+                    }
+                }
+                DB::commit();
+                return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành và đã cập nhật trạng thái thanh toán.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->with('error', 'Có lỗi khi xác nhận hoàn thành: ' . $e->getMessage());
+            }
         }
 
         return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái "Đã nhận".');

@@ -90,7 +90,8 @@
                                     <th>SĐT</th>
                                     <th>Địa chỉ</th>
                                     <th>Tổng tiền</th>
-                                    <th>Trạng thái</th>
+                                    <th>Trạng thái đơn</th>
+                                    <th>Thanh toán</th>
                                     <th>Chi tiết</th>
                                 </tr>
                             </thead>
@@ -100,7 +101,7 @@
                                         <td>{{ $order->id }}</td>
                                         <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                         <td>{{ $order->orderer_name }}</td>
-                                        <td>{{ $order->orderer_phone }}</td>
+                                        <td>{{ $order->recipient_phone }}</td>
                                         <td>{{ $order->recipient_address }}</td>
                                         <td>{{ number_format($order->total_price) }} đ</td>
                                         <td>
@@ -119,9 +120,6 @@
                                                     $statusValue = $statusMap[$statusValue] ?? 'pending';
                                                 }
                                             @endphp
-
-
-
                                             @if ($statusValue == 'pending')
                                                 <span class="badge bg-warning status-badge">Chờ xử lý</span>
                                             @elseif($statusValue == 'confirmed')
@@ -138,6 +136,16 @@
                                                 <span class="badge bg-danger status-badge">Đã hủy</span>
                                             @else
                                                 <span class="badge bg-secondary status-badge">{{ $statusValue }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @php
+                                                $isPaid = $order->payments && $order->payments->where('status', 'confirmed')->count() > 0;
+                                            @endphp
+                                            @if($isPaid)
+                                                <span class="badge bg-success status-badge">Đã thanh toán</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark status-badge">Chưa thanh toán</span>
                                             @endif
                                         </td>
                                         <td>
@@ -161,13 +169,7 @@
                                             @endif
 
 
-                                            {{-- Nút hủy đơn hàng cho trạng thái pending và confirmed --}}
-                                            @if (in_array($statusValue, ['pending', 'confirmed']))
-                                                <button type="button" onclick="cancelOrder({{ $order->id }})" 
-                                                    class="btn btn-danger btn-sm ms-1">
-                                                    Hủy đơn
-                                                </button>
-                                            @endif
+
                                         </td>
                                     </tr>
                                 @endforeach
