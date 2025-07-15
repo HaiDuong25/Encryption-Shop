@@ -16,9 +16,9 @@ class PaymentsTableSeeder extends Seeder
             [
                 'order_id' => 1,
                 'payment_method_id' => 1,
-                'status' => 'confirmed',
+                'status' => 'completed',
                 'transaction_code' => 'TXN123456',
-                        'amount' => 250000, // Thêm dòng này
+                'amount' => 250000, // Thêm dòng này
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -27,7 +27,7 @@ class PaymentsTableSeeder extends Seeder
                 'payment_method_id' => 2,
                 'status' => 'pending',
                 'transaction_code' => 'TXN654321',
-                        'amount' =>100000, // Thêm dòng này
+                'amount' => 100000, // Thêm dòng này
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -99,7 +99,7 @@
             'completed' => 'Hoàn thành',
         ];
         $statusMap = ['0' => 'pending', '1' => 'confirmed', '2' => 'shipping', '3' => 'delivering', '4' => 'received', '5' => 'completed', '6' => 'cancelled'];
-        $statusValue = is_numeric($order->status) ? $statusMap[(string)$order->status] ?? 'pending' : $order->status;
+        $statusValue = is_numeric($order->status) ? $statusMap[(string) $order->status] ?? 'pending' : $order->status;
         $statusKeys = array_keys($statuses);
         $currentStatusIndex = array_search($statusValue, $statusKeys);
         $isCancelled = $statusValue === 'cancelled';
@@ -114,7 +114,8 @@
         </div>
         <div class="d-flex justify-content-between small mb-4 px-1">
             @foreach ($statuses as $key => $label)
-                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}" style="width: {{ 100 / count($statuses) }}%">
+                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}"
+                    style="width: {{ 100 / count($statuses) }}%">
                     {{ $label }}
                 </div>
             @endforeach
@@ -133,10 +134,12 @@
                 @foreach($order->statusHistories->sortByDesc('created_at') as $history)
                     <li class="d-flex align-items-start mb-4 position-relative" style="min-height:40px;">
                         <div class="me-3 d-flex flex-column align-items-center" style="min-width:24px;">
-                            <span class="rounded-circle {{ $history->new_status === $order->status ? 'bg-success' : 'bg-secondary' }}"
-                                  style="display:inline-block;width:16px;height:16px;border:2px solid #fff;z-index:1;"></span>
+                            <span
+                                class="rounded-circle {{ $history->new_status === $order->status ? 'bg-success' : 'bg-secondary' }}"
+                                style="display:inline-block;width:16px;height:16px;border:2px solid #fff;z-index:1;"></span>
                             @if(!$loop->last)
-                                <span style="width:2px;flex:1 1 auto;background:#dee2e6;min-height:20px;display:block;margin:2px 0 0 7px;"></span>
+                                <span
+                                    style="width:2px;flex:1 1 auto;background:#dee2e6;min-height:20px;display:block;margin:2px 0 0 7px;"></span>
                             @endif
                         </div>
                         <div>
@@ -181,14 +184,17 @@
             @endphp
 
             @if($actualDiscountAmount > 0)
-                <span><i class="fas fa-calculator text-info"></i> Tạm tính: <strong>{{ number_format($subtotal, 0, ',', '.') }} đ</strong></span>
-                <span><i class="fas fa-tag text-success"></i> Giảm giá: <strong style="color:#10b981">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</strong>
+                <span><i class="fas fa-calculator text-info"></i> Tạm tính: <strong>{{ number_format($subtotal, 0, ',', '.') }}
+                        đ</strong></span>
+                <span><i class="fas fa-tag text-success"></i> Giảm giá: <strong
+                        style="color:#10b981">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</strong>
                     @if($order->coupon_code)
                         <span class="badge bg-primary ms-1">{{ $order->coupon_code }}</span>
                     @endif
                 </span>
             @endif
-            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong style="color:#e11d48">{{ number_format($total, 0, ',', '.') }} đ</strong></span>
+            <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
+                    style="color:#e11d48">{{ number_format($total, 0, ',', '.') }} đ</strong></span>
         </div>
     </div>
 
@@ -212,57 +218,59 @@
                         </thead>
                         <tbody>
                             @foreach ($order->orderDetails as $detail)
-                                <tr>
-                                    <td>
-                                        @php
-                                            $product = null;
-                                            $productImages = collect();
+                                                    <tr>
+                                                        <td>
+                                                            @php
+                                                                $product = null;
+                                                                $productImages = collect();
 
-                                            // Ưu tiên lấy từ variant trước
-                                            if ($detail->variant && $detail->variant->product) {
-                                                $product = $detail->variant->product;
-                                                $productImages = $product->productImages ?? collect();
-                                            }
-                                            // Nếu không có variant, lấy trực tiếp từ product (và product_id > 0)
-                                            elseif ($detail->product_id > 0 && $detail->product) {
-                                                $product = $detail->product;
-                                                $productImages = $product->productImages ?? collect();
-                                            }
-                                        @endphp
+                                                                // Ưu tiên lấy từ variant trước
+                                                                if ($detail->variant && $detail->variant->product) {
+                                                                    $product = $detail->variant->product;
+                                                                    $productImages = $product->productImages ?? collect();
+                                                                }
+                                                                // Nếu không có variant, lấy trực tiếp từ product (và product_id > 0)
+                                                                elseif ($detail->product_id > 0 && $detail->product) {
+                                                                    $product = $detail->product;
+                                                                    $productImages = $product->productImages ?? collect();
+                                                                }
+                                                            @endphp
 
-                                        @if($product && $productImages->isNotEmpty())
-                                            <img src="{{ asset('storage/' . $productImages->first()->image_path) }}"
-                                                width="60" height="60" style="border-radius:8px; object-fit:cover;">
-                                        @elseif($product && $product->image)
-                                            <img src="{{ asset('storage/' . $product->image) }}"
-                                                width="60" height="60" style="border-radius:8px; object-fit:cover;">
-                                        @elseif($product)
-                                            <div class="no-image" style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                                                <i class="fas fa-image text-muted"></i>
-                                            </div>
-                                        @else
-                                            <div class="no-image" style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                                                <i class="fas fa-exclamation-circle text-danger"></i>
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($product)
-                                            <div><strong>{{ $product->name }}</strong></div>
-                                            @if($detail->variant && $detail->variant->attribute_values)
-                                                <small class="text-muted">Phân loại: {{ $detail->variant->attribute_values }}</small>
-                                            @endif
-                                        @else
-                                            <div class="text-danger">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                                Sản phẩm không còn tồn tại
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>{{ $detail->quantity }}</td>
-                                    <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
-                                    <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
-                                </tr>
+                                                            @if($product && $productImages->isNotEmpty())
+                                                                <img src="{{ asset('storage/' . $productImages->first()->image_path) }}" width="60"
+                                                                    height="60" style="border-radius:8px; object-fit:cover;">
+                                                            @elseif($product && $product->image)
+                                                                <img src="{{ asset('storage/' . $product->image) }}" width="60" height="60"
+                                                                    style="border-radius:8px; object-fit:cover;">
+                                                            @elseif($product)
+                                                                <div class="no-image"
+                                                                    style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                                                                    <i class="fas fa-image text-muted"></i>
+                                                                </div>
+                                                            @else
+                                                                <div class="no-image"
+                                                                    style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                                                                    <i class="fas fa-exclamation-circle text-danger"></i>
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($product)
+                                                                <div><strong>{{ $product->name }}</strong></div>
+                                                                @if($detail->variant && $detail->variant->attribute_values)
+                                                                    <small class="text-muted">Phân loại: {{ $detail->variant->attribute_values }}</small>
+                                                                @endif
+                                                            @else
+                                                                <div class="text-danger">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                    Sản phẩm không còn tồn tại
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $detail->quantity }}</td>
+                                                        <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
+                                                        <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
+                                                    </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -283,7 +291,7 @@
                             }
                         }
                         $total = $order->total_price;
-                        $isPaid = $order->payments->where('status', 'confirmed')->count() > 0;
+                        $isPaid = $order->payments->where('status', 'completed')->count() > 0;
                     @endphp
 
                     @if($actualDiscountAmount > 0)
@@ -327,10 +335,10 @@
                     @endforelse
                 </ul>
             </div>
-{{--
+            {{--
             <a href="{{ route('admin.orders.tracking', $order->id) }}" class="btn btn-primary mb-3">
-                        <i class="fas fa-truck"></i> Theo dõi đơn hàng
-                    </a> --}}
+                <i class="fas fa-truck"></i> Theo dõi đơn hàng
+            </a> --}}
 
             <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
                 <i class="fas fa-arrow-left"></i> Quay lại
@@ -385,7 +393,9 @@
 
                 <hr>
                 <div class="summary-title">Thông tin người nhận hàng</div>
-                <p><strong>Người nhận:</strong><br>{{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
+                <p><strong>Người
+                        nhận:</strong><br>{{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}
+                </p>
                 <p><strong>SĐT:</strong> {{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</p>
                 <p><strong>Địa chỉ:</strong><br>{{ $order->recipient_address ?? $order->address ?? 'N/A' }}</p>
 
@@ -404,12 +414,13 @@
                     <p><strong>Mã giảm giá:</strong> Không áp dụng</p>
                 @endif
 
-                 <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(3)->format('d/m/Y') }}</p>
+                <p><strong>Ngày giao dự kiến:</strong> {{ $order->created_at->addDays(3)->format('d/m/Y') }}</p>
             </div>
 
             <div class="summary-card mt-3">
                 <div class="summary-title">Chi tiết giao hàng</div>
-                <p><strong>Người nhận:</strong> {{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
+                <p><strong>Người nhận:</strong>
+                    {{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
                 <p><strong>Địa chỉ giao hàng:</strong><br>
                     {{ $order->recipient_address ?? $order->address ?? 'N/A' }}
                 </p>
