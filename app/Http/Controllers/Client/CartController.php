@@ -56,6 +56,17 @@ class CartController extends Controller
         $message = '';
         $success = true;
 
+        // VALIDATION: Nếu sản phẩm có variants thì PHẢI chọn variant
+        if ($product->variants()->count() > 0 && !$variantId) {
+            $success = false;
+            $message = 'Vui lòng chọn phân loại sản phẩm (size, màu) trước khi thêm vào giỏ hàng!';
+            
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('error', $message);
+        }
+
         if ($variantId) {
             $variant = $product->variants()->where('id', $variantId)->firstOrFail();
             $existing = Cart::where('user_id', Auth::id())
@@ -81,26 +92,32 @@ class CartController extends Controller
                 $message = 'Đã thêm sản phẩm vào giỏ hàng!';
             }
         } else {
-            $existing = Cart::where('user_id', Auth::id())
-                ->where('product_id', $productId)
-                ->whereNull('variant_id')
-                ->first();
-            $totalQuantity = $existing ? $existing->quantity + $quantity : $quantity;
-            if ($totalQuantity > $product->stock) {
+            // Chỉ cho phép thêm không có variant nếu sản phẩm KHÔNG có variants
+            if ($product->variants()->count() > 0) {
                 $success = false;
-                $message = 'Số lượng vượt quá tồn kho sản phẩm.';
+                $message = 'Sản phẩm này yêu cầu chọn phân loại!';
             } else {
-                if ($existing) {
-                    $existing->quantity = $totalQuantity;
-                    $existing->save();
+                $existing = Cart::where('user_id', Auth::id())
+                    ->where('product_id', $productId)
+                    ->whereNull('variant_id')
+                    ->first();
+                $totalQuantity = $existing ? $existing->quantity + $quantity : $quantity;
+                if ($totalQuantity > $product->stock) {
+                    $success = false;
+                    $message = 'Số lượng vượt quá tồn kho sản phẩm.';
                 } else {
-                    Cart::create([
-                        'user_id' => Auth::id(),
-                        'product_id' => $productId,
-                        'quantity' => $quantity,
-                    ]);
+                    if ($existing) {
+                        $existing->quantity = $totalQuantity;
+                        $existing->save();
+                    } else {
+                        Cart::create([
+                            'user_id' => Auth::id(),
+                            'product_id' => $productId,
+                            'quantity' => $quantity,
+                        ]);
+                    }
+                    $message = 'Đã thêm sản phẩm vào giỏ hàng!';
                 }
-                $message = 'Đã thêm sản phẩm vào giỏ hàng!';
             }
         }
 
@@ -348,15 +365,25 @@ class CartController extends Controller
             // Lấy chỉ những sản phẩm được chọn
             $carts = Cart::where('user_id', Auth::id())
                 ->whereIn('id', $selectedItems)
-                ->with(['product', 'variant'])
+                ->with(['product.variants', 'variant'])
                 ->get();
         } else {
             // Fallback: lấy tất cả sản phẩm trong giỏ hàng
-            $carts = Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
+            $carts = Cart::where('user_id', Auth::id())->with(['product.variants', 'variant'])->get();
         }
 
         if ($carts->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy sản phẩm để thanh toán!');
+        }
+
+        // VALIDATION: Kiểm tra tất cả cart items phải có variant nếu product yêu cầu
+        foreach ($carts as $cart) {
+            $productHasVariants = $cart->product->variants->count() > 0;
+            
+            if ($productHasVariants && !$cart->variant_id) {
+                return redirect()->route('cart.index')->with('error', 
+                    "Sản phẩm '{$cart->product->name}' yêu cầu chọn phân loại. Vui lòng cập nhật giỏ hàng!");
+            }
         }
 
         // Tính tổng tiền
@@ -471,11 +498,15 @@ class CartController extends Controller
                 'order_id' => $order->id,
                 'payment_method_id' => $order->payment_method_id,
                 'amount' => $order->total_price,
-                'status' => 'pending', // Chờ xác nhận
-                // KHÔNG có 'confirmed_at'
+                'status' => 'pending', // Chờ xác nhận - chỉ được confirm khi đơn hàng hoàn thành
+                'transaction_code' => null, // Sẽ được tạo khi confirm
+                // Không có 'confirmed_at' - sẽ được set khi đơn hàng completed
             ]);
+            
+            Log::info("COD payment record created for order {$order->id} - pending confirmation until order completion");
+            
         } catch (\Exception $e) {
-            \Log::error('Lỗi tạo bản ghi thanh toán (COD): ' . $e->getMessage());
+            Log::error('Lỗi tạo bản ghi thanh toán (COD): ' . $e->getMessage());
         }
 
         // Lưu chi tiết đơn hàng và giảm tồn kho

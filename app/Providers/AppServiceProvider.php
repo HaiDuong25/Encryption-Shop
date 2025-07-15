@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Đăng ký OrderObserver để xử lý logic payment khi order thay đổi trạng thái
+        \App\Models\Order::observe(\App\Observers\OrderObserver::class);
     }
 }

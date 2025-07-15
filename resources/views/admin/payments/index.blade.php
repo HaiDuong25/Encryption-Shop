@@ -3,7 +3,16 @@
 @section('content')
     @php use Carbon\Carbon; @endphp
 
+
     <h1>Quản lý Thanh Toán</h1>
+
+    <form method="GET" action="" class="mb-3 d-flex align-items-center" style="gap: 8px;">
+        <input type="text" name="search" value="{{ request('search') }}" class="form-control" style="max-width: 220px;" placeholder="Tìm theo tên người nhận hoặc ID đơn hàng...">
+        <button type="submit" class="btn btn-primary btn-sm">Tìm kiếm</button>
+        @if(request('search'))
+            <a href="{{ route('payments.index') }}" class="btn btn-link btn-sm">Xóa lọc</a>
+        @endif
+    </form>
 
     @if(session('success'))
         <div style="color: green">{{ session('success') }}</div>
@@ -39,7 +48,7 @@
                     <tr>
                         <td class="fw-bold">{{ $payment->id }}</td>
                         <td>
-                            <span class="badge bg-info text-dark" style="font-size: 1rem;">Đơn hàng {{ $payment->order->id ?? 'N/A' }}</span><br>
+                            <span class="badge text-dark" style="font-size: 1rem;">Đơn hàng {{ $payment->order->id ?? 'N/A' }}</span><br>
                             <small class="text-muted">{{ $payment->order->recipient_name ?? '' }}</small>
                         </td>
                         <td class="text-end">{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} <span class="text-secondary">VND</span></td>
@@ -50,12 +59,12 @@
                             @php
                                 $statusText = [
                                     'pending' => 'Chờ xác nhận',
-                                    'confirmed' => 'Đã thanh toán',
+                                    'completed' => 'Đã thanh toán',
                                     'rejected' => 'Đã hủy',
                                 ];
                                 $statusColor = [
                                     'pending' => 'warning',
-                                    'confirmed' => 'success',
+                                    'completed' => 'success',
                                     'rejected' => 'danger',
                                 ];
                             @endphp
@@ -92,11 +101,13 @@
                                         </button>
                                     </form>
                                 </div>
-                            @elseif($payment->status === 'confirmed')
-                                <span class="badge bg-success text-white" style="background-color: #28a745;">
-                                    Đã xác nhận lúc
-                                    {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
-                                </span>
+                            @elseif($payment->status === 'completed')
+                                <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                    <span class="badge bg-success text-white" style="background-color: #28a745;">
+                                        Đã xác nhận lúc
+                                        {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
+                                    </span>
+                                </div>
                             @elseif($payment->status === 'rejected')
                                 <span class="badge bg-danger text-white" style="background-color: #dc3545;">
                                     Đã hủy lúc
@@ -105,7 +116,18 @@
                             @endif
                         </td>
                         <td>
-                            @if($payment->status === 'confirmed' || $payment->status === 'rejected')
+                            @if($payment->status === 'completed')
+                                <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                    <a href="{{ route('admin.payments.invoice', $payment->id) }}" class="btn btn-primary btn-xs px-2 py-1"
+                                        style="font-size: 0.85rem;">
+                                        <i class="fa-solid fa-file-invoice me-1"></i> Xem hóa đơn
+                                    </a>
+                                    <a href="{{ route('admin.payments.download-invoice', $payment->id) }}" class="btn btn-success btn-xs px-2 py-1"
+                                        style="font-size: 0.85rem;">
+                                        <i class="fa-solid fa-download me-1"></i> Tải PDF
+                                    </a>
+                                </div>
+                            @elseif($payment->status === 'rejected')
                                 <a href="{{ route('admin.payments.invoice', $payment->id) }}" class="btn btn-primary btn-xs px-2 py-1"
                                     style="font-size: 0.85rem;">
                                     <i class="fa-solid fa-file-invoice me-1"></i> Xem hóa đơn
