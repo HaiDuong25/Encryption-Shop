@@ -836,6 +836,7 @@
                             </a>
                             @endauth
                             
+                            @if($carts->count() > 0)
                             <button type="button" 
                                     class="btn w-100 checkout-btn" 
                                     id="checkout-button"
@@ -848,6 +849,12 @@
                             <form id="checkout-form" action="{{ route('cart.checkout') }}" method="GET" style="display: none;">
                                 <input type="hidden" name="selected_items" id="selected-items-input">
                             </form>
+                            @else
+                            <div class="text-center text-muted py-3">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                Không có sản phẩm nào trong giỏ hàng
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -1312,8 +1319,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function calculateTotal() {
         const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
+        const allItems = document.querySelectorAll('.cart-item-checkbox');
         let totalQuantity = 0;
         let subtotal = 0;
+
+        // Nếu không có cart items nào, có thể cart đã bị xóa hết
+        if (allItems.length === 0) {
+            console.log('No cart items found - cart may be empty');
+            // Có thể reload trang hoặc redirect về home
+            return;
+        }
 
         checkedItems.forEach(checkbox => {
             const quantity = parseInt(checkbox.getAttribute('data-quantity')) || 1;
@@ -1429,6 +1444,15 @@ document.addEventListener("DOMContentLoaded", function() {
     function updateCheckoutButton(hasSelectedItems) {
         const checkoutBtn = document.getElementById('checkout-button');
         if (checkoutBtn) {
+            // Kiểm tra xem còn cart items không
+            const totalCartItems = document.querySelectorAll('.cart-item-checkbox').length;
+            
+            if (totalCartItems === 0) {
+                // Nếu cart trống, ẩn button hoặc disable hoàn toàn
+                checkoutBtn.style.display = 'none';
+                return;
+            }
+            
             checkoutBtn.disabled = !hasSelectedItems;
             if (hasSelectedItems) {
                 checkoutBtn.classList.remove('btn-secondary');
@@ -1879,7 +1903,23 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function proceedToCheckout() {
+    console.log('proceedToCheckout called');
+    
     const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
+    const allItems = document.querySelectorAll('.cart-item-checkbox');
+    
+    console.log('Found checkboxes:', {
+        total: allItems.length,
+        checked: checkedItems.length
+    });
+    
+    // Fallback: nếu không có checkbox nào, có thể là đã thanh toán rồi
+    if (allItems.length === 0) {
+        console.log('No cart items found - possibly after successful payment');
+        // Redirect to orders page or home
+        window.location.href = '/orders';
+        return;
+    }
     
     if (checkedItems.length === 0) {
         alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
@@ -1889,6 +1929,8 @@ function proceedToCheckout() {
     const selectedItems = Array.from(checkedItems).map(checkbox => {
         return checkbox.getAttribute('data-cart-id');
     }).filter(id => id);
+    
+    console.log('Selected items:', selectedItems);
 
     // Nếu có voucher được áp dụng, lưu vào session trước khi checkout
     if (window.appliedCouponCode && window.voucherDiscount > 0) {
