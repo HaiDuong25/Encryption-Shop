@@ -10,6 +10,7 @@ use App\Models\OrderDetail;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends \App\Http\Controllers\Controller
 {
@@ -93,13 +94,15 @@ class OrderController extends \App\Http\Controllers\Controller
                 'payment_method_id' => $validated['payment_method_id'],
             ]);
 
-            // Lưu lịch sử thay đổi trạng thái nếu có thay đổi
+            // Xử lý logic thanh toán và hóa đơn khi chuyển trạng thái
             if ($oldStatus !== $validated['status']) {
+                $this->handlePaymentAndInvoiceLogic($order, $oldStatus, $validated['status']);
+                
                 $order->statusHistories()->create([
                     'old_status' => $oldStatus,
                     'new_status' => $validated['status'],
                     'description' => $request->input('note') ?? null,
-                    'changed_by' => auth()->id(),
+                    'changed_by' => auth()?->id(),
                 ]);
             }
 
@@ -295,6 +298,58 @@ class OrderController extends \App\Http\Controllers\Controller
                 'success' => false,
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Xử lý logic thanh toán và hóa đơn khi chuyển trạng thái đơn hàng
+     */
+    private function handlePaymentAndInvoiceLogic(Order $order, $oldStatus, $newStatus)
+    {
+        try {
+            // Nếu chuyển sang trạng thái "completed" - đơn hàng hoàn thành
+            if ($newStatus === 'completed' && $oldStatus !== 'completed') {
+                $payment = $order->payments()->first();
+                
+                if ($payment) {
+                    // Kiểm tra phương thức thanh toán
+                    $paymentMethod = $order->paymentMethod;
+                    
+                    if ($paymentMethod && $paymentMethod->payment_type === 'COD') {
+                        // Đơn COD: Xác nhận thanh toán và tạo hóa đơn khi hoàn thành
+                        $payment->update([
+                            'status' => 'completed',
+                            'confirmed_at' => now(),
+                            'transaction_code' => 'COD-' . $order->id . '-' . time()
+                        ]);
+                        
+                        // Tạo hóa đơn cho đơn COD khi hoàn thành
+                        $payment->generateInvoice();
+                        
+                        Log::info("COD payment confirmed and invoice generated for order {$order->id}");
+                    } else {
+                        // Các phương thức khác (MoMo, etc.): Chỉ cập nhật trạng thái payment
+                        $payment->update(['status' => 'completed']);
+                        Log::info("Payment status updated to completed for order {$order->id}");
+                    }
+                }
+            }
+            
+            // Nếu chuyển từ "completed" về trạng thái khác
+            if ($oldStatus === 'completed' && $newStatus !== 'completed') {
+                $payment = $order->payments()->first();
+                
+                if ($payment && $payment->status === 'completed') {
+                    // Revert payment status
+                    $payment->update(['status' => 'pending']);
+                    
+                    Log::info("Payment status reverted to pending for order {$order->id}");
+                }
+            }
+            
+        } catch (\Exception $e) {
+            Log::error("Error handling payment and invoice logic for order {$order->id}: " . $e->getMessage());
+            // Không throw exception để không ảnh hưởng đến việc cập nhật đơn hàng
         }
     }
 }

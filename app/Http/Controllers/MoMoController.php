@@ -172,7 +172,28 @@ class MoMoController extends Controller
             }
 
             $user = Auth::user();
-            $carts = Cart::where('user_id', $user->id)->with(['product', 'variant'])->get();
+            
+            // Lấy only selected cart items
+            $selectedCartItems = Session::get('selected_cart_items', []);
+            if (empty($selectedCartItems)) {
+                // Fallback: lấy tất cả cart items nếu không có selection
+                $carts = Cart::where('user_id', $user->id)->with(['product', 'variant'])->get();
+            } else {
+                $carts = Cart::where('user_id', $user->id)
+                    ->whereIn('id', $selectedCartItems)
+                    ->with(['product', 'variant'])
+                    ->get();
+            }
+
+            // Validation: Kiểm tra variant selection
+            foreach ($carts as $cart) {
+                // Kiểm tra nếu product có variants nhưng cart không có variant_id
+                $productVariantsCount = \App\Models\ProductVariant::where('product_id', $cart->product_id)->count();
+                if ($productVariantsCount > 0 && !$cart->variant_id) {
+                    Log::error("MoMo Payment: Product {$cart->product_id} has variants but cart {$cart->id} has no variant_id");
+                    return false;
+                }
+            }
 
             // Lấy thông tin shipping address
             $shippingAddress = \App\Models\ShippingAddress::find($orderData['shipping_address_id']);
@@ -212,7 +233,7 @@ class MoMoController extends Controller
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $cart->product_id,
-                    'variant_id' => $cart->product_variant_id, // Đổi thành variant_id
+                    'variant_id' => $cart->variant_id, // Sử dụng đúng field variant_id
                     'quantity' => $cart->quantity,
                     'price' => $price,
                     'total_price' => $price * $cart->quantity
@@ -260,14 +281,20 @@ class MoMoController extends Controller
 
             // Tạo bản ghi payment cho đơn hàng (hiển thị ở quản lý thanh toán)
             try {
-                \App\Models\Payment::create([
+                $payment = \App\Models\Payment::create([
                     'order_id' => $order->id,
                     'payment_method_id' => $order->payment_method_id,
                     'amount' => $order->total_price,
-                    'status' => 'confirmed', // Đã thanh toán luôn vì MoMo đã trả về thành công
+                    'status' => 'completed', // Đã thanh toán luôn vì MoMo đã trả về thành công
                     'confirmed_at' => now(),
-                    'transaction_id' => $transactionId,
+                    'transaction_code' => $transactionId,
                 ]);
+
+                // Tự động tạo hóa đơn cho đơn MoMo ngay sau khi thanh toán thành công
+                $payment->generateInvoice();
+                
+                Log::info("MoMo payment confirmed and invoice generated automatically for order {$order->id}");
+                
             } catch (\Exception $e) {
                 Log::error('Create Payment Exception (MoMo): ' . $e->getMessage());
             }

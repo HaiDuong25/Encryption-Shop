@@ -187,7 +187,7 @@
                                             <i class="ri-pencil-line" style="font-size: 1.1rem;"></i>
                                         </a>
                                     </li>
-                                    @if($order->status !== 'cancelled')
+                                    @if($order->status !== 'cancelled' && $order->status !== 'completed')
                                     <li>
                                         <button type="button" onclick="cancelOrder({{ $order->id }})"
                                                 style="border:none; background:none; padding:0; color:#ffc107; font-size: 1.1rem;"

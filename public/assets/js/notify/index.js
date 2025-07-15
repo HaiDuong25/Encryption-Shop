@@ -1,10 +1,10 @@
 'use strict';
-var notify = $.notify('<i class="fas fa-bell"></i></i><strong>Loading</strong> page Do not close this page...', {
+var notify = $.notify('<i class="fas fa-bell"></i></i><strong>Đang tải dữ liệu</strong>....', {
     type: 'theme',
     allow_dismiss: true,
-    delay: 4000,
+    delay: 1800,
     showProgressbar: true,
-    timer: 300,
+    timer: 200,
     // timer: 555555500,
     animate: {
         enter: 'animated fadeInDown',
@@ -13,5 +13,5 @@ var notify = $.notify('<i class="fas fa-bell"></i></i><strong>Loading</strong> p
 });
 
 setTimeout(function () {
-    notify.update('message', '<i class="fas fa-bell"></i></i><strong>Loading</strong> Inner Data.');
+    notify.update('message', '<i class="fas fa-bell"></i></i><strong>Dữ liệu</strong> đã được cập nhật thành công.');
 }, 1000);
