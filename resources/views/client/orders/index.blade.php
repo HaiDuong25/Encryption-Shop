@@ -140,7 +140,7 @@
                                         </td>
                                         <td>
                                             @php
-                                                $isPaid = $order->payments && $order->payments->where('status', 'confirmed')->count() > 0;
+                                                $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                             @endphp
                                             @if($isPaid)
                                                 <span class="badge bg-success status-badge">Đã thanh toán</span>

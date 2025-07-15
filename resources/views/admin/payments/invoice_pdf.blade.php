@@ -1,30 +1,79 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Hóa đơn thanh toán #{{ $payment->id }}</title>
     <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; color: #222; }
-        .header { text-align: center; margin-bottom: 24px; }
-        .header h2 { color: #007bff; margin-bottom: 0; }
-        .info-table, .order-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
-        .info-table th, .info-table td, .order-table th, .order-table td { border: 1px solid #ccc; padding: 8px; }
-        .info-table th { width: 30%; background: #f5f5f5; text-align: left; }
-        .order-table th { background: #f5f5f5; }
-        .total-row td { font-weight: bold; font-size: 1.1em; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .mb-2 { margin-bottom: 12px; }
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            color: #222;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h2 {
+            color: #007bff;
+            margin-bottom: 0;
+        }
+
+        .info-table,
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        .info-table th,
+        .info-table td,
+        .order-table th,
+        .order-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        .info-table th {
+            width: 30%;
+            background: #f5f5f5;
+            text-align: left;
+        }
+
+        .order-table th {
+            background: #f5f5f5;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-2 {
+            margin-bottom: 12px;
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h2>HÓA ĐƠN THANH TOÁN</h2>
         <div>Mã thanh toán: <strong>#{{ $payment->id }}</strong></div>
         <div>Đơn hàng: <strong>#{{ $payment->order->id ?? 'N/A' }}</strong></div>
-        <div>Ngày xác nhận: <strong>{{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '-' }}</strong></div>
+        <div>Ngày xác nhận:
+            <strong>{{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '-' }}</strong>
+        </div>
         <div>Trạng thái:
-            @if ($payment->status === 'confirmed')
+            @if ($payment->status === 'completed')
                 Đã xác nhận
             @elseif($payment->status === 'rejected')
                 Đã hủy
@@ -88,20 +137,25 @@
         <tfoot>
             <tr>
                 <td colspan="3" class="text-right">Tạm tính:</td>
-                <td class="text-right">{{ number_format($orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }} đ</td>
+                <td class="text-right">
+                    {{ number_format($orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }} đ</td>
             </tr>
             @if($payment->order->coupon_discount > 0)
-            <tr>
-                <td colspan="3" class="text-right">Giảm giá:</td>
-                <td class="text-right text-danger">-{{ number_format($payment->order->coupon_discount, 0, ',', '.') }} đ</td>
-            </tr>
+                <tr>
+                    <td colspan="3" class="text-right">Giảm giá:</td>
+                    <td class="text-right text-danger">-{{ number_format($payment->order->coupon_discount, 0, ',', '.') }} đ
+                    </td>
+                </tr>
             @endif
             <tr class="total-row">
                 <td colspan="3" class="text-right">Tổng cộng:</td>
-                <td class="text-right">{{ number_format(($orderDetails->sum(fn($d) => $d->price * $d->quantity)) - ($payment->order->coupon_discount ?? 0), 0, ',', '.') }} đ</td>
+                <td class="text-right">
+                    {{ number_format(($orderDetails->sum(fn($d) => $d->price * $d->quantity)) - ($payment->order->coupon_discount ?? 0), 0, ',', '.') }}
+                    đ</td>
             </tr>
         </tfoot>
     </table>
     <div class="mb-2">Cảm ơn quý khách đã mua hàng!</div>
 </body>
+
 </html>
