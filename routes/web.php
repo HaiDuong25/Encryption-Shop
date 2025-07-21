@@ -73,7 +73,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
     Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
     // Đánh giá
-     Route::post('/products/{id}/rate', [ClientRateController::class, 'store'])->name('client.rates.store');
+  Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])->name('client.rates.store');
+
+
 
     // Giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

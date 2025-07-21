@@ -401,30 +401,44 @@
         </div>
     </div>
   <div class="product-info-block mt-5">
-    <h4>Đánh giá sản phẩm</h4>
+<h4>Đánh giá sản phẩm</h4>
 
-    {{-- Hiển thị các đánh giá đã có --}}
-    @if($product->rates->where('status', 1)->count())
-        @foreach($product->rates->where('status', 1) as $rate)
-            <div class="mb-3 border-bottom pb-2">
-                <div class="d-flex align-items-center mb-1">
-                    <strong>{{ $rate->user->name }}</strong>
-                    <div class="ms-2 existing-stars">
-                        @for ($i = 1; $i <= 5; $i++)
-                            @if ($rate->score >= $i)
-                                <i class="fas fa-star"></i>
-                            @else
-                                <i class="far fa-star"></i>
-                            @endif
-                        @endfor
-                    </div>
+{{-- Hiển thị các đánh giá đã có --}}
+@if($product->rates->where('status', 1)->count())
+    @foreach($product->rates->where('status', 1) as $rate)
+        <div class="mb-3 border-bottom pb-2">
+            <div class="d-flex align-items-center mb-1">
+                <strong>{{ $rate->user->name }}</strong>
+
+                <div class="ms-2 existing-stars">
+                    @for ($i = 1; $i <= 5; $i++)
+                        @if ($rate->score >= $i)
+                            <i class="fas fa-star"></i>
+                        @else
+                            <i class="far fa-star"></i>
+                        @endif
+                    @endfor
                 </div>
-                <p class="mb-0">{{ $rate->content }}</p>
             </div>
-        @endforeach
-    @else
-        <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-    @endif
+
+            {{-- Hiển thị biến thể nếu có --}}
+            @if($rate->orderDetail && $rate->orderDetail->variant)
+                <div class="text-muted small">
+                    Biến thể:
+                    @foreach($rate->orderDetail->variant->attributeValues as $attributeValue)
+                        {{ $attributeValue->value }}@if(!$loop->last), @endif
+                    @endforeach
+                </div>
+            @endif
+
+            <p class="mb-0">{{ $rate->content }}</p>
+        </div>
+    @endforeach
+@else
+    <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+@endif
+
+
 
 
 

@@ -12,6 +12,7 @@ class Rate extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'order_detail_id',
         'score',
         'content',
         'status', // Giả sử status là TINYINT: 0 = pending, 1 = approved, 2 = rejected
@@ -68,6 +69,10 @@ class Rate extends Model
     {
         return $this->hasMany(RateReply::class, 'rate_id')->orderBy('created_at', 'desc');
     }
+    public function orderDetail()
+{
+    return $this->belongsTo(OrderDetail::class);
+}
 
     // public function product() { ... } // Sẽ thêm sau
 }
