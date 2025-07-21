@@ -98,7 +98,10 @@ public function show($id)
         'category',
         'brand',
         'variants.attributeValues.attribute',
-        'rates' => fn($q) => $q->where('status', 1)
+        // Load rates có status = 1 và kèm user
+        'rates' => function ($q) {
+            $q->where('status', 1)->with('user');
+        }
     ])->findOrFail($id);
 
     $relatedProducts = Product::where('category_id', $product->category_id)
@@ -109,6 +112,7 @@ public function show($id)
 
     return view('client.products.show', compact('product', 'relatedProducts'));
 }
+
 public function getStock(Request $request)
 {
     $productId = $request->product_id;

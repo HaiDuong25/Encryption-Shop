@@ -34,6 +34,7 @@ use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
 use App\Http\Controllers\Client\NewsController as ClientNewsController;
+use App\Http\Controllers\Client\RateController as ClientRateController;
 
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
@@ -71,6 +72,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
     Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    // Đánh giá
+     Route::post('/products/{id}/rate', [ClientRateController::class, 'store'])->name('client.products.rate');
 
     // Giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -192,7 +195,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('cart/delete/{id}', [CartController::class, 'delete'])->name('cart.delete');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::post('/checkout', [CartController::class, 'processCheckout'])->name('cart.processCheckout');
-    
+
     // Mua ngay
     Route::post('/buy-now/{id}', [CartController::class, 'buyNow'])->name('cart.buyNow');
 
@@ -212,7 +215,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
-    
+
     // Địa chỉ giao hàng (client)
     Route::resource('addresses', ClientShippingAddressController::class, [
         'as' => 'client',

@@ -30,6 +30,33 @@
         flex-shrink: 0;
     }
 
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+
+    .rating-stars input[type="radio"] {
+        display: none;
+    }
+
+    .rating-stars label {
+        font-size: 24px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .rating-stars input[type="radio"]:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label {
+        color: #f5c518; /* vàng sao */
+    }
+
+    .existing-stars {
+        color: #f5c518;
+        font-size: 18px;
+    }
     .thumbnail-list img.active {
         border: 2px solid #ee4d2d;
     }
@@ -396,6 +423,65 @@
             {!! nl2br(e($product->description)) !!}
         </div>
     </div>
+  <div class="product-info-block mt-5">
+    <h4>Đánh giá sản phẩm</h4>
+
+    {{-- Hiển thị các đánh giá đã có --}}
+    @if($product->rates->where('status', 1)->count())
+        @foreach($product->rates->where('status', 1) as $rate)
+            <div class="mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center mb-1">
+                    <strong>{{ $rate->user->name }}</strong>
+                    <div class="ms-2 existing-stars">
+                        @for ($i = 1; $i <= 5; $i++)
+                            @if ($rate->score >= $i)
+                                <i class="fas fa-star"></i>
+                            @else
+                                <i class="far fa-star"></i>
+                            @endif
+                        @endfor
+                    </div>
+                </div>
+                <p class="mb-0">{{ $rate->content }}</p>
+            </div>
+        @endforeach
+    @else
+        <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+    @endif
+
+    {{-- Form gửi đánh giá --}}
+    @auth
+        <form method="POST" action="{{ route('client.products.rate', $product->id) }}">
+            @csrf
+            <div class="mb-3">
+                <label class="form-label">Đánh giá của bạn:</label>
+                <div class="rating-stars">
+                    @for($i = 5; $i >= 1; $i--)
+                        <input type="radio" name="score" id="star{{ $i }}" value="{{ $i }}" required>
+                        <label for="star{{ $i }}" title="{{ $i }} sao">&#9733;</label>
+                    @endfor
+                </div>
+                @error('score')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nội dung đánh giá:</label>
+                <textarea name="content" class="form-control" rows="3" placeholder="Nhận xét của bạn..."></textarea>
+                @error('content')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+        </form>
+    @else
+        <p>Vui lòng <a href="{{ route('login') }}">đăng nhập</a> để viết đánh giá.</p>
+    @endauth
+</div>
+
+
 
     @if (isset($relatedProducts) && $relatedProducts->count())
     <div class="related-products mt-5">
