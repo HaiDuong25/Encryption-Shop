@@ -83,5 +83,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
+    }public function hasPurchasedProduct($productId)
+{
+    return OrderDetail::whereHas('order', function ($query) {
+        $query->where('user_id', $this->id)
+              ->where('status', 'completed');
+    })->where('product_id', $productId)->exists();
+}
+
+
+
 }

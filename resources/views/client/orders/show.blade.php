@@ -1,7 +1,35 @@
 @extends('client.layout.main')
 
 @section('title', 'Chi tiết đơn hàng')
+<style>
+      .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
 
+    .rating-stars input[type="radio"] {
+        display: none;
+    }
+
+    .rating-stars label {
+        font-size: 24px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .rating-stars input[type="radio"]:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label {
+        color: #f5c518; /* vàng sao */
+    }
+
+    .existing-stars {
+        color: #f5c518;
+        font-size: 18px;
+    }
+</style>
 @section('content')
     <div class="container py-4">
         @php
@@ -245,21 +273,64 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($order->orderDetails as $item)
-                                                                    @php
-                                                                        $image = $item->variant->product->image ?? null;
-                                                                        $imageUrl = $image ? (Str::startsWith($image, ['http://', 'https://']) ? $image : asset('storage/' . $image)) : 'https://via.placeholder.com/80?text=No+Image';
-                                                                    @endphp
-                                                                    <tr>
-                                                                        <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
-                                                                        <td>
-                                                                            <strong>{{ $item->variant->product->name ?? 'Sản phẩm đã xóa' }}</strong><br>
-                                                                            <small>Phân loại: {{ $item->variant->name ?? 'Mặc định' }}</small><br>
-                                                                            <small>Giá: {{ number_format($item->price) }}₫ x {{ $item->quantity }}</small>
-                                                                        </td>
-                                                                        <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
-                                                                    </tr>
-                                    @endforeach
+@foreach ($order->orderDetails as $item)
+    @php
+        $image = $item->variant->product->image ?? null;
+        $imageUrl = $image ? (Str::startsWith($image, ['http://', 'https://']) ? $image : asset('storage/' . $image)) : 'https://via.placeholder.com/80?text=No+Image';
+
+        // Kiểm tra user đã đánh giá sản phẩm chưa
+        $hasRated = $item->variant->product->rates()
+            ->where('user_id', auth()->id())
+            ->exists();
+    @endphp
+    <tr>
+        <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
+        <td>
+            <strong>{{ $item->variant->product->name ?? 'Sản phẩm đã xóa' }}</strong><br>
+            <small>Phân loại: {{ $item->variant->name ?? 'Mặc định' }}</small><br>
+            <small>Giá: {{ number_format($item->price) }}₫ x {{ $item->quantity }}</small>
+
+            @if($statusValue == 'completed')
+                @if(!$hasRated)
+                    {{-- Form đánh giá --}}
+                    <form action="{{ route('client.rates.store', $item->variant->product->id) }}" method="POST" class="mt-2">
+                        @csrf
+                        <div class="mb-2">
+                            <label class="small">Đánh giá của bạn:</label>
+                            <div class="rating-stars">
+                                @for($i = 5; $i >= 1; $i--)
+                                    <input type="radio" name="score" id="star{{ $i }}-{{ $item->id }}" value="{{ $i }}" required>
+                                    <label for="star{{ $i }}-{{ $item->id }}" title="{{ $i }} sao">&#9733;</label>
+                                @endfor
+                            </div>
+                            @error('score')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="small">Nội dung đánh giá:</label>
+                            <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Nhận xét của bạn..."></textarea>
+                            @error('content')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm">Gửi đánh giá</button>
+                    </form>
+                @else
+                    <div class="mt-2 alert alert-success p-2 small">
+                        <i class="fas fa-check-circle me-1"></i> Bạn đã đánh giá sản phẩm này.
+                    </div>
+                @endif
+            @endif
+
+        </td>
+        <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
+    </tr>
+@endforeach
+
+
                                 </tbody>
                             </table>
                         </div>
