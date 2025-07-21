@@ -100,7 +100,7 @@
                                     <tr>
                                         <td>{{ $order->id }}</td>
                                         <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>{{ $order->orderer_name }}</td>
+                                        <td>{{ $order->recipient_name }}</td>
                                         <td>{{ $order->recipient_phone }}</td>
                                         <td>{{ $order->recipient_address }}</td>
                                         <td>{{ number_format($order->total_price) }} đ</td>
