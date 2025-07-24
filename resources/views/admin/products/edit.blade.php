@@ -186,6 +186,7 @@
                             <th>Màu</th>
                             <th>SKU</th>
                             <th>Giá</th>
+                            <th>Giá KM</th>
                             <th>Tồn kho</th>
                             <th>Ảnh</th>
                         </tr>
@@ -206,6 +207,9 @@
                             </td>
                             <td>
                                 <input type="number" step="0.01" name="old_variant_price[{{ $idx }}]" class="form-control" value="{{ $variant->display_price }}">
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" name="old_variant_sale_price[{{ $idx }}]" class="form-control" value="{{ $variant->sale_price }}">
                             </td>
                             <td>
                                 <input type="number" name="old_variant_stock[{{ $idx }}]" class="form-control" value="{{ $variant->stock }}">
@@ -308,6 +312,7 @@
             <td><input type="hidden" name="variant_colors[${idx}]" value="${arr[1].id}">${arr[1].text}</td>
             <td><input type="text" name="variant_sku[${idx}]" class="form-control" placeholder="SKU"></td>
             <td><input type="number" step="0.01" name="variant_price[${idx}]" class="form-control" placeholder="Giá"></td>
+            <td><input type="number" step="0.01" name="variant_sale_price[${idx}]" class="form-control" placeholder="Giá KM"></td>
             <td><input type="number" name="variant_stock[${idx}]" class="form-control" value="0" min="0"></td>
             <td><input type="file" name="variant_image[${idx}]" accept="image/*"></td>
         </tr>`;
@@ -333,22 +338,22 @@
     // AJAX form submission
     document.getElementById('productEditForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const form = this;
         const submitBtn = document.getElementById('submitBtn');
         const alertContainer = document.getElementById('alert-container');
-        
+
         // Show loading state
         const originalContent = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i data-feather="loader" class="rotating"></i> Đang cập nhật...';
         submitBtn.disabled = true;
-        
+
         // Clear previous alerts
         alertContainer.innerHTML = '';
-        
+
         // Create FormData for file upload
         const formData = new FormData(form);
-        
+
         fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -366,7 +371,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 `;
-                
+
                 // Redirect after success
                 setTimeout(() => {
                     window.location.href = data.redirect || '{{ route("products.index") }}';
@@ -388,7 +393,7 @@
                         </div>
                     `;
                 }
-                
+
                 // Restore button state
                 submitBtn.innerHTML = originalContent;
                 submitBtn.disabled = false;
@@ -403,7 +408,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             // Restore button state
             submitBtn.innerHTML = originalContent;
             submitBtn.disabled = false;

@@ -40,6 +40,7 @@
                             <th>Size</th>
                             <th>Màu</th>
                             <th>Giá</th>
+                            <th>Giá KM</th>
                             <th>Tồn kho</th>
                             <th>Ảnh</th>
                         </tr>
@@ -60,6 +61,9 @@
                             </td>
                             <td class="text-danger fw-bold">
                                 {{ number_format($variant->display_price ?? $variant->price,0,',','.') }} đ
+                            </td>
+                            <td class="text-danger fw-bold">
+                                {{ number_format($variant->sale_price ?? 0, 0, ',', '.') }} đ
                             </td>
                             <td>{{ $variant->stock }}</td>
                             <td>

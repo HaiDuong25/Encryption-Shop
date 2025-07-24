@@ -209,6 +209,9 @@ class ProductController extends Controller
             'variant_stock' => 'array',
             'variant_sku' => 'array',
             'variant_image' => 'array',
+            'variant_sale_price' => 'array',
+            'old_variant_sale_price' => 'array',
+
         ]);
 
         if ($request->hasFile('image')) {
@@ -236,6 +239,7 @@ class ProductController extends Controller
                     'color_id' => $colors[$idx],
                     'sku' => $request->variant_sku[$idx] ?? null,
                     'price' => $request->variant_price[$idx] ?? null,
+                    'sale_price' => $request->variant_sale_price[$idx] ?? null,
                     'stock' => $request->variant_stock[$idx] ?? 0,
                     'image' => $request->hasFile("variant_image.$idx")
                         ? $request->file("variant_image.$idx")->store('variants', 'public')
@@ -248,6 +252,7 @@ class ProductController extends Controller
                 if ($variant) {
                     $variant->sku = $request->old_variant_sku[$idx] ?? $variant->sku;
                     $variant->price = $request->old_variant_price[$idx] ?? $variant->price;
+                    $variant->sale_price = $request->old_variant_sale_price[$idx] ?? $variant->sale_price;
                     $variant->stock = $request->old_variant_stock[$idx] ?? $variant->stock;
                     if ($request->hasFile("old_variant_image.$idx")) {
                         $variant->image = $request->file("old_variant_image.$idx")->store('variants', 'public');
@@ -270,7 +275,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
-        
+
         if (request()->ajax()) {
             return response()->json([
                 'success' => true,

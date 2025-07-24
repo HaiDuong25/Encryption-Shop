@@ -74,7 +74,20 @@
                             </td>
                             <td>{{ $product->category->name ?? '-' }}</td>
                             <td>{{ $product->brand->name ?? '-' }}</td>
-                            <td class="text-danger fw-bold">{{ number_format($product->price,0,',','.') }} đ</td>
+                            <td>
+                                @if($product->sale_price)
+                                    <span class="text-muted text-decoration-line-through small">
+                                        {{ number_format($product->price,0,',','.') }} đ
+                                    </span><br>
+                                    <span class="text-danger fw-bold">
+                                        {{ number_format($product->sale_price, 0, ',', '.') }} đ
+                                    </span>
+                                @else
+                                    <span class="text-danger fw-bold">
+                                        {{ number_format($product->price,0,',','.') }} đ
+                                    </span>
+                                @endif
+                            </td>
                             <td>
                                 @if($product->status == 'active')
                                 <span class="badge bg-success">Hiển thị</span>
@@ -95,9 +108,9 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <button class="btn btn-link p-0 text-danger delete-btn" 
-                                                data-id="{{ $product->id }}" 
-                                                data-name="{{ $product->name }}" 
+                                        <button class="btn btn-link p-0 text-danger delete-btn"
+                                                data-id="{{ $product->id }}"
+                                                data-name="{{ $product->name }}"
                                                 title="Xoá">
                                             <i data-feather="trash-2"></i>
                                         </button>
@@ -119,20 +132,20 @@
 @push('scripts')
 <script>
     if (window.feather) feather.replace();
-    
+
     // AJAX Delete functionality
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', function() {
             const productId = this.dataset.id;
             const productName = this.dataset.name;
-            
+
             if (confirm(`Bạn có chắc muốn xóa sản phẩm "${productName}"?`)) {
                 // Show loading state
                 const icon = this.querySelector('i');
                 const originalContent = this.innerHTML;
                 this.innerHTML = '<i data-feather="loader" class="rotating"></i>';
                 this.disabled = true;
-                
+
                 fetch(`/admin/products/${productId}`, {
                     method: 'DELETE',
                     headers: {
@@ -146,7 +159,7 @@
                         // Remove the row from table
                         const row = this.closest('tr');
                         row.remove();
-                        
+
                         // Show success message
                         const alertDiv = document.createElement('div');
                         alertDiv.className = 'alert alert-success alert-dismissible fade show';
@@ -155,7 +168,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         `;
                         document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.card'));
-                        
+
                         // Auto hide after 3 seconds
                         setTimeout(() => {
                             if (alertDiv.parentNode) {
