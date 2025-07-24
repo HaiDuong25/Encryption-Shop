@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Order;
@@ -13,33 +14,37 @@ class ProductController extends Controller
 {
 public function index(Request $request)
 {
-    $query = Product::where('status', 1);
+    $query = Product::select('*', DB::raw('COALESCE(sale_price, price) as final_price'))
+        ->where('status', 1);
 
     // Lọc theo danh mục
     if ($request->has('categories')) {
         $query->whereIn('category_id', $request->categories);
     }
 
-    // Lọc theo khoảng giá
+    // Lọc theo khoảng giá dựa trên final_price
     if ($request->filled('min_price')) {
-        $query->where('price', '>=', $request->min_price);
+        $query->whereRaw('COALESCE(sale_price, price) >= ?', [$request->min_price]);
     }
 
     if ($request->filled('max_price')) {
-        $query->where('price', '<=', $request->max_price);
+        $query->whereRaw('COALESCE(sale_price, price) <= ?', [$request->max_price]);
     }
 
     // Lọc theo thương hiệu
     if ($request->filled('brands')) {
         $query->whereIn('brand_id', $request->brands);
     }
+
+    // Tìm kiếm theo keyword
     if ($request->filled('keyword')) {
-    $query->where('name', 'like', '%' . $request->keyword . '%');
-}
+        $query->where('name', 'like', '%' . $request->keyword . '%');
+    }
 
     $products = $query->with('rates')->orderBy('id', 'desc')->paginate(12);
     $categories = Category::where('status', 1)->get();
     $brands = Brand::all();
+
     return view('client.products.index', [
         'products' => $products,
         'categories' => $categories,
