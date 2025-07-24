@@ -202,6 +202,12 @@
             gap: 10px;
         }
     }
+    .wishlist-btn:hover {
+    background-color: #ee4d2d;
+    color: #fff;
+    border-color: #ee4d2d;
+}
+
 </style>
 
 <div class="container mt-4 mb-5">
@@ -346,24 +352,25 @@
                 </ul>
             </div>
             @endif
-            <div class="mb-4 d-flex" style="gap:10px;">
-                <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    <input type="hidden" name="quantity" id="form-quantity" value="1">
-                    <input type="hidden" name="variant_id" id="form-variant-id" value="">
-                    <button type="submit" class="btn btn-buy px-4 py-2">
-                        <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
-                    </button>
-                </form>
-                <button class="btn btn-buy px-4 py-2" type="button" id="buy-now-btn">Mua ngay</button>
-            </div>
+                <div class="mb-4 d-flex flex-column align-items-start" style="gap:10px;">
+            <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
+                @csrf
+                <input type="hidden" name="quantity" id="form-quantity" value="1">
+                <input type="hidden" name="variant_id" id="form-variant-id" value="">
+                <button type="submit" class="btn btn-buy px-4 py-2">
+                    <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
+                </button>
+            </form>
+            <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="mt-2">
+                @csrf
+                <button class="btn btn-outline-danger btn-sm wishlist-btn">💖 Thêm vào danh sách yêu thích</button>
+            </form>
+
+        </div>
             <div id="add-to-cart-success" class="alert d-none mt-2"></div>
         </div>
     </div>
-<form method="POST" action="{{ route('wishlist.add', $product->id) }}">
-    @csrf
-    <button class="btn btn-outline-danger btn-sm">💖 Thêm yêu thích</button>
-</form>
+
     <div class="product-info-block mt-5">
         <h4>Chi tiết sản phẩm</h4>
         <div class="table-responsive mb-3">
@@ -451,10 +458,10 @@
             <div class="col-md-3">
                 <div class="card">
                     <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
-                    <div class="card-body">
+                    <div class="card-body text-center">
                         <h6 class="card-title">{{ $item->name }}</h6>
                         @if($item->sale_price && $item->sale_price < $item->price)
-                            <p>
+                            <p class="text-center mb-2">
                                 <span class="text-danger fw-bold">{{ number_format($item->sale_price) }} đ</span>
                                 <del class="text-muted ms-1">{{ number_format($item->price) }} đ</del>
                             </p>
@@ -644,14 +651,6 @@
         });
     }
 
-    // Tạm thời: Nút "Mua ngay" chỉ hiển thị thông báo, sau này bạn có thể bổ sung logic chuyển hướng hoặc xử lý khác
-    document.getElementById('buy-now-btn').addEventListener('click', function() {
-        const alertBox = document.getElementById('add-to-cart-success');
-        alertBox.textContent = 'Chức năng Mua ngay sẽ được cập nhật sau!';
-        alertBox.className = 'alert alert-info mt-2';
-        alertBox.classList.remove('d-none');
-        setTimeout(() => alertBox.classList.add('d-none'), 2000);
-    });
 
     function getSelectedVariant() {
         const sizeId = document.querySelector('input[name="size"]:checked')?.id.replace('size-', '');
