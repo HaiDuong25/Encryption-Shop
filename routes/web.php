@@ -168,6 +168,12 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Users
     Route::resource('users', UserController::class);
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
+
+    // Trả hàng (Admin)
+Route::get('/returns', [\App\Http\Controllers\Admin\ReturnController::class, 'index'])->name('admin.returns.index');
+Route::get('/returns/{id}', [\App\Http\Controllers\Admin\ReturnController::class, 'show'])->name('admin.returns.show');
+Route::post('/returns/{id}/update-status', [\App\Http\Controllers\Admin\ReturnController::class, 'updateStatus'])->name('admin.returns.updateStatus');
+
 });
 
 

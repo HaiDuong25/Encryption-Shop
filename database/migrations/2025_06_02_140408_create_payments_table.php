@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('order_id');
 
-            $table->enum('status', ['pending', 'confirmed', 'rejected'])->default('pending');
-            // $table->timestamp('')->nullable(); 
+            $table->enum('status', ['pending', 'completed', 'rejected'])->default('pending');
+            // $table->timestamp('')->nullable();
             $table->string('transaction_code')->nullable();
             $table->timestamps();
 

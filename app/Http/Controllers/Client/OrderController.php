@@ -167,12 +167,12 @@ public function cancel(Request $request, Order $order)
                         $payment = $order->payments()->create([
                             'amount' => $order->total_price,
                             'payment_method_id' => $order->payment_method_id,
-                            'status' => 'confirmed',
+                            'status' => 'completed', // Sửa lại từ 'confirmed' thành 'completed'
                             'confirmed_at' => now(),
                         ]);
                     } else {
                         $payment->update([
-                            'status' => 'confirmed',
+                            'status' => 'completed', // Sửa lại từ 'confirmed' thành 'completed'
                             'confirmed_at' => now(),
                         ]);
                     }
