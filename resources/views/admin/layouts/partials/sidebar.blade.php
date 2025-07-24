@@ -199,6 +199,12 @@
                             <span>Quản lý thanh toán</span>
                         </a>
                     </li>
+                    <li>
+    <a href="{{ route('admin.returns.index') }}">
+        <i class="fas fa-undo"></i> <span> Yêu cầu trả hàng </span>
+    </a>
+</li>
+
                 </ul>
             </div>
             <div class="right-arrow" id="right-arrow">
