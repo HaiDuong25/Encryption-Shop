@@ -115,13 +115,14 @@
     }
 
     .product-description {
-        background-color: #fff;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 20px;
-        font-size: 15px;
-        line-height: 1.7;
-        white-space: pre-line;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 15px;
+    line-height: 1.7;
+    white-space: pre-line;
+    word-break: break-word;
     }
 
     .table.table-bordered {
