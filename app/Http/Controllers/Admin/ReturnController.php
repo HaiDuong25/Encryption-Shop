@@ -8,11 +8,21 @@ use Illuminate\Http\Request;
 
 class ReturnController extends Controller
 {
-    public function index()
-    {
-        $returns = ReturnRequest::with(['user', 'order', 'orderDetail'])->latest()->paginate(10);
-        return view('admin.returns.index', compact('returns'));
+ public function index(Request $request)
+{
+    $query = ReturnRequest::with(['user', 'orderDetail.product']);
+
+    if ($request->has('keyword') && $request->keyword) {
+        $keyword = $request->keyword;
+        $query->whereHas('user', fn($q) => $q->where('name', 'like', "%$keyword%"))
+              ->orWhereHas('orderDetail.product', fn($q) => $q->where('name', 'like', "%$keyword%"));
     }
+
+    $returns = $query->orderByDesc('created_at')->paginate(10);
+
+    return view('admin.returns.index', compact('returns'));
+}
+
 
     public function show($id)
     {
