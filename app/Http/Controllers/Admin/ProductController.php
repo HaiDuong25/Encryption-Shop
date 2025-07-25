@@ -92,6 +92,7 @@ class ProductController extends Controller
             'sizes' => 'required|array|min:1',
             'colors' => 'required|array|min:1',
             'variant_price' => 'array',
+            'variant_sale_price' => 'array',
             'variant_stock' => 'array',
             'variant_sku' => 'array',
             'variant_image' => 'array',
@@ -116,6 +117,7 @@ class ProductController extends Controller
         foreach ($combinations as $index => $combo) {
             $variantSku = $request->input("variant_sku.$index") ?: ($product->sku ? $product->sku . '-' : '') . implode('-', $combo);
             $variantPrice = $request->input("variant_price.$index");
+            $variantSalePrice = $request->input("variant_sale_price.$index");
             $variantStock = $request->input("variant_stock.$index");
             $variantImage = null;
             if ($request->hasFile("variant_image.$index")) {
@@ -124,6 +126,7 @@ class ProductController extends Controller
             $variant = $product->variants()->create([
                 'sku'   => strtoupper($variantSku),
                 'price' => $variantPrice ?: null,
+                'sale_price' => $variantSalePrice ?: null,
                 'stock' => $variantStock ?: 0,
                 'image' => $variantImage,
             ]);
