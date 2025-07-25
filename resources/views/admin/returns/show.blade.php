@@ -4,55 +4,94 @@
 
 @section('content')
 <div class="container py-4">
-    <h2>Chi tiết yêu cầu trả hàng #{{ $return->id }}</h2>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Chi tiết yêu cầu trả hàng #{{ $return->id }}</h5>
+            <a href="{{ route('admin.returns.index') }}" class="btn btn-sm btn-secondary">← Quay lại</a>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-bordered mb-0">
+                <tr>
+                    <th width="25%">Khách hàng</th>
+                    <td>{{ $return->user->name }}</td>
+                </tr>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <td>{{ $return->orderDetail->product->name ?? 'Ẩn' }}</td>
+                </tr>
+                <tr>
+                    <th>Lý do</th>
+                    <td>{{ $return->reason }}</td>
+                </tr>
+                <tr>
+                    <th>Mô tả</th>
+                    <td>{{ $return->description }}</td>
+                </tr>
+                <tr>
+                    <th>Ảnh minh hoạ</th>
+                    <td>
+                        @if ($return->image)
+                            <img src="{{ asset('storage/' . $return->image) }}" width="100" class="img-thumbnail">
+                        @else
+                            <em>Không có</em>
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <th>Trạng thái</th>
+                    <td>
+                        @php
+                            $statusLabels = [
+                                'pending' => 'Chờ duyệt',
+                                'returning' => 'Đang trả hàng',
+                                'approved' => 'Đã phê duyệt',
+                                'rejected' => 'Từ chối',
+                                'returned' => 'Đã trả hàng',
+                                'refunded' => 'Đã hoàn tiền',
+                            ];
+                            $badgeColors = [
+                                'pending' => 'warning',
+                                'returning' => 'info',
+                                'approved' => 'success',
+                                'rejected' => 'danger',
+                                'returned' => 'secondary',
+                                'refunded' => 'primary',
+                            ];
+                        @endphp
+                        <span class="badge bg-{{ $badgeColors[$return->status] ?? 'secondary' }}">
+                            {{ $statusLabels[$return->status] ?? $return->status }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Ngày yêu cầu</th>
+                    <td>{{ $return->created_at->format('H:i d/m/Y') }}</td>
+                </tr>
+            </table>
 
-    <ul>
-        <li><strong>Khách:</strong> {{ $return->user->name }}</li>
-        <li><strong>Sản phẩm:</strong> {{ $return->orderDetail->product->name ?? 'Ẩn' }}</li>
-        <li><strong>Lý do:</strong> {{ $return->reason }}</li>
-        <li><strong>Mô tả:</strong> {{ $return->description }}</li>
-        <li><strong>Ảnh:</strong>
-            @if ($return->image)
-                <img src="{{ asset('storage/' . $return->image) }}" width="100" />
+            @if ($return->status === 'pending')
+                <form action="{{ route('admin.returns.updateStatus', $return->id) }}" method="POST" class="mt-4">
+                    @csrf
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label for="status">Trạng thái mới</label>
+                            <select name="status" id="status" class="form-control" required>
+                                <option value="returning">Đang trả hàng</option>
+                                <option value="approved">Đã phê duyệt</option>
+                                <option value="rejected">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-success">Cập nhật</button>
+                        </div>
+                    </div>
+                </form>
             @else
-                Không có
+                <div class="alert alert-secondary mt-3 mb-0">
+                    <i class="fa fa-info-circle me-1"></i> Không thể cập nhật trạng thái khi đơn không ở trạng thái <strong>Chờ duyệt</strong>.
+                </div>
             @endif
-        </li>
-        @php
-            $statusLabels = [
-                'pending' => 'Chờ duyệt',
-                'returning' => 'Đang trả hàng',
-                'approved' => 'Đã phê duyệt',
-                'rejected' => 'Từ chối',
-                'returned' => 'Đã trả hàng',
-                'refunded' => 'Đã hoàn tiền',
-            ];
-        @endphp
-
-        <li>
-            <strong>Trạng thái hiện tại:</strong>
-            <span class="badge bg-warning">
-                {{ $statusLabels[$return->status] ?? $return->status }}
-            </span>
-        </li>
-    </ul>
-
-    {{-- Chỉ hiển thị form cập nhật nếu đang ở trạng thái pending --}}
-    @if ($return->status === 'pending')
-        <form action="{{ route('admin.returns.updateStatus', $return->id) }}" method="POST">
-            @csrf
-            <div class="form-group">
-                <label>Trạng thái mới</label>
-                <select name="status" class="form-control" required>
-                    <option value="returning">Đang trả hàng</option>
-                    <option value="approved">Đã phê duyệt</option>
-                    <option value="rejected">Từ chối</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-success mt-2">Cập nhật trạng thái</button>
-        </form>
-    @else
-        <p class="text-muted">Không thể cập nhật trạng thái khi đơn không ở trạng thái <strong>Chờ duyệt</strong>.</p>
-    @endif
+        </div>
+    </div>
 </div>
 @endsection

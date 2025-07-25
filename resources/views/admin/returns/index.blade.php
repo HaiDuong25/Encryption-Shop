@@ -1,57 +1,71 @@
-{{-- filepath: resources/views/admin/returns/index.blade.php --}}
 @extends('admin.layouts.main')
 
 @section('title', 'Danh sách yêu cầu trả hàng')
 
 @section('content')
     <div class="container py-4">
-        <h2>Danh sách yêu cầu trả hàng</h2>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Khách hàng</th>
-                    <th>Sản phẩm</th>
-                    <th>Lý do trả hàng</th>
-                    <th>Trạng thái</th>
-                    <th>Ngày gửi yêu cầu</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($returns as $return)
-                    @php
-    $statusLabels = [
-        'pending' => 'Chờ duyệt',
-        'returning' => 'Đang trả hàng',
-        'approved' => 'Đã phê duyệt',
-        'rejected' => 'Từ chối',
-        'returned' => 'Đã trả hàng',
-        'refunded' => 'Đã hoàn tiền',
-    ];
-@endphp
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">📦 Danh sách yêu cầu trả hàng</h2>
 
+            <form action="{{ route('admin.returns.index') }}" method="GET" class="d-flex" style="max-width: 400px;">
+                <input type="text" name="search" class="form-control me-2" placeholder="Tìm khách hàng hoặc sản phẩm..."
+                       value="{{ request('search') }}">
+                <button class="btn btn-outline-primary">🔍</button>
+            </form>
+        </div>
 
-                    <tr>
-                        <td>{{ $return->id }}</td>
-                        <td>{{ $return->user->name ?? 'Ẩn danh' }}</td>
-                        <td>{{ $return->orderDetail->product->name ?? 'Không rõ' }}</td>
-                        <td>{{ $return->reason }}</td>
-                        <td>
-                            <span class="badge bg-warning">
-                                {{ $statusLabels[$return->status] ?? ucfirst($return->status) }}
-                            </span>
-                        </td>
-                        <td>{{ $return->created_at->format('d/m/Y H:i') }}</td>
-                        <td>
-                            <a href="{{ route('admin.returns.show', $return->id) }}" class="btn btn-sm btn-primary">Xem chi tiết</a>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Khách hàng</th>
+                            <th>Sản phẩm</th>
+                            <th>Lý do</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày gửi</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($returns as $return)
+                            @php
+                                $statusLabels = [
+                                    'pending' => ['label' => 'Chờ duyệt', 'class' => 'bg-warning'],
+                                    'returning' => ['label' => 'Đang trả hàng', 'class' => 'bg-info'],
+                                    'approved' => ['label' => 'Đã phê duyệt', 'class' => 'bg-success'],
+                                    'rejected' => ['label' => 'Từ chối', 'class' => 'bg-danger'],
+                                    'returned' => ['label' => 'Đã trả hàng', 'class' => 'bg-secondary'],
+                                    'refunded' => ['label' => 'Đã hoàn tiền', 'class' => 'bg-success'],
+                                ];
+                                $status = $statusLabels[$return->status] ?? ['label' => ucfirst($return->status), 'class' => 'bg-light'];
+                            @endphp
+                            <tr>
+                                <td>{{ $return->id }}</td>
+                                <td>{{ $return->user->name ?? 'Ẩn danh' }}</td>
+                                <td>{{ $return->orderDetail->product->name ?? 'Không rõ' }}</td>
+                                <td>{{ $return->reason }}</td>
+                                <td><span class="badge {{ $status['class'] }}">{{ $status['label'] }}</span></td>
+                                <td>{{ $return->created_at->format('d/m/Y H:i') }}</td>
+                                <td>
+                                    <a href="{{ route('admin.returns.show', $return->id) }}"
+                                       class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Không có yêu cầu trả hàng nào.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         {{-- Phân trang --}}
-        {{ $returns->links() }}
+        <div class="mt-3">
+            {{ $returns->withQueryString()->links() }}
+        </div>
     </div>
 @endsection
