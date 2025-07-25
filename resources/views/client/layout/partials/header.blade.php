@@ -94,7 +94,7 @@
                                     @endphp
                                     <li class="nav-item dropdown">
                                         <span class="nav-link dropdown-toggle" role="button" id="dropdownDanhMuc" data-bs-toggle="dropdown" aria-expanded="false" data-href="{{ route('categories.index') }}">
-                                            Danh mục quần áo
+                                            Danh mục
                                         </span>
                                         <div class="dropdown-menu p-3" style="min-width: 600px;">
                                             <div class="d-flex flex-wrap category-columns">

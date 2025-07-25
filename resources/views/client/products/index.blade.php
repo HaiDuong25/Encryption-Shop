@@ -78,7 +78,7 @@
                                                             @if(in_array($category->id, $selectedCategories ?? [])) checked @endif>
                                                         <label class="form-check-label d-flex justify-content-between" for="category-{{ $category->id }}">
                                                             <span class="name">{{ $category->name }}</span>
-                                                            <span class="number">({{ $category->products()->where('status',1)->count() }})</span>
+                                                            <span class="number">({{ $category->totalProductsCount() }})</span>
                                                         </label>
                                                     </div>
                                                 </li>
@@ -137,6 +137,17 @@
                                     <a href="{{ route('client.products.show', $product->id) }}">
                                         <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
                                     </a>
+                                    <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="position-absolute top-0 end-0 m-2">
+                                            @csrf
+                                            <button
+                                                class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                                style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;"
+                                                onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white'; this.style.transform='scale(1.1)';"
+                                                onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.9)'; this.style.color='#333'; this.style.transform='scale(1)';"
+                                                title="Thêm vào yêu thích">
+                                                <i class="fa-solid fa-heart" style="font-size: 14px;"></i>
+                                            </button>
+                                    </form>
                                 </div>
                             </div>
                             <div class="product-footer">
@@ -178,11 +189,10 @@
 
 
                                     <div class="add-to-cart-box bg-white">
-                                        <button class="btn btn-add-cart addcart-button">Add
-
-                                        </button>
-
-                                    </div>
+                                            <a href="{{ route('client.products.show', $product->id) }}" class="btn btn-add-cart w-100">
+                                                Xem chi tiết
+                                            </a>
+                                        </div>
                                 </div>
                             </div>
                         </div>

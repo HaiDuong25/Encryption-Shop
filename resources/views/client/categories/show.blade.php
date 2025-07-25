@@ -8,7 +8,9 @@
         <div class="row">
 
         <div class="col-12">
-                <h2 class="mb-4">Danh mục: {{ $category->name }}</h2>
+                <h2 class="mb-4">
+                    Danh mục: <span style="color: #007bff;">{{ $category->name }}</span>
+                </h2>
                 <div class="row g-sm-4 g-3">
                     @forelse($products as $product)
                         <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
@@ -19,6 +21,17 @@
                                             <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload"
                                                 alt="{{ $product->name }}">
                                         </a>
+                                        <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="position-absolute top-0 end-0 m-2">
+                                            @csrf
+                                            <button
+                                                class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                                style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;"
+                                                onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white'; this.style.transform='scale(1.1)';"
+                                                onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.9)'; this.style.color='#333'; this.style.transform='scale(1)';"
+                                                title="Thêm vào yêu thích">
+                                                <i class="fa-solid fa-heart" style="font-size: 14px;"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                                 <div class="product-footer">
