@@ -88,36 +88,35 @@
                                             data-bs-toggle="dropdown-item">Trang chủ</a>
                                     </li>
 
-                           @php
-    use App\Models\Category;
-    $categories = Category::whereNull('parent_id')->with('children')->get();
-@endphp
-
-<li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-        Danh mục quần áo
-    </a>
-    <div class="dropdown-menu p-3" style="min-width: 600px;">
-        <div class="d-flex flex-wrap category-columns">
-    @foreach ($categories as $parent)
-        <div class="category-group px-3">
-            <div class="category-parent text-center mb-2 fw-bold">
-                <a class="text-dark" href="{{ route('categories.show', $parent->id) }}">
-                    {{ $parent->name }}
-                </a>
-            </div>
-            <div class="category-children d-flex flex-column align-items-center">
-                @foreach ($parent->children as $child)
-                    <a class="dropdown-item py-1" href="{{ route('categories.show', $child->id) }}">
-                        {{ $child->name }}
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    @endforeach
-    </div>
-    </div>
-</li>
+                                    @php
+                                        use App\Models\Category;
+                                        $categories = Category::whereNull('parent_id')->with('children')->get();
+                                    @endphp
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                            Danh mục quần áo
+                                        </a>
+                                        <div class="dropdown-menu p-3" style="min-width: 600px;">
+                                            <div class="d-flex flex-wrap category-columns">
+                                        @foreach ($categories as $parent)
+                                            <div class="category-group px-3">
+                                                <div class="category-parent text-center mb-2 fw-bold">
+                                                    <a class="text-dark" href="{{ route('categories.show', $parent->id) }}">
+                                                        {{ $parent->name }}
+                                                    </a>
+                                                </div>
+                                                <div class="category-children d-flex flex-column align-items-center">
+                                                    @foreach ($parent->children as $child)
+                                                        <a class="dropdown-item py-1" href="{{ route('categories.show', $child->id) }}">
+                                                            {{ $child->name }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        </div>
+                                        </div>
+                                    </li>
 
 
                                     <li class="nav-item dropdown dropdown-mega">
