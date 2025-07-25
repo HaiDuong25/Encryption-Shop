@@ -13,6 +13,7 @@
     <meta name="author" content="Fastkart">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets-front/images/favicon/5.png') }}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <title>Shop Bán Quần Áo</title>
 
     <!-- Google font -->
