@@ -1,10 +1,5 @@
 @extends('admin.layouts.main')
 @section('content')
-@push('scripts')
-<script src="/path/to/apex-chart.js"></script>
-<script src="/path/to/chart-custom1.js"></script>
-@endpush
-
 <div class="row">
 
     <div class="col-sm-6 col-xxl-3 col-lg-6">
@@ -256,7 +251,6 @@
 <!-- chart card section End -->
 
 
-<!-- Earning chart star-->
 <div class="col-xl-6">
     <div class="card o-hidden card-hover">
         <div class="card-header border-0 pb-1">
@@ -269,7 +263,7 @@
         </div>
     </div>
 </div>
-<!-- Earning chart  end-->
+
 
 
 <!-- Best Selling Product Start -->
@@ -830,3 +824,29 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<!-- Import ApexCharts -->
+<script src="/path/to/apex-chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var options = {
+        chart: {
+            type: 'line',
+            height: 350
+        },
+        series: [{
+            name: 'Doanh thu',
+            data: @json($revenues)
+        }],
+        xaxis: {
+            categories: @json($months)
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#report-chart"), options);
+    chart.render();
+});
+</script>
+@endpush
+
