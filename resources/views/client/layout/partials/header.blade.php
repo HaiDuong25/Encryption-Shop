@@ -87,18 +87,43 @@
                                         <a class="nav-link" href="{{ route('home') }}"
                                             data-bs-toggle="dropdown-item">Trang chủ</a>
                                     </li>
+
+                           @php
+    use App\Models\Category;
+    $categories = Category::whereNull('parent_id')->with('children')->get();
+@endphp
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Danh mục quần áo
+    </a>
+    <div class="dropdown-menu p-3" style="min-width: 600px;">
+        <div class="d-flex flex-wrap category-columns">
+    @foreach ($categories as $parent)
+        <div class="category-group px-3">
+            <div class="category-parent text-center mb-2 fw-bold">
+                <a class="text-dark" href="{{ route('categories.show', $parent->id) }}">
+                    {{ $parent->name }}
+                </a>
+            </div>
+            <div class="category-children d-flex flex-column align-items-center">
+                @foreach ($parent->children as $child)
+                    <a class="dropdown-item py-1" href="{{ route('categories.show', $child->id) }}">
+                        {{ $child->name }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endforeach
+    </div>
+    </div>
+</li>
+
+
                                     <li class="nav-item dropdown dropdown-mega">
                                         <a class="nav-link" href="{{ route('client.products.index') }}"
                                             data-bs-toggle="dropdown-item">Sản phẩm</a>
                                     </li>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="javascript:void(0)"
-                                            data-bs-toggle="dropdown">Danh mục quần áo</a>
-
-
-                                    </li>
-
-                                
 
                                     <li class="nav-item">
                                         <a class="nav-link" href="{{ route('client.news.index') }}">Tin tức</a>
@@ -255,4 +280,56 @@
         box-shadow: none !important;
         background: transparent !important;
     }
+</style>
+<style>
+/* Dropdown toàn bộ */
+.dropdown-menu {
+    width: 100%;
+    max-width: 1000px;
+    background-color: #fff;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    padding: 1rem 1.5rem;
+}
+
+/* Flex nhóm danh mục */
+.category-columns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+    gap: 20px;
+}
+
+/* Nhóm cha + con */
+.category-group {
+    min-width: 150px;
+    border-right: 1px solid #ddd;
+    padding-right: 15px;
+}
+
+/* Bỏ border phải cột cuối */
+.category-group:last-child {
+    border-right: none;
+}
+
+/* Tên danh mục cha */
+.category-parent a {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Danh mục con */
+.category-children a {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+}
+
+/* Hover hiệu ứng */
+.category-children a:hover {
+    color: #007bff;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
 </style>
