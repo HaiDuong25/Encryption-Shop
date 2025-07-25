@@ -21,5 +21,32 @@ class Category extends Model
 {
     return $this->hasMany(Category::class, 'parent_id');
 }
+public function childrenRecursive()
+{
+    return $this->children()->with('childrenRecursive');
+}
+
+public function totalProductsCount()
+{
+    $count = $this->products()->where('status', 1)->count();
+
+    foreach ($this->children as $child) {
+        $count += $child->totalProductsCount();
+    }
+
+    return $count;
+}
+
+public function getAllChildrenIds()
+{
+    $ids = [$this->id];
+
+    foreach ($this->children as $child) {
+        $ids = array_merge($ids, $child->getAllChildrenIds());
+    }
+
+    return $ids;
+}
+
 }
 

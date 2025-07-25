@@ -19,8 +19,18 @@ public function index(Request $request)
 
     // Lọc theo danh mục
     if ($request->has('categories')) {
-        $query->whereIn('category_id', $request->categories);
+    $categoryIds = [];
+
+    foreach ($request->categories as $categoryId) {
+        $category = Category::with('children')->find($categoryId);
+        if ($category) {
+            $categoryIds = array_merge($categoryIds, $category->getAllChildrenIds());
+        }
     }
+
+    $query->whereIn('category_id', $categoryIds);
+}
+
 
     // Lọc theo khoảng giá dựa trên final_price
     if ($request->filled('min_price')) {
