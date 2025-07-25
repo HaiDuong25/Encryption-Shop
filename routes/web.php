@@ -132,9 +132,12 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::patch('shipping-addresses/{shippingAddress}/set-default', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'setDefault'])->name('shipping-addresses.set-default');
 
     // Categories
+    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('categories/parent/create', [CategoryController::class, 'createParent'])->name('categories.create-parent');
+    Route::post('categories/parent/store', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
+
     Route::resource('categories', CategoryController::class);
-    Route::get('categories/create-parent', [CategoryController::class, 'createParent'])->name('categories.create-parent');
-    Route::post('categories/store-parent', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
+});
 
     // Brands
     Route::resource('brands', BrandController::class);

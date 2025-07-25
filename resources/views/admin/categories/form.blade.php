@@ -47,7 +47,7 @@
                         </div>
                     @else
                         <div class="alert alert-warning">
-                            Hiện chưa có danh mục cha nào. Vui lòng <a href="{{ route('categories.create-parent') }}">thêm danh mục cha</a> trước.
+                            Hiện chưa có danh mục cha nào. Vui lòng <a href="{{ route('admin.categories.create-parent') }}">thêm danh mục cha</a> trước.
                         </div>
                     @endif
                 @endif
@@ -81,7 +81,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <a href="{{ route('categories.index') }}" class="btn btn-secondary me-2">Huỷ</a>
+                    <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary me-2">Huỷ</a>
                     <button type="submit" class="btn btn-primary">
                         <span class="btn-text">{{ isset($category) ? 'Cập nhật' : 'Lưu' }}</span>
                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
@@ -91,6 +91,9 @@
         </div>
     </div>
 </div>
+<script>
+    const updateRouteTemplate = @json(route('admin.categories.update', ['category' => '__ID__']));
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -98,38 +101,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = form.querySelector('button[type="submit"]');
     const btnText = submitBtn.querySelector('.btn-text');
     const spinner = submitBtn.querySelector('.spinner-border');
-    
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Clear previous error messages
         document.querySelectorAll('.invalid-feedback.ajax-error').forEach(el => {
             el.style.display = 'none';
             el.textContent = '';
         });
         document.querySelectorAll('.form-control, .form-select').forEach(el => el.classList.remove('is-invalid'));
-        
+
         // Show loading state
         submitBtn.disabled = true;
         btnText.textContent = 'Đang xử lý...';
         spinner.classList.remove('d-none');
-        
+
         const formData = new FormData(form);
         const isEdit = document.getElementById('categoryId');
-        
+
         // Add CSRF token to FormData
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-        
+
         let url;
         if (isEdit) {
-            url = `/admin/categories/${isEdit.value}`;
+            url = updateRouteTemplate.replace('__ID__', isEdit.value);
             formData.append('_method', 'PUT');
         } else {
-            url = '/admin/categories';
+            url = '{{ route("admin.categories.store") }}';
         }
-        
+
         fetch(url, {
-            method: 'POST',
+            method: 'POST', // giữ nguyên
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             },
@@ -151,10 +154,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 form.insertBefore(alertDiv, form.firstChild);
-                
+
                 // Redirect after delay
                 setTimeout(() => {
-                    window.location.href = '/admin/categories';
+                    window.location.href = '{{ route('admin.categories.index') }}';
                 }, 1500);
             } else {
                 throw new Error(data.message || 'Có lỗi xảy ra!');
@@ -162,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            
+
             // Handle validation errors
             if (error.errors) {
                 Object.keys(error.errors).forEach(field => {

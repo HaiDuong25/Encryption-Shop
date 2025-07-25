@@ -69,13 +69,13 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="{{ route('categories.index') }}">Danh sách danh mục</a>
+                                <a href="{{ route('admin.categories.index') }}">Danh sách danh mục</a>
                             </li>
                             <li>
-                                <a href="{{ route('categories.create') }}">Thêm danh mục mới</a>
+                                <a href="{{ route('admin.categories.create') }}">Thêm danh mục mới</a>
                             </li>
                             <li>
-                                <a href="{{ route('categories.create-parent') }}">Thêm danh mục cha mới</a>
+                                <a href="{{ route('admin.categories.create-parent') }}">Thêm danh mục cha mới</a>
                             </li>
                         </ul>
                     </li>
