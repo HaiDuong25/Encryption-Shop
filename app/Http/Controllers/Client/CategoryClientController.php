@@ -8,11 +8,15 @@ use App\Models\Product;
 
 class CategoryClientController extends Controller
 {
-    public function index()
+public function index()
 {
-    $products = Product::latest()->get();
-    return view('client.categories.index', compact('products'));
+    $categories = \App\Models\Category::whereNull('parent_id')
+                    ->with('children') // nếu muốn hiển thị cả danh mục con
+                    ->get();
+
+    return view('client.categories.index', compact('categories'));
 }
+
 
 public function show($id)
 {
