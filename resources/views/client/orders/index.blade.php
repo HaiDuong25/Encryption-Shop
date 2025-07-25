@@ -65,14 +65,14 @@
             </div>
             <div class="card-body">
                 {{-- Hiển thị thông báo --}}
-                @if(session('success'))
+                @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
-                @if(session('error'))
+                @if (session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -116,33 +116,67 @@
                                                         '4' => 'received',
                                                         '5' => 'completed',
                                                         '6' => 'cancelled',
+                                                        '7' => 'returning',
+                                                        '8' => 'approved',
+                                                        '9' => 'refunded',
                                                     ];
                                                     $statusValue = $statusMap[$statusValue] ?? 'pending';
                                                 }
                                             @endphp
-                                            @if ($statusValue == 'pending')
-                                                <span class="badge bg-warning status-badge">Chờ xử lý</span>
-                                            @elseif($statusValue == 'confirmed')
-                                                <span class="badge bg-primary status-badge">Đã xác nhận</span>
-                                            @elseif($statusValue == 'shipping')
-                                                <span class="badge bg-info status-badge">Đã giao cho ĐVVC</span>
-                                            @elseif($statusValue == 'delivering')
-                                                <span class="badge bg-purple status-badge">Đang giao</span>
-                                            @elseif($statusValue == 'received')
-                                                <span class="badge bg-cyan status-badge">Đã nhận</span>
-                                            @elseif($statusValue == 'completed')
-                                                <span class="badge bg-success status-badge">Hoàn thành</span>
-                                            @elseif($statusValue == 'cancelled')
-                                                <span class="badge bg-danger status-badge">Đã hủy</span>
-                                            @else
-                                                <span class="badge bg-secondary status-badge">{{ $statusValue }}</span>
-                                            @endif
+
+                                            @switch($statusValue)
+                                                @case('pending')
+                                                    <span class="badge bg-warning status-badge">Chờ xử lý</span>
+                                                @break
+
+                                                @case('confirmed')
+                                                    <span class="badge bg-primary status-badge">Đã xác nhận</span>
+                                                @break
+
+                                                @case('shipping')
+                                                    <span class="badge bg-info status-badge">Đã giao cho ĐVVC</span>
+                                                @break
+
+                                                @case('delivering')
+                                                    <span class="badge bg-purple status-badge">Đang giao</span>
+                                                @break
+
+                                                @case('received')
+                                                    <span class="badge bg-cyan status-badge">Đã nhận</span>
+                                                @break
+
+                                                @case('completed')
+                                                    <span class="badge bg-success status-badge">Hoàn thành</span>
+                                                @break
+
+                                                @case('cancelled')
+                                                    <span class="badge bg-danger status-badge">Đã hủy</span>
+                                                @break
+
+                                                @case('returning')
+                                                    <span class="badge bg-warning text-dark status-badge">Đang trả hàng</span>
+                                                @break
+
+                                                @case('approved')
+                                                    <span class="badge bg-info text-dark status-badge">Đã trả hàng</span>
+                                                @break
+
+                                                @case('rejected')
+                                                    <span class="badge bg-danger status-badge">Bị từ chối</span>
+                                                @break
+
+                                                @default
+                                                    <span class="badge bg-secondary status-badge">Không rõ</span>
+                                            @endswitch
                                         </td>
+
                                         <td>
                                             @php
-                                                $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                                $isPaid =
+                                                    $order->payments &&
+                                                    $order->payments->where('status', 'completed')->count() > 0;
                                             @endphp
-                                            @if($isPaid)
+                                            @if ($isPaid)
                                                 <span class="badge bg-success status-badge">Đã thanh toán</span>
                                             @else
                                                 <span class="badge bg-warning text-dark status-badge">Chưa thanh toán</span>

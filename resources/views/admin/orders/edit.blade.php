@@ -12,21 +12,21 @@
                 @csrf
                 @method('PUT')
 
-                @if($errors->any())
+                @if ($errors->any())
                     <div class="alert alert-danger">
                         <ul class="mb-0">
-                            @foreach($errors->all() as $error)
+                            @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
 
-                @if(session('success'))
+                @if (session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
-                @if(session('error'))
+                @if (session('error'))
                     <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
 
@@ -54,27 +54,30 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label for="orderer_name" class="form-label">Tên người đặt</label>
-                            <input type="text" class="form-control" id="orderer_name" name="orderer_name" maxlength="255" required
-                                value="{{ old('orderer_name', $order->orderer_name ?? ($order->user->name ?? '') ) }}">
+                            <input type="text" class="form-control" id="orderer_name" name="orderer_name" maxlength="255"
+                                required
+                                value="{{ old('orderer_name', $order->orderer_name ?? ($order->user->name ?? '')) }}">
                         </div>
 
                         <div class="mb-3">
                             <label for="orderer_email" class="form-label">Email người đặt</label>
-                            <input type="email" class="form-control" id="orderer_email" name="orderer_email" maxlength="255"
-                                value="{{ old('orderer_email', $order->orderer_email ?? ($order->user->email ?? '') ) }}">
+                            <input type="email" class="form-control" id="orderer_email" name="orderer_email"
+                                maxlength="255"
+                                value="{{ old('orderer_email', $order->orderer_email ?? ($order->user->email ?? '')) }}">
                         </div>
 
                         <div class="mb-3">
                             <label for="orderer_phone" class="form-label">Số điện thoại người đặt</label>
                             <input type="text" class="form-control" id="orderer_phone" name="orderer_phone"
                                 pattern="[0-9]{10,11}" maxlength="11" required
-                                value="{{ old('orderer_phone', $order->orderer_phone ?? ($order->user->phone ?? '') ) }}">
+                                value="{{ old('orderer_phone', $order->orderer_phone ?? ($order->user->phone ?? '')) }}">
                         </div>
 
                         <div class="mb-3">
                             <label for="orderer_address" class="form-label">Địa chỉ người đặt</label>
-                            <input type="text" class="form-control" id="orderer_address" name="orderer_address" maxlength="255" required
-                                value="{{ old('orderer_address', $order->orderer_address ?? ($order->user->address ?? '') ) }}">
+                            <input type="text" class="form-control" id="orderer_address" name="orderer_address"
+                                maxlength="255" required
+                                value="{{ old('orderer_address', $order->orderer_address ?? ($order->user->address ?? '')) }}">
                         </div>
                     </div>
                 </div>
@@ -87,8 +90,8 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label for="recipient_name" class="form-label">Tên người nhận</label>
-                            <input type="text" class="form-control" id="recipient_name" name="recipient_name" maxlength="255" required
-                                value="{{ old('recipient_name', $order->recipient_name) }}">
+                            <input type="text" class="form-control" id="recipient_name" name="recipient_name"
+                                maxlength="255" required value="{{ old('recipient_name', $order->recipient_name) }}">
                         </div>
 
                         <div class="mb-3">
@@ -100,8 +103,8 @@
 
                         <div class="mb-3">
                             <label for="recipient_address" class="form-label">Địa chỉ người nhận</label>
-                            <input type="text" class="form-control" id="recipient_address" name="recipient_address" maxlength="255" required
-                                value="{{ old('recipient_address', $order->recipient_address) }}">
+                            <input type="text" class="form-control" id="recipient_address" name="recipient_address"
+                                maxlength="255" required value="{{ old('recipient_address', $order->recipient_address) }}">
                         </div>
                     </div>
                 </div>
@@ -153,55 +156,85 @@
                                 'received' => 'Đã nhận',
                                 'completed' => 'Hoàn thành',
                                 'cancelled' => 'Đã hủy',
+                                'returning' => 'Đang trả hàng',
+                                'approved' => 'Đã trả hàng',
+                                'rejected' => 'Từ chối trả',
                             ];
 
                             // Convert numeric status to string for backward compatibility
                             $currentStatus = $order->status;
+                            $statusMap = [
+                                '0' => 'pending',
+                                '1' => 'confirmed',
+                                '2' => 'shipping',
+                                '3' => 'delivering',
+                                '4' => 'received',
+                                '5' => 'completed',
+                                '6' => 'cancelled',
+                                '7' => 'returning',
+                                '8' => 'approved',
+                                '9' => 'rejected',
+                            ];
                             if (is_numeric($currentStatus)) {
-                                $statusMap = [
-                                    '0' => 'pending',
-                                    '1' => 'confirmed',
-                                    '2' => 'shipping',
-                                    '3' => 'delivering',
-                                    '4' => 'received',
-                                    '5' => 'completed',
-                                    '6' => 'cancelled'
-                                ];
                                 $currentStatus = $statusMap[$currentStatus] ?? 'pending';
                             }
+
                         @endphp
-                        @php
-                            $statusKeys = array_keys($statuses);
-                            $currentIndex = array_search($currentStatus, $statusKeys);
-                        @endphp
-                        @foreach ($statuses as $value => $label)
-                            @php
-                                $optionIndex = array_search($value, $statusKeys);
-                                // Disable nếu trạng thái đã qua (nhỏ hơn current)
-                                $disabled = $optionIndex < $currentIndex;
-                                // Không cho phép chọn "Đã hủy" nếu đã ở shipping, delivering, received, completed
-                                $forbidCancel = in_array($currentStatus, ['shipping', 'delivering', 'received', 'completed']) && $value === 'cancelled';
-                            @endphp
-                            <option value="{{ $value }}"
-                                {{ old('status', $currentStatus) == $value ? 'selected' : '' }}
-                                @if($disabled || $forbidCancel) disabled @endif>
-                                {{ $label }}
-                            </option>
-                        @endforeach
+                  @php
+    $statusKeys = array_keys($statuses);
+    $currentIndex = array_search($currentStatus, $statusKeys);
+@endphp
+
+@foreach ($statuses as $value => $label)
+    @php
+        $optionIndex = array_search($value, $statusKeys);
+        $disabled = false;
+
+        // Trạng thái không được chọn nếu đã đi qua (tức là optionIndex < currentIndex)
+        if ($optionIndex < $currentIndex) {
+            $disabled = true;
+        }
+
+        // Trạng thái cuối không được chọn từ đây
+        $finalStatuses = ['returning', 'approved', 'rejected'];
+        if (in_array($value, $finalStatuses)) {
+            $disabled = true;
+        }
+
+        // Nếu hiện tại đang ở trạng thái cuối, thì không cho chọn bất cứ trạng thái nào nữa
+        if (in_array($currentStatus, $finalStatuses)) {
+            $disabled = true;
+        }
+
+        // Không cho hủy nếu đơn hàng đã giao
+        $forbidCancel =
+            in_array($currentStatus, ['shipping', 'delivering', 'received', 'completed']) &&
+            $value === 'cancelled';
+    @endphp
+
+    <option value="{{ $value }}"
+        {{ old('status', $currentStatus) == $value ? 'selected' : '' }}
+        @if ($disabled || $forbidCancel) disabled @endif>
+        {{ $label }}
+    </option>
+@endforeach
+
+
                     </select>
+
                 </div>
 
-                @if($currentStatus === 'cancelled')
-                <div class="mb-3">
-                    <label for="cancel_reason" class="form-label">Lý do hủy</label>
-                    <input type="text" class="form-control" id="cancel_reason" name="cancel_reason" maxlength="255"
-                        value="{{ old('cancel_reason', $order->cancel_reason) }}">
-                </div>
+                @if ($currentStatus === 'cancelled')
+                    <div class="mb-3">
+                        <label for="cancel_reason" class="form-label">Lý do hủy</label>
+                        <input type="text" class="form-control" id="cancel_reason" name="cancel_reason"
+                            maxlength="255" value="{{ old('cancel_reason', $order->cancel_reason) }}">
+                    </div>
 
-                <div class="mb-3">
-                    <label for="cancel_note" class="form-label">Ghi chú hủy đơn</label>
-                    <textarea class="form-control" id="cancel_note" name="cancel_note" rows="3">{{ old('cancel_note', $order->cancel_note) }}</textarea>
-                </div>
+                    <div class="mb-3">
+                        <label for="cancel_note" class="form-label">Ghi chú hủy đơn</label>
+                        <textarea class="form-control" id="cancel_note" name="cancel_note" rows="3">{{ old('cancel_note', $order->cancel_note) }}</textarea>
+                    </div>
                 @endif
 
                 <div class="mb-3">
@@ -213,7 +246,8 @@
                                 $isExpired = $coupon->end_date && $coupon->end_date->isPast();
                                 $isNotStarted = $coupon->start_date && $coupon->start_date->isFuture();
                                 $isValid = !$isExpired && !$isNotStarted && $coupon->is_active;
-                                $isSelected = $order->discount_id == $coupon->id || $order->coupon_code == $coupon->code;
+                                $isSelected =
+                                    $order->discount_id == $coupon->id || $order->coupon_code == $coupon->code;
 
                                 $statusText = '';
                                 if ($isExpired) {
@@ -226,13 +260,18 @@
 
                                 $dateRange = '';
                                 if ($coupon->start_date && $coupon->end_date) {
-                                    $dateRange = ' (' . $coupon->start_date->format('d/m/Y') . ' - ' . $coupon->end_date->format('d/m/Y') . ')';
+                                    $dateRange =
+                                        ' (' .
+                                        $coupon->start_date->format('d/m/Y') .
+                                        ' - ' .
+                                        $coupon->end_date->format('d/m/Y') .
+                                        ')';
                                 }
                             @endphp
-                            <option value="{{ $coupon->id }}"
-                                {{ $isSelected ? 'selected' : '' }}
+                            <option value="{{ $coupon->id }}" {{ $isSelected ? 'selected' : '' }}
                                 {{ !$isValid && !$isSelected ? 'disabled' : '' }}>
-                                {{ $coupon->code }} - Giảm {{ $coupon->discount }}% {{ $dateRange }} {{ $statusText }}
+                                {{ $coupon->code }} - Giảm {{ $coupon->discount }}% {{ $dateRange }}
+                                {{ $statusText }}
                             </option>
                         @endforeach
                     </select>
@@ -316,65 +355,67 @@
             const formData = new FormData(form);
 
             fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    alertContainer.innerHTML = `
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alertContainer.innerHTML = `
                         <div class="alert alert-success alert-dismissible fade show">
                             ${data.message}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     `;
 
-                    // Redirect after success
-                    setTimeout(() => {
-                        window.location.href = data.redirect || '{{ route("orders.index") }}';
-                    }, 1500);
-                } else {
-                    // Show error messages
-                    if (data.errors) {
-                        let errorHtml = '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
-                        Object.values(data.errors).flat().forEach(error => {
-                            errorHtml += `<li>${error}</li>`;
-                        });
-                        errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-                        alertContainer.innerHTML = errorHtml;
+                        // Redirect after success
+                        setTimeout(() => {
+                            window.location.href = data.redirect || '{{ route('orders.index') }}';
+                        }, 1500);
                     } else {
-                        alertContainer.innerHTML = `
+                        // Show error messages
+                        if (data.errors) {
+                            let errorHtml =
+                                '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
+                            Object.values(data.errors).flat().forEach(error => {
+                                errorHtml += `<li>${error}</li>`;
+                            });
+                            errorHtml +=
+                                '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                            alertContainer.innerHTML = errorHtml;
+                        } else {
+                            alertContainer.innerHTML = `
                             <div class="alert alert-danger alert-dismissible fade show">
                                 ${data.message || 'Có lỗi xảy ra khi cập nhật đơn hàng!'}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         `;
-                    }
+                        }
 
-                    // Restore button state
-                    submitBtn.innerHTML = originalContent;
-                    submitBtn.disabled = false;
-                    feather.replace();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alertContainer.innerHTML = `
+                        // Restore button state
+                        submitBtn.innerHTML = originalContent;
+                        submitBtn.disabled = false;
+                        feather.replace();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alertContainer.innerHTML = `
                     <div class="alert alert-danger alert-dismissible fade show">
                         Có lỗi xảy ra khi cập nhật đơn hàng!
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 `;
 
-                // Restore button state
-                submitBtn.innerHTML = originalContent;
-                submitBtn.disabled = false;
-                feather.replace();
-            });
+                    // Restore button state
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.disabled = false;
+                    feather.replace();
+                });
         });
 
         document.getElementById('status').addEventListener('change', function() {
@@ -394,9 +435,15 @@
         .rotating {
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 @endsection

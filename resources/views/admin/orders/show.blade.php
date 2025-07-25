@@ -103,64 +103,80 @@
         $statusKeys = array_keys($statuses);
         $currentStatusIndex = array_search($statusValue, $statusKeys);
         $isCancelled = $statusValue === 'cancelled';
+        $isReturning = $statusValue === 'returning';
+        $isReturned = $statusValue === 'approved';
     @endphp
 
-    @if (!$isCancelled)
-        <div class="progress" style="height: 10px; margin-top: -10px; margin-bottom: 10px;">
-            @foreach ($statuses as $key => $label)
-                <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-success' : 'bg-secondary' }}"
-                    style="width: {{ 100 / count($statuses) }}%"></div>
-            @endforeach
+   @if (!$isCancelled && !$isReturning && !$isReturned)
+    <div class="progress" style="height: 10px; margin-top: -10px; margin-bottom: 10px;">
+        @foreach ($statuses as $key => $label)
+            <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-success' : 'bg-secondary' }}"
+                style="width: {{ 100 / count($statuses) }}%"></div>
+        @endforeach
+    </div>
+    <div class="d-flex justify-content-between small mb-4 px-1">
+        @foreach ($statuses as $key => $label)
+            <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}"
+                style="width: {{ 100 / count($statuses) }}%">
+                {{ $label }}
+            </div>
+        @endforeach
+    </div>
+@else
+    @if ($isReturned)
+        <div class="alert alert-success text-center mb-4">
+            <i class="fas fa-undo-alt me-2"></i> Đơn hàng đã được trả hàng
         </div>
-        <div class="d-flex justify-content-between small mb-4 px-1">
-            @foreach ($statuses as $key => $label)
-                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}"
-                    style="width: {{ 100 / count($statuses) }}%">
-                    {{ $label }}
-                </div>
-            @endforeach
+    @elseif ($isReturning)
+        <div class="alert alert-warning text-center mb-4">
+            <i class="fas fa-undo me-2"></i> Đơn hàng đang trong quá trình trả hàng
         </div>
-    @else
+    @elseif ($isCancelled)
         <div class="alert alert-danger text-center mb-4">
             <i class="fas fa-times-circle me-2"></i> Đơn hàng đã bị hủy
         </div>
     @endif
+@endif
+
 
     {{-- Đặt timeline ngay dưới đây --}}
-    @if($order->statusHistories && $order->statusHistories->count())
-        <div class="card mb-4 p-3">
-            <h5 class="mb-3"><i class="fas fa-shipping-fast me-2 text-success"></i>Tiến trình vận chuyển</h5>
-            <ul class="list-unstyled mb-0 position-relative timeline-admin">
-                @foreach($order->statusHistories->sortByDesc('created_at') as $history)
-                    <li class="d-flex align-items-start mb-4 position-relative" style="min-height:40px;">
-                        <div class="me-3 d-flex flex-column align-items-center" style="min-width:24px;">
-                            <span
-                                class="rounded-circle {{ $history->new_status === $order->status ? 'bg-success' : 'bg-secondary' }}"
-                                style="display:inline-block;width:16px;height:16px;border:2px solid #fff;z-index:1;"></span>
-                            @if(!$loop->last)
-                                <span
-                                    style="width:2px;flex:1 1 auto;background:#dee2e6;min-height:20px;display:block;margin:2px 0 0 7px;"></span>
-                            @endif
-                        </div>
-                        <div>
-                            <div>
-                                <strong class="{{ $history->new_status === $order->status ? 'text-success' : '' }}">
-                                    {{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}
-                                </strong>
-                                <span class="text-muted small ms-2">
-                                    {{ $history->created_at->format('H:i d/m/Y') }}
-                                </span>
-                            </div>
-                            @if(!empty($history->description))
-                                <div class="text-muted small fst-italic">{{ $history->description }}</div>
-                            @endif
-                        </div>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+        {{-- Timeline chi tiết lịch sử trạng thái --}}
+   @if (
+    !$isCancelled &&
+    $order->statusHistories &&
+    $order->statusHistories->count() &&
+    !in_array($order->status, ['returning', 'approved'])
+)
 
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+                    <ul class="list-unstyled">
+                        @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
+                            <li class="mb-3 d-flex">
+                                <div class="me-3">
+                                    @if ($history->new_status === $statusValue)
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    @else
+                                        <i class="far fa-circle text-muted"></i>
+                                    @endif
+                                </div>
+                                <div>
+                                    <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
+                                    <div class="text-muted small">
+                                        {{ $history->created_at->format('H:i d/m/Y') }}
+                                        @if ($history->description)
+                                            <br><span>{{ $history->description }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+        @endif
     {{-- Phần còn lại giữ nguyên --}}
     <div class="order-header-bar">
         <div>

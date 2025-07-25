@@ -16,35 +16,43 @@ class ReturnRequestController extends Controller
 
         return view('client.returns.create', compact('orderDetail'));
     }
+public function store(Request $request)
+{
+    $request->validate([
+        'order_detail_id' => 'required|exists:order_details,id',
+        'reason' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png'
+    ]);
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'order_detail_id' => 'required|exists:order_details,id',
-            'reason' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png'
-        ]);
+    $orderDetail = OrderDetail::with('order')->findOrFail($request->order_detail_id);
 
-        $orderDetail = OrderDetail::findOrFail($request->order_detail_id);
-
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('returns', 'public');
-        }
-
-        ReturnRequest::create([
-            'user_id' => Auth::id(),
-            'order_id' => $orderDetail->order_id,
-            'order_detail_id' => $orderDetail->id,
-            'reason' => $request->reason,
-            'description' => $request->description,
-            'image' => $imagePath,
-            'status' => 'pending'
-        ]);
-
-        return redirect()->route('client.orders.index')->with('success', 'Gửi yêu cầu trả hàng thành công.');
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('returns', 'public');
     }
+
+    // Tạo yêu cầu trả hàng
+    ReturnRequest::create([
+        'user_id' => Auth::id(),
+        'order_id' => $orderDetail->order_id,
+        'order_detail_id' => $orderDetail->id,
+        'reason' => $request->reason,
+        'description' => $request->description,
+        'image' => $imagePath,
+        'status' => 'pending'  // Yêu cầu vẫn pending để admin duyệt
+    ]);
+
+    // Cập nhật trạng thái đơn hàng là 'returning'
+    $order = $orderDetail->order;
+    if ($order) {
+        $order->status = 'returning';
+        $order->save();
+    }
+
+    return redirect()->route('client.orders.index')->with('success', 'Gửi yêu cầu trả hàng thành công.');
+}
+
 
     public function index()
     {

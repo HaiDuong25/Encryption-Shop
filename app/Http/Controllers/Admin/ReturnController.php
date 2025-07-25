@@ -11,7 +11,7 @@ class ReturnController extends Controller
     public function index()
     {
         $returns = ReturnRequest::with(['user', 'order', 'orderDetail'])->latest()->paginate(10);
-        return view('admin.returns.index', compact('returns')); // đúng view
+        return view('admin.returns.index', compact('returns'));
     }
 
     public function show($id)
@@ -20,14 +20,37 @@ class ReturnController extends Controller
         return view('admin.returns.show', compact('return'));
     }
 
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate(['status' => 'required|in:pending,approved,rejected,returned,refunded']);
+public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|in:returning,approved,rejected'
+    ]);
 
-        $return = ReturnRequest::findOrFail($id);
-        $return->status = $request->status;
-        $return->save();
+    $return = ReturnRequest::with('order')->findOrFail($id);
 
-        return redirect()->back()->with('success', 'Cập nhật trạng thái thành công.');
+    // ✅ Chỉ cho phép cập nhật khi đang là 'pending'
+    if ($return->status !== 'pending') {
+        return redirect()->back()->with('error', 'Chỉ được cập nhật khi trạng thái là "Chờ duyệt".');
     }
+
+    $return->status = $request->status;
+    $return->save();
+
+    // Cập nhật trạng thái đơn hàng tương ứng
+    if ($return->order) {
+        if ($request->status === 'returning') {
+            $return->order->status = 'returning';
+        } elseif ($request->status === 'approved') {
+            $return->order->status = 'approved';
+        } elseif ($request->status === 'rejected') {
+            $return->order->status = 'received'; // Hoặc để nguyên trạng thái trước đó
+        }
+        $return->order->save();
+    }
+
+    return redirect()->route('admin.returns.index')->with('success', 'Cập nhật trạng thái thành công.');
+}
+
+
+
 }

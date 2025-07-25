@@ -18,33 +18,41 @@
                 Không có
             @endif
         </li>
-@php
-    $statusLabels = [
-        'returned' => 'Chờ duyệt',
-        'approved' => 'Đã chấp nhận',
+        @php
+            $statusLabels = [
+                'pending' => 'Chờ duyệt',
+                'returning' => 'Đang trả hàng',
+                'approved' => 'Đã phê duyệt',
+                'rejected' => 'Từ chối',
+                'returned' => 'Đã trả hàng',
+                'refunded' => 'Đã hoàn tiền',
+            ];
+        @endphp
 
-    ];
-@endphp
-
-<li>
-    <strong>Trạng thái hiện tại:</strong>
-    <span class="badge bg-warning">
-        {{ $statusLabels[$return->status] ?? $return->status }}
-    </span>
-</li>
+        <li>
+            <strong>Trạng thái hiện tại:</strong>
+            <span class="badge bg-warning">
+                {{ $statusLabels[$return->status] ?? $return->status }}
+            </span>
+        </li>
     </ul>
 
-    <form action="{{ route('admin.returns.updateStatus', $return->id) }}" method="POST">
-    @csrf
-    <div class="form-group">
-        <label>Trạng thái mới</label>
-        <select name="status" class="form-control" required>
-            <option value="returned" {{ $return->status == 'returned' ? 'selected' : '' }}>Chờ duyệt</option>
-            <option value="approved" {{ $return->status == 'approved' ? 'selected' : '' }}>Đã duyệt</option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-success mt-2">Cập nhật trạng thái</button>
-</form>
-
+    {{-- Chỉ hiển thị form cập nhật nếu đang ở trạng thái pending --}}
+    @if ($return->status === 'pending')
+        <form action="{{ route('admin.returns.updateStatus', $return->id) }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label>Trạng thái mới</label>
+                <select name="status" class="form-control" required>
+                    <option value="returning">Đang trả hàng</option>
+                    <option value="approved">Đã phê duyệt</option>
+                    <option value="rejected">Từ chối</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success mt-2">Cập nhật trạng thái</button>
+        </form>
+    @else
+        <p class="text-muted">Không thể cập nhật trạng thái khi đơn không ở trạng thái <strong>Chờ duyệt</strong>.</p>
+    @endif
 </div>
 @endsection

@@ -40,14 +40,30 @@ class OrderController extends \App\Http\Controllers\Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    public function edit(Order $order)
-    {
-        $order->load(['coupon']); // Load relationship với bảng coupons
-        $users = User::all();
-        $coupons = Coupon::all();
-        $paymentMethods = PaymentMethod::all();
-        return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods'));
-    }
+public function edit(Order $order)
+{
+    $order->load(['coupon']); // Load relationship với bảng coupons
+    $users = User::all();
+    $coupons = Coupon::all();
+    $paymentMethods = PaymentMethod::all();
+
+    // Thêm danh sách các trạng thái để hiển thị đúng label trong view
+    $statuses = [
+        'pending' => 'Chờ xử lý',
+        'confirmed' => 'Đã xác nhận',
+        'shipping' => 'Đã giao cho ĐVVC',
+        'delivering' => 'Đang giao',
+        'received' => 'Đã nhận',
+        'completed' => 'Hoàn thành',
+        'cancelled' => 'Đã hủy',
+        'returning' => 'Đang trả hàng',
+        'approved' => 'Đã trả hàng',
+        'rejected' => 'Từ chối trả',
+    ];
+
+    return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods', 'statuses'));
+}
+
 
     public function update(Request $request, Order $order)
     {
@@ -59,7 +75,7 @@ class OrderController extends \App\Http\Controllers\Controller
             'recipient_name' => 'required|string|max:255',
             'recipient_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
             'recipient_address' => 'required|string|max:255',
-            'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled',
+'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled,returning,approved,rejected',
             'cancel_reason' => 'nullable|string|max:255',
             'cancel_note' => 'nullable|string',
             'discount_id' => 'nullable|exists:coupons,id',
