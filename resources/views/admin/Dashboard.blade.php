@@ -1,17 +1,16 @@
 @extends('admin.layouts.main')
 @section('content')
-<div class="row">
 
-    <div class="col-sm-6 col-xxl-3 col-lg-6">
-        <div class="main-tiles border-5 border-0 card-hover card o-hidden">
+
+<div class="row g-3"> <!-- Thêm khoảng cách giữa các phần với g-3 -->
+    <!-- Tổng quan thống kê -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="main-tiles border-0 card-hover card o-hidden">
             <div class="custome-1-bg b-r-4 card-body">
                 <div class="media align-items-center static-top-widget">
                     <div class="media-body p-0">
                         <span class="m-0">Total Revenue</span>
-                        <h4 class="mb-0 counter">{{ number_format($totalRevenue) }} đ
-                            <span class="badge badge-light-primary grow">
-                                <i data-feather="trending-up"></i>+8.5%</span>
-                        </h4>
+                        <h4 class="mb-0 counter">{{ number_format($totalRevenue) }} đ</h4>
                     </div>
                     <div class="align-self-center text-center">
                         <i class="ri-database-2-line"></i>
@@ -21,16 +20,13 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-xxl-3 col-lg-6">
-        <div class="main-tiles border-5 card-hover border-0 card o-hidden">
+    <div class="col-sm-6 col-lg-3">
+        <div class="main-tiles border-0 card-hover card o-hidden">
             <div class="custome-2-bg b-r-4 card-body">
                 <div class="media static-top-widget">
                     <div class="media-body p-0">
                         <span class="m-0">Total Orders</span>
-                        <h4 class="mb-0 counter">{{ $totalOrders }}
-                            <span class="badge badge-light-danger grow">
-                                <i data-feather="trending-down"></i>-1.5%</span>
-                        </h4>
+                        <h4 class="mb-0 counter">{{ $totalOrders }}</h4>
                     </div>
                     <div class="align-self-center text-center">
                         <i class="ri-shopping-bag-3-line"></i>
@@ -40,15 +36,14 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-xxl-3 col-lg-6">
-        <div class="main-tiles border-5 card-hover border-0 card o-hidden">
+    <div class="col-sm-6 col-lg-3">
+        <div class="main-tiles border-0 card-hover card o-hidden">
             <div class="custome-3-bg b-r-4 card-body">
                 <div class="media static-top-widget">
                     <div class="media-body p-0">
                         <span class="m-0">Total Products</span>
                         <h4 class="mb-0 counter">{{ $totalProducts }}
-                            <a href="{{ route('products.create') }}" class="badge badge-light-secondary grow">
-                                ADD NEW</a>
+                            <a href="{{ route('products.create') }}" class="badge badge-light-secondary grow">ADD NEW</a>
                         </h4>
                     </div>
                     <div class="align-self-center text-center">
@@ -59,16 +54,13 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-xxl-3 col-lg-6">
-        <div class="main-tiles border-5 card-hover border-0 card o-hidden">
+    <div class="col-sm-6 col-lg-3">
+        <div class="main-tiles border-0 card-hover card o-hidden">
             <div class="custome-4-bg b-r-4 card-body">
                 <div class="media static-top-widget">
                     <div class="media-body p-0">
                         <span class="m-0">Total Customers</span>
-                        <h4 class="mb-0 counter">{{ $totalCustomers }}
-                            <span class="badge badge-light-success grow">
-                                <i data-feather="trending-up"></i>+3.2%</span>
-                        </h4>
+                        <h4 class="mb-0 counter">{{ $totalCustomers }}</h4>
                     </div>
                     <div class="align-self-center text-center">
                         <i class="ri-user-add-line"></i>
@@ -78,775 +70,290 @@
         </div>
     </div>
 
-</div>
-
-<div class="col-12">
-    <div class="card o-hidden card-hover">
-        <div class="card-header border-0 pb-1">
-            <div class="card-header-title p-0">
-                <h4>Encryption-Shop</h4>
+    <!-- Revenue Report -->
+    <div class="col-xl-6">
+        <div class="card o-hidden card-hover">
+            <div class="card-header border-0 pb-1">
+                <div class="card-header-title">
+                    <h4>Revenue Report</h4>
+                </div>
             </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="category-slider no-arrow">
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="https://cdn-icons-png.flaticon.com/512/892/892458.png" class="img-fluid" alt="">
-
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Men's T-shirt</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="https://cdn-icons-png.flaticon.com/512/891/891462.png" class="img-fluid" alt="">
-
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Beverages</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/meats.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Meats & Seafood</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/breakfast.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Breakfast</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/frozen.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Frozen Foods</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/milk.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Milk & Dairies</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/pet.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Pet Food</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/vegetable.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Vegetables & Fruit</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/cup.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Beverages</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/meats.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Meats & Seafood</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/breakfast.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Breakfast</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/frozen.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Frozen Foods</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/milk.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Milk & Dairies</h6>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="dashboard-category">
-                        <a href="javascript:void(0)" class="category-image">
-                            <img src="assets/svg/pet.svg" class="img-fluid" alt="">
-                        </a>
-                        <a href="javascript:void(0)" class="category-name">
-                            <h6>Pet Food</h6>
-                        </a>
-                    </div>
-                </div>
+            <div class="card-body p-0">
+                <div id="report-chart"></div>
             </div>
         </div>
     </div>
-</div>
-<!-- chart card section End -->
 
-
-<div class="col-xl-6">
-    <div class="card o-hidden card-hover">
-        <div class="card-header border-0 pb-1">
-            <div class="card-header-title">
-                <h4>Revenue Report</h4>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <div id="report-chart"></div>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- Best Selling Product Start -->
-<div class="col-xl-6 col-md-12">
-    <div class="card o-hidden card-hover">
-        <div class="card-header card-header-top card-header--2 px-0 pt-0">
-            <div class="card-header-title">
-                <h4>Best Selling Product</h4>
-            </div>
-
-            <div class="best-selling-box d-sm-flex d-none">
-                <span>Short By:</span>
-                <div class="dropdown">
-                    <button class="btn p-0 dropdown-toggle" type="button"
-                        id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                        data-bs-auto-close="true">Today</button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
+    <!-- Best Selling Product -->
+    <div class="col-xl-6">
+        <div class="card o-hidden card-hover">
+            <div class="card-header card-header-top card-header--2 px-0 pt-0">
+                <div class="card-header-title">
+                    <h4>Best Selling Product</h4>
                 </div>
             </div>
-        </div>
-
-        <div class="card-body p-0">
-            <div>
-                <div class="table-responsive">
-                    <table class="best-selling-table w-image
-                                            w-image
-                                            w-image table border-0">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div class="best-product-box">
-                                        <div class="product-image">
-                                            <img src="assets/images/product/1.png"
-                                                class="img-fluid" alt="Product">
-                                        </div>
-                                        <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>26-08-2022</h6>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Price</h6>
-                                        <h5>$29.00</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Orders</h6>
-                                        <h5>62</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Stock</h6>
-                                        <h5>510</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Amount</h6>
-                                        <h5>$1,798</h5>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="best-product-box">
-                                        <div class="product-image">
-                                            <img src="assets/images/product/2.png"
-                                                class="img-fluid" alt="Product">
-                                        </div>
-                                        <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>26-08-2022</h6>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Price</h6>
-                                        <h5>$29.00</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Orders</h6>
-                                        <h5>62</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Stock</h6>
-                                        <h5>510</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Amount</h6>
-                                        <h5>$1,798</h5>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="best-product-box">
-                                        <div class="product-image">
-                                            <img src="assets/images/product/3.png"
-                                                class="img-fluid" alt="Product">
-                                        </div>
-                                        <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>26-08-2022</h6>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Price</h6>
-                                        <h5>$29.00</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Orders</h6>
-                                        <h5>62</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Stock</h6>
-                                        <h5>510</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Amount</h6>
-                                        <h5>$1,798</h5>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Best Selling Product End -->
-
-
-<!-- Recent orders start-->
-<div class="col-xl-6">
-    <div class="card o-hidden card-hover">
-        <div class="card-header card-header-top card-header--2 px-0 pt-0">
-            <div class="card-header-title">
-                <h4>Recent Orders</h4>
-            </div>
-
-            <div class="best-selling-box d-sm-flex d-none">
-                <span>Short By:</span>
-                <div class="dropdown">
-                    <button class="btn p-0 dropdown-toggle" type="button"
-                        id="dropdownMenuButton2" data-bs-toggle="dropdown"
-                        data-bs-auto-close="true">Today</button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-body p-0">
-            <div>
+            <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="best-selling-table table border-0">
                         <tbody>
+                            @foreach($bestSellingProducts as $product)
                             <tr>
                                 <td>
                                     <div class="best-product-box">
+                                        <div class="product-image">
+                                            <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid" alt="{{ $product->name }}">
+                                        </div>
                                         <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>#64548</h6>
+                                            <h5>{{ $product->name }}</h5>
+                                            <h6>{{ $product->created_at->format('d-m-Y') }}</h6>
                                         </div>
                                     </div>
                                 </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Date Placed</h6>
-                                        <h5>5/1/22</h5>
-                                    </div>
-                                </td>
-
                                 <td>
                                     <div class="product-detail-box">
                                         <h6>Price</h6>
-                                        <h5>$250.00</h5>
+                                        <h5>{{ number_format($product->sale_price ?? $product->price) }} đ</h5>
                                     </div>
                                 </td>
-
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Order Status</h6>
-                                        <h5>Completed</h5>
+                                        <h6>Orders</h6>
+                                        <h5>{{ $product->total_orders }}</h5>
                                     </div>
                                 </td>
-
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Payment</h6>
-                                        <h5 class="text-danger">Unpaid</h5>
+                                        <h6>Stock</h6>
+                                        <h5>{{ $product->stock ?? 'N/A' }}</h5>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="product-detail-box">
+                                        <h6>Amount</h6>
+                                        <h5>{{ number_format(($product->sale_price ?? $product->price) * $product->total_orders) }} đ</h5>
                                     </div>
                                 </td>
                             </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="best-product-box">
-                                        <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>26-08-2022</h6>
-                                        </div>
-                                    </div>
-                                </td>
-
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Date Placed</h6>
-                                        <h5>5/1/22</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Price</h6>
-                                        <h5>$250.00</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Order Status</h6>
-                                        <h5>Completed</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Payment</h6>
-                                        <h5 class="theme-color">Paid</h5>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="best-product-box">
-                                        <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>26-08-2022</h6>
-                                        </div>
-                                    </div>
-                                </td>
-
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Date Placed</h6>
-                                        <h5>5/1/22</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Price</h6>
-                                        <h5>$250.00</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Order Status</h6>
-                                        <h5>Completed</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Payment</h6>
-                                        <h5 class="theme-color">Paid</h5>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="best-product-box">
-                                        <div class="product-name">
-                                            <h5>Aata Buscuit</h5>
-                                            <h6>26-08-2022</h6>
-                                        </div>
-                                    </div>
-                                </td>
-
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Date Placed</h6>
-                                        <h5>5/1/22</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Price</h6>
-                                        <h5>$250.00</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Order Status</h6>
-                                        <h5>Completed</h5>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Payment</h6>
-                                        <h5 class="theme-color">Paid</h5>
-                                    </div>
-                                </td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Recent orders end-->
 
-<!-- Earning chart star-->
-<div class="col-xl-6">
-    <div class="card o-hidden card-hover">
-        <div class="card-header border-0 mb-0">
-            <div class="card-header-title">
-                <h4>Earning</h4>
+    <!-- Recent Orders -->
+    <div class="col-xl-6">
+        <div class="card o-hidden card-hover">
+            <div class="card-header card-header-top card-header--2 px-0 pt-0">
+                <div class="card-header-title">
+                    <h4>Recent Orders</h4>
+                </div>
             </div>
-        </div>
-        <div class="card-body p-0">
-            <div id="bar-chart-earning"></div>
-        </div>
-    </div>
-</div>
-<!-- Earning chart end-->
-
-
-<!-- Transactions start-->
-<div class="col-xxl-4 col-md-6">
-    <div class="card o-hidden card-hover">
-        <div class="card-header border-0">
-            <div class="card-header-title">
-                <h4>Transactions</h4>
-            </div>
-        </div>
-
-        <div class="card-body pt-0">
-            <div>
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="user-table transactions-table table border-0">
+                    <table class="best-selling-table table border-0">
                         <tbody>
+                            @forelse($recentOrders as $order)
                             <tr>
                                 <td>
-                                    <div class="transactions-icon">
-                                        <i class="ri-shield-line"></i>
-                                    </div>
-                                    <div class="transactions-name">
-                                        <h6>Wallets</h6>
-                                        <p>Starbucks</p>
+                                    <div class="best-product-box">
+                                        <div class="product-name">
+                                            <h5>{{ $order->user->name ?? 'Guest' }}</h5>
+                                            <h6>#{{ $order->id }}</h6>
+                                        </div>
                                     </div>
                                 </td>
-
-                                <td class="lost">-$74</td>
+                                <td>
+                                    <div class="product-detail-box">
+                                        <h6>Date Placed</h6>
+                                        <h5>{{ $order->created_at->format('d/m/Y') }}</h5>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="product-detail-box">
+                                        <h6>Price</h6>
+                                        <h5>{{ number_format($order->total_price) }} đ</h5>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="product-detail-box">
+                                        <h6>Order Status</h6>
+                                        <h5>{{ $order->status_label }}</h5>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="product-detail-box">
+                                        <h6>Payment</h6>
+                                        @php
+                                        $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                        @endphp
+                                        @if ($isPaid)
+                                        <span class="badge bg-success status-badge">Đã thanh toán</span>
+                                        @else
+                                        <span class="badge bg-warning text-dark status-badge">Chưa thanh toán</span>
+                                        @endif
+                                    </div>
+                                </td>
                             </tr>
+                            @empty
                             <tr>
-                                <td class="td-color-1">
-                                    <div class="transactions-icon">
-                                        <i class="ri-check-line"></i>
-                                    </div>
-                                    <div class="transactions-name">
-                                        <h6>Bank Transfer</h6>
-                                        <p>Add Money</p>
-                                    </div>
-                                </td>
-
-                                <td class="success">+$125</td>
+                                <td colspan="5" class="text-center">No recent orders.</td>
                             </tr>
-                            <tr>
-                                <td class="td-color-2">
-                                    <div class="transactions-icon">
-                                        <i class="ri-exchange-dollar-line"></i>
-                                    </div>
-                                    <div class="transactions-name">
-                                        <h6>Paypal</h6>
-                                        <p>Add Money</p>
-                                    </div>
-                                </td>
-
-                                <td class="lost">-$50</td>
-                            </tr>
-                            <tr>
-                                <td class="td-color-3">
-                                    <div class="transactions-icon">
-                                        <i class="ri-bank-card-line"></i>
-                                    </div>
-                                    <div class="transactions-name">
-                                        <h6>Mastercard</h6>
-                                        <p>Ordered Food</p>
-                                    </div>
-                                </td>
-
-                                <td class="lost">-$40</td>
-                            </tr>
-                            <tr>
-                                <td class="td-color-4 pb-0">
-                                    <div class="transactions-icon">
-                                        <i class="ri-bar-chart-grouped-line"></i>
-                                    </div>
-                                    <div class="transactions-name">
-                                        <h6>Transfer</h6>
-                                        <p>Refund</p>
-                                    </div>
-                                </td>
-
-                                <td class="success pb-0">+$90</td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Transactions end-->
 
-<!-- visitors chart start-->
-<div class="col-xxl-4 col-md-6">
-    <div class="h-100">
+    <!-- Transactions -->
+    <div class="col-xl-6">
         <div class="card o-hidden card-hover">
             <div class="card-header border-0">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="card-header-title">
-                        <h4>Visitors</h4>
-                    </div>
+                <div class="card-header-title">
+                    <h4>Transactions</h4>
                 </div>
             </div>
             <div class="card-body pt-0">
-                <div class="pie-chart">
-                    <div id="pie-chart-visitors"></div>
+                <div class="table-responsive">
+                    <table class="user-table transactions-table table border-0">
+                        <tbody>
+                            @foreach ($transactions as $transaction)
+                            <tr>
+                                <td>
+                                    <div class="transactions-icon">
+                                        @if($transaction->paymentMethod->payment_type == 'momo')
+                                        <i class="ri-bank-card-line"></i>
+                                        @else
+                                        <i class="ri-money-dollar-circle-line"></i>
+                                        @endif
+                                    </div>
+                                    <div class="transactions-name">
+                                        <h6>{{ strtoupper($transaction->paymentMethod->payment_type) }}</h6>
+                                        <p>{{ $transaction->paymentMethod->description }}</p>
+                                    </div>
+                                </td>
+
+                                <td class="success">+ {{ number_format($transaction->total_amount) }} đ</td>
+                            </tr>
+                            @endforeach
+
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<!-- visitors chart end-->
-
-
-<!-- To Do List start-->
-<div class="col-xxl-4 col-md-6">
-    <div class="card o-hidden card-hover">
-        <div class="card-header border-0">
-            <div class="card-header-title">
-                <h4>To Do List</h4>
-            </div>
-        </div>
-
-        <div class="card-body pt-0">
-            <ul class="to-do-list">
-                <li class="to-do-item">
-                    <div class="form-check user-checkbox">
-                        <input class="checkbox_animated check-it" type="checkbox" value=""
-                            id="flexCheckDefault">
-                    </div>
-                    <div class="to-do-list-name">
-                        <strong>Pick up kids from school</strong>
-                        <p>8 Hours</p>
-                    </div>
-                </li>
-                <li class="to-do-item">
-                    <div class="form-check user-checkbox">
-                        <input class="checkbox_animated check-it" type="checkbox" value=""
-                            id="flexCheckDefault1">
-                    </div>
-                    <div class="to-do-list-name">
-                        <strong>Prepare or presentation.</strong>
-                        <p>8 Hours</p>
-                    </div>
-                </li>
-                <li class="to-do-item">
-                    <div class="form-check user-checkbox">
-                        <input class="checkbox_animated check-it" type="checkbox" value=""
-                            id="flexCheckDefault2">
-                    </div>
-                    <div class="to-do-list-name">
-                        <strong>Create invoice</strong>
-                        <p>8 Hours</p>
-                    </div>
-                </li>
-                <li class="to-do-item">
-                    <div class="form-check user-checkbox">
-                        <input class="checkbox_animated check-it" type="checkbox" value=""
-                            id="flexCheckDefault3">
-                    </div>
-                    <div class="to-do-list-name">
-                        <strong>Meeting with Alisa</strong>
-                        <p>8 Hours</p>
-                    </div>
-                </li>
-
-                <li class="to-do-item">
-                    <form class="row g-2">
-                        <div class="col-8">
-                            <input type="text" class="form-control" id="name"
-                                placeholder="Enter Task Name">
-                        </div>
-                        <div class="col-4">
-                            <button type="submit" class="btn btn-primary w-100 h-100">Add
-                                task</button>
-                        </div>
-                    </form>
-                </li>
-            </ul>
         </div>
     </div>
 </div>
 @endsection
+
 @push('scripts')
-<!-- Import ApexCharts -->
-<script src="/path/to/apex-chart.js"></script>
-
+<script src="{{ asset('js/apexcharts.min.js') }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var options = {
-        chart: {
-            type: 'line',
-            height: 350
-        },
-        series: [{
-            name: 'Doanh thu',
-            data: @json($revenues)
-        }],
-        xaxis: {
-            categories: @json($months)
-        }
-    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cấu hình biểu đồ
+        var options = {
+            chart: {
+                type: 'line',
+                height: 400,
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800,
+                },
+                dropShadow: {
+                    enabled: true,
+                    top: 2,
+                    left: 2,
+                    blur: 4,
+                    opacity: 0.2,
+                },
+            },
+            series: [{
+                name: 'Doanh thu',
+                data: @json($revenues ?? [0]), // Fallback nếu $revenues rỗng
+            }],
+            xaxis: {
+                categories: @json($months ?? ['']), // Fallback nếu $months rỗng
+                labels: {
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 400,
+                    },
+                },
+                title: {
+                    text: 'Tháng',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600,
+                    },
+                },
+            },
+            yaxis: {
+                title: {
+                    text: 'Doanh thu (₫)',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600,
+                    },
+                },
+                labels: {
+                    formatter: function(value) {
+                        return new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                        }).format(value);
+                    },
+                },
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3,
+            },
+            colors: ['#4e73df'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3,
+                    stops: [0, 90, 100],
+                },
+            },
+            markers: {
+                size: 5,
+                hover: {
+                    size: 8,
+                },
+            },
+            grid: {
+                borderColor: '#e7e7e7',
+                strokeDashArray: 4,
+            },
+            tooltip: {
+                theme: 'light',
+                y: {
+                    formatter: function(value) {
+                        return new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                        }).format(value);
+                    },
+                },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+        };
 
-    var chart = new ApexCharts(document.querySelector("#report-chart"), options);
-    chart.render();
-});
+        try {
+            var chart = new ApexCharts(document.querySelector("#report-chart"), options);
+            chart.render();
+        } catch (error) {
+            console.error('Error rendering ApexCharts:', error);
+        }
+    });
 </script>
 @endpush
-
