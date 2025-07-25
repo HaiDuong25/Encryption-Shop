@@ -8,7 +8,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('return_requests', function (Blueprint $table) {
-            $table->string('bank_account_name')->nullable()->after('payment_method');
+            $table->string('bank_account_name')->nullable()->after('status');
             $table->string('bank_account_number')->nullable()->after('bank_account_name');
         });
     }
