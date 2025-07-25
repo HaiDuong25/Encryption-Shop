@@ -206,6 +206,24 @@
                                             </div>
                                         </div>
                         @endif
+
+                        <!-- Categories/Tags (Optional for future) -->
+                        <div class="categories bg-primary bg-gradient rounded-4 p-4 text-white">
+                            <h5 class="fw-bold mb-4">
+                                <i class="fa-solid fa-tags me-2"></i>
+                                Chủ đề phổ biến
+                            </h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                @php
+                                    $tags = ['Thời trang', 'Xu hướng', 'Phong cách', 'Bí quyết', 'Outfit', 'Street Style', 'Mùa hè', 'Thu đông'];
+                                @endphp
+                                @foreach($tags as $tag)
+                                    <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-semibold">
+                                        {{ $tag }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
