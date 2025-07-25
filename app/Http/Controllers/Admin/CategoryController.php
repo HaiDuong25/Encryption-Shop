@@ -38,21 +38,21 @@ class CategoryController extends \App\Http\Controllers\Controller
         $categories = Category::whereNull('parent_id')->get();
         return view('admin.categories.form', compact('categories'));
     }
-    
+
     public function show(Category $category)
     {
         $category->load('children', 'parent');
-        
+
         if (request()->ajax()) {
             return response()->json([
                 'success' => true,
                 'category' => $category
             ]);
         }
-        
+
         return view('admin.categories.index', compact('category'));
     }
-    
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -65,7 +65,7 @@ class CategoryController extends \App\Http\Controllers\Controller
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
         $category = Category::create($validated);
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -73,7 +73,7 @@ class CategoryController extends \App\Http\Controllers\Controller
                 'category' => $category
             ]);
         }
-        return redirect()->route('categories.index')->with('success', 'Danh mục được tạo thành công.');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục được tạo thành công.');
     }
     public function edit(Category $category)
     {
@@ -97,7 +97,7 @@ class CategoryController extends \App\Http\Controllers\Controller
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
         $category->update($validated);
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -105,23 +105,38 @@ class CategoryController extends \App\Http\Controllers\Controller
                 'category' => $category
             ]);
         }
-        return redirect()->route('categories.index')->with('success', 'Danh mục được cập nhật thành công.');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục được cập nhật thành công.');
     }
     public function destroy(Category $category)
-    {
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
-        }
-        $category->delete();
-        
+{
+    // Kiểm tra nếu danh mục có danh mục con
+    if ($category->children()->exists()) {
         if (request()->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Danh mục được xóa thành công.'
+                'success' => false,
+                'message' => 'Không thể xóa danh mục vì có danh mục con.'
             ]);
         }
-        return redirect()->route('categories.index')->with('success', 'Danh mục được xóa thành công.');
+
+        return redirect()->route('admin.categories.index')->with('error', 'Không thể xóa danh mục vì có danh mục con.');
     }
+
+    // Xóa ảnh nếu có
+    if ($category->image && Storage::disk('public')->exists($category->image)) {
+        Storage::disk('public')->delete($category->image);
+    }
+
+    $category->delete();
+
+    if (request()->ajax()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Danh mục được xóa thành công.'
+        ]);
+    }
+
+    return redirect()->route('admin.categories.index')->with('success', 'Danh mục được xóa thành công.');
+}
 
     /**
      * Show form to create parent category
@@ -145,7 +160,7 @@ class CategoryController extends \App\Http\Controllers\Controller
         $validated['parent_id'] = null;
 
         $category = Category::create($validated);
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -154,6 +169,6 @@ class CategoryController extends \App\Http\Controllers\Controller
             ]);
         }
 
-        return redirect()->route('categories.index')->with('success', 'Danh mục cha được tạo thành công.');
+        return redirect()->route('admin.categories.index')->with('success', 'Danh mục cha được tạo thành công.');
     }
 }

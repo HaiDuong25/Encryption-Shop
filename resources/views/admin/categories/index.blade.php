@@ -11,11 +11,11 @@
                     <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                         <h5>Danh sách danh mục</h5>
                         <div class="right-options d-flex gap-2 align-items-center">
-                            <a class="btn btn-solid btn-sm" href="{{ route('categories.create') }}">Thêm danh mục</a>
+                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create') }}">Thêm danh mục</a>
                         </div>
                     </div>
 
-                    <form action="{{ route('categories.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                    <form action="{{ route('admin.categories.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
                         <select name="parent_id" class="form-select" style="width:200px;">
                             <option value="">-- Danh mục cha --</option>
                             @foreach ($parentCategories as $parent)
@@ -84,7 +84,7 @@
                                         </td>
                                         <td>
                                             <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
-                                                <li><a href="{{ route('categories.edit', $parent) }}"><i class="ri-pencil-line"></i></a></li>
+                                                <li><a href="{{ route('admin.categories.edit', $parent) }}"><i class="ri-pencil-line"></i></a></li>
                                                 <li>
                                                     <button type="button" class="btn btn-link p-0 text-danger delete-btn" data-id="{{ $parent->id }}" data-name="{{ $parent->name }}">
                                                         <i class="ri-delete-bin-line"></i>
@@ -110,7 +110,7 @@
                                             </td>
                                             <td>
                                                 <ul class="d-flex justify-content-center gap-2 list-unstyled mb-0">
-                                                    <li><a href="{{ route('categories.edit', $child) }}"><i class="ri-pencil-line"></i></a></li>
+                                                    <li><a href="{{ route('admin.categories.edit', $child) }}"><i class="ri-pencil-line"></i></a></li>
                                                     <li>
                                                         <button type="button" class="btn btn-link p-0 text-danger delete-btn" data-id="{{ $child->id }}" data-name="{{ $child->name }}">
                                                             <i class="ri-delete-bin-line"></i>
@@ -169,32 +169,32 @@
                 }
             }
         }
-        
+
         // AJAX Delete functionality
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const categoryId = this.dataset.id;
                 const categoryName = this.dataset.name;
-                
+
                 if (confirm(`Bạn có chắc muốn xóa danh mục "${categoryName}"?`)) {
                     // Show loading state
                     this.innerHTML = '<i class="ri-loader-4-line"></i>';
                     this.disabled = true;
-                    
-                    fetch(`/admin/categories/${categoryId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        }
-                    })
+
+                    fetch(`{{ route('admin.categories.destroy', ':id') }}`.replace(':id', categoryId), {
+    method: 'DELETE',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    }
+})
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             // Remove the row from table
                             const row = this.closest('tr');
                             row.remove();
-                            
+
                             // Show success message
                             const alertDiv = document.createElement('div');
                             alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
@@ -203,7 +203,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             `;
                             document.querySelector('.table-responsive').before(alertDiv);
-                            
+
                             // Auto hide after 3 seconds
                             setTimeout(() => {
                                 if (alertDiv.parentNode) {
