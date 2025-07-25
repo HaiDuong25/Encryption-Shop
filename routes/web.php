@@ -35,7 +35,7 @@ use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
 use App\Http\Controllers\Client\NewsController as ClientNewsController;
 use App\Http\Controllers\Client\RateController as ClientRateController;
-
+use App\Http\Controllers\Client\ReturnRequestController;
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
 Route::get('/login', [AuthController::class, 'index'])->name('login.form');
@@ -230,4 +230,15 @@ Route::middleware(['auth'])->group(function () {
         'except' => []
     ]);
     Route::patch('addresses/{address}/set-default', [ClientShippingAddressController::class, 'setDefault'])->name('client.addresses.set-default');
+
+
+        // Trả hàng (client)
+    Route::prefix('returns')->name('client.returns.')->group(function () {
+        Route::get('/', [ReturnRequestController::class, 'index'])->name('index');
+        Route::get('/create', [ReturnRequestController::class, 'create'])->name('create');
+        Route::post('/', [ReturnRequestController::class, 'store'])->name('store');
+        Route::get('/{id}', [ReturnRequestController::class, 'show'])->name('show');
+    });
+
+
 });

@@ -18,22 +18,33 @@
                 Không có
             @endif
         </li>
-        <li><strong>Trạng thái hiện tại:</strong> <span class="badge bg-warning">{{ $return->status }}</span></li>
+@php
+    $statusLabels = [
+        'returned' => 'Chờ duyệt',
+        'approved' => 'Đã chấp nhận',
+
+    ];
+@endphp
+
+<li>
+    <strong>Trạng thái hiện tại:</strong>
+    <span class="badge bg-warning">
+        {{ $statusLabels[$return->status] ?? $return->status }}
+    </span>
+</li>
     </ul>
 
     <form action="{{ route('admin.returns.updateStatus', $return->id) }}" method="POST">
-        @csrf
-        <div class="form-group">
-            <label>Trạng thái mới</label>
-            <select name="status" class="form-control" required>
-                <option value="pending" {{ $return->status == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
-                <option value="approved" {{ $return->status == 'approved' ? 'selected' : '' }}>Đã chấp nhận</option>
-                <option value="rejected" {{ $return->status == 'rejected' ? 'selected' : '' }}>Từ chối</option>
-                <option value="returned" {{ $return->status == 'returned' ? 'selected' : '' }}>Đã nhận hàng</option>
-                <option value="refunded" {{ $return->status == 'refunded' ? 'selected' : '' }}>Đã hoàn tiền</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-success mt-2">Cập nhật trạng thái</button>
-    </form>
+    @csrf
+    <div class="form-group">
+        <label>Trạng thái mới</label>
+        <select name="status" class="form-control" required>
+            <option value="returned" {{ $return->status == 'returned' ? 'selected' : '' }}>Chờ duyệt</option>
+            <option value="approved" {{ $return->status == 'approved' ? 'selected' : '' }}>Đã duyệt</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success mt-2">Cập nhật trạng thái</button>
+</form>
+
 </div>
 @endsection

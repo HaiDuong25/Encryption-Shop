@@ -37,4 +37,9 @@ public function variant()
     {
         return $this->belongsTo(Order::class);
     }
+public function returnRequest()
+{
+    return $this->hasOne(ReturnRequest::class);
+}
+
 }
