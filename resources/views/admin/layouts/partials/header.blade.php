@@ -190,14 +190,14 @@
                                 <li>
                                     <a href="{{ route('users.edit' , auth()->user()->id) }}">
                                         <i data-feather="settings"></i>
-                                        <span>Settings</span>
+                                        <span>Tài khoản</span>
                                     </a>
                                 </li>
                                 <li>
                                     <a data-bs-toggle="modal" data-bs-target="#staticBackdrop"
                                         href="javascript:void(0)">
                                         <i data-feather="log-out"></i>
-                                        <span>Log out</span>
+                                        <span>Đăng xuất</span>
                                     </a>
                                 </li>
                             </ul>
