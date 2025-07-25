@@ -30,8 +30,23 @@
         color: #f5c518;
         font-size: 18px;
     }
+         .status-badge {
+            font-size: 0.875rem;
+            padding: 0.35em 0.65em;
+            font-weight: 500;
+            border-radius: 4px;
+        }
+
+        .bg-purple {
+            background-color: #8b5cf6 !important;
+        }
+
+        .bg-cyan {
+            background-color: #06b6d4 !important;
+        }
 </style>
 @section('content')
+
     <div class="container py-4">
         @php
             $statuses = [
@@ -68,14 +83,24 @@
                     'delivering' => 'Đang giao',
                     'received' => 'Đã nhận',
                     'completed' => 'Hoàn thành',
+
                 ];
                 $trackerKeys = array_keys($trackerSteps);
                 $currentStep = array_search($statusValue, $trackerKeys);
             @endphp
-            @if ($isCancelled)
-                <div class="alert alert-danger text-center mb-2"><i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
-                </div>
-            @else
+          @if ($statusValue === 'cancelled')
+    <div class="alert alert-danger text-center mb-2">
+        <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
+    </div>
+@elseif ($statusValue === 'returning')
+    <div class="alert alert-warning text-center mb-2">
+        <i class="fas fa-undo me-1"></i> Đơn hàng đang trong quá trình trả hàng
+    </div>
+@elseif ($statusValue === 'approved')
+    <div class="alert alert-success text-center mb-2">
+        <i class="fas fa-check-circle me-1"></i> Đơn hàng đã được trả hàng thành công
+    </div>
+@else
                 <div class="progress" style="height: 10px;">
                     @foreach ($trackerSteps as $key => $label)
                         <div class="progress-bar {{ array_search($key, $trackerKeys) <= $currentStep ? 'bg-success' : 'bg-secondary' }}"
@@ -93,7 +118,13 @@
             @endif
         </div>
         {{-- Timeline chi tiết lịch sử trạng thái --}}
-        @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
+   @if (
+    !$isCancelled &&
+    $order->statusHistories &&
+    $order->statusHistories->count() &&
+    !in_array($order->status, ['returning', 'approved'])
+)
+
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
@@ -143,6 +174,10 @@
                                 <span class="badge bg-cyan">Đã nhận</span>
                             @elseif($statusValue == 'completed')
                                 <span class="badge bg-success">Hoàn thành</span>
+                            @elseif($statusValue == 'returning')
+                                <span class="badge bg-warning text-dark">Đang trả hàng</span>
+                            @elseif($statusValue == 'approved')
+                                <span class="badge bg-success">Đã phê duyệt</span>
                             @else
                                 <span class="badge bg-secondary">{{ $statusValue }}</span>
                             @endif
@@ -360,20 +395,22 @@
                                                         </div>
                                                     @endif
                                                 @endif
-                                             @if ($statusValue === 'received' && !$item->returnRequest)
-    <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
-        class="btn btn-warning btn-sm mt-1">
-        Trả hàng
-    </a>
-@endif
+                                                @if ($statusValue === 'received' && !$item->returnRequest)
+                                                    <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
+                                                        class="btn btn-warning btn-sm mt-1">
+                                                        Trả hàng
+                                                    </a>
+                                                @endif
 
                                             </td>
                                             <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
                                         </tr>
+
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>

@@ -53,6 +53,7 @@ public function cancel(Request $request, Order $order)
             '4' => 'received',
             '5' => 'completed',
             '6' => 'cancelled',
+
         ];
         $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
     }
