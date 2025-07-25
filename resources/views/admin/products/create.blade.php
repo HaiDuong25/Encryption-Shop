@@ -268,7 +268,7 @@ function renderVariants() {
     let combos = [];
     sizes.forEach(s => { colors.forEach(c => combos.push([s, c])); });
     let html = `<div class="table-responsive"><table class="table theme-table table-bordered mt-2"><tr class="table-primary">
-        <th>STT</th><th>Size</th><th>Màu</th><th>SKU</th><th>Giá</th><th>Tồn kho</th><th>Ảnh</th></tr>`;
+        <th>STT</th><th>Size</th><th>Màu</th><th>SKU</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>Ảnh</th></tr>`;
     combos.forEach((arr, idx) => {
         html += `<tr>
             <td>${idx+1}</td>
@@ -276,6 +276,7 @@ function renderVariants() {
             <td><input type="hidden" name="variant_colors[${idx}]" value="${arr[1].id}">${arr[1].text}</td>
             <td><input type="text" name="variant_sku[${idx}]" class="form-control form-control-sm" placeholder="SKU"></td>
             <td><input type="number"  name="variant_price[${idx}]" class="form-control form-control-sm" placeholder="Giá"></td>
+            <td><input type="number" name="variant_sale_price[${idx}]" class="form-control form-control-sm" placeholder="Giá KM"></td>
             <td><input type="number" name="variant_stock[${idx}]" class="form-control form-control-sm" value="0" min="0"></td>
             <td><input type="file" name="variant_image[${idx}]" accept="image/*" class="form-control form-control-sm"></td>
         </tr>`;
@@ -288,22 +289,22 @@ function renderVariants() {
 // AJAX form submission
 document.getElementById('productForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     const form = this;
     const submitBtn = document.getElementById('submitBtn');
     const alertContainer = document.getElementById('alert-container');
-    
+
     // Show loading state
     const originalContent = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i data-feather="loader" class="rotating"></i> Đang lưu...';
     submitBtn.disabled = true;
-    
+
     // Clear previous alerts
     alertContainer.innerHTML = '';
-    
+
     // Create FormData for file upload
     const formData = new FormData(form);
-    
+
     fetch(form.action, {
         method: 'POST',
         body: formData,
@@ -321,7 +322,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             // Redirect after success
             setTimeout(() => {
                 window.location.href = data.redirect || '{{ route("products.index") }}';
@@ -343,7 +344,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
                     </div>
                 `;
             }
-            
+
             // Restore button state
             submitBtn.innerHTML = originalContent;
             submitBtn.disabled = false;
@@ -358,7 +359,7 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         `;
-        
+
         // Restore button state
         submitBtn.innerHTML = originalContent;
         submitBtn.disabled = false;
