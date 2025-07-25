@@ -17,10 +17,19 @@ class ReturnRequest extends Model
     'description',
     'image',
     'status',
+    'payment_method_id',
+    'bank_account_name',
+    'bank_account_number',
+
 ];
 
 
     public function user()       { return $this->belongsTo(User::class); }
     public function order()      { return $this->belongsTo(Order::class); }
     public function orderDetail(){ return $this->belongsTo(OrderDetail::class); }
+    public function paymentMethod()
+{
+    return $this->belongsTo(PaymentMethod::class);
+}
+
 }

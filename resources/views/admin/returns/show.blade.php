@@ -37,6 +37,20 @@
                         @endif
                     </td>
                 </tr>
+               <tr>
+    <th>Phương thức thanh toán</th>
+    <td>{{ $return->paymentMethod->payment_type ?? 'N/A' }}</td>
+</tr>
+
+<tr>
+    <th>Tên người nhận</th>
+    <td>{{ $return->bank_account_name ?? 'N/A' }}</td>
+</tr>
+<tr>
+    <th>Số tài khoản</th>
+    <td>{{ $return->bank_account_number ?? 'N/A' }}</td>
+</tr>
+
                 <tr>
                     <th>Trạng thái</th>
                     <td>
