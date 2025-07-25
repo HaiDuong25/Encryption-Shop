@@ -93,9 +93,9 @@
                                         $categories = Category::whereNull('parent_id')->with('children')->get();
                                     @endphp
                                     <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                        <span class="nav-link dropdown-toggle" role="button" id="dropdownDanhMuc" data-bs-toggle="dropdown" aria-expanded="false" data-href="{{ route('categories.index') }}">
                                             Danh mục quần áo
-                                        </a>
+                                        </span>
                                         <div class="dropdown-menu p-3" style="min-width: 600px;">
                                             <div class="d-flex flex-wrap category-columns">
                                         @foreach ($categories as $parent)
@@ -332,3 +332,28 @@
     border-radius: 4px;
 }
 </style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const danhMucToggle = document.getElementById('dropdownDanhMuc');
+
+        let isOpen = false;
+
+        danhMucToggle.addEventListener('click', function (e) {
+            if (!isOpen) {
+                e.preventDefault(); // mở dropdown lần đầu
+                isOpen = true;
+            } else {
+                // lần thứ 2 thì chuyển trang
+                window.location.href = danhMucToggle.getAttribute('data-href');
+            }
+        });
+
+        // Reset khi click ngoài menu
+        document.addEventListener('click', function (e) {
+            if (!danhMucToggle.contains(e.target)) {
+                isOpen = false;
+            }
+        });
+    });
+</script>
+

@@ -20,12 +20,15 @@ public function show($id)
 
     if ($category->children->count()) {
         $childIds = $category->children->pluck('id');
-        $products = Product::whereIn('category_id', $childIds)->get();
+        $products = Product::whereIn('category_id', $childIds)->paginate(12);
     } else {
-        $products = Product::where('category_id', $category->id)->get();
+        $products = Product::where('category_id', $category->id)->paginate(12);
     }
 
-    return view('client.categories.show', compact('category', 'products'));
+    // ✅ Truyền thêm $categories để xử lý dropdown nếu cần
+    $categories = Category::with('children')->whereNull('parent_id')->get();
+
+    return view('client.categories.show', compact('category', 'products', 'categories'));
 }
 
 }
