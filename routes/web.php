@@ -36,6 +36,7 @@ use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddre
 use App\Http\Controllers\Client\NewsController as ClientNewsController;
 use App\Http\Controllers\Client\RateController as ClientRateController;
 use App\Http\Controllers\Client\ReturnRequestController;
+use App\Http\Controllers\Client\CategoryClientController;
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
 Route::get('/login', [AuthController::class, 'index'])->name('login.form');
@@ -240,5 +241,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}', [ReturnRequestController::class, 'show'])->name('show');
     });
 
+    //danh mục client
+    Route::get('categories', [CategoryClientController::class, 'index'])->name('categories.index');
+    Route::get('category/{id}', [CategoryClientController::class, 'show'])->name('categories.show');
 
 });
