@@ -34,7 +34,7 @@ class ReturnRequestController extends Controller
         $paymentMethod = PaymentMethod::find($request->payment_method_id);
 
         // Nếu không phải COD thì bắt buộc phải có thông tin ngân hàng
-        if ($paymentMethod && $paymentMethod->code !== 'cod') {
+if ($paymentMethod && !str_contains(strtolower($paymentMethod->payment_type), 'cod')) {
             $request->validate([
                 'bank_account_name' => 'required|string|max:255',
                 'bank_account_number' => 'required|string|max:255',
