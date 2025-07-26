@@ -224,25 +224,28 @@
                 <img src="{{ asset('storage/' . $product->image) }}" class="thumb active" onclick="changeImage(this)">
                 @if($product->gallery)
                 @php
-                $galleryImages = json_decode($product->gallery);
-                $totalImages = count($galleryImages);
+                    $galleryImages = json_decode($product->gallery, true); // thêm `true` để trả về mảng
                 @endphp
+                @if(is_array($galleryImages) && count($galleryImages))
+                    @php
+                        $totalImages = count($galleryImages);
+                    @endphp
+                    @foreach ($galleryImages as $index => $img)
+                        <img src="{{ asset('storage/' . $img) }}"
+                            class="thumb {{ $index > 4 ? 'd-none' : '' }}"
+                            onclick="changeImage(this)"
+                            data-index="{{ $index + 1 }}">
+                    @endforeach
 
-                @foreach ($galleryImages as $index => $img)
-                <img src="{{ asset('storage/' . $img) }}"
-                    class="thumb {{ $index > 4 ? 'd-none' : '' }}"
-                    onclick="changeImage(this)"
-                    data-index="{{ $index + 1 }}"> {{-- +1 vì ảnh chính là index 0 --}}
-                @endforeach
-
-                @if ($totalImages > 4)
-                <div class="position-relative more-thumbs" onclick="changeImageByIndex(5)">
-                    <img src="{{ asset('storage/' . $galleryImages[4]) }}" class="thumb" style="opacity: 0.6;">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold"
-                        style="background-color: rgba(0,0,0,0.5); font-size: 14px;">
-                        +{{ $totalImages - 4 }}
-                    </div>
-                </div>
+                    @if ($totalImages > 4)
+                        <div class="position-relative more-thumbs" onclick="changeImageByIndex(5)">
+                            <img src="{{ asset('storage/' . $galleryImages[4]) }}" class="thumb" style="opacity: 0.6;">
+                            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold"
+                                style="background-color: rgba(0,0,0,0.5); font-size: 14px;">
+                                +{{ $totalImages - 4 }}
+                            </div>
+                        </div>
+                    @endif
                 @endif
                 @endif
             </div>
