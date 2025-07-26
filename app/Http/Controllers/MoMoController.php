@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Traits\ClearsCheckoutSession;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Cart;
@@ -13,6 +14,7 @@ use App\Models\CouponUse;
 
 class MoMoController extends Controller
 {
+    use ClearsCheckoutSession;
     // Thử credentials khác có thể hoạt động
     private $partnerCode = 'MOMOBKUN20180529';
     private $accessKey = 'klm05TvNBzhg7h7j';
@@ -136,7 +138,8 @@ class MoMoController extends Controller
                     // Thanh toán thành công - tạo đơn hàng
                     $order = $this->createOrder($transId);
                     if ($order) {
-                        Session::forget(['order_data', 'momo_order_id', 'momo_request_id']);
+                        // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
+                        $this->clearCheckoutSession();
                         return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán thành công!');
                     } else {
                         return redirect()->route('cart.checkout')->with('error', 'Có lỗi xảy ra khi tạo đơn hàng');
@@ -247,8 +250,14 @@ class MoMoController extends Controller
                 }
             }
 
-            // Xóa giỏ hàng
-            Cart::where('user_id', $user->id)->delete();
+            // Xóa chỉ những sản phẩm đã thanh toán khỏi giỏ hàng (giống như COD)
+            $selectedCartItems = Session::get('selected_cart_items', []);
+            if (!empty($selectedCartItems)) {
+                Cart::where('user_id', $user->id)->whereIn('id', $selectedCartItems)->delete();
+            } else {
+                // Fallback: xóa tất cả nếu không có selected_items
+                Cart::where('user_id', $user->id)->delete();
+            }
 
             // GHI NHẬN VIỆC SỬ DỤNG COUPON VÀO DATABASE
             if (!empty($orderData['coupon_code']) && $orderData['discount'] > 0) {

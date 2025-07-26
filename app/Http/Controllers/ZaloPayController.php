@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Traits\ClearsCheckoutSession;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Cart;
@@ -17,6 +18,7 @@ use App\Models\ProductVariant;
 
 class ZaloPayController extends Controller
 {
+    use ClearsCheckoutSession;
     // Thông tin cấu hình ZaloPay Sandbox - sử dụng credentials từ script test thành công
     private $appid = "2553"; // ID ứng dụng do ZaloPay cấp (từ script test thành công)
     private $key1 = "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL"; // Key1 dùng để ký dữ liệu gửi đi
@@ -110,7 +112,8 @@ class ZaloPayController extends Controller
             $order = $this->createOrder($apptransid);
             
             if ($order) {
-                Session::forget(['order_data', 'zalopay_order_data']);
+                // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
+                $this->clearCheckoutSession();
                 return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán ZaloPay thành công!');
             } else {
                 return redirect()->route('cart.checkout')->with('error', 'Có lỗi khi tạo đơn hàng sau thanh toán');
@@ -234,8 +237,14 @@ class ZaloPayController extends Controller
                 }
             }
 
-            // Xóa giỏ hàng
-            Cart::where('user_id', $user->id)->delete();
+            // Xóa chỉ những sản phẩm đã thanh toán khỏi giỏ hàng (giống như COD)
+            $selectedCartItems = Session::get('selected_cart_items', []);
+            if (!empty($selectedCartItems)) {
+                Cart::where('user_id', $user->id)->whereIn('id', $selectedCartItems)->delete();
+            } else {
+                // Fallback: xóa tất cả nếu không có selected_items
+                Cart::where('user_id', $user->id)->delete();
+            }
 
             // Cập nhật lượt sử dụng mã giảm giá nếu có
             if (!empty($orderData['coupon_code']) && $orderData['discount'] > 0) {

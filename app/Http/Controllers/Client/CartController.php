@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\ClearsCheckoutSession;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Cart;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 class CartController extends Controller
 {
+    use ClearsCheckoutSession;
 
     public function index(Request $request)
     {
@@ -236,8 +238,24 @@ class CartController extends Controller
         // Lấy danh sách ID sản phẩm được chọn từ request
         $selectedItems = $request->input('selected_items');
 
-        if (empty($selectedItems)) {
+        // Chỉ kiểm tra selected_items nếu đây là request từ form cart
+        // Không kiểm tra nếu đây là redirect từ thanh toán hoặc các trường hợp khác
+        if ($request->isMethod('post') && empty($selectedItems)) {
             return redirect()->route('cart.index')->with('error', 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+        }
+
+        // Nếu không có selected_items từ request nhưng có trong session thì dùng session
+        if (empty($selectedItems)) {
+            $selectedItems = session('selected_cart_items');
+        }
+
+        // Nếu vẫn không có selected_items, lấy tất cả cart items
+        if (empty($selectedItems)) {
+            $allCarts = Cart::where('user_id', Auth::id())->pluck('id')->toArray();
+            if (empty($allCarts)) {
+                return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống!');
+            }
+            $selectedItems = $allCarts;
         }
 
         // Chuyển đổi string thành array nếu cần
@@ -587,15 +605,8 @@ class CartController extends Controller
             Cart::where('user_id', Auth::id())->delete();
         }
 
-        session()->forget('cart');
-        session()->forget('selected_cart_items'); // Xóa session selected_items
-        session()->forget('voucher_discount');
-        session()->forget('voucher_code');
-        session()->forget('voucher_message');
-        session()->forget('voucher_error');
-
-        // Xóa session coupon sau khi đặt hàng thành công
-        session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
+        // Clear tất cả session liên quan đến checkout
+        $this->clearCheckoutSession();
 
         // Chuyển hướng sang trang success, truyền mã đơn hàng
         return redirect()->route('cart.success', ['order_id' => $order->id])
