@@ -137,9 +137,10 @@
                                     <a href="{{ route('client.products.show', $product->id) }}">
                                         <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid blur-up lazyload" alt="{{ $product->name }}">
                                     </a>
-                                    <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="position-absolute top-0 end-0 m-2">
+                                    <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="add-to-wishlist-form position-absolute top-0 end-0 m-2" data-id="{{ $product->id }}">
                                             @csrf
                                             <button
+                                                type="submit"
                                                 class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                                                 style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;"
                                                 onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white'; this.style.transform='scale(1.1)';"
@@ -147,7 +148,7 @@
                                                 title="Thêm vào yêu thích">
                                                 <i class="fa-solid fa-heart" style="font-size: 14px;"></i>
                                             </button>
-                                    </form>
+                                        </form>
                                 </div>
                             </div>
                             <div class="product-footer">
@@ -272,5 +273,40 @@
         });
 
     });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('.add-to-wishlist-form');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Ngăn load trang
+
+            const formData = new FormData(form);
+            const action = form.getAttribute('action');
+
+            fetch(action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success){
+                    alert('Đã thêm vào danh sách yêu thích!');
+                } else {
+                    alert(data.message || 'Thêm thất bại!');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Có lỗi xảy ra!');
+            });
+        });
+    });
+});
 </script>
 @endpush

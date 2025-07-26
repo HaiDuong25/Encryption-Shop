@@ -364,7 +364,7 @@
                     <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
                 </button>
             </form>
-            <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="mt-2">
+            <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="mt-2 add-to-wishlist-form">
                 @csrf
                 <button class="btn btn-outline-danger btn-sm wishlist-btn">💖 Thêm vào danh sách yêu thích</button>
             </form>
@@ -715,5 +715,45 @@
 
 
     feather.replace();
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('.add-to-wishlist-form');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const action = form.getAttribute('action');
+
+            fetch(action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert mt-3';
+                alertBox.innerText = data.message || (data.success ? 'Đã thêm vào danh sách yêu thích!' : 'Thêm thất bại!');
+                alertBox.classList.add(data.success ? 'alert-success' : 'alert-danger');
+                form.appendChild(alertBox);
+                setTimeout(() => alertBox.remove(), 3000);
+            })
+            .catch(error => {
+                console.error(error);
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert alert-danger mt-3';
+                alertBox.innerText = 'Có lỗi xảy ra!';
+                form.appendChild(alertBox);
+                setTimeout(() => alertBox.remove(), 3000);
+            });
+        });
+    });
+});
 </script>
 @endpush
