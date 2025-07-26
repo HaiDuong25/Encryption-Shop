@@ -22,12 +22,12 @@ public function index()
     $months = [];
     $revenues = [];
     for ($i = 1; $i <= 12; $i++) {
-        $months[] = Carbon::create()->month($i)->format('M');
-        $revenues[] = Order::whereMonth('created_at', $i)
-            ->whereYear('created_at', now()->year)
-            ->where('status', Order::STATUS_COMPLETED)
-            ->sum('total_price');
-    }
+    $months[] = 'Tháng ' . $i;
+    $revenues[] = Order::whereMonth('created_at', $i)
+        ->whereYear('created_at', now()->year)
+        ->where('status', Order::STATUS_COMPLETED)
+        ->sum('total_price');
+}
 
     $bestSellingProducts = Product::select('products.*')
         ->withCount(['orderDetails as total_orders' => function ($query) {

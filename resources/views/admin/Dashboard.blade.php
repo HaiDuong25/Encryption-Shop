@@ -1,15 +1,14 @@
 @extends('admin.layouts.main')
 @section('content')
 
-
-<div class="row g-3"> <!-- Thêm khoảng cách giữa các phần với g-3 -->
+<div class="row g-3">
     <!-- Tổng quan thống kê -->
     <div class="col-sm-6 col-lg-3">
         <div class="main-tiles border-0 card-hover card o-hidden">
             <div class="custome-1-bg b-r-4 card-body">
                 <div class="media align-items-center static-top-widget">
                     <div class="media-body p-0">
-                        <span class="m-0">Total Revenue</span>
+                        <span class="m-0">Tổng doanh thu</span>
                         <h4 class="mb-0 counter">{{ number_format($totalRevenue) }} đ</h4>
                     </div>
                     <div class="align-self-center text-center">
@@ -25,7 +24,7 @@
             <div class="custome-2-bg b-r-4 card-body">
                 <div class="media static-top-widget">
                     <div class="media-body p-0">
-                        <span class="m-0">Total Orders</span>
+                        <span class="m-0">Tổng đơn hàng</span>
                         <h4 class="mb-0 counter">{{ $totalOrders }}</h4>
                     </div>
                     <div class="align-self-center text-center">
@@ -41,9 +40,9 @@
             <div class="custome-3-bg b-r-4 card-body">
                 <div class="media static-top-widget">
                     <div class="media-body p-0">
-                        <span class="m-0">Total Products</span>
+                        <span class="m-0">Tổng sản phẩm</span>
                         <h4 class="mb-0 counter">{{ $totalProducts }}
-                            <a href="{{ route('products.create') }}" class="badge badge-light-secondary grow">ADD NEW</a>
+                            <a href="{{ route('products.create') }}" class="badge badge-light-secondary grow">THÊM MỚI</a>
                         </h4>
                     </div>
                     <div class="align-self-center text-center">
@@ -59,7 +58,7 @@
             <div class="custome-4-bg b-r-4 card-body">
                 <div class="media static-top-widget">
                     <div class="media-body p-0">
-                        <span class="m-0">Total Customers</span>
+                        <span class="m-0">Tổng khách hàng</span>
                         <h4 class="mb-0 counter">{{ $totalCustomers }}</h4>
                     </div>
                     <div class="align-self-center text-center">
@@ -70,12 +69,12 @@
         </div>
     </div>
 
-    <!-- Revenue Report -->
+    <!-- Báo cáo doanh thu -->
     <div class="col-xl-6">
         <div class="card o-hidden card-hover">
             <div class="card-header border-0 pb-1">
                 <div class="card-header-title">
-                    <h4>Revenue Report</h4>
+                    <h4>Báo cáo doanh thu</h4>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -84,12 +83,12 @@
         </div>
     </div>
 
-    <!-- Best Selling Product -->
+    <!-- Sản phẩm bán chạy -->
     <div class="col-xl-6">
         <div class="card o-hidden card-hover">
             <div class="card-header card-header-top card-header--2 px-0 pt-0">
                 <div class="card-header-title">
-                    <h4>Best Selling Product</h4>
+                    <h4>Sản phẩm bán chạy</h4>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -111,25 +110,19 @@
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Price</h6>
+                                        <h6>Giá</h6>
                                         <h5>{{ number_format($product->sale_price ?? $product->price) }} đ</h5>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Orders</h6>
+                                        <h6>Đơn hàng</h6>
                                         <h5>{{ $product->total_orders }}</h5>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Stock</h6>
-                                        <h5>{{ $product->stock ?? 'N/A' }}</h5>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="product-detail-box">
-                                        <h6>Amount</h6>
+                                        <h6>Doanh thu</h6>
                                         <h5>{{ number_format(($product->sale_price ?? $product->price) * $product->total_orders) }} đ</h5>
                                     </div>
                                 </td>
@@ -142,12 +135,12 @@
         </div>
     </div>
 
-    <!-- Recent Orders -->
+    <!-- Đơn hàng gần đây -->
     <div class="col-xl-6">
         <div class="card o-hidden card-hover">
             <div class="card-header card-header-top card-header--2 px-0 pt-0">
                 <div class="card-header-title">
-                    <h4>Recent Orders</h4>
+                    <h4>Đơn hàng gần đây</h4>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -159,32 +152,32 @@
                                 <td>
                                     <div class="best-product-box">
                                         <div class="product-name">
-                                            <h5>{{ $order->user->name ?? 'Guest' }}</h5>
+                                            <h5>{{ $order->user->name ?? 'Khách' }}</h5>
                                             <h6>#{{ $order->id }}</h6>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Date Placed</h6>
+                                        <h6>Ngày đặt</h6>
                                         <h5>{{ $order->created_at->format('d/m/Y') }}</h5>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Price</h6>
+                                        <h6>Giá trị</h6>
                                         <h5>{{ number_format($order->total_price) }} đ</h5>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Order Status</h6>
+                                        <h6>Trạng thái</h6>
                                         <h5>{{ $order->status_label }}</h5>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="product-detail-box">
-                                        <h6>Payment</h6>
+                                        <h6>Thanh toán</h6>
                                         @php
                                         $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                         @endphp
@@ -198,7 +191,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center">No recent orders.</td>
+                                <td colspan="5" class="text-center">Chưa có đơn hàng.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -208,12 +201,12 @@
         </div>
     </div>
 
-    <!-- Transactions -->
+    <!-- Giao dịch -->
     <div class="col-xl-6">
         <div class="card o-hidden card-hover">
             <div class="card-header border-0">
                 <div class="card-header-title">
-                    <h4>Transactions</h4>
+                    <h4>Giao dịch</h4>
                 </div>
             </div>
             <div class="card-body pt-0">
@@ -235,11 +228,9 @@
                                         <p>{{ $transaction->paymentMethod->description }}</p>
                                     </div>
                                 </td>
-
                                 <td class="success">+ {{ number_format($transaction->total_amount) }} đ</td>
                             </tr>
                             @endforeach
-
                         </tbody>
                     </table>
                 </div>
@@ -252,8 +243,7 @@
 @push('scripts')
 <script src="{{ asset('js/apexcharts.min.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cấu hình biểu đồ
+    document.addEventListener('DOMContentLoaded', function () {
         var options = {
             chart: {
                 type: 'line',
@@ -273,10 +263,10 @@
             },
             series: [{
                 name: 'Doanh thu',
-                data: @json($revenues ?? [0]), // Fallback nếu $revenues rỗng
+                data: @json($revenues ?? [0]),
             }],
             xaxis: {
-                categories: @json($months ?? ['']), // Fallback nếu $months rỗng
+                categories: @json($months ?? ['']),
                 labels: {
                     style: {
                         fontSize: '12px',
@@ -300,7 +290,7 @@
                     },
                 },
                 labels: {
-                    formatter: function(value) {
+                    formatter: function (value) {
                         return new Intl.NumberFormat('vi-VN', {
                             style: 'currency',
                             currency: 'VND'
@@ -335,7 +325,7 @@
             tooltip: {
                 theme: 'light',
                 y: {
-                    formatter: function(value) {
+                    formatter: function (value) {
                         return new Intl.NumberFormat('vi-VN', {
                             style: 'currency',
                             currency: 'VND'
@@ -352,7 +342,7 @@
             var chart = new ApexCharts(document.querySelector("#report-chart"), options);
             chart.render();
         } catch (error) {
-            console.error('Error rendering ApexCharts:', error);
+            console.error('Lỗi khi hiển thị biểu đồ:', error);
         }
     });
 </script>
