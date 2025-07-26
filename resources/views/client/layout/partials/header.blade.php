@@ -311,6 +311,14 @@
     border-right: none;
 }
 
+.category-parent {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: center;
+}
+
 /* Tên danh mục cha */
 .category-parent a {
     font-size: 16px;
