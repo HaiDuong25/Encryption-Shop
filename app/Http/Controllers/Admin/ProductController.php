@@ -275,16 +275,22 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Đã cập nhật sản phẩm!');
     }
 
-    public function destroy(Product $product)
-    {
+public function destroy(Product $product)
+{
+    try {
         $product->delete();
 
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã xóa sản phẩm!'
-            ]);
-        }
-        return back()->with('success', 'Đã xóa sản phẩm!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa sản phẩm!'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Lỗi khi xóa sản phẩm: ' . $e->getMessage()
+        ], 500);
     }
+}
+
+
 }
