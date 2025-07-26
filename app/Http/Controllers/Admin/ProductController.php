@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\Brand;
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -36,7 +37,6 @@ class ProductController extends Controller
         }
 
         $products = $query->latest()->paginate(15);
-        // ✅ Chỉ lấy danh mục con
         $categories = Category::whereNotNull('parent_id')->get();
 
         return view('admin.products.index', compact('products', 'categories'));
@@ -65,9 +65,46 @@ class ProductController extends Controller
         ]);
     }
 
+        public function edit(Product $product)
+    {
+        $categories = Category::whereNotNull('parent_id')->get();
+        $brands = \App\Models\Brand::all();
+        $sizeAttr = Attribute::firstOrCreate(['name' => 'Size']);
+        $colorAttr = Attribute::firstOrCreate(['name' => 'Màu']);
+        $sizes = $sizeAttr->values;
+        $colors = $colorAttr->values;
+        $product->load('variants.attributeValues');
+        $variantData = $product->variants->map(function ($v) {
+            return [
+                'id' => $v->id,
+                'size_id' => $v->size_id,
+                'color_id' => $v->color_id,
+                'sku' => $v->sku,
+                'price' => $v->price,
+                'stock' => $v->stock,
+                'image' => $v->image
+            ];
+        })->values();
+
+        if (is_string($product->gallery)) {
+        $product->gallery = json_decode($product->gallery, true);
+        }
+
+        return view('admin.products.edit', [
+            'product' => $product,
+            'categories' => $categories,
+            'brands' => $brands,
+            'sizes' => $sizes,
+            'colors' => $colors,
+            'sizeAttributeId' => $sizeAttr->id,
+            'colorAttributeId' => $colorAttr->id,
+            'variantData' => $variantData, // thêm dòng này!
+        ]);
+    }
+    
     public function store(Request $request)
     {
-         $data = $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => [
                 'nullable',
@@ -97,50 +134,44 @@ class ProductController extends Controller
             'variant_sku' => 'array',
             'variant_image' => 'array',
             'material' => 'nullable|string|max:255',
-
         ]);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
         }
+
+        $galleryPaths = [];
         if ($request->hasFile('gallery')) {
-            $galleryPaths = [];
             foreach ($request->file('gallery') as $img) {
                 $galleryPaths[] = $img->store('products/gallery', 'public');
             }
-            $data['gallery'] = json_encode($galleryPaths);
         }
+        $data['gallery'] = json_encode($galleryPaths);
+
         $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
         $product = Product::create($data);
 
         $combinations = $this->cartesian([$request->sizes, $request->colors]);
         foreach ($combinations as $index => $combo) {
             $variantSku = $request->input("variant_sku.$index") ?: ($product->sku ? $product->sku . '-' : '') . implode('-', $combo);
-            $variantPrice = $request->input("variant_price.$index");
-            $variantSalePrice = $request->input("variant_sale_price.$index");
-            $variantStock = $request->input("variant_stock.$index");
-            $variantImage = null;
-            if ($request->hasFile("variant_image.$index")) {
-                $variantImage = $request->file("variant_image.$index")->store('variants', 'public');
-            }
+            $variantImage = $request->hasFile("variant_image.$index")
+                ? $request->file("variant_image.$index")->store('variants', 'public')
+                : null;
             $variant = $product->variants()->create([
-                'sku'   => strtoupper($variantSku),
-                'price' => $variantPrice ?: null,
-                'sale_price' => $variantSalePrice ?: null,
-                'stock' => $variantStock ?: 0,
+                'sku' => strtoupper($variantSku),
+                'price' => $request->input("variant_price.$index") ?? null,
+                'sale_price' => $request->input("variant_sale_price.$index") ?? null,
+                'stock' => $request->input("variant_stock.$index") ?? 0,
                 'image' => $variantImage,
             ]);
             $variant->attributeValues()->attach($combo);
         }
 
         if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã tạo sản phẩm và biến thể!',
-                'product' => $product
-            ]);
+            return response()->json(['success' => true, 'message' => 'Tạo sản phẩm thành công!', 'product' => $product]);
         }
-        return redirect()->route('products.index')->with('success', 'Đã tạo sản phẩm và biến thể!');
+
+        return redirect()->route('products.index')->with('success', 'Tạo sản phẩm thành công!');
     }
 
     private function cartesian($arrays)
@@ -156,38 +187,6 @@ class ProductController extends Controller
             $result = $tmp;
         }
         return $result;
-    }
-
-    public function edit(Product $product)
-    {
-        $categories = Category::whereNotNull('parent_id')->get();
-        $brands = \App\Models\Brand::all();
-        $sizeAttr = Attribute::firstOrCreate(['name' => 'Size']);
-        $colorAttr = Attribute::firstOrCreate(['name' => 'Màu']);
-        $sizes = $sizeAttr->values;
-        $colors = $colorAttr->values;
-        $product->load('variants.attributeValues');
-        $variantData = $product->variants->map(function ($v) {
-            return [
-                'id' => $v->id,
-                'size_id' => $v->size_id,
-                'color_id' => $v->color_id,
-                'sku' => $v->sku,
-                'price' => $v->price,
-                'stock' => $v->stock,
-                'image' => $v->image
-            ];
-        })->values();
-        return view('admin.products.edit', [
-            'product' => $product,
-            'categories' => $categories,
-            'brands' => $brands,
-            'sizes' => $sizes,
-            'colors' => $colors,
-            'sizeAttributeId' => $sizeAttr->id,
-            'colorAttributeId' => $colorAttr->id,
-            'variantData' => $variantData, // thêm dòng này!
-        ]);
     }
 
     public function update(Request $request, Product $product)
@@ -206,115 +205,78 @@ class ProductController extends Controller
             'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'sizes' => 'array|min:1',
-            'colors' => 'array|min:1',
-            'variant_price' => 'array',
-            'variant_stock' => 'array',
-            'variant_sku' => 'array',
-            'variant_image' => 'array',
-            'variant_sale_price' => 'array',
-            'old_variant_sale_price' => 'array',
-
+            'remove_gallery' => 'nullable|string',
         ]);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
+        } else {
+            $data['image'] = $product->image;
         }
-        if ($request->hasFile('gallery')) {
-            $galleryPaths = [];
-            foreach ($request->file('gallery') as $img) {
-                $galleryPaths[] = $img->store('products/gallery', 'public');
+
+        $existingGallery = is_array($product->gallery)
+            ? $product->gallery
+            : (is_string($product->gallery) ? json_decode($product->gallery, true) : []);
+
+        $removedGallery = explode(',', $request->input('remove_gallery', ''));
+
+        $updatedGallery = array_filter($existingGallery, function ($img) use ($removedGallery) {
+            return !in_array($img, $removedGallery);
+        });
+
+        foreach ($removedGallery as $imgPath) {
+            if (Storage::disk('public')->exists($imgPath)) {
+                Storage::disk('public')->delete($imgPath);
             }
-            $data['gallery'] = json_encode($galleryPaths);
         }
+
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $img) {
+                $updatedGallery[] = $img->store('products/gallery', 'public');
+            }
+        }
+
+        $data['gallery'] = json_encode(array_values($updatedGallery));
         $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
         $data['slug'] = $request->slug ? $request->slug : Str::slug($request->name);
 
         $product->update($data);
 
-        if ($request->has('variant_sizes')) {
-            $product->variants()->delete();
-            $sizes = $request->variant_sizes;
-            $colors = $request->variant_colors;
-            foreach ($sizes as $idx => $sizeId) {
-                $variant = $product->variants()->create([
-                    'size_id' => $sizeId,
-                    'color_id' => $colors[$idx],
-                    'sku' => $request->variant_sku[$idx] ?? null,
-                    'price' => $request->variant_price[$idx] ?? null,
-                    'sale_price' => $request->variant_sale_price[$idx] ?? null,
-                    'stock' => $request->variant_stock[$idx] ?? 0,
-                    'image' => $request->hasFile("variant_image.$idx")
-                        ? $request->file("variant_image.$idx")->store('variants', 'public')
-                        : null,
-                ]);
-            }
-        } else if ($request->has('old_variant_ids')) {
-            foreach ($request->old_variant_ids as $idx => $id) {
-                $variant = $product->variants()->find($id);
-                if ($variant) {
-                    $variant->sku = $request->old_variant_sku[$idx] ?? $variant->sku;
-                    $variant->price = $request->old_variant_price[$idx] ?? $variant->price;
-                    $variant->sale_price = $request->old_variant_sale_price[$idx] ?? $variant->sale_price;
-                    $variant->stock = $request->old_variant_stock[$idx] ?? $variant->stock;
-                    if ($request->hasFile("old_variant_image.$idx")) {
-                        $variant->image = $request->file("old_variant_image.$idx")->store('variants', 'public');
-                    }
-                    $variant->save();
-                }
-            }
-        }
+        // TODO: Cập nhật variant như trong code cũ, nếu cần thiết
 
         if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã cập nhật sản phẩm!',
-                'product' => $product
-            ]);
+            return response()->json(['success' => true, 'message' => 'Cập nhật sản phẩm thành công!', 'product' => $product]);
         }
-        return redirect()->route('products.index')->with('success', 'Đã cập nhật sản phẩm!');
+
+        return redirect()->route('products.index')->with('success', 'Cập nhật sản phẩm thành công!');
     }
 
-public function destroy(Product $product, Request $request)
-{
-    try {
-        $hasOrders = \DB::table('order_details')->where('product_id', $product->id)->exists();
-        $hasRates = \DB::table('rates')->where('product_id', $product->id)->exists();
+    public function destroy(Product $product, Request $request)
+    {
+        try {
+            $hasOrders = \DB::table('order_details')->where('product_id', $product->id)->exists();
+            $hasRates = \DB::table('rates')->where('product_id', $product->id)->exists();
 
-        if ($hasOrders || $hasRates) {
-            $reasons = [];
-            if ($hasOrders) $reasons[] = 'đơn hàng';
-            if ($hasRates) $reasons[] = 'đánh giá';
+            if ($hasOrders || $hasRates) {
+                $reasons = [];
+                if ($hasOrders) $reasons[] = 'dòn hàng';
+                if ($hasRates) $reasons[] = 'đánh giá';
 
-            if ($request->boolean('set_inactive')) {
-                $product->status = 'inactive';
-                $product->save();
+                if ($request->boolean('set_inactive')) {
+                    $product->status = 'inactive';
+                    $product->save();
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Sản phẩm đã được chuyển sang trạng thái ẩn.',
-                    'action' => 'set_inactive'
-                ]);
+                    return response()->json(['success' => true, 'message' => 'Sản phẩm đã được chuyển sang trạng thái ẩn.', 'action' => 'set_inactive']);
+                }
+
+                return response()->json(['success' => false, 'requiresConfirmation' => true, 'message' => 'Sản phẩm có ' . implode(' và ', $reasons) . '. Bạn có muốn chuyển sang trạng thái ẩn không?']);
             }
 
-            return response()->json([
-                'success' => false,
-                'requiresConfirmation' => true,
-                'message' => 'Sản phẩm có ' . implode(' và ', $reasons) . '. Bạn có muốn chuyển sang trạng thái ẩn không?'
-            ]);
+            $product->delete();
+
+            return response()->json(['success' => true, 'message' => 'Đã xóa sản phẩm!']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Lỗi khi xử lý: ' . $e->getMessage()]);
         }
-
-        $product->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Đã xóa sản phẩm!'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Lỗi khi xử lý: ' . $e->getMessage()
-        ]);
     }
-}
 }

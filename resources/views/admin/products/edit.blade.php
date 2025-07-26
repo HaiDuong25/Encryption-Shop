@@ -110,17 +110,19 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Thư viện ảnh (gallery)</label>
-                        <div class="mb-2 d-flex flex-wrap gap-2">
-                            @if($product->gallery && is_array($product->gallery))
-                                @foreach($product->gallery as $imgIdx => $img)
-                                    <div class="position-relative" style="display:inline-block;">
-                                        <img src="{{ asset('storage/'.$img) }}" width="70" class="border">
-                                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 delete-gallery-btn" data-img="{{ $img }}" style="padding:2px 6px; font-size:12px;">&times;</button>
-                                        <input type="hidden" name="old_gallery[]" value="{{ $img }}">
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
+                        <div class="row mb-2">
+    @if($product->gallery && is_array($product->gallery))
+        @foreach($product->gallery as $imgIdx => $img)
+        <div class="col-auto position-relative mb-2">
+            <img src="{{ asset('storage/'.$img) }}" class="border rounded" width="100" style="height: 100px; object-fit: cover;">
+            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 delete-gallery-btn"
+                data-img="{{ $img }}" style="padding:2px 6px; font-size:12px;">&times;</button>
+            <input type="hidden" name="old_gallery[]" value="{{ $img }}">
+        </div>
+        @endforeach
+    @endif
+</div>
+
                         <input type="file" class="form-control @error('gallery.*') is-invalid @enderror" name="gallery[]" accept="image/*" multiple>
                         @error('gallery.*')
                         <div class="invalid-feedback">{{ $message }}</div>
