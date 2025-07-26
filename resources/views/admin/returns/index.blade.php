@@ -36,7 +36,7 @@
                                     'returning' => ['label' => 'Đang trả hàng', 'class' => 'bg-info'],
                                     'approved' => ['label' => 'Đã trả hàng', 'class' => 'bg-success'],
                                     'rejected' => ['label' => 'Từ chối', 'class' => 'bg-danger'],
-                                    'returned' => ['label' => 'Đã trả hàng', 'class' => 'bg-secondary'],
+                                    'returned' => ['label' => 'Đã duyệt đơn', 'class' => 'bg-secondary'],
                                     'refunded' => ['label' => 'Đã hoàn tiền', 'class' => 'bg-success'],
                                 ];
                                 $status = $statusLabels[$return->status] ?? ['label' => ucfirst($return->status), 'class' => 'bg-light'];

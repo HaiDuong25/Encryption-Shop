@@ -60,7 +60,7 @@
                                 'returning' => 'Đang trả hàng',
                                 'approved' => 'Đã trả hàng',
                                 'rejected' => 'Từ chối',
-                                'returned' => 'Đã trả hàng',
+                                'returned' => 'Đã duyệt đơn',
                                 'refunded' => 'Đã hoàn tiền',
                             ];
                             $badgeColors = [
@@ -93,7 +93,7 @@
                                 <option value="returning">Chờ duyệt</option>
                                 <option value="approved">Đã trả hàng</option>
                                 <option value="rejected">Từ chối</option>
-                            </select>
+                              </select>
                         </div>
                         <div class="col-auto">
                             <button type="submit" class="btn btn-success">Cập nhật</button>

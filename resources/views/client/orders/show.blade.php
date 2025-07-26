@@ -37,36 +37,38 @@
         font-weight: 500;
         border-radius: 4px;
     }
-.status-badge {
-    font-weight: bold;
-    padding: 0.5em 0.75em;
-    border-radius: 0.5em;
-}
 
-.badge-refunded {
-    background-color: #17a2b8;
-    color: #fff;
-}
+    .status-badge {
+        font-weight: bold;
+        padding: 0.5em 0.75em;
+        border-radius: 0.5em;
+    }
 
-.badge-returning {
-    background-color: #ffc107;
-    color: #000;
-}
+    .badge-refunded {
+        background-color: #17a2b8;
+        color: #fff;
+    }
 
-.badge-refunded-approved {
-    background-color: #fd7e14;
-    color: #fff;
-}
+    .badge-returning {
+        background-color: #ffc107;
+        color: #000;
+    }
 
-.badge-paid {
-    background-color: #28a745;
-    color: #fff;
-}
+    .badge-refunded-approved {
+        background-color: #fd7e14;
+        color: #fff;
+    }
 
-.badge-unpaid {
-    background-color: #6c757d;
-    color: #fff;
-}
+    .badge-paid {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .badge-unpaid {
+        background-color: #6c757d;
+        color: #fff;
+    }
+
     .bg-purple {
         background-color: #8b5cf6 !important;
     }
@@ -86,7 +88,6 @@
                 'delivering' => 'Đang giao',
                 'received' => 'Đã nhận',
                 'completed' => 'Hoàn thành',
-
             ];
             $statusMap = [
                 '0' => 'pending',
@@ -116,7 +117,6 @@
                     'completed' => 'Hoàn thành',
                     'returning' => 'Đang trả hàng',
                     'approved' => 'Đã trả hàng',
-
                 ];
                 $trackerKeys = array_keys($trackerSteps);
                 $currentStep = array_search($statusValue, $trackerKeys);
@@ -227,31 +227,33 @@
                                     ? $statusMap[$order->status] ?? 'pending'
                                     : $order->status;
                             @endphp
-                           @switch($statusValue)
-    @case('refunded')
-    @case('returned') {{-- Đã trả hàng xong --}}
-        <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
-            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-        </span>
-        @break
+                            @switch($statusValue)
+                                @case('refunded')
+                                @case('returned')
+                                    {{-- Đã trả hàng xong --}}
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
 
-    @case('returning') {{-- Đang trả hàng --}}
-        <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-            {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
-        </span>
-        @break
+                                @case('returning')
+                                    {{-- Đang trả hàng --}}
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
 
-    @case('approved')
-        <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
-            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-        </span>
-        @break
+                                @case('approved')
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
 
-    @default
-        <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
-            {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
-        </span>
-@endswitch
+                                @default
+                                    <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
+                                        {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                                    </span>
+                            @endswitch
 
                         </div>
                         <div class="mb-2"><strong>Phương thức thanh toán:</strong>
