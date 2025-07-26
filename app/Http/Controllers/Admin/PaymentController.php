@@ -32,19 +32,19 @@ class PaymentController extends Controller
     public function confirm($id)
     {
         $payment = Payment::findOrFail($id);
-        
+
         if ($payment->status === 'completed') {
             return redirect()->back()->with('info', 'Thanh toán đã được xác nhận trước đó');
         }
-        
+
         $payment->status = 'completed';
         $payment->confirmed_at = now();
-        
+
         // Tạo transaction code nếu chưa có (đối với COD)
         if (!$payment->transaction_code) {
             $payment->transaction_code = 'COD-' . $payment->order_id . '-' . time();
         }
-        
+
         $payment->save();
 
         // Cập nhật trạng thái đơn hàng
@@ -53,7 +53,7 @@ class PaymentController extends Controller
             // Nếu là COD thì chuyển sang hoàn thành, còn lại thì xác nhận
             if ($payment->paymentMethod && strtolower($payment->paymentMethod->payment_type) === 'cod') {
                 $order->status = 'completed';
-                
+
                 // Tự động tạo hóa đơn cho đơn COD khi confirm
                 try {
                     $payment->generateInvoice();
@@ -80,8 +80,8 @@ class PaymentController extends Controller
     public function invoice($id)
     {
         $payment = Payment::with([
-            'order', 
-            'paymentMethod', 
+            'order',
+            'paymentMethod',
             'order.orderDetails.product.category',
             'order.orderDetails.variant.attributeValues.attribute'
         ])->findOrFail($id);
@@ -107,8 +107,8 @@ class PaymentController extends Controller
 public function exportPdf($id)
 {
     $payment = Payment::with([
-        'order', 
-        'paymentMethod', 
+        'order',
+        'paymentMethod',
         'order.orderDetails.product.category',
         'order.orderDetails.variant.attributeValues.attribute'
     ])->findOrFail($id);
@@ -120,40 +120,38 @@ public function exportPdf($id)
 /**
      * Tải hóa đơn đã được tạo tự động
      */
-    public function downloadInvoice($id)
-    {
-        $payment = Payment::findOrFail($id);
-        
-        // Kiểm tra quyền và trạng thái
-        if ($payment->status !== 'completed') {
+  public function downloadInvoice($id)
+{
+    $payment = Payment::findOrFail($id);
+
+    // ✅ Cho phép tải khi status là completed hoặc rejected
+    if (!in_array($payment->status, ['completed', 'rejected'])) {
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chỉ có thể tải hóa đơn sau khi thanh toán được xác nhận hoặc bị hủy'
+            ]);
+        }
+        return redirect()->back()->with('error', 'Chỉ có thể tải hóa đơn sau khi thanh toán được xác nhận hoặc bị hủy');
+    }
+
+    if ($payment->invoice_path && file_exists(storage_path('app/' . $payment->invoice_path))) {
+        return response()->download(storage_path('app/' . $payment->invoice_path));
+    } else {
+        $filePath = $payment->generateInvoice();
+
+        if ($filePath && file_exists($filePath)) {
+            return response()->download($filePath);
+        } else {
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Chỉ có thể tải hóa đơn sau khi thanh toán được xác nhận'
+                    'message' => 'Không thể tạo hóa đơn PDF. Vui lòng thử lại.'
                 ]);
             }
-            return redirect()->back()->with('error', 'Chỉ có thể tải hóa đơn sau khi thanh toán được xác nhận');
-        }
-        
-        // Kiểm tra xem file hóa đơn có tồn tại không
-        if ($payment->invoice_path && file_exists(storage_path('app/' . $payment->invoice_path))) {
-            // File đã tồn tại, tải xuống
-            return response()->download(storage_path('app/' . $payment->invoice_path));
-        } else {
-            // File không tồn tại, tạo mới
-            $filePath = $payment->generateInvoice();
-            
-            if ($filePath && file_exists($filePath)) {
-                return response()->download($filePath);
-            } else {
-                if (request()->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Không thể tạo hóa đơn PDF. Vui lòng thử lại.'
-                    ]);
-                }
-                return redirect()->back()->with('error', 'Không thể tạo hóa đơn PDF. Vui lòng thử lại.');
-            }
+            return redirect()->back()->with('error', 'Không thể tạo hóa đơn PDF. Vui lòng thử lại.');
         }
     }
+}
+
 }

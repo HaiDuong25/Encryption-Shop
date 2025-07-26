@@ -42,7 +42,7 @@ class Payment extends Model
 
             // Tạo PDF từ view
             $pdf = Pdf::loadView('admin.payments.invoice', ['payment' => $this]);
-            
+
             // Tạo thư mục lưu trữ nếu chưa có
             $invoiceDir = storage_path('app/invoices');
             if (!file_exists($invoiceDir)) {
@@ -62,9 +62,9 @@ class Payment extends Model
             }
 
             Log::info("Invoice generated successfully for payment {$this->id}: {$filename}");
-            
+
             return $filepath;
-            
+
         } catch (\Exception $e) {
             Log::error("Error generating invoice for payment {$this->id}: " . $e->getMessage());
             return false;
@@ -83,4 +83,26 @@ class Payment extends Model
 
     return $pdf->download('hoa-don-thanh-toan-' . $payment->id . '.pdf');
 }
+public function refund($id)
+{
+    $payment = Payment::findOrFail($id);
+
+    if ($payment->status !== 'completed') {
+        return redirect()->route('payments.index')->with('error', 'Chỉ có thể hoàn tiền đơn đã thanh toán.');
+    }
+
+    $payment->status = 'refunded';
+    $payment->refunded_at = now();
+    $payment->save();
+
+    // Cập nhật trạng thái đơn hàng nếu cần
+    $order = $payment->order;
+    if ($order) {
+        $order->status = 'refunded';
+        $order->save();
+    }
+
+    return redirect()->route('payments.index')->with('success', 'Hoàn tiền thành công!');
+}
+
 }

@@ -23,7 +23,36 @@
             margin-right: 16px;
             color: #334155;
         }
+.status-badge {
+    font-weight: bold;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5em;
+}
 
+.badge-refunded {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.badge-returning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-refunded-approved {
+    background-color: #fd7e14;
+    color: #fff;
+}
+
+.badge-paid {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.badge-unpaid {
+    background-color: #6c757d;
+    color: #fff;
+}
         .table th {
             background-color: #f1f5f9;
             color: #1e293b;
@@ -331,11 +360,40 @@
                         <i class="fas fa-money-bill-wave text-success"></i>
                         Tổng tiền thanh toán:
                         <span class="text-success fw-bold">{{ number_format($total, 0, ',', '.') }} đ</span>
-                        @if($isPaid)
-                            <span class="badge bg-success ms-2">Đã thanh toán</span>
-                        @else
-                            <span class="badge bg-warning text-dark ms-2">Chưa thanh toán</span>
-                        @endif
+                      @php
+                                $isPaid =
+                                    $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
+                                $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
+                                $statusValue = is_numeric($order->status)
+                                    ? $statusMap[$order->status] ?? 'pending'
+                                    : $order->status;
+                            @endphp
+                           @switch($statusValue)
+    @case('refunded')
+    @case('returned') {{-- Đã trả hàng xong --}}
+        <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
+            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+        </span>
+        @break
+
+    @case('returning') {{-- Đang trả hàng --}}
+        <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
+            {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
+        </span>
+        @break
+
+    @case('approved')
+        <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
+            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+        </span>
+        @break
+
+    @default
+        <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
+            {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+        </span>
+@endswitch
                     </li>
                     @php
                         $validPayments = $order->payments->whereNotNull('created_at');

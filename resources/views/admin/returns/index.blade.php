@@ -32,9 +32,9 @@
                         @forelse ($returns as $return)
                             @php
                                 $statusLabels = [
-                                    'pending' => ['label' => 'Chờ duyệt', 'class' => 'bg-warning'],
+                                    'pending' => ['label' => 'Chờ duyệt đơn ', 'class' => 'bg-warning'],
                                     'returning' => ['label' => 'Đang trả hàng', 'class' => 'bg-info'],
-                                    'approved' => ['label' => 'Đã phê duyệt', 'class' => 'bg-success'],
+                                    'approved' => ['label' => 'Đã trả hàng', 'class' => 'bg-success'],
                                     'rejected' => ['label' => 'Từ chối', 'class' => 'bg-danger'],
                                     'returned' => ['label' => 'Đã trả hàng', 'class' => 'bg-secondary'],
                                     'refunded' => ['label' => 'Đã hoàn tiền', 'class' => 'bg-success'],
