@@ -37,6 +37,7 @@ use App\Http\Controllers\Client\NewsController as ClientNewsController;
 use App\Http\Controllers\Client\RateController as ClientRateController;
 use App\Http\Controllers\Client\ReturnRequestController;
 use App\Http\Controllers\Client\CategoryClientController;
+use App\Http\Controllers\ZaloPayController;
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
 Route::get('/login', [AuthController::class, 'index'])->name('login.form');
@@ -221,6 +222,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/momo/payment', [\App\Http\Controllers\MoMoController::class, 'createPayment'])->name('momo.create');
     Route::get('/momo/return', [\App\Http\Controllers\MoMoController::class, 'returnPayment'])->name('momo.return');
     Route::post('/momo/notify', [\App\Http\Controllers\MoMoController::class, 'notifyPayment'])->name('momo.notify');
+
+    //zaro payment routes
+    Route::get('/zalopay', [ZaloPayController::class, 'createPayment'])->name('zalopay.pay');
+    Route::post('/zalopay/callback', [ZaloPayController::class, 'callback'])->name('zalopay.callback');
 
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');

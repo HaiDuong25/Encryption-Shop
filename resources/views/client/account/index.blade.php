@@ -68,22 +68,34 @@
                         <!-- Profile Details -->
                         <div class="profile-detail dashboard-bg-box">
                             <div class="dashboard-title d-flex justify-content-between align-items-center">
-                                <h3>Profile Name</h3>
+                                <h3>Profile About</h3>
                                 <a href="{{ route('account.editProfile') }}" class="btn btn-outline-primary btn-sm">Edit</a>
                             </div>
-                            <div class="profile-name-detail mt-2">
-                                <h5 class="mb-1">{{ auth()->user()->name }}</h5>
+                            <div class="profile mt-3">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2 d-flex align-items-center">
+                                        <h5 class="mb-1">Tài khoản</h5>
+                                        <i class="feather-map-pin me-2"></i>
+                                        <span>:{{ auth()->user()->Name }}</span>
+                                    </li>
+                                    <li class="mb-2 d-flex align-items-center">
+                                        <h5 class="mb-1">Số Điện thoại</h5>
+                                        <i class="feather-mail me-2"></i>
+                                        <span>: {{ auth()->user()->Phone }}</span>
+                                    </li>
+                                </ul>
                             </div>
-
                             <div class="location-profile mt-3">
                                 <ul class="list-unstyled">
                                     <li class="mb-2 d-flex align-items-center">
+                                        <h5 class="mb-1">Địa chỉ</h5>
                                         <i class="feather-map-pin me-2"></i>
-                                        <span>{{ auth()->user()->address ?? 'No address set' }}</span>
+                                        <span>:{{ auth()->user()->address ?? 'No address set' }}</span>
                                     </li>
                                     <li class="mb-2 d-flex align-items-center">
+                                        <h5 class="mb-1">Email</h5>
                                         <i class="feather-mail me-2"></i>
-                                        <span>{{ auth()->user()->email }}</span>
+                                        <span>: {{ auth()->user()->email }}</span>
                                     </li>
                                 </ul>
                             </div>

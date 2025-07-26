@@ -30,6 +30,12 @@ class CreatePaymentMethodsTable extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'payment_type' => 'Ví Điện Tử ZALOPAY',
+                'description' => 'Thanh toán qua ví điện tử ZALOPAY',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 
