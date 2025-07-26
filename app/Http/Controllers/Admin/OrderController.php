@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\OrderDetail;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -67,48 +68,29 @@ public function edit(Order $order)
 
     public function update(Request $request, Order $order)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'orderer_name' => 'required|string|max:255',
-            'orderer_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
-            'orderer_address' => 'required|string|max:255',
-            'recipient_name' => 'required|string|max:255',
-            'recipient_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
-            'recipient_address' => 'required|string|max:255',
-'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled,returning,approved,rejected',
-            'cancel_reason' => 'nullable|string|max:255',
-            'cancel_note' => 'nullable|string',
-            'discount_id' => 'nullable|exists:coupons,id',
-            'payment_method_id' => 'required|exists:payment_methods,id',
-            // Thêm validation cho order details
-            'order_detail_ids' => 'nullable|array',
-            'order_detail_ids.*' => 'exists:order_details,id',
-            'quantities' => 'nullable|array',
-            'quantities.*' => 'integer|min:1',
-            'product_ids' => 'nullable|array',
-            'variant_ids' => 'nullable|array',
-            'prices' => 'nullable|array',
-        ]);
+       $validated = $request->validate([
+    'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled,returning,approved,rejected',
+]);
+
 
         try {
             DB::beginTransaction();
 
             $oldStatus = $order->getOriginal('status');
-            // Cập nhật thông tin đơn hàng
-            $order->update([
-                'user_id' => $validated['user_id'],
-                'orderer_name' => $validated['orderer_name'],
-                'orderer_phone' => $validated['orderer_phone'],
-                'orderer_address' => $validated['orderer_address'],
-                'recipient_name' => $validated['recipient_name'],
-                'recipient_phone' => $validated['recipient_phone'],
-                'recipient_address' => $validated['recipient_address'],
-                'status' => $validated['status'],
-                'cancel_reason' => $validated['cancel_reason'] ?? null,
-                'cancel_note' => $validated['cancel_note'] ?? null,
-                'discount_id' => $validated['discount_id'] ?? null,
-                'payment_method_id' => $validated['payment_method_id'],
-            ]);
+
+// Load quan hệ cần thiết
+$order->load('orderDetails.variant', 'orderDetails.product');
+
+// Nếu cần thì cộng tồn trước
+if ($oldStatus !== $validated['status'] && $validated['status'] === 'approved') {
+    $this->restoreStock($order);
+}
+
+// Sau đó mới update trạng thái
+$order->update([
+    'status' => $validated['status'],
+]);
+
 
             // Xử lý logic thanh toán và hóa đơn khi chuyển trạng thái
             if ($oldStatus !== $validated['status']) {
@@ -268,29 +250,27 @@ public function edit(Order $order)
         return view('admin.orders.tracking', compact('order', 'locations'));
     }
 
-    public function updateStatus(Request $request, Order $order)
-    {
-        $request->validate([
-            'status' => 'required|string'
-        ]);
-        $order->status = $request->status;
-        $order->save();
-        if ($order->status == 'completed' && $order->payments()->count() == 0) {
-            Payment::create([
-                'order_id' => $order->id,
-                'amount' => $order->total_price,
-                'payment_method_id' => $order->payment_method_id,
-                'status' => 'completed',
-                'transaction_code' => 'ADMIN_' . time(),
-                'confirmed_at' => now(),
-                'note' => 'Thanh toán khi xác nhận',
-            ]);
+   public function updateStatus(Request $request, $id)
+{
+    $order = Order::with('orderDetails.variant')->findOrFail($id);
+    $newStatus = $request->status;
+
+    if ($newStatus === 'approved' && $order->status !== 'approved') {
+        foreach ($order->orderDetails as $detail) {
+            $variant = $detail->variant;
+            if ($variant) {
+                $variant->stock += $detail->quantity;
+                $variant->save();
+            }
         }
-        return response()->json([
-            'message' => 'Cập nhật trạng thái thành công!',
-            'status' => $order->status,
-        ]);
     }
+
+    $order->status = $newStatus;
+    $order->save();
+
+    return back()->with('success', 'Cập nhật trạng thái thành công.');
+}
+
 
     public function cancelOrderByAdmin(Order $order)
     {

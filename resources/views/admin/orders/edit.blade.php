@@ -34,7 +34,7 @@
                 <div id="alert-container"></div>
                 <div class="mb-3">
                     <label for="user_id" class="form-label">Khách hàng</label>
-                    <select class="form-select" id="user_id" name="user_id" required>
+                    <select class="form-select" id="user_id" name="user_id" disabled>
                         <option value="">-- Chọn khách hàng --</option>
                         @foreach ($users as $user)
                             <option value="{{ $user->id }}" data-name="{{ $user->name }}"
@@ -46,41 +46,6 @@
                     </select>
                 </div>
 
-                <!-- Thông tin người đặt -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h6 class="mb-0">Thông tin người đặt</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="orderer_name" class="form-label">Tên người đặt</label>
-                            <input type="text" class="form-control" id="orderer_name" name="orderer_name" maxlength="255"
-                                required
-                                value="{{ old('orderer_name', $order->orderer_name ?? ($order->user->name ?? '')) }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="orderer_email" class="form-label">Email người đặt</label>
-                            <input type="email" class="form-control" id="orderer_email" name="orderer_email"
-                                maxlength="255"
-                                value="{{ old('orderer_email', $order->orderer_email ?? ($order->user->email ?? '')) }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="orderer_phone" class="form-label">Số điện thoại người đặt</label>
-                            <input type="text" class="form-control" id="orderer_phone" name="orderer_phone"
-                                pattern="[0-9]{10,11}" maxlength="11" required
-                                value="{{ old('orderer_phone', $order->orderer_phone ?? ($order->user->phone ?? '')) }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="orderer_address" class="form-label">Địa chỉ người đặt</label>
-                            <input type="text" class="form-control" id="orderer_address" name="orderer_address"
-                                maxlength="255" required
-                                value="{{ old('orderer_address', $order->orderer_address ?? ($order->user->address ?? '')) }}">
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Thông tin người nhận -->
                 <div class="card mb-3">
@@ -91,20 +56,20 @@
                         <div class="mb-3">
                             <label for="recipient_name" class="form-label">Tên người nhận</label>
                             <input type="text" class="form-control" id="recipient_name" name="recipient_name"
-                                maxlength="255" required value="{{ old('recipient_name', $order->recipient_name) }}">
+                                maxlength="255" required value="{{ old('recipient_name', $order->recipient_name) }}" disabled>
                         </div>
 
                         <div class="mb-3">
                             <label for="recipient_phone" class="form-label">Số điện thoại người nhận</label>
                             <input type="text" class="form-control" id="recipient_phone" name="recipient_phone"
                                 pattern="[0-9]{10,11}" maxlength="11" required
-                                value="{{ old('recipient_phone', $order->recipient_phone) }}">
+                                value="{{ old('recipient_phone', $order->recipient_phone) }}" disabled>
                         </div>
 
                         <div class="mb-3">
                             <label for="recipient_address" class="form-label">Địa chỉ người nhận</label>
                             <input type="text" class="form-control" id="recipient_address" name="recipient_address"
-                                maxlength="255" required value="{{ old('recipient_address', $order->recipient_address) }}">
+                                maxlength="255" required value="{{ old('recipient_address', $order->recipient_address) }}"disabled>
                         </div>
                     </div>
                 </div>
@@ -239,7 +204,7 @@
 
                 <div class="mb-3">
                     <label for="discount_id" class="form-label">Mã giảm giá</label>
-                    <select class="form-select" id="discount_id" name="discount_id">
+                    <select class="form-select" id="discount_id" name="discount_id" disabled>
                         <option value="">-- Không áp dụng --</option>
                         @foreach ($coupons as $coupon)
                             @php
@@ -279,7 +244,7 @@
 
                 <div class="mb-3">
                     <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
-                    <select class="form-select" id="payment_method_id" name="payment_method_id" required>
+                    <select class="form-select" id="payment_method_id" name="payment_method_id" disabled>
                         <option value="">-- Chọn phương thức --</option>
                         @foreach ($paymentMethods as $method)
                             <option value="{{ $method->id }}"
