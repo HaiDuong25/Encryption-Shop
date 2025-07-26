@@ -15,6 +15,24 @@ class ProductVariant extends Model
         'image',
         'gallery'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($variant) {
+            // If price is null or 0, use product price as fallback
+            if (empty($variant->price) && $variant->product) {
+                $variant->price = $variant->product->price;
+            }
+            
+            // If sale_price is null and product has sale_price, use it
+            if (empty($variant->sale_price) && $variant->product && $variant->product->sale_price) {
+                $variant->sale_price = $variant->product->sale_price;
+            }
+        });
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

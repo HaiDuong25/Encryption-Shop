@@ -159,8 +159,8 @@ class ProductController extends Controller
                 : null;
             $variant = $product->variants()->create([
                 'sku' => strtoupper($variantSku),
-                'price' => $request->input("variant_price.$index") ?? null,
-                'sale_price' => $request->input("variant_sale_price.$index") ?? null,
+                'price' => $request->input("variant_price.$index") ?? $data['price'],
+                'sale_price' => $request->input("variant_sale_price.$index") ?? $data['sale_price'],
                 'stock' => $request->input("variant_stock.$index") ?? 0,
                 'image' => $variantImage,
             ]);
