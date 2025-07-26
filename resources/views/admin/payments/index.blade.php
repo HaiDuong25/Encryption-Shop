@@ -57,16 +57,20 @@
                         </td>
                         <td>
                             @php
-                                $statusText = [
-                                    'pending' => 'Chờ xác nhận',
-                                    'completed' => 'Đã thanh toán',
-                                    'rejected' => 'Đã hủy',
-                                ];
-                                $statusColor = [
-                                    'pending' => 'warning',
-                                    'completed' => 'success',
-                                    'rejected' => 'danger',
-                                ];
+                            $statusText = [
+    'pending' => 'Chờ xác nhận',
+    'completed' => 'Đã thanh toán',
+    'rejected' => 'Đã hủy',
+    'refunded' => 'Đã hoàn tiền'
+];
+
+$statusColor = [
+    'pending' => 'warning',
+    'completed' => 'success',
+    'rejected' => 'danger',
+    'refunded' => 'info'
+];
+
                             @endphp
                             <span class="badge bg-{{ $statusColor[$payment->status] ?? 'secondary' }}" style="font-size: 1rem;">
                                 {{ $statusText[$payment->status] ?? ucfirst($payment->status) }}
@@ -116,7 +120,8 @@
                             @endif
                         </td>
                         <td>
-                            @if($payment->status === 'completed')
+                        @if(in_array($payment->status, ['completed', 'rejected']))
+
                                 <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
                                     <a href="{{ route('admin.payments.invoice', $payment->id) }}" class="btn btn-primary btn-xs px-2 py-1"
                                         style="font-size: 0.85rem;">
@@ -135,6 +140,8 @@
                             @else
                                 <span class="text-muted">---</span>
                             @endif
+
+
                         </td>
                     </tr>
                 @endforeach

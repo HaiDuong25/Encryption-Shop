@@ -58,7 +58,7 @@
                             $statusLabels = [
                                 'pending' => 'Chờ duyệt',
                                 'returning' => 'Đang trả hàng',
-                                'approved' => 'Đã phê duyệt',
+                                'approved' => 'Đã trả hàng',
                                 'rejected' => 'Từ chối',
                                 'returned' => 'Đã trả hàng',
                                 'refunded' => 'Đã hoàn tiền',
@@ -90,8 +90,8 @@
                         <div class="col-md-4">
                             <label for="status">Trạng thái mới</label>
                             <select name="status" id="status" class="form-control" required>
-                                <option value="returning">Đang trả hàng</option>
-                                <option value="approved">Đã phê duyệt</option>
+                                <option value="returning">Chờ duyệt</option>
+                                <option value="approved">Đã trả hàng</option>
                                 <option value="rejected">Từ chối</option>
                             </select>
                         </div>

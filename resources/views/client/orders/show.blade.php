@@ -30,20 +30,50 @@
         color: #f5c518;
         font-size: 18px;
     }
-         .status-badge {
-            font-size: 0.875rem;
-            padding: 0.35em 0.65em;
-            font-weight: 500;
-            border-radius: 4px;
-        }
 
-        .bg-purple {
-            background-color: #8b5cf6 !important;
-        }
+    .status-badge {
+        font-size: 0.875rem;
+        padding: 0.35em 0.65em;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+.status-badge {
+    font-weight: bold;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5em;
+}
 
-        .bg-cyan {
-            background-color: #06b6d4 !important;
-        }
+.badge-refunded {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.badge-returning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-refunded-approved {
+    background-color: #fd7e14;
+    color: #fff;
+}
+
+.badge-paid {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.badge-unpaid {
+    background-color: #6c757d;
+    color: #fff;
+}
+    .bg-purple {
+        background-color: #8b5cf6 !important;
+    }
+
+    .bg-cyan {
+        background-color: #06b6d4 !important;
+    }
 </style>
 @section('content')
 
@@ -56,6 +86,7 @@
                 'delivering' => 'Đang giao',
                 'received' => 'Đã nhận',
                 'completed' => 'Hoàn thành',
+
             ];
             $statusMap = [
                 '0' => 'pending',
@@ -83,24 +114,26 @@
                     'delivering' => 'Đang giao',
                     'received' => 'Đã nhận',
                     'completed' => 'Hoàn thành',
+                    'returning' => 'Đang trả hàng',
+                    'approved' => 'Đã trả hàng',
 
                 ];
                 $trackerKeys = array_keys($trackerSteps);
                 $currentStep = array_search($statusValue, $trackerKeys);
             @endphp
-          @if ($statusValue === 'cancelled')
-    <div class="alert alert-danger text-center mb-2">
-        <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
-    </div>
-@elseif ($statusValue === 'returning')
-    <div class="alert alert-warning text-center mb-2">
-        <i class="fas fa-undo me-1"></i> Đơn hàng đang trong quá trình trả hàng
-    </div>
-@elseif ($statusValue === 'approved')
-    <div class="alert alert-success text-center mb-2">
-        <i class="fas fa-check-circle me-1"></i> Đơn hàng đã được trả hàng thành công
-    </div>
-@else
+            @if ($statusValue === 'cancelled')
+                <div class="alert alert-danger text-center mb-2">
+                    <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
+                </div>
+            @elseif ($statusValue === 'returning')
+                <div class="alert alert-warning text-center mb-2">
+                    <i class="fas fa-undo me-1"></i> Đơn hàng đang trong quá trình trả hàng
+                </div>
+            @elseif ($statusValue === 'approved')
+                <div class="alert alert-success text-center mb-2">
+                    <i class="fas fa-check-circle me-1"></i> Đơn hàng đã được trả hàng thành công
+                </div>
+            @else
                 <div class="progress" style="height: 10px;">
                     @foreach ($trackerSteps as $key => $label)
                         <div class="progress-bar {{ array_search($key, $trackerKeys) <= $currentStep ? 'bg-success' : 'bg-secondary' }}"
@@ -118,12 +151,11 @@
             @endif
         </div>
         {{-- Timeline chi tiết lịch sử trạng thái --}}
-   @if (
-    !$isCancelled &&
-    $order->statusHistories &&
-    $order->statusHistories->count() &&
-    !in_array($order->status, ['returning', 'approved'])
-)
+        @if (
+            !$isCancelled &&
+                $order->statusHistories &&
+                $order->statusHistories->count() &&
+                !in_array($order->status, ['returning', 'approved']))
 
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
@@ -177,7 +209,7 @@
                             @elseif($statusValue == 'returning')
                                 <span class="badge bg-warning text-dark">Đang trả hàng</span>
                             @elseif($statusValue == 'approved')
-                                <span class="badge bg-success">Đã phê duyệt</span>
+                                <span class="badge bg-success">Đã trả hàng</span>
                             @else
                                 <span class="badge bg-secondary">{{ $statusValue }}</span>
                             @endif
@@ -186,11 +218,41 @@
                             {{ $order->created_at->format('d/m/Y H:i') }}
                         </div>
                         <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
-                            @if ($isPaid)
-                                <span class="badge bg-success">Đã thanh toán</span>
-                            @else
-                                <span class="badge bg-warning text-dark">Chưa thanh toán</span>
-                            @endif
+                            @php
+                                $isPaid =
+                                    $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
+                                $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
+                                $statusValue = is_numeric($order->status)
+                                    ? $statusMap[$order->status] ?? 'pending'
+                                    : $order->status;
+                            @endphp
+                           @switch($statusValue)
+    @case('refunded')
+    @case('returned') {{-- Đã trả hàng xong --}}
+        <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
+            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+        </span>
+        @break
+
+    @case('returning') {{-- Đang trả hàng --}}
+        <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
+            {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
+        </span>
+        @break
+
+    @case('approved')
+        <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
+            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+        </span>
+        @break
+
+    @default
+        <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
+            {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+        </span>
+@endswitch
+
                         </div>
                         <div class="mb-2"><strong>Phương thức thanh toán:</strong>
                             {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}
