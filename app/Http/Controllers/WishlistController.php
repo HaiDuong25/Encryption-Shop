@@ -24,6 +24,10 @@ class WishlistController extends Controller
             ]);
         }
 
+        if (request()->ajax()) {
+        return response()->json(['success' => true]);
+        }
+
         return back()->with('success', 'Đã thêm vào yêu thích!');
     }
 
