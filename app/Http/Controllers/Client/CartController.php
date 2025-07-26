@@ -463,6 +463,29 @@ class CartController extends Controller
             return redirect()->route('momo.create');
         }
 
+        if ($paymentMethod && $paymentMethod->payment_type === 'Ví Điện Tử ZALOPAY') {
+            // Thanh toán ZaloPay - lưu thông tin vào session trước khi chuyển hướng
+            $orderData = [
+                'user_id' => Auth::id(),
+                'shipping_address_id' => $request->shipping_address_id,
+                'payment_method_id' => $request->payment_method_id,
+                'subtotal' => $subtotal,
+                'discount' => $discountAmount,
+                'total' => $totalPrice,
+                'notes' => $request->notes,
+                'coupon_code' => $couponCode,
+                'shipping_address' => $shippingAddress,
+                'carts' => $carts->toArray(),
+                'phone' => $shippingAddress->phone ?? $user->phone ?? '',
+                'order_id' => 'TEMP_' . time() // Temporary order ID cho ZaloPay
+            ];
+
+            session(['order_data' => $orderData]);
+
+            // Chuyển hướng đến ZaloPay payment
+            return redirect()->route('zalopay.pay');
+        }
+
         // Thanh toán COD - xử lý bình thường
 
         // Lưu đơn hàng

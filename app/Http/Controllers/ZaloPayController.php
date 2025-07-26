@@ -13,13 +13,14 @@ use App\Models\CouponUse;
 use App\Models\ShippingAddress;
 use App\Models\Coupon;
 use App\Models\Payment;
+use App\Models\ProductVariant;
 
 class ZaloPayController extends Controller
 {
-    // Thông tin cấu hình ZaloPay Sandbox
-    private $appid = "2554"; // ID ứng dụng do ZaloPay cấp
-    private $key1 = "sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn"; // Key1 dùng để ký dữ liệu gửi đi
-    private $key2 = "trMrHtvjo6myautxDUiAcYsVtaeQ8nhf"; // Key2 dùng để xác thực callback (chưa dùng đến trong ví dụ này)
+    // Thông tin cấu hình ZaloPay Sandbox - sử dụng credentials từ script test thành công
+    private $appid = "2553"; // ID ứng dụng do ZaloPay cấp (từ script test thành công)
+    private $key1 = "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL"; // Key1 dùng để ký dữ liệu gửi đi
+    private $key2 = "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz"; // Key2 dùng để xác thực callback
     private $endpoint = "https://sb-openapi.zalopay.vn/v2/create"; // URL endpoint tạo thanh toán
 
     // Hàm tạo yêu cầu thanh toán
@@ -32,74 +33,129 @@ class ZaloPayController extends Controller
 
         $transId = time(); // Tạo mã giao dịch duy nhất dựa trên timestamp
 
-        // Dữ liệu đơn hàng gửi đến ZaloPay
+        // Tạo dữ liệu đơn hàng gửi đến ZaloPay
         $order = [
-            "appid" => $this->appid,
-            "apptransid" => date("ymd") . "_" . $transId, // Mã giao dịch: yymmdd_xxxxx
-            "appuser" => "user_test",
-            "apptime" => round(microtime(true) * 1000),
+            "app_id" => $this->appid,
+            "app_trans_id" => date("ymd") . "_" . time(),
+            "app_user" => "user_" . Auth::id(),
+            "app_time" => round(microtime(true) * 1000),
             "amount" => (int) $orderData['total'],
-            "description" => "Thanh toán đơn hàng Encryption Shop",
-            "bankcode" => "zalopayapp",
+            "description" => "Thanh toán đơn hàng Encryption Shop #" . $orderData['order_id'],
+            "bank_code" => "",
             "item" => json_encode([]),
-            "embeddata" => json_encode([])
+            "embed_data" => json_encode([
+                'order_id' => $orderData['order_id'],
+                'redirecturl' => url('/zalopay/return') // ZaloPay sẽ redirect về URL này sau khi thanh toán
+            ]),
+            "callback_url" => url('/zalopay/callback'), // URL callback cho server notification
+            "phone" => $orderData['phone'] ?? ""
         ];
 
         // Tạo chữ ký MAC
-        $data = $order["appid"] . "|" . $order["apptransid"] . "|" . $order["appuser"] . "|" . $order["amount"] . "|" . $order["apptime"] . "|" . $order["embeddata"] . "|" . $order["item"];
+        $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" . 
+                $order["amount"] . "|" . $order["app_time"] . "|" . $order["embed_data"] . "|" . $order["item"];
         $order["mac"] = hash_hmac("sha256", $data, $this->key1);
 
-        // Gửi yêu cầu đến ZaloPay
-        $response = $this->execPostRequest($this->endpoint, json_encode($order));
+        // Gửi yêu cầu đến ZaloPay (sử dụng form data thay vì JSON)
+        $response = $this->execPostRequest($this->endpoint, http_build_query($order));
         $result = json_decode($response, true);
 
+        Log::info('ZaloPay Payment Request', $order);
         Log::info('ZaloPay Payment Response', $result);
 
-        if (isset($result['orderurl'])) {
-            Session::put('zalopay_order_data', $orderData); // Lưu lại dữ liệu đơn hàng
-            return redirect($result['orderurl']); // Chuyển hướng đến trang thanh toán
+        // Debug: Kiểm tra response từ ZaloPay
+        if (!$result) {
+            Log::error('ZaloPay Response is null or invalid JSON');
+            return redirect()->route('cart.checkout')->with('error', 'Lỗi kết nối với ZaloPay');
+        }
+
+        if (isset($result['order_url']) && !empty($result['order_url'])) {
+            Session::put('zalopay_order_data', $orderData);
+            Log::info('Redirecting to ZaloPay URL: ' . $result['order_url']);
+            
+            // Redirect trực tiếp đến ZaloPay
+            return redirect($result['order_url']);
         } else {
-            return redirect()->route('cart.checkout')->with('error', 'Không thể tạo thanh toán ZaloPay');
+            // Log chi tiết lỗi từ ZaloPay
+            $errorMessage = $result['return_message'] ?? $result['sub_return_message'] ?? 'Không thể tạo thanh toán ZaloPay';
+            $returnCode = $result['return_code'] ?? 'unknown';
+            
+            Log::error('ZaloPay Error: ' . $errorMessage . ' (Code: ' . $returnCode . ')');
+            Log::error('Full ZaloPay Response: ', $result);
+            
+            return redirect()->route('cart.checkout')->with('error', 'Lỗi ZaloPay: ' . $errorMessage);
         }
     }
 
     // Hàm xử lý khi người dùng thanh toán xong
     public function returnPayment(Request $request)
     {
+        Log::info('ZaloPay Return Request: ', $request->all());
+        
         $orderData = Session::get('zalopay_order_data');
         if (!$orderData) {
+            Log::error('ZaloPay Return: No order data in session');
             return redirect()->route('cart.checkout')->with('error', 'Không tìm thấy dữ liệu thanh toán');
         }
 
-        $transId = $request->input('apptransid');
-        $order = $this->createOrder($transId);
-
-        if ($order) {
-            Session::forget(['order_data', 'zalopay_order_data']);
-            return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán ZaloPay thành công!');
+        // Kiểm tra trạng thái thanh toán từ ZaloPay
+        $status = $request->input('status');
+        $apptransid = $request->input('apptransid');
+        $checksum = $request->input('checksum');
+        
+        Log::info('ZaloPay Return Status: ' . $status . ', TransID: ' . $apptransid);
+        
+        if ($status == 1) {
+            // Thanh toán thành công
+            $order = $this->createOrder($apptransid);
+            
+            if ($order) {
+                Session::forget(['order_data', 'zalopay_order_data']);
+                return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán ZaloPay thành công!');
+            } else {
+                return redirect()->route('cart.checkout')->with('error', 'Có lỗi khi tạo đơn hàng sau thanh toán');
+            }
         } else {
-            return redirect()->route('cart.checkout')->with('error', 'Có lỗi khi tạo đơn hàng sau thanh toán');
+            // Thanh toán thất bại hoặc bị hủy
+            Log::info('ZaloPay payment failed or cancelled');
+            return redirect()->route('cart.checkout')->with('error', 'Thanh toán ZaloPay thất bại hoặc đã bị hủy');
         }
     }
 
     // Hàm gửi POST request bằng CURL
     private function execPostRequest($url, $data)
     {
+        Log::info('ZaloPay CURL Request', [
+            'url' => $url,
+            'data' => $data
+        ]);
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
         $result = curl_exec($ch);
-
-        if (curl_error($ch)) {
-            Log::error('CURL Lỗi khi kết nối ZaloPay: ' . curl_error($ch));
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        
+        if ($curlError) {
+            Log::error('CURL Error connecting to ZaloPay: ' . $curlError);
+            curl_close($ch);
+            return json_encode(['error' => 'CURL Error: ' . $curlError]);
         }
 
         curl_close($ch);
+        
+        Log::info('ZaloPay CURL Response', [
+            'http_code' => $httpCode,
+            'response' => $result
+        ]);
+        
         return $result;
     }
 
@@ -111,7 +167,29 @@ class ZaloPayController extends Controller
             if (!$orderData) return false;
 
             $user = Auth::user();
-            $carts = Cart::where('user_id', $user->id)->with(['product', 'variant'])->get();
+            
+            // Lấy only selected cart items
+            $selectedCartItems = Session::get('selected_cart_items', []);
+            if (empty($selectedCartItems)) {
+                // Fallback: lấy tất cả cart items nếu không có selection
+                $carts = Cart::where('user_id', $user->id)->with(['product', 'variant'])->get();
+            } else {
+                $carts = Cart::where('user_id', $user->id)
+                    ->whereIn('id', $selectedCartItems)
+                    ->with(['product', 'variant'])
+                    ->get();
+            }
+
+            // Validation: Kiểm tra variant selection
+            foreach ($carts as $cart) {
+                // Kiểm tra nếu product có variants nhưng cart không có variant_id
+                $productVariantsCount = ProductVariant::where('product_id', $cart->product_id)->count();
+                if ($productVariantsCount > 0 && !$cart->variant_id) {
+                    Log::error("ZaloPay Payment: Product {$cart->product_id} has variants but cart {$cart->id} has no variant_id");
+                    return false;
+                }
+            }
+
             $shippingAddress = ShippingAddress::find($orderData['shipping_address_id']);
 
             $order = Order::create([
