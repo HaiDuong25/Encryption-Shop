@@ -130,78 +130,61 @@
 @endsection
 
 @push('scripts')
+@push('scripts')
 <script>
-    if (window.feather) feather.replace();
+document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', async function () {
+        const productId = this.dataset.id;
+        const productName = this.dataset.name;
 
-    // AJAX Delete functionality
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.dataset.id;
-            const productName = this.dataset.name;
+        if (!confirm(`Bạn có chắc muốn xóa sản phẩm "${productName}"?`)) return;
 
-            if (confirm(`Bạn có chắc muốn xóa sản phẩm "${productName}"?`)) {
-                // Show loading state
-                const icon = this.querySelector('i');
-                const originalContent = this.innerHTML;
-                this.innerHTML = '<i data-feather="loader" class="rotating"></i>';
-                this.disabled = true;
+        const icon = this.querySelector('i');
+        const originalContent = this.innerHTML;
+        this.innerHTML = '<i data-feather="loader" class="rotating"></i>';
+        this.disabled = true;
 
-                fetch(`/admin/products/${productId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Remove the row from table
-                        const row = this.closest('tr');
-                        row.remove();
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                        // Show success message
-                        const alertDiv = document.createElement('div');
-                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                        alertDiv.innerHTML = `
-                            ${data.message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-                        document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.card'));
-
-                        // Auto hide after 3 seconds
-                        setTimeout(() => {
-                            if (alertDiv.parentNode) {
-                                alertDiv.remove();
-                            }
-                        }, 3000);
-                    } else {
-                        alert(data.message || 'Có lỗi xảy ra khi xóa sản phẩm!');
-                        // Restore button state
-                        this.innerHTML = originalContent;
-                        this.disabled = false;
-                        feather.replace();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa sản phẩm!');
-                    // Restore button state
-                    this.innerHTML = originalContent;
-                    this.disabled = false;
-                    feather.replace();
-                });
-            }
-        });
+try {
+    const response = await fetch(`/admin/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': token,
+            'X-Requested-With': 'XMLHttpRequest', // Rất quan trọng để Laravel hiểu là request từ JS
+            'Accept': 'application/json'          // Rất quan trọng để Laravel trả JSON, không redirect
+        }
     });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+        this.closest('tr').remove();
+        alert('Xóa thành công!');
+    } else {
+        console.error('Lỗi xử lý:', data);
+        alert(data.message || 'Xóa không thành công');
+    }
+} catch (error) {
+    console.error('Lỗi fetch hoặc JSON:', error);
+    alert('Có lỗi xảy ra khi xóa sản phẩm!');
+}
+
+    });
+});
+
 </script>
+
 <style>
     .rotating {
         animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
 </style>
+@endpush
+
 @endpush
