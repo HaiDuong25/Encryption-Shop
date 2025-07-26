@@ -35,7 +35,7 @@
 
 {{-- Số tài khoản hoặc số ví --}}
 <div class="mb-3 refund-info">
-    <label for="bank_account_number" class="form-label">Số tài khoản / Số ví</label>
+    <label for="bank_account_number" class="form-label">Số tài khoản MOMO</label>
     <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" placeholder="VD: 1234567890">
 </div>
 
