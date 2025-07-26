@@ -225,6 +225,7 @@ Route::middleware(['auth'])->group(function () {
 
     //zaro payment routes
     Route::get('/zalopay', [ZaloPayController::class, 'createPayment'])->name('zalopay.pay');
+    Route::get('/zalopay/return', [ZaloPayController::class, 'returnPayment'])->name('zalopay.return');
     Route::post('/zalopay/callback', [ZaloPayController::class, 'callback'])->name('zalopay.callback');
 
     // Đơn hàng (client)
