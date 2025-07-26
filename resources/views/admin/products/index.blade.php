@@ -130,7 +130,6 @@
 @endsection
 
 @push('scripts')
-@push('scripts')
 <script>
 document.querySelectorAll('.delete-btn').forEach(button => {
     button.addEventListener('click', async function () {
@@ -146,45 +145,76 @@ document.querySelectorAll('.delete-btn').forEach(button => {
 
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-try {
-    const response = await fetch(`/admin/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': token,
-            'X-Requested-With': 'XMLHttpRequest', // Rất quan trọng để Laravel hiểu là request từ JS
-            'Accept': 'application/json'          // Rất quan trọng để Laravel trả JSON, không redirect
+        try {
+            const response = await fetch(`/admin/products/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.closest('tr').remove();
+                alert(data.message || 'Xóa thành công!');
+            } else if (data.requiresConfirmation) {
+                const confirmHide = confirm(data.message);
+                if (confirmHide) {
+                    // Gửi lại DELETE request với param set_inactive=true
+                    const response2 = await fetch(`/admin/products/${productId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ set_inactive: true })
+                    });
+
+                    const data2 = await response2.json();
+
+                    if (response2.ok && data2.success) {
+                        const row = this.closest('tr');
+                        const statusCell = row.querySelector('td span.badge');
+                        if (statusCell) {
+                            statusCell.className = 'badge bg-danger';
+                            statusCell.textContent = 'Ẩn';
+                        }
+
+                        this.closest('li').remove(); // Ẩn nút xóa
+                        alert(data2.message || 'Đã chuyển sang trạng thái ẩn.');
+                    } else {
+                        alert(data2.message || 'Không thể ẩn sản phẩm.');
+                    }
+                } else {
+                    alert('Đã hủy thao tác.');
+                }
+            } else {
+                alert(data.message || 'Không thể xóa sản phẩm.');
+            }
+        } catch (error) {
+            console.error('Lỗi khi xóa:', error);
+            alert('Có lỗi xảy ra trong quá trình xử lý.');
+        } finally {
+            this.innerHTML = originalContent;
+            this.disabled = false;
+            feather.replace();
         }
     });
-
-    const data = await response.json();
-
-    if (response.ok && data.success) {
-        this.closest('tr').remove();
-        alert('Xóa thành công!');
-    } else {
-        console.error('Lỗi xử lý:', data);
-        alert(data.message || 'Xóa không thành công');
-    }
-} catch (error) {
-    console.error('Lỗi fetch hoặc JSON:', error);
-    alert('Có lỗi xảy ra khi xóa sản phẩm!');
-}
-
-    });
 });
-
 </script>
 
 <style>
-    .rotating {
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
+.rotating {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 </style>
 @endpush
 
-@endpush

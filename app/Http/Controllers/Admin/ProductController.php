@@ -275,9 +275,35 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Đã cập nhật sản phẩm!');
     }
 
-public function destroy(Product $product)
+public function destroy(Product $product, Request $request)
 {
     try {
+        $hasOrders = \DB::table('order_details')->where('product_id', $product->id)->exists();
+        $hasRates = \DB::table('rates')->where('product_id', $product->id)->exists();
+
+        if ($hasOrders || $hasRates) {
+            $reasons = [];
+            if ($hasOrders) $reasons[] = 'đơn hàng';
+            if ($hasRates) $reasons[] = 'đánh giá';
+
+            if ($request->boolean('set_inactive')) {
+                $product->status = 'inactive';
+                $product->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Sản phẩm đã được chuyển sang trạng thái ẩn.',
+                    'action' => 'set_inactive'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'requiresConfirmation' => true,
+                'message' => 'Sản phẩm có ' . implode(' và ', $reasons) . '. Bạn có muốn chuyển sang trạng thái ẩn không?'
+            ]);
+        }
+
         $product->delete();
 
         return response()->json([
@@ -287,10 +313,8 @@ public function destroy(Product $product)
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Lỗi khi xóa sản phẩm: ' . $e->getMessage()
-        ], 500);
+            'message' => 'Lỗi khi xử lý: ' . $e->getMessage()
+        ]);
     }
 }
-
-
 }
