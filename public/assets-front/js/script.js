@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------------------------------
 
- Template Name: Fastkart
- Template URI: themes.pixelstrap.com/Fastkart
+ Template Name: EncryptionStore
+ Template URI: themes.pixelstrap.com/EncryptionStore
  Description: This is Ecommerce website
  Author: Pixelstrap
  Author URI: https://themeforest.net/user/pixelstrap
@@ -66,7 +66,7 @@
     02. Shop Page Grid Setting Js
     ==========================*/
     $(".grid-option li").on("click", function () {
-        $(this).addClass('active').siblings().removeClass('active');
+        $(this).addClass("active").siblings().removeClass("active");
     });
     $(".grid-option .grid-btn").on("click", function () {
         $(".product-list-section").removeClass("list-style");
@@ -74,14 +74,28 @@
     $(".grid-option .list-btn").on("click", function () {
         $(".product-list-section").addClass("list-style");
     });
-    $('.three-grid').on('click', function (e) {
-        $(".product-list-section").removeClass("row-cols-xxl-5 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2 list-style").addClass("row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2");
+    $(".three-grid").on("click", function (e) {
+        $(".product-list-section")
+            .removeClass(
+                "row-cols-xxl-5 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2 list-style"
+            )
+            .addClass("row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2");
     });
-    $('.grid-btn').on('click', function (e) {
-        $(".product-list-section").removeClass("row-cols-xxl-5 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2 list-style").addClass("row-cols-xxl-4 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2");
+    $(".grid-btn").on("click", function (e) {
+        $(".product-list-section")
+            .removeClass(
+                "row-cols-xxl-5 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2 list-style"
+            )
+            .addClass(
+                "row-cols-xxl-4 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2"
+            );
     });
-    $('.five-grid').on('click', function (e) {
-        $(".product-list-section").removeClass("list-style").addClass("row-cols-xxl-5 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2");
+    $(".five-grid").on("click", function (e) {
+        $(".product-list-section")
+            .removeClass("list-style")
+            .addClass(
+                "row-cols-xxl-5 row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2"
+            );
     });
     var contentwidth = $(window).width();
     if (contentwidth < "1199") {
@@ -133,8 +147,8 @@ if (contentwidth < "576") {
   04. mobile menu active class js
    ==========================*/
 $(document).ready(function () {
-    $('.mobile-menu ul li a').click(function () {
-        $('li a').removeClass("active");
+    $(".mobile-menu ul li a").click(function () {
+        $("li a").removeClass("active");
         $(this).addClass("active");
     });
 });
@@ -143,20 +157,20 @@ $(document).ready(function () {
   05. btn-cart open close js
    ==========================*/
 $(document).ready(function () {
-    $('.button-item').on("click", function () {
-        $('.item-section').addClass("active");
+    $(".button-item").on("click", function () {
+        $(".item-section").addClass("active");
     });
 
-    $('.close-button').on("click", function () {
-        $('.item-section').removeClass("active");
+    $(".close-button").on("click", function () {
+        $(".item-section").removeClass("active");
     });
 
-    $('.btn-cart').on("click", function () {
+    $(".btn-cart").on("click", function () {
         setTimeout(function () {
-            $('.item-section').addClass("active")
+            $(".item-section").addClass("active");
         }, 1500);
         setTimeout(function () {
-            $('.item-section').removeClass('active');
+            $(".item-section").removeClass("active");
         }, 5000);
     });
 });
@@ -164,14 +178,14 @@ $(document).ready(function () {
 /*=====================
   06. quantity js
    ==========================*/
-$('.qty-box .quantity-right-plus').on('click', function () {
+$(".qty-box .quantity-right-plus").on("click", function () {
     var $qty = $(this).parents(".qty-box").find(".input-number");
     var currentVal = parseInt($qty.val(), 10);
     if (!isNaN(currentVal)) {
         $qty.val(currentVal + 0);
     }
 });
-$('.qty-box .quantity-left-minus').on('click', function () {
+$(".qty-box .quantity-left-minus").on("click", function () {
     var $qty = $(this).parents(".qty-box").find(".input-number");
     var currentVal = parseInt($qty.val(), 10);
     if (!isNaN(currentVal) && currentVal > 0) {
@@ -185,16 +199,19 @@ $('.qty-box .quantity-left-minus').on('click', function () {
 $(document).ready(function () {
     $(window).scroll(function () {
         if ($(this).scrollTop() > 50) {
-            $('.back-to-top').fadeIn();
+            $(".back-to-top").fadeIn();
         } else {
-            $('.back-to-top').fadeOut();
+            $(".back-to-top").fadeOut();
         }
     });
     // scroll body to 0px on click
-    $('.back-to-top').click(function () {
-        $('body,html').animate({
-            scrollTop: 0
-        }, 400);
+    $(".back-to-top").click(function () {
+        $("body,html").animate(
+            {
+                scrollTop: 0,
+            },
+            400
+        );
         return false;
     });
 });
@@ -205,17 +222,21 @@ $(document).ready(function () {
 $(".left-dashboard-show").click(function () {
     $(".bg-overlay, .dashboard-left-sidebar").addClass("show");
 });
-$(".close-button, .bg-overlay, .user-nav-pills .nav-item .nav-link").click(function () {
-    $(".bg-overlay, .dashboard-left-sidebar").removeClass("show");
-});
+$(".close-button, .bg-overlay, .user-nav-pills .nav-item .nav-link").click(
+    function () {
+        $(".bg-overlay, .dashboard-left-sidebar").removeClass("show");
+    }
+);
 
 /*=====================
    09. Tooltip Js
    ==========================*/
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+);
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-})
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
 
 /*=====================
    10. Cookie Bar Js
@@ -265,7 +286,10 @@ $(window).on("load resize", function () {
 
     // close search
     $(".close-search").on("click", function () {
-        $(this).closest(".rightside-box").find(".search-full").removeClass("open");
+        $(this)
+            .closest(".rightside-box")
+            .find(".search-full")
+            .removeClass("open");
     });
 });
 
@@ -273,41 +297,45 @@ $(window).on("load resize", function () {
    13. Wishlist Js
    ==========================*/
 $(".notifi-wishlist").on("click", function () {
-    $.notify({
-        icon: "fa fa-check",
-        title: "Success!",
-        message: "Item Successfully added in wishlist",
-    }, {
-        element: "body",
-        position: null,
-        type: "info",
-        allow_dismiss: true,
-        newest_on_top: false,
-        showProgressbar: true,
-        placement: {
-            from: "top",
-            align: "right",
+    $.notify(
+        {
+            icon: "fa fa-check",
+            title: "Success!",
+            message: "Item Successfully added in wishlist",
         },
-        offset: 20,
-        spacing: 10,
-        z_index: 1031,
-        delay: 5000,
-        animate: {
-            enter: "animated fadeInDown",
-            exit: "animated fadeOutUp",
-        },
-        icon_type: "class",
-        template: '<div data-notify="container" class="col-xxl-3 col-lg-5 col-md-6 col-sm-7 col-12 alert alert-{0}" role="alert">' +
-            '<button type="button" aria-hidden="true" class="btn-close" data-notify="dismiss"></button>' +
-            '<span data-notify="icon"></span> ' +
-            '<span data-notify="title">{1}</span> ' +
-            '<span data-notify="message">{2}</span>' +
-            '<div class="progress" data-notify="progressbar">' +
-            '<div class="progress-bar progress-bar-info progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>' +
-            "</div>" +
-            '<a href="{3}" target="{4}" data-notify="url"></a>' +
-            "</div>",
-    });
+        {
+            element: "body",
+            position: null,
+            type: "info",
+            allow_dismiss: true,
+            newest_on_top: false,
+            showProgressbar: true,
+            placement: {
+                from: "top",
+                align: "right",
+            },
+            offset: 20,
+            spacing: 10,
+            z_index: 1031,
+            delay: 5000,
+            animate: {
+                enter: "animated fadeInDown",
+                exit: "animated fadeOutUp",
+            },
+            icon_type: "class",
+            template:
+                '<div data-notify="container" class="col-xxl-3 col-lg-5 col-md-6 col-sm-7 col-12 alert alert-{0}" role="alert">' +
+                '<button type="button" aria-hidden="true" class="btn-close" data-notify="dismiss"></button>' +
+                '<span data-notify="icon"></span> ' +
+                '<span data-notify="title">{1}</span> ' +
+                '<span data-notify="message">{2}</span>' +
+                '<div class="progress" data-notify="progressbar">' +
+                '<div class="progress-bar progress-bar-info progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>' +
+                "</div>" +
+                '<a href="{3}" target="{4}" data-notify="url"></a>' +
+                "</div>",
+        }
+    );
 });
 
 /*=====================
@@ -328,13 +356,21 @@ document.addEventListener("readystatechange", (event) => {
 /*=====================
     15. header Dropdown Js
  ==========================*/
-$(".dropdown-menu li a").on('click', function () {
+$(".dropdown-menu li a").on("click", function () {
     var a = $(this).closest("a");
     var getSampling = a.text();
-    var getImage = a.find('img').attr('src');
+    var getImage = a.find("img").attr("src");
 
-    $(this).closest(".dropdown-menu").prev('.dropdown-toggle').find('span').text(getSampling);
-    $(this).closest(".dropdown-menu").prev('.dropdown-toggle').find('img').attr("src", getImage);
+    $(this)
+        .closest(".dropdown-menu")
+        .prev(".dropdown-toggle")
+        .find("span")
+        .text(getSampling);
+    $(this)
+        .closest(".dropdown-menu")
+        .prev(".dropdown-toggle")
+        .find("img")
+        .attr("src", getImage);
 });
 
 /*=====================
@@ -381,17 +417,18 @@ $(".theme-option .setting-box .setting-button").click(function () {
    20. user-dashboard profile change js
    ==========================*/
 function readURL(uploader) {
-    $('.update_img').attr('src',
-        window.URL.createObjectURL(uploader.files[0]));
-};
+    $(".update_img").attr("src", window.URL.createObjectURL(uploader.files[0]));
+}
 
 /*=====================
    21. Wishlist box remove js
    ==========================*/
 $(".close_button").click(function () {
-    $(this).closest(".product-box-contain").fadeOut("slow", function () {
-        $(this).closest(".product-box-contain").remove();
-    });
+    $(this)
+        .closest(".product-box-contain")
+        .fadeOut("slow", function () {
+            $(this).closest(".product-box-contain").remove();
+        });
 });
 
 /*=====================
@@ -416,7 +453,9 @@ $(".close-notification").click(function () {
 ==========================*/
 var contentwidth = $(window).width();
 if (contentwidth < "767") {
-    $(".onhover-category-list .category-name").append('<span class="according-menu">+</span>');
+    $(".onhover-category-list .category-name").append(
+        '<span class="according-menu">+</span>'
+    );
     $(".category-name").on("click", function () {
         $(".category-name")
             .removeClass("active")

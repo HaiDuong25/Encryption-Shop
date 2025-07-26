@@ -2,21 +2,21 @@
 <html lang="en" dir="ltr">
 
 
-<!-- Mirrored from themes.pixelstrap.com/fastkart/back-end/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 06 Nov 2024 14:35:16 GMT -->
+<!-- Mirrored from themes.pixelstrap.com/encryptionstore/back-end/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 06 Nov 2024 14:35:16 GMT -->
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Fastkart admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
+        content="EncryptionStore admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
     <meta name="keywords"
-        content="admin template, Fastkart admin template, dashboard template, flat admin template, responsive admin template, web app">
+        content="admin template, EncryptionStore admin template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="pixelstrap">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets/images/favicon.png') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" type="image/x-icon">
-    <title>Fastkart Admin </title>
+    <title>EncryptionStore Admin </title>
 
     <!-- Google font-->
     <link
@@ -96,7 +96,7 @@
                         <div class="Typeahead Typeahead--twitterUsers">
                             <div class="u-posRelative">
                                 <input class="demo-input Typeahead-input form-control-plaintext w-100" type="text"
-                                    placeholder="Search Fastkart .." name="q" title="" autofocus>
+                                    placeholder="Search EncryptionStore .." name="q" title="" autofocus>
                                 <i class="close-search" data-feather="x"></i>
                                 <div class="spinner-border Typeahead-spinner" role="status">
                                     <span class="sr-only">Loading...</span>
@@ -188,7 +188,7 @@
                                     </a>
                                 </li> -->
                                 <li>
-                                    <a href="{{ route('users.edit' , auth()->user()->id) }}">
+                                    <a href="{{ route('users.edit', auth()->user()->id) }}">
                                         <i data-feather="settings"></i>
                                         <span>Tài khoản</span>
                                     </a>
