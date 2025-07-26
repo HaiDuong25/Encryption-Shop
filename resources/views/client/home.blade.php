@@ -211,132 +211,159 @@
                 <h2 class="fw-bold" style="font-size: 2rem;">Danh mục nổi bật</h2>
             </div>
             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-6 g-4 justify-content-center">
-                <div class="col d-flex">
-                    <div class="category-box-modern text-center w-100 h-100">
-                        <div class="category-image-container">
-                            <a href="#">
-                                <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80"
-                                    class="img-fluid category-img-modern mx-auto" alt="Vest Nam">
-                            </a>
-                            <div class="category-overlay">
-                                <div class="category-info">
-                                    <h4 class="category-title">Vest Nam Cao Cấp</h4>
-                                    <span class="category-count">12 sản phẩm</span>
+                @if($categories && $categories->count() > 0)
+                    @foreach($categories as $category)
+                        <div class="col d-flex">
+                            <div class="category-box-modern text-center w-100 h-100">
+                                <div class="category-image-container">
+                                    <a href="{{ route('categories.show', $category->id) }}">
+                                        <img src="{{ $category->image ? asset('storage/' . $category->image) : 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80' }}"
+                                            class="img-fluid category-img-modern mx-auto" alt="{{ $category->name }}">
+                                    </a>
+                                    <div class="category-overlay">
+                                        <div class="category-info">
+                                            <h4 class="category-title">{{ $category->name }}</h4>
+                                            <span class="category-count">{{ $category->totalProductsCount() }} sản phẩm</span>
+                                        </div>
+                                    </div>
                                 </div>
+                                <button onclick="location.href = '{{ route('categories.show', $category->id) }}';"
+                                    class="btn btn-category-modern mt-3">
+                                    <span>Khám phá ngay</span>
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
                             </div>
                         </div>
-                        <button onclick="location.href = '{{ route('client.products.index') }}';"
-                            class="btn btn-category-modern mt-3">
-                            <span>Khám phá ngay</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="col d-flex">
-                    <div class="category-box-modern text-center w-100 h-100">
-                        <div class="category-image-container">
-                            <a href="#">
-                                <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=600&q=80"
-                                    class="img-fluid category-img-modern mx-auto" alt="Đầm Nữ">
-                            </a>
-                            <div class="category-overlay">
-                                <div class="category-info">
-                                    <h4 class="category-title">Đầm Dạ Hội Nữ</h4>
-                                    <span class="category-count">15 sản phẩm</span>
+                    @endforeach
+                @else
+                    <!-- Fallback categories nếu không có dữ liệu -->
+                    <div class="col d-flex">
+                        <div class="category-box-modern text-center w-100 h-100">
+                            <div class="category-image-container">
+                                <a href="{{ route('categories.index') }}">
+                                    <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80"
+                                        class="img-fluid category-img-modern mx-auto" alt="Vest Nam">
+                                </a>
+                                <div class="category-overlay">
+                                    <div class="category-info">
+                                        <h4 class="category-title">Vest Nam Cao Cấp</h4>
+                                        <span class="category-count">12 sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
+                            <button onclick="location.href = '{{ route('categories.index') }}';"
+                                class="btn btn-category-modern mt-3">
+                                <span>Khám phá ngay</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
                         </div>
-                        <button onclick="location.href = '{{ route('client.products.index') }}';"
-                            class="btn btn-category-modern mt-3">
-                            <span>Khám phá ngay</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
                     </div>
-                </div>
-                <div class="col d-flex">
-                    <div class="category-box-modern text-center w-100 h-100">
-                        <div class="category-image-container">
-                            <a href="#">
-                                <img src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=600&q=80"
-                                    class="img-fluid category-img-modern mx-auto" alt="Áo Sơ Mi Nam">
-                            </a>
-                            <div class="category-overlay">
-                                <div class="category-info">
-                                    <h4 class="category-title">Áo Sơ Mi Nam</h4>
-                                    <span class="category-count">18 sản phẩm</span>
+                    <div class="col d-flex">
+                        <div class="category-box-modern text-center w-100 h-100">
+                            <div class="category-image-container">
+                                <a href="{{ route('categories.index') }}">
+                                    <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=600&q=80"
+                                        class="img-fluid category-img-modern mx-auto" alt="Đầm Nữ">
+                                </a>
+                                <div class="category-overlay">
+                                    <div class="category-info">
+                                        <h4 class="category-title">Đầm Dạ Hội Nữ</h4>
+                                        <span class="category-count">15 sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
+                            <button onclick="location.href = '{{ route('categories.index') }}';"
+                                class="btn btn-category-modern mt-3">
+                                <span>Khám phá ngay</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
                         </div>
-                        <button onclick="location.href = '{{ route('client.products.index') }}';"
-                            class="btn btn-category-modern mt-3">
-                            <span>Khám phá ngay</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
                     </div>
-                </div>
-                <div class="col d-flex">
-                    <div class="category-box-modern text-center w-100 h-100">
-                        <div class="category-image-container">
-                            <a href="#">
-                                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
-                                    class="img-fluid category-img-modern mx-auto" alt="Phụ kiện">
-                            </a>
-                            <div class="category-overlay">
-                                <div class="category-info">
-                                    <h4 class="category-title">Phụ kiện cao cấp</h4>
-                                    <span class="category-count">10 sản phẩm</span>
+                    <div class="col d-flex">
+                        <div class="category-box-modern text-center w-100 h-100">
+                            <div class="category-image-container">
+                                <a href="{{ route('categories.index') }}">
+                                    <img src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=600&q=80"
+                                        class="img-fluid category-img-modern mx-auto" alt="Áo Sơ Mi Nam">
+                                </a>
+                                <div class="category-overlay">
+                                    <div class="category-info">
+                                        <h4 class="category-title">Áo Sơ Mi Nam</h4>
+                                        <span class="category-count">18 sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
+                            <button onclick="location.href = '{{ route('categories.index') }}';"
+                                class="btn btn-category-modern mt-3">
+                                <span>Khám phá ngay</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
                         </div>
-                        <button onclick="location.href = '{{ route('client.products.index') }}';"
-                            class="btn btn-category-modern mt-3">
-                            <span>Khám phá ngay</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
                     </div>
-                </div>
-                <div class="col d-flex">
-                    <div class="category-box-modern text-center w-100 h-100">
-                        <div class="category-image-container">
-                            <a href="#">
-                                <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=600&q=80"
-                                    class="img-fluid category-img-modern mx-auto" alt="Quần Tây Nam">
-                            </a>
-                            <div class="category-overlay">
-                                <div class="category-info">
-                                    <h4 class="category-title">Quần Tây Nam</h4>
-                                    <span class="category-count">14 sản phẩm</span>
+                    <div class="col d-flex">
+                        <div class="category-box-modern text-center w-100 h-100">
+                            <div class="category-image-container">
+                                <a href="{{ route('categories.index') }}">
+                                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"
+                                        class="img-fluid category-img-modern mx-auto" alt="Phụ kiện">
+                                </a>
+                                <div class="category-overlay">
+                                    <div class="category-info">
+                                        <h4 class="category-title">Phụ kiện cao cấp</h4>
+                                        <span class="category-count">10 sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
+                            <button onclick="location.href = '{{ route('categories.index') }}';"
+                                class="btn btn-category-modern mt-3">
+                                <span>Khám phá ngay</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
                         </div>
-                        <button onclick="location.href = '{{ route('client.products.index') }}';"
-                            class="btn btn-category-modern mt-3">
-                            <span>Khám phá ngay</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
                     </div>
-                </div>
-                <div class="col d-flex">
-                    <div class="category-box-modern text-center w-100 h-100">
-                        <div class="category-image-container">
-                            <a href="#">
-                                <img src="https://images.unsplash.com/photo-1524253482453-3fed8d2fe12b?auto=format&fit=crop&w=600&q=80"
-                                    class="img-fluid category-img-modern mx-auto" alt="Áo Khoác Nữ">
-                            </a>
-                            <div class="category-overlay">
-                                <div class="category-info">
-                                    <h4 class="category-title">Áo Khoác Nữ</h4>
-                                    <span class="category-count">11 sản phẩm</span>
+                    <div class="col d-flex">
+                        <div class="category-box-modern text-center w-100 h-100">
+                            <div class="category-image-container">
+                                <a href="{{ route('categories.index') }}">
+                                    <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=600&q=80"
+                                        class="img-fluid category-img-modern mx-auto" alt="Quần Tây Nam">
+                                </a>
+                                <div class="category-overlay">
+                                    <div class="category-info">
+                                        <h4 class="category-title">Quần Tây Nam</h4>
+                                        <span class="category-count">14 sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
+                            <button onclick="location.href = '{{ route('categories.index') }}';"
+                                class="btn btn-category-modern mt-3">
+                                <span>Khám phá ngay</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
                         </div>
-                        <button onclick="location.href = '{{ route('client.products.index') }}';"
-                            class="btn btn-category-modern mt-3">
-                            <span>Khám phá ngay</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
                     </div>
-                </div>
+                    <div class="col d-flex">
+                        <div class="category-box-modern text-center w-100 h-100">
+                            <div class="category-image-container">
+                                <a href="{{ route('categories.index') }}">
+                                    <img src="https://images.unsplash.com/photo-1524253482453-3fed8d2fe12b?auto=format&fit=crop&w=600&q=80"
+                                        class="img-fluid category-img-modern mx-auto" alt="Áo Khoác Nữ">
+                                </a>
+                                <div class="category-overlay">
+                                    <div class="category-info">
+                                        <h4 class="category-title">Áo Khoác Nữ</h4>
+                                        <span class="category-count">11 sản phẩm</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="location.href = '{{ route('categories.index') }}';"
+                                class="btn btn-category-modern mt-3">
+                                <span>Khám phá ngay</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </section>
@@ -764,14 +791,6 @@
                                                 title="Xem chi tiết">
                                                 <i class="fa-solid fa-eye" style="font-size: 14px;"></i>
                                             </a>
-                                            <button
-                                                class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                                                style="width: 40px; height: 40px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;"
-                                                onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white'; this.style.transform='scale(1.1)';"
-                                                onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.9)'; this.style.color='#333'; this.style.transform='scale(1)';"
-                                                title="Thêm vào yêu thích">
-                                                <i class="fa-solid fa-heart" style="font-size: 14px;"></i>
-                                            </button>
                                         </div>
                                     </div>
 
@@ -1227,7 +1246,7 @@
                                     </div>
                                     <h4 class="card-title fw-bold text-dark mb-3"
                                         style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                                                                                               -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         BST Thu Đông 2025: Xu hướng mới lên ngôi
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
@@ -1239,7 +1258,7 @@
                                     <a href="{{ route('client.news.index') }}"
                                         class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
                                         style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; 
-                                                                                      box-shadow: 0 8px 25px rgba(249, 168, 37, 0.4); transition: all 0.3s ease;">
+                                                                                                              box-shadow: 0 8px 25px rgba(249, 168, 37, 0.4); transition: all 0.3s ease;">
                                         <span class="position-relative z-index-2">
                                             Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
                                         </span>
@@ -1291,7 +1310,7 @@
                                     </div>
                                     <h4 class="card-title fw-bold text-dark mb-3"
                                         style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
-                                                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                                                                                               -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         Bí quyết phối đồ công sở thanh lịch
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
@@ -1303,7 +1322,7 @@
                                     <a href="{{ route('client.news.index') }}"
                                         class="btn btn-success rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
                                         style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); border: none; 
-                                                                                      box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); transition: all 0.3s ease;">
+                                                                                                              box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); transition: all 0.3s ease;">
                                         <span class="position-relative z-index-2">
                                             Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
                                         </span>
@@ -1356,7 +1375,7 @@
                                     </div>
                                     <h4 class="card-title fw-bold text-dark mb-3"
                                         style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); 
-                                                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                                                                                               -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                         Phong cách hè 2025: Đơn giản mà nổi bật
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
@@ -1368,7 +1387,7 @@
                                     <a href="{{ route('client.news.index') }}"
                                         class="btn btn-primary rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
                                         style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); border: none; 
-                                                                                      box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); transition: all 0.3s ease;">
+                                                                                                              box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); transition: all 0.3s ease;">
                                         <span class="position-relative z-index-2">
                                             Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
                                         </span>

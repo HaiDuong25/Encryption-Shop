@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Banner;
 use App\Models\News;
 use App\Models\Coupon;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -22,6 +23,15 @@ class HomeController extends Controller
             ->latest()
             ->take(6)
             ->get();
+
+        // Lấy danh mục nổi bật
+        $categories = Category::where('status', 1)
+            ->whereNull('parent_id') // Chỉ lấy danh mục cha
+            ->withCount('products')
+            ->latest()
+            ->take(6)
+            ->get();
+
         // Lấy coupon dựa trên trạng thái đăng nhập
         if (Auth::check()) {
             // Nếu đã đăng nhập, chỉ hiển thị coupon chưa sử dụng
@@ -37,6 +47,6 @@ class HomeController extends Controller
                 ->get();
         }
 
-        return view('client.home', compact('products', 'banners', 'news', 'coupons'));
+        return view('client.home', compact('products', 'banners', 'news', 'coupons', 'categories'));
     }
 }
