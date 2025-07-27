@@ -125,7 +125,8 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::resource('orders', OrderController::class)->except(['create', 'store']);
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::post('orders/{order}/cancel', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel');
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');
+    Route::post('orders/{order}/cancel-by-admin', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel-by-admin');
 
     // Shipping Addresses
     Route::resource('shipping-addresses', \App\Http\Controllers\Admin\ShippingAddressController::class);

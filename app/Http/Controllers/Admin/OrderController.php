@@ -152,10 +152,38 @@ $order->update([
         }
     }
 
-    // Hủy đơn hàng (admin có thể hủy bất kỳ đơn hàng nào)
+    // Hủy đơn hàng (chỉ cho phép hủy đơn hàng chờ xử lý và đã xác nhận)
     public function cancel(Order $order)
     {
         try {
+            // Kiểm tra điều kiện cho phép hủy
+            $cancellableStatuses = ['pending', 'confirmed']; // Chỉ cho phép hủy đơn chờ xử lý và đã xác nhận
+            
+            // Convert numeric status to string for compatibility
+            $statusValue = $order->status;
+            if (is_numeric($statusValue)) {
+                $statusMap = [
+                    '0' => 'pending',
+                    '1' => 'confirmed', 
+                    '2' => 'shipping',
+                    '3' => 'delivering',
+                    '4' => 'received',
+                    '5' => 'completed',
+                    '6' => 'returning',
+                    '7' => 'approved',
+                    '8' => 'rejected',
+                    '9' => 'cancelled',
+                ];
+                $statusValue = $statusMap[$statusValue] ?? 'pending';
+            }
+
+            if (!in_array($statusValue, $cancellableStatuses)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xử lý" hoặc "Đã xác nhận". Đơn hàng hiện tại đã sang trạng thái khác.'
+                ], 400);
+            }
+
             DB::beginTransaction();
 
             // Trả lại số lượng sản phẩm
@@ -181,18 +209,42 @@ $order->update([
         }
     }
 
-    // Xóa đơn hàng (admin có thể xóa bất kỳ đơn hàng nào)
+    // Xóa đơn hàng (chỉ cho phép xóa đơn hàng đã hủy thành công)
     public function destroy(Order $order)
     {
         try {
-            DB::beginTransaction();
-
-            // Trả lại số lượng sản phẩm nếu đơn hàng chưa bị hủy
-            if ($order->status !== 'cancelled') {
-                $this->restoreStock($order);
+            // Kiểm tra điều kiện cho phép xóa
+            $deletableStatuses = ['cancelled']; // Chỉ cho phép xóa đơn hàng đã hủy
+            
+            // Convert numeric status to string for compatibility
+            $statusValue = $order->status;
+            if (is_numeric($statusValue)) {
+                $statusMap = [
+                    '0' => 'pending',
+                    '1' => 'confirmed', 
+                    '2' => 'shipping',
+                    '3' => 'delivering',
+                    '4' => 'received',
+                    '5' => 'completed',
+                    '6' => 'returning',
+                    '7' => 'approved',
+                    '8' => 'rejected',
+                    '9' => 'cancelled',
+                ];
+                $statusValue = $statusMap[$statusValue] ?? 'pending';
             }
 
-            // Xóa các bản ghi liên quan
+            if (!in_array($statusValue, $deletableStatuses)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chỉ có thể xóa đơn hàng đã được hủy thành công. Vui lòng hủy đơn hàng trước khi xóa.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Đơn hàng đã hủy rồi nên stock đã được trả lại, không cần restore lại
+            // Chỉ xóa các bản ghi liên quan
             $order->orderDetails()->delete();
             $order->payments()->delete();
 
