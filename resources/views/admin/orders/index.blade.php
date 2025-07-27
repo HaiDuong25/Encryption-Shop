@@ -223,7 +223,28 @@
                                                     <i class="ri-pencil-line" style="font-size: 1.1rem;"></i>
                                                 </a>
                                             </li>
-                                            @if ($order->status !== 'cancelled' && $order->status !== 'completed')
+                                            @php
+                                                // Chỉ cho phép hủy đơn hàng ở trạng thái "Chờ xử lý" và "Đã xác nhận"
+                                                $canCancel = false;
+                                                $cancelStatusValue = $order->status;
+                                                if (is_numeric($cancelStatusValue)) {
+                                                    $cancelStatusMap = [
+                                                        '0' => 'pending',
+                                                        '1' => 'confirmed', 
+                                                        '2' => 'shipping',
+                                                        '3' => 'delivering',
+                                                        '4' => 'received',
+                                                        '5' => 'completed',
+                                                        '6' => 'returning',
+                                                        '7' => 'approved',
+                                                        '8' => 'rejected',
+                                                        '9' => 'cancelled',
+                                                    ];
+                                                    $cancelStatusValue = $cancelStatusMap[$cancelStatusValue] ?? 'pending';
+                                                }
+                                                $canCancel = in_array($cancelStatusValue, ['pending', 'confirmed']);
+                                            @endphp
+                                            @if ($canCancel)
                                                 <li>
                                                     <button type="button" onclick="cancelOrder({{ $order->id }})"
                                                         style="border:none; background:none; padding:0; color:#ffc107; font-size: 1.1rem;"
@@ -232,13 +253,37 @@
                                                     </button>
                                                 </li>
                                             @endif
-                                            <li>
-                                                <button type="button" onclick="deleteOrder({{ $order->id }})"
-                                                    style="border:none; background:none; padding:0; color:#dc3545; font-size: 1.1rem;"
-                                                    title="Xóa đơn hàng">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
-                                            </li>
+                                            @php
+                                                // Chỉ cho phép xóa đơn hàng đã hủy (không bao gồm trạng thái trả hàng)
+                                                $canDelete = false;
+                                                $deleteStatusValue = $order->status;
+                                                if (is_numeric($deleteStatusValue)) {
+                                                    $deleteStatusMap = [
+                                                        '0' => 'pending',
+                                                        '1' => 'confirmed', 
+                                                        '2' => 'shipping',
+                                                        '3' => 'delivering',
+                                                        '4' => 'received',
+                                                        '5' => 'completed',
+                                                        '6' => 'returning',
+                                                        '7' => 'approved',
+                                                        '8' => 'rejected',
+                                                        '9' => 'cancelled',
+                                                    ];
+                                                    $deleteStatusValue = $deleteStatusMap[$deleteStatusValue] ?? 'pending';
+                                                }
+                                                // CHỈ cho phép xóa đơn hàng đã hủy, KHÔNG bao gồm trạng thái trả hàng
+                                                $canDelete = ($deleteStatusValue === 'cancelled');
+                                            @endphp
+                                            @if ($canDelete)
+                                                <li>
+                                                    <button type="button" onclick="deleteOrder({{ $order->id }})"
+                                                        style="border:none; background:none; padding:0; color:#dc3545; font-size: 1.1rem;"
+                                                        title="Xóa đơn hàng (chỉ đơn đã hủy)">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </li>
+                                            @endif
                                         </ul>
                                     </td>
                                 </tr>
@@ -252,7 +297,7 @@
 
     <script>
         function cancelOrder(orderId) {
-            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được trả lại.')) {
+            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xử lý" hoặc "Đã xác nhận". Số lượng sản phẩm sẽ được trả lại.')) {
                 return;
             }
 
@@ -280,7 +325,7 @@
 
         function deleteOrder(orderId) {
             if (!confirm(
-                    'Bạn có chắc chắn muốn xóa đơn hàng này không? Hành động này không thể hoàn tác và số lượng sản phẩm sẽ được trả lại nếu đơn hàng chưa bị hủy.'
+                    'Bạn có chắc chắn muốn xóa đơn hàng này không? CHỈ có thể xóa đơn hàng ở trạng thái "Đã hủy". Các đơn hàng đang trả hàng KHÔNG được phép xóa.'
                 )) {
                 return;
             }
