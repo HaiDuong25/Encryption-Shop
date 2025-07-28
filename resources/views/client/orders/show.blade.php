@@ -411,15 +411,59 @@
                                         @endphp
                                         <tr>
                                             <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
-                                            <td>
-                                                <strong>{{ $item->variant->product->name ?? 'Sản phẩm đã xóa' }}</strong><br>
-                                                <small>Phân loại: {{ $item->variant->name ?? 'Mặc định' }}</small><br>
-                                                <small>Giá: {{ number_format($item->price) }}₫ x
-                                                    {{ $item->quantity }}</small>
 
-                                                @if ($statusValue == 'completed')
+
+                                            <td class="align-top">
+                                                {{-- Tên và danh mục sản phẩm --}}
+                                                <div class="fw-bold text-dark fs-6">
+                                                    {{ $item->product->name ?? 'Sản phẩm đã xóa' }}
+                                                </div>
+                                                <div class="text-muted small mb-1">
+                                                    {{ $item->product->category->name ?? 'Danh mục đã xóa' }}
+                                                </div>
+
+                                                {{-- Mã SKU --}}
+                                                @if ($item->variant && $item->variant->sku)
+                                                    <div class="text-muted small">Mã SKU: <span
+                                                            class="fw-semibold">{{ $item->variant->sku }}</span></div>
+                                                @endif
+
+                                                {{-- Hiển thị các thuộc tính biến thể (Size, Màu, Khác) --}}
+                                                @if ($item->variant && $item->variant->attributeValues->count())
+                                                    <div class="d-flex flex-wrap gap-2 mt-1">
+                                                        @foreach ($item->variant->attributeValues as $attrValue)
+                                                            @php
+                                                                $attrName = strtolower($attrValue->attribute->name);
+                                                            @endphp
+                                                            @if ($attrName === 'màu')
+                                                                <span class="badge text-dark border"
+                                                                    style="background-color: #e3f2fd; border-color: #2196f3;">
+                                                                    🎨 Màu: {{ $attrValue->value }}
+                                                                </span>
+                                                            @elseif ($attrName === 'size')
+                                                                <span class="badge text-dark border"
+                                                                    style="background-color: #fff3e0; border-color: #fb8c00;">
+                                                                    📏 Size: {{ $attrValue->value }}
+                                                                </span>
+                                                            @else
+                                                                <span class="badge bg-light text-dark border">
+                                                                    {{ $attrValue->attribute->name }}:
+                                                                    {{ $attrValue->value }}
+                                                                </span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+
+                                                {{-- Giá và số lượng --}}
+                                                <div class="mt-2 small">
+                                                    Giá: <strong>{{ number_format($item->price) }}₫</strong> x
+                                                    {{ $item->quantity }}
+                                                </div>
+
+                                                {{-- Đánh giá nếu đơn đã hoàn thành --}}
+                                                @if ($statusValue === 'completed')
                                                     @if (!$hasRated)
-                                                        {{-- Form đánh giá --}}
                                                         <form
                                                             action="{{ route('client.rates.store', [$item->variant->product->id, $item->id]) }}"
                                                             method="POST">
@@ -459,14 +503,14 @@
                                                         </div>
                                                     @endif
                                                 @endif
+
+                                                {{-- Trả hàng nếu đã nhận --}}
                                                 @if ($statusValue === 'received' && !$item->returnRequest)
                                                     <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
-                                                        class="btn btn-warning btn-sm mt-1">
-                                                        Trả hàng
-                                                    </a>
+                                                        class="btn btn-warning btn-sm mt-1">Trả hàng</a>
                                                 @endif
-
                                             </td>
+
                                             <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
                                         </tr>
 

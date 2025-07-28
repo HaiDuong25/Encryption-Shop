@@ -23,36 +23,38 @@
             margin-right: 16px;
             color: #334155;
         }
-.status-badge {
-    font-weight: bold;
-    padding: 0.5em 0.75em;
-    border-radius: 0.5em;
-}
 
-.badge-refunded {
-    background-color: #17a2b8;
-    color: #fff;
-}
+        .status-badge {
+            font-weight: bold;
+            padding: 0.5em 0.75em;
+            border-radius: 0.5em;
+        }
 
-.badge-returning {
-    background-color: #ffc107;
-    color: #000;
-}
+        .badge-refunded {
+            background-color: #17a2b8;
+            color: #fff;
+        }
 
-.badge-refunded-approved {
-    background-color: #fd7e14;
-    color: #fff;
-}
+        .badge-returning {
+            background-color: #ffc107;
+            color: #000;
+        }
 
-.badge-paid {
-    background-color: #28a745;
-    color: #fff;
-}
+        .badge-refunded-approved {
+            background-color: #fd7e14;
+            color: #fff;
+        }
 
-.badge-unpaid {
-    background-color: #6c757d;
-    color: #fff;
-}
+        .badge-paid {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .badge-unpaid {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
         .table th {
             background-color: #f1f5f9;
             color: #1e293b;
@@ -127,7 +129,15 @@
             'received' => 'Đã nhận',
             'completed' => 'Hoàn thành',
         ];
-        $statusMap = ['0' => 'pending', '1' => 'confirmed', '2' => 'shipping', '3' => 'delivering', '4' => 'received', '5' => 'completed', '6' => 'cancelled'];
+        $statusMap = [
+            '0' => 'pending',
+            '1' => 'confirmed',
+            '2' => 'shipping',
+            '3' => 'delivering',
+            '4' => 'received',
+            '5' => 'completed',
+            '6' => 'cancelled',
+        ];
         $statusValue = is_numeric($order->status) ? $statusMap[(string) $order->status] ?? 'pending' : $order->status;
         $statusKeys = array_keys($statuses);
         $currentStatusIndex = array_search($statusValue, $statusKeys);
@@ -136,76 +146,75 @@
         $isReturned = $statusValue === 'approved';
     @endphp
 
-   @if (!$isCancelled && !$isReturning && !$isReturned)
-    <div class="progress" style="height: 10px; margin-top: -10px; margin-bottom: 10px;">
-        @foreach ($statuses as $key => $label)
-            <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-success' : 'bg-secondary' }}"
-                style="width: {{ 100 / count($statuses) }}%"></div>
-        @endforeach
-    </div>
-    <div class="d-flex justify-content-between small mb-4 px-1">
-        @foreach ($statuses as $key => $label)
-            <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}"
-                style="width: {{ 100 / count($statuses) }}%">
-                {{ $label }}
+    @if (!$isCancelled && !$isReturning && !$isReturned)
+        <div class="progress" style="height: 10px; margin-top: -10px; margin-bottom: 10px;">
+            @foreach ($statuses as $key => $label)
+                <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-success' : 'bg-secondary' }}"
+                    style="width: {{ 100 / count($statuses) }}%"></div>
+            @endforeach
+        </div>
+        <div class="d-flex justify-content-between small mb-4 px-1">
+            @foreach ($statuses as $key => $label)
+                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}"
+                    style="width: {{ 100 / count($statuses) }}%">
+                    {{ $label }}
+                </div>
+            @endforeach
+        </div>
+    @else
+        @if ($isReturned)
+            <div class="alert alert-success text-center mb-4">
+                <i class="fas fa-undo-alt me-2"></i> Đơn hàng đã được trả hàng
             </div>
-        @endforeach
-    </div>
-@else
-    @if ($isReturned)
-        <div class="alert alert-success text-center mb-4">
-            <i class="fas fa-undo-alt me-2"></i> Đơn hàng đã được trả hàng
-        </div>
-    @elseif ($isReturning)
-        <div class="alert alert-warning text-center mb-4">
-            <i class="fas fa-undo me-2"></i> Đơn hàng đang trong quá trình trả hàng
-        </div>
-    @elseif ($isCancelled)
-        <div class="alert alert-danger text-center mb-4">
-            <i class="fas fa-times-circle me-2"></i> Đơn hàng đã bị hủy
-        </div>
+        @elseif ($isReturning)
+            <div class="alert alert-warning text-center mb-4">
+                <i class="fas fa-undo me-2"></i> Đơn hàng đang trong quá trình trả hàng
+            </div>
+        @elseif ($isCancelled)
+            <div class="alert alert-danger text-center mb-4">
+                <i class="fas fa-times-circle me-2"></i> Đơn hàng đã bị hủy
+            </div>
+        @endif
     @endif
-@endif
 
 
     {{-- Đặt timeline ngay dưới đây --}}
-        {{-- Timeline chi tiết lịch sử trạng thái --}}
-   @if (
-    !$isCancelled &&
-    $order->statusHistories &&
-    $order->statusHistories->count() &&
-    !in_array($order->status, ['returning', 'approved'])
-)
+    {{-- Timeline chi tiết lịch sử trạng thái --}}
+    @if (
+        !$isCancelled &&
+            $order->statusHistories &&
+            $order->statusHistories->count() &&
+            !in_array($order->status, ['returning', 'approved']))
 
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
-                    <ul class="list-unstyled">
-                        @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
-                            <li class="mb-3 d-flex">
-                                <div class="me-3">
-                                    @if ($history->new_status === $statusValue)
-                                        <i class="fas fa-check-circle text-success"></i>
-                                    @else
-                                        <i class="far fa-circle text-muted"></i>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+                <ul class="list-unstyled">
+                    @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
+                        <li class="mb-3 d-flex">
+                            <div class="me-3">
+                                @if ($history->new_status === $statusValue)
+                                    <i class="fas fa-check-circle text-success"></i>
+                                @else
+                                    <i class="far fa-circle text-muted"></i>
+                                @endif
+                            </div>
+                            <div>
+                                <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
+                                <div class="text-muted small">
+                                    {{ $history->created_at->format('H:i d/m/Y') }}
+                                    @if ($history->description)
+                                        <br><span>{{ $history->description }}</span>
                                     @endif
                                 </div>
-                                <div>
-                                    <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
-                                    <div class="text-muted small">
-                                        {{ $history->created_at->format('H:i d/m/Y') }}
-                                        @if ($history->description)
-                                            <br><span>{{ $history->description }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
+        </div>
 
-        @endif
+    @endif
     {{-- Phần còn lại giữ nguyên --}}
     <div class="order-header-bar">
         <div>
@@ -228,12 +237,13 @@
                 $total = $order->total_price;
             @endphp
 
-            @if($actualDiscountAmount > 0)
-                <span><i class="fas fa-calculator text-info"></i> Tạm tính: <strong>{{ number_format($subtotal, 0, ',', '.') }}
+            @if ($actualDiscountAmount > 0)
+                <span><i class="fas fa-calculator text-info"></i> Tạm tính:
+                    <strong>{{ number_format($subtotal, 0, ',', '.') }}
                         đ</strong></span>
                 <span><i class="fas fa-tag text-success"></i> Giảm giá: <strong
                         style="color:#10b981">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</strong>
-                    @if($order->coupon_code)
+                    @if ($order->coupon_code)
                         <span class="badge bg-primary ms-1">{{ $order->coupon_code }}</span>
                     @endif
                 </span>
@@ -256,6 +266,7 @@
                             <tr>
                                 <th>Ảnh</th>
                                 <th>Tên sản phẩm</th>
+                                <th>Phân loại</th>
                                 <th>Số lượng</th>
                                 <th>Giá</th>
                                 <th>Thành tiền</th>
@@ -263,59 +274,64 @@
                         </thead>
                         <tbody>
                             @foreach ($order->orderDetails as $detail)
-                                                    <tr>
-                                                        <td>
-                                                            @php
-                                                                $product = null;
-                                                                $productImages = collect();
+                                <tr>
+                                    <td>
+                                        @php
+                                            $product = null;
+                                            $productImages = collect();
 
-                                                                // Ưu tiên lấy từ variant trước
-                                                                if ($detail->variant && $detail->variant->product) {
-                                                                    $product = $detail->variant->product;
-                                                                    $productImages = $product->productImages ?? collect();
-                                                                }
-                                                                // Nếu không có variant, lấy trực tiếp từ product (và product_id > 0)
-                                                                elseif ($detail->product_id > 0 && $detail->product) {
-                                                                    $product = $detail->product;
-                                                                    $productImages = $product->productImages ?? collect();
-                                                                }
-                                                            @endphp
+                                            // Ưu tiên lấy từ variant trước
+                                            if ($detail->variant && $detail->variant->product) {
+                                                $product = $detail->variant->product;
+                                                $productImages = $product->productImages ?? collect();
+                                            }
+                                            // Nếu không có variant, lấy trực tiếp từ product (và product_id > 0)
+                                            elseif ($detail->product_id > 0 && $detail->product) {
+                                                $product = $detail->product;
+                                                $productImages = $product->productImages ?? collect();
+                                            }
+                                        @endphp
 
-                                                            @if($product && $productImages->isNotEmpty())
-                                                                <img src="{{ asset('storage/' . $productImages->first()->image_path) }}" width="60"
-                                                                    height="60" style="border-radius:8px; object-fit:cover;">
-                                                            @elseif($product && $product->image)
-                                                                <img src="{{ asset('storage/' . $product->image) }}" width="60" height="60"
-                                                                    style="border-radius:8px; object-fit:cover;">
-                                                            @elseif($product)
-                                                                <div class="no-image"
-                                                                    style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                                                                    <i class="fas fa-image text-muted"></i>
-                                                                </div>
-                                                            @else
-                                                                <div class="no-image"
-                                                                    style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                                                                    <i class="fas fa-exclamation-circle text-danger"></i>
-                                                                </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            @if($product)
-                                                                <div><strong>{{ $product->name }}</strong></div>
-                                                                @if($detail->variant && $detail->variant->attribute_values)
-                                                                    <small class="text-muted">Phân loại: {{ $detail->variant->attribute_values }}</small>
-                                                                @endif
-                                                            @else
-                                                                <div class="text-danger">
-                                                                    <i class="fas fa-exclamation-triangle"></i>
-                                                                    Sản phẩm không còn tồn tại
-                                                                </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>{{ $detail->quantity }}</td>
-                                                        <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
-                                                        <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
-                                                    </tr>
+                                        @if ($product && $productImages->isNotEmpty())
+                                            <img src="{{ asset('storage/' . $productImages->first()->image_path) }}"
+                                                width="60" height="60" style="border-radius:8px; object-fit:cover;">
+                                        @elseif($product && $product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" width="60"
+                                                height="60" style="border-radius:8px; object-fit:cover;">
+                                        @elseif($product)
+                                            <div class="no-image"
+                                                style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                        @else
+                                            <div class="no-image"
+                                                style="width:60px; height:60px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                                                <i class="fas fa-exclamation-circle text-danger"></i>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($product)
+                                            <div><strong>{{ $product->name }}</strong></div>
+                                    <td>
+                                        {{-- Hiển thị các biến thể (attribute values) --}}
+                                        @foreach ($detail->variant->attributeValues as $attributeValue)
+                                            <span class="badge bg-light text-dark border">
+                                                {{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}
+                                            </span>
+                                        @endforeach
+                                    </td>
+                                @else
+                                    <div class="text-danger">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Sản phẩm không còn tồn tại
+                                    </div>
+                            @endif
+                            </td>
+                            <td>{{ $detail->quantity }}</td>
+                            <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
+                            <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
+                            </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -339,7 +355,7 @@
                         $isPaid = $order->payments->where('status', 'completed')->count() > 0;
                     @endphp
 
-                    @if($actualDiscountAmount > 0)
+                    @if ($actualDiscountAmount > 0)
                         <li>
                             <i class="fas fa-calculator text-info"></i>
                             Tạm tính:
@@ -348,11 +364,12 @@
                         <li>
                             <i class="fas fa-tag text-success"></i>
                             Giảm giá
-                            @if($order->coupon_code)
+                            @if ($order->coupon_code)
                                 ({{ $order->coupon_code }})
                             @endif
                             :
-                            <span class="text-success fw-bold">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</span>
+                            <span class="text-success fw-bold">-{{ number_format($actualDiscountAmount, 0, ',', '.') }}
+                                đ</span>
                         </li>
                     @endif
 
@@ -360,40 +377,41 @@
                         <i class="fas fa-money-bill-wave text-success"></i>
                         Tổng tiền thanh toán:
                         <span class="text-success fw-bold">{{ number_format($total, 0, ',', '.') }} đ</span>
-                      @php
-                                $isPaid =
-                                    $order->payments && $order->payments->where('status', 'completed')->count() > 0;
-                                $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
-                                $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
-                                $statusValue = is_numeric($order->status)
-                                    ? $statusMap[$order->status] ?? 'pending'
-                                    : $order->status;
-                            @endphp
-                           @switch($statusValue)
-    @case('refunded')
-    @case('returned') {{-- Đã trả hàng xong --}}
-        <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
-            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-        </span>
-        @break
+                        @php
+                            $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                            $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
+                            $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
+                            $statusValue = is_numeric($order->status)
+                                ? $statusMap[$order->status] ?? 'pending'
+                                : $order->status;
+                        @endphp
+                        @switch($statusValue)
+                            @case('refunded')
+                            @case('returned')
+                                {{-- Đã trả hàng xong --}}
+                                <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
+                                    {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                </span>
+                            @break
 
-    @case('returning') {{-- Đang trả hàng --}}
-        <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-            {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
-        </span>
-        @break
+                            @case('returning')
+                                {{-- Đang trả hàng --}}
+                                <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
+                                    {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
+                                </span>
+                            @break
 
-    @case('approved')
-        <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
-            {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-        </span>
-        @break
+                            @case('approved')
+                                <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
+                                    {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                </span>
+                            @break
 
-    @default
-        <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
-            {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
-        </span>
-@endswitch
+                            @default
+                                <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
+                                    {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                                </span>
+                        @endswitch
                     </li>
                     @php
                         $validPayments = $order->payments->whereNotNull('created_at');
@@ -405,7 +423,6 @@
                             <small class="text-muted">({{ $payment->note ?? '' }})</small>
                         </li>
                     @empty
-
                     @endforelse
                 </ul>
             </div>
@@ -435,13 +452,13 @@
                                 '2' => 'shipping',
                                 '3' => 'delivering',
                                 '4' => 'received',
-                                '5' => 'completed'
+                                '5' => 'completed',
                             ];
                             $statusValue = $statusMap[$statusValue] ?? 'pending';
                         }
                     @endphp
 
-                    @if($statusValue == 'pending')
+                    @if ($statusValue == 'pending')
                         <span class="badge bg-warning">Chờ xử lý</span>
                     @elseif($statusValue == 'confirmed')
                         <span class="badge bg-primary">Đã xác nhận</span>
@@ -468,17 +485,17 @@
                 <hr>
                 <div class="summary-title">Thông tin người nhận hàng</div>
                 <p><strong>Người
-                        nhận:</strong><br>{{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}
+                        nhận:</strong><br>{{ $order->recipient_name ?? ($order->orderer_name ?? ($order->user->name ?? 'N/A')) }}
                 </p>
-                <p><strong>SĐT:</strong> {{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</p>
-                <p><strong>Địa chỉ:</strong><br>{{ $order->recipient_address ?? $order->address ?? 'N/A' }}</p>
+                <p><strong>SĐT:</strong> {{ $order->recipient_phone ?? ($order->orderer_phone ?? 'N/A') }}</p>
+                <p><strong>Địa chỉ:</strong><br>{{ $order->recipient_address ?? ($order->address ?? 'N/A') }}</p>
 
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
-                @if($order->coupon_code)
+                @if ($order->coupon_code)
                     <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>
-                        @if($order->coupon_type == 'percentage')
+                        @if ($order->coupon_type == 'percentage')
                             ({{ $order->coupon_discount }}%)
                         @else
                             (-{{ number_format($order->coupon_discount, 0, ',', '.') }} đ)
@@ -494,11 +511,11 @@
             <div class="summary-card mt-3">
                 <div class="summary-title">Chi tiết giao hàng</div>
                 <p><strong>Người nhận:</strong>
-                    {{ $order->recipient_name ?? $order->orderer_name ?? ($order->user->name ?? 'N/A') }}</p>
+                    {{ $order->recipient_name ?? ($order->orderer_name ?? ($order->user->name ?? 'N/A')) }}</p>
                 <p><strong>Địa chỉ giao hàng:</strong><br>
-                    {{ $order->recipient_address ?? $order->address ?? 'N/A' }}
+                    {{ $order->recipient_address ?? ($order->address ?? 'N/A') }}
                 </p>
-                <p><strong>Số điện thoại:</strong> {{ $order->recipient_phone ?? $order->orderer_phone ?? 'N/A' }}</p>
+                <p><strong>Số điện thoại:</strong> {{ $order->recipient_phone ?? ($order->orderer_phone ?? 'N/A') }}</p>
                 <p><strong>Email liên hệ:</strong> {{ $order->orderer_email ?? ($order->user->email ?? 'N/A') }}</p>
                 <p><strong>Phương thức vận chuyển:</strong> Giao hàng tận nơi</p>
                 <p><strong>Ngày đặt hàng:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</p>
