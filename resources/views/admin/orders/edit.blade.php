@@ -31,83 +31,11 @@
                 @endif
 
                 {{-- Alert container for AJAX responses --}}
-                <div id="alert-container"></div>
-                <div class="mb-3">
-                    <label for="user_id" class="form-label">Khách hàng</label>
-                    <select class="form-select" id="user_id" name="user_id" disabled>
-                        <option value="">-- Chọn khách hàng --</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" data-name="{{ $user->name }}"
-                                data-phone="{{ $user->phone }}" data-address="{{ $user->address }}"
-                                {{ old('user_id', $order->user_id) == $user->id ? 'selected' : '' }}>
-                                {{ $user->name }} (ID: {{ $user->id }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+
 
 
                 <!-- Thông tin người nhận -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h6 class="mb-0">Thông tin người nhận</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="recipient_name" class="form-label">Tên người nhận</label>
-                            <input type="text" class="form-control" id="recipient_name" name="recipient_name"
-                                maxlength="255" required value="{{ old('recipient_name', $order->recipient_name) }}" disabled>
-                        </div>
 
-                        <div class="mb-3">
-                            <label for="recipient_phone" class="form-label">Số điện thoại người nhận</label>
-                            <input type="text" class="form-control" id="recipient_phone" name="recipient_phone"
-                                pattern="[0-9]{10,11}" maxlength="11" required
-                                value="{{ old('recipient_phone', $order->recipient_phone) }}" disabled>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="recipient_address" class="form-label">Địa chỉ người nhận</label>
-                            <input type="text" class="form-control" id="recipient_address" name="recipient_address"
-                                maxlength="255" required value="{{ old('recipient_address', $order->recipient_address) }}"disabled>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Sản phẩm trong đơn hàng</label>
-                    <div id="products-wrapper">
-                        @foreach ($order->orderDetails as $detail)
-                            <div class="row mb-2 product-row">
-                                <div class="col-7">
-                                    @php
-                                        $productName = 'Sản phẩm đã xóa';
-                                        if ($detail->variant && $detail->variant->product) {
-                                            $productName = $detail->variant->product->name;
-                                            if ($detail->variant->attribute_values) {
-                                                $productName .= ' (' . $detail->variant->attribute_values . ')';
-                                            }
-                                        } elseif ($detail->product_id > 0 && $detail->product) {
-                                            $productName = $detail->product->name;
-                                        }
-                                    @endphp
-                                    <input type="text" class="form-control" value="{{ $productName }}" readonly>
-                                </div>
-                                <div class="col-3">
-                                    <input type="number" name="quantities[]" class="form-control" min="1"
-                                        value="{{ old('quantities.' . $loop->index, $detail->quantity) }}" required>
-                                </div>
-                                <div class="col-2 d-flex align-items-center">
-                                    <!-- Không cho xóa sản phẩm ở đây -->
-                                </div>
-                                <input type="hidden" name="order_detail_ids[]" value="{{ $detail->id }}">
-                                <input type="hidden" name="product_ids[]" value="{{ $detail->product_id }}">
-                                <input type="hidden" name="variant_ids[]" value="{{ $detail->variant_id }}">
-                                <input type="hidden" name="prices[]" value="{{ $detail->price }}">
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
 
                 <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
@@ -202,58 +130,6 @@
                     </div>
                 @endif
 
-                <div class="mb-3">
-                    <label for="discount_id" class="form-label">Mã giảm giá</label>
-                    <select class="form-select" id="discount_id" name="discount_id" disabled>
-                        <option value="">-- Không áp dụng --</option>
-                        @foreach ($coupons as $coupon)
-                            @php
-                                $isExpired = $coupon->end_date && $coupon->end_date->isPast();
-                                $isNotStarted = $coupon->start_date && $coupon->start_date->isFuture();
-                                $isValid = !$isExpired && !$isNotStarted && $coupon->is_active;
-                                $isSelected =
-                                    $order->discount_id == $coupon->id || $order->coupon_code == $coupon->code;
-
-                                $statusText = '';
-                                if ($isExpired) {
-                                    $statusText = ' (Hết hạn)';
-                                } elseif ($isNotStarted) {
-                                    $statusText = ' (Chưa bắt đầu)';
-                                } elseif (!$coupon->is_active) {
-                                    $statusText = ' (Không khả dụng)';
-                                }
-
-                                $dateRange = '';
-                                if ($coupon->start_date && $coupon->end_date) {
-                                    $dateRange =
-                                        ' (' .
-                                        $coupon->start_date->format('d/m/Y') .
-                                        ' - ' .
-                                        $coupon->end_date->format('d/m/Y') .
-                                        ')';
-                                }
-                            @endphp
-                            <option value="{{ $coupon->id }}" {{ $isSelected ? 'selected' : '' }}
-                                {{ !$isValid && !$isSelected ? 'disabled' : '' }}>
-                                {{ $coupon->code }} - Giảm {{ $coupon->discount }}% {{ $dateRange }}
-                                {{ $statusText }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="payment_method_id" class="form-label">Phương thức thanh toán</label>
-                    <select class="form-select" id="payment_method_id" name="payment_method_id" disabled>
-                        <option value="">-- Chọn phương thức --</option>
-                        @foreach ($paymentMethods as $method)
-                            <option value="{{ $method->id }}"
-                                {{ old('payment_method_id', $order->payment_method_id) == $method->id ? 'selected' : '' }}>
-                                {{ $method->payment_type }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
 
                 <button type="submit" class="btn btn-primary" id="submitBtn">Cập nhật</button>
                 <a href="{{ route('orders.index') }}" class="btn btn-secondary">Quay lại</a>
