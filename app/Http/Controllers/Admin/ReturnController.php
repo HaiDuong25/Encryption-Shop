@@ -36,9 +36,10 @@ public function updateStatus(Request $request, $id)
         'status' => 'required|in:returning,approved,rejected'
     ]);
 
-    $return = ReturnRequest::with('order')->findOrFail($id);
+    // Gọi thêm quan hệ 'orderDetail.variant' thay vì 'productVariant'
+    $return = ReturnRequest::with(['order', 'orderDetail.variant'])->findOrFail($id);
 
-    // ✅ Chỉ cho phép cập nhật khi đang là 'pending'
+    // ✅ Chỉ xử lý nếu trạng thái hiện tại là 'pending'
     if ($return->status !== 'pending') {
         return redirect()->back()->with('error', 'Chỉ được cập nhật khi trạng thái là "Chờ duyệt".');
     }
@@ -46,20 +47,28 @@ public function updateStatus(Request $request, $id)
     $return->status = $request->status;
     $return->save();
 
-    // Cập nhật trạng thái đơn hàng tương ứng
+    // ✅ Cập nhật trạng thái đơn hàng liên quan
     if ($return->order) {
         if ($request->status === 'returning') {
             $return->order->status = 'returning';
         } elseif ($request->status === 'approved') {
             $return->order->status = 'approved';
+
+            // ✅ Cập nhật lại tồn kho của biến thể sản phẩm
+            $variant = $return->orderDetail->variant;
+            if ($variant) {
+                $variant->stock += $return->orderDetail->quantity;
+                $variant->save();
+            }
         } elseif ($request->status === 'rejected') {
-            $return->order->status = 'received'; // Hoặc để nguyên trạng thái trước đó
+            $return->order->status = 'received'; // hoặc giữ nguyên nếu bạn muốn
         }
         $return->order->save();
     }
 
     return redirect()->route('admin.returns.index')->with('success', 'Cập nhật trạng thái thành công.');
 }
+
 
 
 
