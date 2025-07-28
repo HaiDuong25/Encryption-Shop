@@ -10,120 +10,120 @@
         margin: 0 auto;
         background: white;
     }
-    
+
     .company-header {
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         color: white;
         padding: 2rem;
         border-radius: 10px 10px 0 0;
     }
-    
+
     .status-badge {
         animation: pulse 2s infinite;
     }
-    
+
     @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
-    
+
     .table th {
         background: linear-gradient(45deg, #007bff, #0056b3) !important;
         color: white !important;
         border: none !important;
     }
-    
+
     .table td {
         vertical-align: middle !important;
         border-color: #dee2e6 !important;
     }
-    
+
     .badge {
         font-size: 0.85em;
         padding: 0.5em 0.8em;
         font-weight: 500;
     }
-    
+
     /* Print styles */
     @media print {
-        body { 
+        body {
             background: white !important;
             font-size: 12pt;
             line-height: 1.4;
         }
-        
+
         .no-print {
             display: none !important;
         }
-        
+
         .invoice-container {
             box-shadow: none !important;
             max-width: none !important;
             margin: 0 !important;
         }
-        
+
         .card {
             border: 1px solid #dee2e6 !important;
             box-shadow: none !important;
             break-inside: avoid;
         }
-        
+
         .company-header {
             background: #007bff !important;
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
         }
-        
+
         .table th {
             background: #007bff !important;
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
             color: white !important;
         }
-        
+
         .badge {
             border: 1px solid #ccc !important;
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
         }
-        
+
         .text-primary {
             color: #007bff !important;
         }
-        
+
         .text-success {
             color: #28a745 !important;
         }
-        
+
         .btn {
             display: none !important;
         }
-        
+
         h1, h2, h3, h4, h5, h6 {
             page-break-after: avoid;
         }
-        
+
         .table {
             page-break-inside: avoid;
         }
-        
+
         @page {
             margin: 1.5cm;
             size: A4;
         }
     }
-    
+
     /* Responsive */
     @media (max-width: 768px) {
         .company-header h1 {
             font-size: 1.5rem !important;
         }
-        
+
         .table-responsive {
             font-size: 0.9rem;
         }
-        
+
         .btn-group .btn {
             margin-bottom: 0.5rem;
         }
@@ -259,7 +259,8 @@
                                                         <i class="fa-solid fa-tag me-1"></i>{{ $detail->product->category->name }}
                                                     </small>
                                                 @endif
-                                            </td>                            <td class="text-center align-middle">
+                                            </td>
+                                                                  <td class="text-center align-middle">
                                 @if($detail->variant && $detail->variant->attributeValues && $detail->variant->attributeValues->count() > 0)
                                     <div class="d-flex flex-column align-items-center gap-1">
                                         @php
