@@ -475,6 +475,25 @@
 
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
+                
+                @php
+                    $latestPayment = $order->payments->where('status', 'completed')->first();
+                @endphp
+                @if($latestPayment && $latestPayment->payment_method_type)
+                    <div class="payment-info mt-3 p-2" style="background-color: #f8f9fa; border-radius: 5px;">
+                        <p class="mb-1"><strong>Thông tin thanh toán:</strong></p>
+                        <p class="mb-1"><span class="badge bg-info">{{ $latestPayment->payment_method_type }}</span></p>
+                        @if($latestPayment->payer_account)
+                            <p class="mb-1"><small class="text-muted">Tài khoản: {{ $latestPayment->payer_account }}</small></p>
+                        @endif
+                        @if($latestPayment->payer_name)
+                            <p class="mb-1"><small class="text-dark">Tên: {{ $latestPayment->payer_name }}</small></p>
+                        @endif
+                        @if($latestPayment->transaction_code)
+                            <p class="mb-0"><small class="text-secondary">Mã GD: {{ $latestPayment->transaction_code }}</small></p>
+                        @endif
+                    </div>
+                @endif
                 @if($order->coupon_code)
                     <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>

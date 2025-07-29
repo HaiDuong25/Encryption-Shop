@@ -11,7 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class Payment extends Model
 {
-    protected $fillable = ['order_id', 'payment_method_id', 'amount', 'status', 'transaction_code', 'confirmed_at'];
+    protected $fillable = ['order_id', 'payment_method_id', 'amount', 'status', 'transaction_code', 'confirmed_at', 'payer_account', 'payer_name', 'payment_method_type'];
 
     // ✅ Khai báo để Laravel tự convert thành Carbon instance
     protected $casts = [

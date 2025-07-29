@@ -109,7 +109,7 @@ class ZaloPayController extends Controller
         
         if ($status == 1) {
             // Thanh toán thành công
-            $order = $this->createOrder($apptransid);
+            $order = $this->createOrder($apptransid, $request);
             
             if ($order) {
                 // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
@@ -163,7 +163,7 @@ class ZaloPayController extends Controller
     }
 
     // Hàm tạo đơn hàng trong hệ thống sau khi thanh toán thành công
-    private function createOrder($transactionId)
+    private function createOrder($transactionId, $request = null)
     {
         try {
             $orderData = Session::get('order_data');
@@ -269,6 +269,9 @@ class ZaloPayController extends Controller
                 'status' => 'completed',
                 'confirmed_at' => now(),
                 'transaction_code' => $transactionId,
+                'payer_account' => $this->extractPayerAccountFromZaloPay($request), // Số tài khoản người thanh toán
+                'payer_name' => $this->extractPayerNameFromZaloPay($request), // Tên người thanh toán (nếu có)
+                'payment_method_type' => 'ZaloPay', // Loại ví điện tử
             ]);
 
             return $order;
@@ -276,5 +279,53 @@ class ZaloPayController extends Controller
             Log::error('Lỗi khi tạo đơn hàng sau thanh toán ZaloPay: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Extract payer account information from ZaloPay response
+     */
+    private function extractPayerAccountFromZaloPay($request)
+    {
+        if (!$request) {
+            return null;
+        }
+
+        // ZaloPay có thể trả về thông tin qua app_user hoặc có thể có trong response khác
+        $appUser = $request->input('app_user', '');
+        if ($appUser && $appUser !== 'user_' . Auth::id()) {
+            return $appUser;
+        }
+
+        // Có thể lấy từ apptransid nếu có format đặc biệt
+        $apptransid = $request->input('apptransid', '');
+        if ($apptransid) {
+            // Parse thông tin từ transaction ID nếu có format đặc biệt
+            return substr($apptransid, -8); // Lấy 8 ký tự cuối làm identifier
+        }
+
+        return 'ZaloPay User'; // Default value
+    }
+
+    /**
+     * Extract payer name from ZaloPay response
+     */
+    private function extractPayerNameFromZaloPay($request)
+    {
+        if (!$request) {
+            return null;
+        }
+
+        // ZaloPay response thường không chứa tên người dùng vì lý do bảo mật
+        // Có thể lấy từ embed_data nếu có
+        $embedData = $request->input('embed_data', '');
+        if ($embedData) {
+            $data = json_decode($embedData, true);
+            if (isset($data['userInfo']['name'])) {
+                return $data['userInfo']['name'];
+            }
+        }
+
+        // Default: để null hoặc sử dụng app_user
+        return null;
     }
 }
