@@ -37,6 +37,7 @@
                     <th style="min-width: 120px;">Đơn hàng</th>
                     <th style="min-width: 120px;">Số tiền</th>
                     <th style="min-width: 120px;">Phương thức</th>
+                    <th style="min-width: 150px;">Người thanh toán</th>
                     <th style="min-width: 120px;">Trạng thái</th>
                     <th style="min-width: 150px;">Ngày thanh toán</th>
                     <th style="min-width: 120px;">Hành động</th>
@@ -54,6 +55,24 @@
                         <td class="text-end">{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} <span class="text-secondary">VND</span></td>
                         <td>
                             <span class="badge bg-light text-dark border border-1 border-secondary">{{ $payment->paymentMethod->payment_type ?? 'Chưa chọn' }}</span>
+                        </td>
+                        <td>
+                            @if($payment->payment_method_type)
+                                <div class="text-center">
+                                    <span class="badge bg-info text-white mb-1">{{ $payment->payment_method_type }}</span><br>
+                                    @if($payment->payer_account)
+                                        <small class="text-muted">{{ $payment->payer_account }}</small><br>
+                                    @endif
+                                    @if($payment->payer_name)
+                                        <small class="text-dark fw-bold">{{ $payment->payer_name }}</small>
+                                    @endif
+                                    @if($payment->transaction_code)
+                                        <br><small class="text-secondary">GD: {{ substr($payment->transaction_code, -8) }}</small>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
                         </td>
                         <td>
                             @php

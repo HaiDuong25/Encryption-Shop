@@ -492,7 +492,7 @@
 
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
-                @if ($order->coupon_code)
+                @if($order->coupon_code)
                     <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>
                         @if ($order->coupon_type == 'percentage')
