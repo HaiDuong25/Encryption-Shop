@@ -32,6 +32,7 @@ class OrderController extends \App\Http\Controllers\Controller
     {
         $order->load([
             'orderDetails.variant.product.productImages',
+    'orderDetails.variant.attributeValues.attribute', // <== THÊM DÒNG NÀY
             'orderDetails.product.productImages',
             'paymentMethod',
             'coupon',
@@ -41,36 +42,36 @@ class OrderController extends \App\Http\Controllers\Controller
         return view('admin.orders.show', compact('order'));
     }
 
-public function edit(Order $order)
-{
-    $order->load(['coupon']); // Load relationship với bảng coupons
-    $users = User::all();
-    $coupons = Coupon::all();
-    $paymentMethods = PaymentMethod::all();
+    public function edit(Order $order)
+    {
+        $order->load(['coupon']); // Load relationship với bảng coupons
+        $users = User::all();
+        $coupons = Coupon::all();
+        $paymentMethods = PaymentMethod::all();
 
-    // Thêm danh sách các trạng thái để hiển thị đúng label trong view
-    $statuses = [
-        'pending' => 'Chờ xử lý',
-        'confirmed' => 'Đã xác nhận',
-        'shipping' => 'Đã giao cho ĐVVC',
-        'delivering' => 'Đang giao',
-        'received' => 'Đã nhận',
-        'completed' => 'Hoàn thành',
-        'cancelled' => 'Đã hủy',
-        'returning' => 'Đang trả hàng',
-        'approved' => 'Đã trả hàng',
-        'rejected' => 'Từ chối trả',
-    ];
+        // Thêm danh sách các trạng thái để hiển thị đúng label trong view
+        $statuses = [
+            'pending' => 'Chờ xử lý',
+            'confirmed' => 'Đã xác nhận',
+            'shipping' => 'Đã giao cho ĐVVC',
+            'delivering' => 'Đang giao',
+            'received' => 'Đã nhận',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+            'returning' => 'Đang trả hàng',
+            'approved' => 'Đã trả hàng',
+            'rejected' => 'Từ chối trả',
+        ];
 
-    return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods', 'statuses'));
-}
+        return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods', 'statuses'));
+    }
 
 
     public function update(Request $request, Order $order)
     {
-       $validated = $request->validate([
-    'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled,returning,approved,rejected',
-]);
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled,returning,approved,rejected',
+        ]);
 
 
         try {
@@ -78,18 +79,18 @@ public function edit(Order $order)
 
             $oldStatus = $order->getOriginal('status');
 
-// Load quan hệ cần thiết
-$order->load('orderDetails.variant', 'orderDetails.product');
+            // Load quan hệ cần thiết
+            $order->load('orderDetails.variant', 'orderDetails.product');
 
-// Nếu cần thì cộng tồn trước
-if ($oldStatus !== $validated['status'] && $validated['status'] === 'approved') {
-    $this->restoreStock($order);
-}
+            // Nếu cần thì cộng tồn trước
+            if ($oldStatus !== $validated['status'] && $validated['status'] === 'approved') {
+                $this->restoreStock($order);
+            }
 
-// Sau đó mới update trạng thái
-$order->update([
-    'status' => $validated['status'],
-]);
+            // Sau đó mới update trạng thái
+            $order->update([
+                'status' => $validated['status'],
+            ]);
 
 
             // Xử lý logic thanh toán và hóa đơn khi chuyển trạng thái
@@ -145,7 +146,6 @@ $order->update([
                 ]);
             }
             return redirect()->route('orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()])->withInput();
@@ -158,13 +158,13 @@ $order->update([
         try {
             // Kiểm tra điều kiện cho phép hủy
             $cancellableStatuses = ['pending', 'confirmed']; // Chỉ cho phép hủy đơn chờ xử lý và đã xác nhận
-            
+
             // Convert numeric status to string for compatibility
             $statusValue = $order->status;
             if (is_numeric($statusValue)) {
                 $statusMap = [
                     '0' => 'pending',
-                    '1' => 'confirmed', 
+                    '1' => 'confirmed',
                     '2' => 'shipping',
                     '3' => 'delivering',
                     '4' => 'received',
@@ -198,7 +198,6 @@ $order->update([
                 'success' => true,
                 'message' => 'Đơn hàng đã được hủy thành công.'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -215,13 +214,13 @@ $order->update([
         try {
             // Kiểm tra điều kiện cho phép xóa
             $deletableStatuses = ['cancelled']; // Chỉ cho phép xóa đơn hàng đã hủy
-            
+
             // Convert numeric status to string for compatibility
             $statusValue = $order->status;
             if (is_numeric($statusValue)) {
                 $statusMap = [
                     '0' => 'pending',
-                    '1' => 'confirmed', 
+                    '1' => 'confirmed',
                     '2' => 'shipping',
                     '3' => 'delivering',
                     '4' => 'received',
@@ -257,7 +256,6 @@ $order->update([
                 'success' => true,
                 'message' => 'Đơn hàng đã được xóa thành công.'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -302,26 +300,26 @@ $order->update([
         return view('admin.orders.tracking', compact('order', 'locations'));
     }
 
-   public function updateStatus(Request $request, $id)
-{
-    $order = Order::with('orderDetails.variant')->findOrFail($id);
-    $newStatus = $request->status;
+    public function updateStatus(Request $request, $id)
+    {
+        $order = Order::with('orderDetails.variant')->findOrFail($id);
+        $newStatus = $request->status;
 
-    if ($newStatus === 'approved' && $order->status !== 'approved') {
-        foreach ($order->orderDetails as $detail) {
-            $variant = $detail->variant;
-            if ($variant) {
-                $variant->stock += $detail->quantity;
-                $variant->save();
+        if ($newStatus === 'approved' && $order->status !== 'approved') {
+            foreach ($order->orderDetails as $detail) {
+                $variant = $detail->variant;
+                if ($variant) {
+                    $variant->stock += $detail->quantity;
+                    $variant->save();
+                }
             }
         }
+
+        $order->status = $newStatus;
+        $order->save();
+
+        return back()->with('success', 'Cập nhật trạng thái thành công.');
     }
-
-    $order->status = $newStatus;
-    $order->save();
-
-    return back()->with('success', 'Cập nhật trạng thái thành công.');
-}
 
 
     public function cancelOrderByAdmin(Order $order)
@@ -398,7 +396,6 @@ $order->update([
                     Log::info("Payment status reverted to pending for order {$order->id}");
                 }
             }
-
         } catch (\Exception $e) {
             Log::error("Error handling payment and invoice logic for order {$order->id}: " . $e->getMessage());
             // Không throw exception để không ảnh hưởng đến việc cập nhật đơn hàng
