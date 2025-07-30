@@ -37,7 +37,7 @@
                     <th style="min-width: 120px;">Đơn hàng</th>
                     <th style="min-width: 120px;">Số tiền</th>
                     <th style="min-width: 120px;">Phương thức</th>
-                    <th style="min-width: 150px;">Người thanh toán</th>
+                    <th style="min-width: 180px;">Dữ liệu giao dịch</th>
                     <th style="min-width: 120px;">Trạng thái</th>
                     <th style="min-width: 150px;">Ngày thanh toán</th>
                     <th style="min-width: 120px;">Hành động</th>
@@ -57,18 +57,23 @@
                             <span class="badge bg-light text-dark border border-1 border-secondary">{{ $payment->paymentMethod->payment_type ?? 'Chưa chọn' }}</span>
                         </td>
                         <td>
-                            @if($payment->payment_method_type)
+                            @if($payment->payment_method_type && in_array($payment->payment_method_type, ['MoMo', 'ZaloPay']))
                                 <div class="text-center">
                                     <span class="badge bg-info text-white mb-1">{{ $payment->payment_method_type }}</span><br>
-                                    @if($payment->payer_account)
-                                        <small class="text-muted">{{ $payment->payer_account }}</small><br>
-                                    @endif
-                                    @if($payment->payer_name)
-                                        <small class="text-dark fw-bold">{{ $payment->payer_name }}</small>
-                                    @endif
                                     @if($payment->transaction_code)
-                                        <br><small class="text-secondary">GD: {{ substr($payment->transaction_code, -8) }}</small>
+                                        <small class="text-dark fw-bold">Mã GD: {{ $payment->transaction_code }}</small><br>
                                     @endif
+                                    @if($payment->order && $payment->order->transaction_id)
+                                        <small class="text-muted">Mã ĐH: {{ $payment->order->transaction_id }}</small><br>
+                                    @endif
+                                    @if($payment->confirmed_at)
+                                        <small class="text-success">{{ \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m H:i') }}</small>
+                                    @endif
+                                </div>
+                            @elseif($payment->paymentMethod && $payment->paymentMethod->payment_type == 'COD')
+                                <div class="text-center">
+                                    <span class="badge bg-success text-white mb-1">COD</span><br>
+                                    <small class="text-muted">Thanh toán khi nhận hàng</small>
                                 </div>
                             @else
                                 <span class="text-muted">-</span>

@@ -297,9 +297,10 @@ class MoMoController extends Controller
                     'status' => 'completed', // Đã thanh toán luôn vì MoMo đã trả về thành công
                     'confirmed_at' => now(),
                     'transaction_code' => $transactionId,
-                    'payer_account' => $this->extractPayerAccountFromMoMo($request), // Số tài khoản người thanh toán
-                    'payer_name' => $this->extractPayerNameFromMoMo($request), // Tên người thanh toán (nếu có)
                     'payment_method_type' => 'MoMo', // Loại ví điện tử
+                    // Lưu dữ liệu giao dịch thay vì thông tin người dùng
+                    'payer_account' => null, // Không lưu thông tin cá nhân
+                    'payer_name' => null, // Không lưu thông tin cá nhân
                 ]);
 
                 // Tự động tạo hóa đơn cho đơn MoMo ngay sau khi thanh toán thành công
@@ -317,60 +318,6 @@ class MoMoController extends Controller
             Log::error('Create Order Exception: ' . $e->getMessage());
             return false;
         }
-    }
-
-    /**
-     * Extract payer account information from MoMo response
-     */
-    private function extractPayerAccountFromMoMo($request)
-    {
-        if (!$request) {
-            return null;
-        }
-
-        // MoMo thường trả về thông tin qua extraData hoặc có thể parse từ transId
-        // Trong môi trường test, có thể không có thông tin chi tiết về tài khoản
-        $extraData = $request->extraData ?? '';
-        if ($extraData) {
-            $decoded = base64_decode($extraData);
-            $data = json_decode($decoded, true);
-            if (isset($data['userInfo']['phoneNumber'])) {
-                return $data['userInfo']['phoneNumber'];
-            }
-        }
-
-        // Fallback: sử dụng một phần của transId hoặc các thông tin khác
-        $transId = $request->transId ?? '';
-        if ($transId) {
-            // Có thể parse một phần thông tin từ transId nếu MoMo cung cấp format đặc biệt
-            return substr($transId, -6); // Lấy 6 ký tự cuối làm identifier
-        }
-
-        return 'MoMo User'; // Default value
-    }
-
-    /**
-     * Extract payer name from MoMo response
-     */
-    private function extractPayerNameFromMoMo($request)
-    {
-        if (!$request) {
-            return null;
-        }
-
-        // MoMo response thường không chứa tên người dùng vì lý do bảo mật
-        // Có thể lấy từ extraData nếu có
-        $extraData = $request->extraData ?? '';
-        if ($extraData) {
-            $decoded = base64_decode($extraData);
-            $data = json_decode($decoded, true);
-            if (isset($data['userInfo']['name'])) {
-                return $data['userInfo']['name'];
-            }
-        }
-
-        // Default: sử dụng thông tin từ app_user hoặc để null
-        return null;
     }
 
     private function execPostRequest($url, $data)
