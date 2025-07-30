@@ -724,12 +724,8 @@
                     <span class="badge bg-light text-dark px-2 py-1">
                         <i class="fa-solid fa-money-bill-wave me-1 text-success"></i>COD
                     </span>
-                    <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-brands fa-cc-visa me-1 text-primary"></i>Visa
-                    </span>
-                    <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-brands fa-cc-mastercard me-1 text-warning"></i>Mastercard
-                    </span>
+
+
                     <span class="badge bg-light text-dark px-2 py-1">
                         <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png"
                             alt="MoMo" style="width: 16px; height: 16px;" class="me-1"
@@ -739,9 +735,7 @@
                     <span class="badge bg-light text-dark px-2 py-1">
                         <i class="fa-solid fa-wallet me-1 text-info"></i>ZaloPay
                     </span>
-                    <span class="badge bg-light text-dark px-2 py-1">
-                        <i class="fa-solid fa-credit-card me-1 text-danger"></i>VNPay
-                    </span>
+
                 </div>
             </div>
     </form>
