@@ -439,11 +439,11 @@
         flex-direction: column;
         gap: 12px;
     }
-    
+
     .summary-sticky {
         position: static;
     }
-    
+
     .total-price {
         font-size: 20px !important;
     }
@@ -519,42 +519,34 @@
                         return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
                     });
                 @endphp
-                
+
                 <!-- Card Shopee-style cho từng sản phẩm -->
                 <div class="card product-card mb-3 shadow-sm border-0" data-product-id="{{ $productId }}">
                     <!-- Header sản phẩm với checkbox và thông tin -->
                     <div class="card-header-custom">
                         <div class="d-flex align-items-center">
                             <div class="form-check me-3">
-                                <input type="checkbox" class="form-check-input product-checkbox" 
+                                <input type="checkbox" class="form-check-input product-checkbox"
                                        id="product-{{ $productId }}"
                                        data-product-id="{{ $productId }}">
                                 <label class="form-check-label" for="product-{{ $productId }}"></label>
                             </div>
-                            
+
                             <div class="shop-info">
                                 <div class="product-image-wrapper me-3">
-                                    <img src="{{ asset('storage/' . $product->image) }}" 
-                                         alt="{{ $product->name }}" 
+                                    <img src="{{ asset('storage/' . $product->image) }}"
+                                         alt="{{ $product->name }}"
                                          class="product-image">
                                 </div>
                                 <div class="product-info">
                                     <h6 class="product-name mb-1 fw-bold">{{ $product->name }}</h6>
-                                    <div class="product-meta small text-muted">
-                                        <span class="brand-name">{{ $product->brand->name ?? 'Đang cập nhật' }}</span>
-                                        @if($productCarts->count() > 1)
-                                            <span class="mx-2">•</span>
-                                            <span class="variant-count text-primary">{{ $productCarts->count() }} phân loại</span>
-                                        @endif
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="product-summary text-end">
-                            <div class="product-total-price text-primary fw-bold fs-5">
-                                {{ number_format($productTotalPrice) }} VNĐ
-                            </div>
+
                             <small class="product-total-qty text-muted">{{ $totalProductQuantity }} sản phẩm</small>
                         </div>
                     </div>
@@ -562,31 +554,31 @@
                     <!-- Body chứa các variants -->
                     <div class="card-body p-0">
                         @foreach($productCarts as $index => $cart)
-                        <div class="variant-row {{ $index < $productCarts->count() - 1 ? 'border-bottom' : '' }}" 
+                        <div class="variant-row {{ $index < $productCarts->count() - 1 ? 'border-bottom' : '' }}"
                              data-cart-id="{{ $cart->id }}">
                             <div class="row align-items-center g-0 p-3">
                                 <!-- Checkbox variant -->
                                 <div class="col-auto me-3">
                                     <div class="form-check">
-                                        <input type="checkbox" class="form-check-input cart-item-checkbox" 
+                                        <input type="checkbox" class="form-check-input cart-item-checkbox"
                                                id="cart-{{ $cart->id }}"
-                                               value="{{ $cart->id }}" 
+                                               value="{{ $cart->id }}"
                                                data-cart-id="{{ $cart->id }}"
                                                data-product-id="{{ $productId }}"
-                                               data-price="{{ $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price }}" 
+                                               data-price="{{ $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price }}"
                                                data-quantity="{{ $cart->quantity }}">
                                         <label class="form-check-label" for="cart-{{ $cart->id }}"></label>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Hình ảnh variant -->
                                 <div class="col-auto me-3">
                                     <div class="variant-image-wrapper">
-                                        <img src="{{ asset($cart->variant && $cart->variant->image ? 'storage/' . $cart->variant->image : 'storage/' . $cart->product->image) }}" 
+                                        <img src="{{ asset($cart->variant && $cart->variant->image ? 'storage/' . $cart->variant->image : 'storage/' . $cart->product->image) }}"
                                              class="variant-image" alt="Variant">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Thông tin variant -->
                                 <div class="col variant-info-col">
                                     @if($cart->variant)
@@ -595,11 +587,11 @@
                                             $currentColor = $cart->variant->attributeValues->where('attribute.name', 'Màu')->first();
                                             $productVariants = $cart->product->variants;
                                         @endphp
-                                        
+
                                         <div class="variant-info d-flex flex-wrap gap-1">
                                             <!-- Size dropdown -->
                                             @if($currentSize)
-                                                <select class="form-select variant-select" 
+                                                <select class="form-select variant-select"
                                                         data-cart-id="{{ $cart->id }}"
                                                         data-original-value="{{ $cart->variant_id }}">
                                                     @foreach($productVariants->flatMap(function($v) { return $v->attributeValues->filter(fn($val) => $val->attribute->name === 'Size'); })->unique('id') as $size)
@@ -607,17 +599,17 @@
                                                             $hasSize = $v->attributeValues->contains('id', $size->id);
                                                             $hasColor = !$currentColor || $v->attributeValues->contains('id', $currentColor->id);
                                                             return $hasSize && $hasColor;
-                                                        })->first()->id ?? '' }}" 
+                                                        })->first()->id ?? '' }}"
                                                         {{ $currentSize->id == $size->id ? 'selected' : '' }}>
                                                             Size: {{ $size->value }}
                                                         </option>
                                                     @endforeach
                                                 </select>
                                             @endif
-                                            
+
                                             <!-- Color dropdown -->
                                             @if($currentColor)
-                                                <select class="form-select variant-select" 
+                                                <select class="form-select variant-select"
                                                         data-cart-id="{{ $cart->id }}"
                                                         data-original-value="{{ $cart->variant_id }}">
                                                     @foreach($productVariants->flatMap(function($v) { return $v->attributeValues->filter(fn($val) => $val->attribute->name === 'Màu'); })->unique('id') as $color)
@@ -625,7 +617,7 @@
                                                             $hasColor = $v->attributeValues->contains('id', $color->id);
                                                             $hasSize = !$currentSize || $v->attributeValues->contains('id', $currentSize->id);
                                                             return $hasColor && $hasSize;
-                                                        })->first()->id ?? '' }}" 
+                                                        })->first()->id ?? '' }}"
                                                         {{ $currentColor->id == $color->id ? 'selected' : '' }}>
                                                             Màu: {{ $color->value }}
                                                         </option>
@@ -639,7 +631,7 @@
                                         </span>
                                     @endif
                                 </div>
-                                
+
                                 <!-- Giá -->
                                 <div class="col-auto price-col me-4">
                                     @php
@@ -657,7 +649,7 @@
                                         @endif
                                     </div>
                                 </div>
-                                
+
                                 <!-- Quantity controls -->
                                 <div class="col-auto quantity-col me-3">
                                     <form action="{{ route('cart.update', $cart->id) }}" method="POST" class="quantity-form">
@@ -666,7 +658,7 @@
                                             <button type="button" class="qty-btn qty-minus" {{ $cart->quantity <= 1 ? 'disabled' : '' }}>
                                                 <i class="fa-solid fa-minus"></i>
                                             </button>
-                                            <input type="number" name="quantity" value="{{ $cart->quantity }}" 
+                                            <input type="number" name="quantity" value="{{ $cart->quantity }}"
                                                    min="1" max="999" class="qty-input">
                                             <button type="button" class="qty-btn qty-plus">
                                                 <i class="fa-solid fa-plus"></i>
@@ -674,18 +666,18 @@
                                         </div>
                                     </form>
                                 </div>
-                                
+
                                 <!-- Tổng tiền item -->
                                 <div class="col-auto total-col me-3">
                                     <div class="item-total text-end">
                                         {{ number_format($currentPrice * $cart->quantity) }} VNĐ
                                     </div>
                                 </div>
-                                
+
                                 <!-- Nút xóa -->
                                 <div class="col-auto delete-col">
-                                    <form action="{{ route('cart.delete', $cart->id) }}" method="POST" 
-                                          onsubmit="return confirm('Xóa sản phẩm này khỏi giỏ hàng?')" 
+                                    <form action="{{ route('cart.delete', $cart->id) }}" method="POST"
+                                          onsubmit="return confirm('Xóa sản phẩm này khỏi giỏ hàng?')"
                                           class="d-inline">
                                         @csrf
                                         @method('DELETE')
@@ -700,7 +692,7 @@
                     </div>
                 </div>
             @endforeach
-            
+
             <!-- Phần nhập mã giảm giá -->
             <div class="card mb-3 shadow-sm border-0">
                     <div class="voucher-section">
@@ -708,14 +700,14 @@
                             <i class="fa-solid fa-ticket text-warning me-2 fs-5"></i>
                             <h5 class="fw-bold mb-0 text-dark">Mã giảm giá</h5>
                         </div>
-                        
+
                         <div class="voucher-input-group">
                             <div class="input-group">
-                                <input type="text" class="form-control voucher-input" 
-                                       id="coupon-input" 
-                                       placeholder="Chọn hoặc nhập mã voucher..." 
+                                <input type="text" class="form-control voucher-input"
+                                       id="coupon-input"
+                                       placeholder="Chọn hoặc nhập mã voucher..."
                                        value="">
-                                <button class="btn voucher-btn" 
+                                <button class="btn voucher-btn"
                                         type="button" id="apply-coupon">
                                     <i class="fa-solid fa-tag me-1"></i>ÁP DỤNG
                                 </button>
@@ -762,10 +754,10 @@
                                                         if($currentSize) $variantInfo[] = "Size: {$currentSize->value}";
                                                         if($currentColor) $variantInfo[] = "Màu: {$currentColor->value}";
                                                     @endphp
-                                                    {{ implode(', ', $variantInfo) }}: 
+                                                    {{ implode(', ', $variantInfo) }}:
                                                     <span class="text-primary fw-semibold">{{ $cart->quantity }} sp</span>
                                                 @else
-                                                    Sản phẩm cơ bản: 
+                                                    Sản phẩm cơ bản:
                                                     <span class="text-primary fw-semibold">{{ $cart->quantity }} sp</span>
                                                 @endif
                                             </div>
@@ -794,19 +786,19 @@
                                 <i class="fa-solid fa-calculator me-2 text-primary"></i>
                                 Chi tiết thanh toán
                             </h6>
-                            
+
                             <div class="summary-row">
                                 <span><i class="fa-solid fa-box me-2 text-muted"></i>Tổng tiền hàng:</span>
                                 <span class="fw-semibold" id="cart-subtotal">VND0</span>
                             </div>
-                            
+
                             <div class="summary-row">
                                 <span><i class="fa-solid fa-truck me-2 text-muted"></i>Tổng tiền phí vận chuyển:</span>
                                 <span class="text-success fw-semibold">
                                     <i class="fa-solid fa-gift me-1"></i>Miễn phí
                                 </span>
                             </div>
-                            
+
                             <div class="summary-row" id="payment-discount-row" style="display: none;">
                                 <span class="text-success"><i class="fa-solid fa-ticket me-2"></i>Tổng cộng Voucher giảm giá:</span>
                                 <span class="text-success fw-semibold" id="payment-discount">-VND0</span>
@@ -829,16 +821,16 @@
                         <!-- Action Buttons -->
                         <div class="action-buttons mt-4">
                             @auth
-                            <a href="{{ route('client.addresses.index') }}" 
+                            <a href="{{ route('client.addresses.index') }}"
                                class="btn btn-outline-primary w-100 mb-3 address-btn">
                                 <i class="fa-solid fa-map-marker-alt me-2"></i>
                                 Quản lý địa chỉ giao hàng
                             </a>
                             @endauth
-                            
+
                             @if($carts->count() > 0)
-                            <button type="button" 
-                                    class="btn w-100 checkout-btn" 
+                            <button type="button"
+                                    class="btn w-100 checkout-btn"
                                     id="checkout-button"
                                     onclick="proceedToCheckout()"
                                     disabled>
@@ -907,7 +899,7 @@ document.addEventListener("DOMContentLoaded", function() {
         input.addEventListener('blur', function() {
             const newVal = parseInt(this.value) || 1;
             const currentVal = parseInt(this.getAttribute('data-original-value')) || 1;
-            
+
             if (newVal !== currentVal && newVal >= 1) {
                 updateQuantityAjax(cartId, newVal, this);
             }
@@ -923,12 +915,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const form = inputElement.closest('.quantity-form');
         const buttons = form.querySelectorAll('.qty-btn');
         const variantRow = form.closest('.variant-row');
-        
+
         buttons.forEach(btn => btn.disabled = true);
         if (buttonElement) {
             buttonElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         }
-        
+
         // Add loading state
         variantRow.style.opacity = '0.7';
 
@@ -947,43 +939,43 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.success) {
                 // Update quantity input
                 inputElement.value = data.data.quantity;
-                
+
                 // Update item total display
                 const itemTotalElement = variantRow.querySelector('.item-total');
                 if (itemTotalElement) {
                     itemTotalElement.textContent = new Intl.NumberFormat('vi-VN').format(data.data.item_total) + ' VNĐ';
                 }
-                
+
                 // Update checkbox data attributes với giá trị mới
                 const checkbox = variantRow.querySelector('.cart-item-checkbox');
                 if (checkbox) {
                     checkbox.setAttribute('data-quantity', data.data.quantity);
                     checkbox.setAttribute('data-price', data.data.price);
-                    
+
                     // Nếu checkbox đang được chọn, cập nhật voucher discount ngay lập tức
                     if (checkbox.checked && (window.appliedCouponCode || window.voucherDiscount > 0)) {
                         console.log('Quantity changed for selected item, updating voucher discount');
                         checkVoucherValidityOnSelection();
                     }
                 }
-                
+
                 // Update minus button state
                 const minusBtn = form.querySelector('.qty-minus');
                 if (minusBtn) {
                     minusBtn.disabled = data.data.quantity <= 1;
                 }
-                
+
                 // Recalculate totals - voucher sẽ được cập nhật trước
                 calculateTotal();
                 updateProductTotals();
-                
+
                 // Hiển thị thông báo cập nhật với thông tin voucher nếu có
                 let successMessage = 'Đã cập nhật số lượng!';
                 if (window.voucherDiscount > 0 && checkbox && checkbox.checked) {
                     successMessage += ` Mã giảm giá đã được điều chỉnh: ${window.voucherDiscount.toLocaleString()} VNĐ`;
                 }
                 showToast(successMessage, 'success');
-                
+
             } else {
                 // Revert input value on error
                 inputElement.value = inputElement.getAttribute('data-original-value') || 1;
@@ -998,19 +990,19 @@ document.addEventListener("DOMContentLoaded", function() {
         .finally(() => {
             // Re-enable buttons
             buttons.forEach(btn => btn.disabled = false);
-            
+
             // Restore button icons
             if (buttonElement) {
                 const icon = buttonElement.classList.contains('qty-minus') ? 'fa-minus' : 'fa-plus';
                 buttonElement.innerHTML = `<i class="fa-solid ${icon}"></i>`;
             }
-            
+
             // Update minus button state based on current value
             const minusBtn = form.querySelector('.qty-minus');
             if (minusBtn) {
                 minusBtn.disabled = parseInt(inputElement.value) <= 1;
             }
-            
+
             // Remove loading state
             variantRow.style.opacity = '1';
         });
@@ -1020,29 +1012,29 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll('.product-card').forEach(productCard => {
             const productId = productCard.getAttribute('data-product-id');
             const variantRows = productCard.querySelectorAll('.variant-row');
-            
+
             let totalQuantity = 0;
             let totalPrice = 0;
-            
+
             variantRows.forEach(row => {
                 const checkbox = row.querySelector('.cart-item-checkbox');
                 if (checkbox) {
                     const quantity = parseInt(checkbox.getAttribute('data-quantity')) || 0;
                     const price = parseFloat(checkbox.getAttribute('data-price')) || 0;
-                    
+
                     totalQuantity += quantity;
                     totalPrice += price * quantity;
                 }
             });
-            
+
             // Update product header totals
             const productTotalPrice = productCard.querySelector('.product-total-price');
             const productTotalQty = productCard.querySelector('.product-total-qty');
-            
+
             if (productTotalPrice) {
                 productTotalPrice.textContent = new Intl.NumberFormat('vi-VN').format(totalPrice) + ' VNĐ';
             }
-            
+
             if (productTotalQty) {
                 productTotalQty.textContent = totalQuantity + ' sản phẩm';
             }
@@ -1053,12 +1045,12 @@ document.addEventListener("DOMContentLoaded", function() {
         // Create toast element
         const toast = document.createElement('div');
         toast.className = `toast-notification toast-${type}`;
-        
+
         let bgColor = '#6c757d'; // Default info color
         if (type === 'success') bgColor = '#28a745';
         else if (type === 'error') bgColor = '#dc3545';
         else if (type === 'info') bgColor = '#17a2b8';
-        
+
         toast.style.cssText = `
             position: fixed;
             top: 20px;
@@ -1076,22 +1068,22 @@ document.addEventListener("DOMContentLoaded", function() {
             max-width: 350px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         `;
-        
+
         let icon = 'fa-info-circle';
         if (type === 'success') icon = 'fa-check-circle';
         else if (type === 'error') icon = 'fa-exclamation-triangle';
         else if (type === 'info') icon = 'fa-info-circle';
-        
+
         toast.innerHTML = `<i class="fa-solid ${icon} me-2"></i>${message}`;
-        
+
         document.body.appendChild(toast);
-        
+
         // Show toast
         setTimeout(() => {
             toast.style.opacity = '1';
             toast.style.transform = 'translateX(0)';
         }, 100);
-        
+
         // Hide toast after 4 seconds for info messages, 3 seconds for others
         const hideDelay = type === 'info' ? 4000 : 3000;
         setTimeout(() => {
@@ -1112,7 +1104,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Gọi calculateTotal ngay khi load trang để hiển thị đúng
     calculateTotal();
-    
+
     // Load trạng thái checkbox đã lưu
     loadSavedSelections();
 
@@ -1121,16 +1113,16 @@ document.addEventListener("DOMContentLoaded", function() {
             productCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
-            
+
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
-            
+
             // Kiểm tra và cập nhật voucher trước khi tính toán total
             checkVoucherValidityOnSelection();
-            
+
             calculateTotal();
-            
+
             // Lưu trạng thái chọn
             saveSelections();
         });
@@ -1139,18 +1131,18 @@ document.addEventListener("DOMContentLoaded", function() {
             productCheckbox.addEventListener('change', function() {
                 const productId = this.getAttribute('data-product-id');
                 const productItems = document.querySelectorAll(`.cart-item-checkbox[data-product-id="${productId}"]`);
-                
+
                 productItems.forEach(item => {
                     item.checked = this.checked;
                 });
-                
+
                 updateSelectAllState();
-                
+
                 // Kiểm tra và cập nhật voucher trước khi tính toán total
                 checkVoucherValidityOnSelection();
-                
+
                 calculateTotal();
-                
+
                 // Lưu trạng thái chọn
                 saveSelections();
             });
@@ -1162,19 +1154,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 const productCheckbox = document.querySelector(`.product-checkbox[data-product-id="${productId}"]`);
                 const productItems = document.querySelectorAll(`.cart-item-checkbox[data-product-id="${productId}"]`);
                 const checkedItems = document.querySelectorAll(`.cart-item-checkbox[data-product-id="${productId}"]:checked`);
-                
+
                 if (productCheckbox) {
                     productCheckbox.checked = checkedItems.length === productItems.length;
                     productCheckbox.indeterminate = checkedItems.length > 0 && checkedItems.length < productItems.length;
                 }
-                
+
                 updateSelectAllState();
-                
+
                 // Kiểm tra và cập nhật voucher trước khi tính toán total
                 checkVoucherValidityOnSelection();
-                
+
                 calculateTotal();
-                
+
                 // Lưu trạng thái chọn
                 saveSelections();
             });
@@ -1185,7 +1177,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function saveSelections() {
         const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
         const selectedIds = Array.from(checkedItems).map(checkbox => checkbox.getAttribute('data-cart-id'));
-        
+
         // Lưu vào localStorage với key dựa trên user
         const userId = {{ Auth::id() ?? 'guest' }};
         localStorage.setItem(`cart_selections_${userId}`, JSON.stringify(selectedIds));
@@ -1194,26 +1186,26 @@ document.addEventListener("DOMContentLoaded", function() {
     function loadSavedSelections() {
         const userId = {{ Auth::id() ?? 'guest' }};
         const savedSelections = localStorage.getItem(`cart_selections_${userId}`);
-        
+
         if (savedSelections) {
             try {
                 const selectedIds = JSON.parse(savedSelections);
-                
+
                 // Khôi phục trạng thái checkbox
                 selectedIds.forEach(cartId => {
                     const checkbox = document.querySelector(`.cart-item-checkbox[data-cart-id="${cartId}"]`);
                     if (checkbox) {
                         checkbox.checked = true;
-                        
+
                         // Cập nhật checkbox sản phẩm tương ứng
                         const productId = checkbox.getAttribute('data-product-id');
                         updateProductCheckboxState(productId);
                     }
                 });
-                
+
                 // Cập nhật trạng thái select all
                 updateSelectAllState();
-                
+
             } catch (error) {
                 console.error('Error loading saved selections:', error);
             }
@@ -1224,7 +1216,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const productCheckbox = document.querySelector(`.product-checkbox[data-product-id="${productId}"]`);
         const productItems = document.querySelectorAll(`.cart-item-checkbox[data-product-id="${productId}"]`);
         const checkedItems = document.querySelectorAll(`.cart-item-checkbox[data-product-id="${productId}"]:checked`);
-        
+
         if (productCheckbox) {
             productCheckbox.checked = checkedItems.length === productItems.length;
             productCheckbox.indeterminate = checkedItems.length > 0 && checkedItems.length < productItems.length;
@@ -1234,7 +1226,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function clearDeletedSelections(deletedCartIds) {
         const userId = {{ Auth::id() ?? 'guest' }};
         const savedSelections = localStorage.getItem(`cart_selections_${userId}`);
-        
+
         if (savedSelections) {
             try {
                 let selectedIds = JSON.parse(savedSelections);
@@ -1252,15 +1244,15 @@ document.addEventListener("DOMContentLoaded", function() {
     if (deleteSelectedBtn) {
         deleteSelectedBtn.addEventListener('click', function() {
             const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
-            
+
             if (checkedItems.length === 0) {
                 alert('Vui lòng chọn sản phẩm cần xóa!');
                 return;
             }
-            
+
             const selectedIds = Array.from(checkedItems).map(checkbox => checkbox.getAttribute('data-cart-id'));
             const confirmMessage = `Bạn có chắc chắn muốn xóa ${checkedItems.length} sản phẩm đã chọn?`;
-            
+
             if (confirm(confirmMessage)) {
                 deleteSelectedItems(selectedIds);
             }
@@ -1270,11 +1262,11 @@ document.addEventListener("DOMContentLoaded", function() {
     function deleteSelectedItems(cartIds) {
         const deleteBtn = document.querySelector('.delete-selected');
         const originalText = deleteBtn.innerHTML;
-        
+
         // Disable button và hiển thị loading
         deleteBtn.disabled = true;
         deleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang xóa...';
-        
+
         fetch('/cart/delete-selected', {
             method: 'POST',
             headers: {
@@ -1290,7 +1282,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.success) {
                 // Clear saved selections for deleted items
                 clearDeletedSelections(cartIds);
-                
+
                 // Reload trang để cập nhật danh sách
                 window.location.reload();
             } else {
@@ -1311,7 +1303,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (selectAllCheckbox) {
             const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
             const totalItems = document.querySelectorAll('.cart-item-checkbox');
-            
+
             selectAllCheckbox.checked = checkedItems.length === totalItems.length;
             selectAllCheckbox.indeterminate = checkedItems.length > 0 && checkedItems.length < totalItems.length;
         }
@@ -1358,7 +1350,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const paymentDiscountRowEl = document.getElementById('payment-discount-row');
         const finalTotalEl = document.getElementById('final-total');
         const originalTotalEl = document.getElementById('original-total');
-        
+
         // Tự động hủy mã giảm giá nếu không có sản phẩm nào được chọn
         if (checkedItems.length === 0 && window.voucherDiscount > 0) {
             autoRemoveCoupon();
@@ -1379,34 +1371,34 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         const finalTotal = Math.max(0, subtotal - discount);
-        
+
         console.log('Total calculation:', {
             subtotal: subtotal,
             discount: discount,
             finalTotal: finalTotal,
             hasVoucher: window.voucherDiscount > 0
         });
-        
+
         // Cập nhật discount amount trong phần payment summary
         if (paymentDiscountEl) {
             paymentDiscountEl.textContent = discount > 0 && subtotal > 0 ? '-' + new Intl.NumberFormat('vi-VN').format(discount) + ' VNĐ' : '-0 VNĐ';
             console.log('Updated payment discount element:', paymentDiscountEl.textContent);
         }
-        
+
         // Hiển thị/ẩn dòng discount trong payment summary
         if (paymentDiscountRowEl) {
             paymentDiscountRowEl.style.display = discount > 0 && subtotal > 0 ? 'flex' : 'none';
             console.log('Payment discount row display:', paymentDiscountRowEl.style.display);
         }
-        
+
         // Cập nhật tổng cuối
         if (finalTotalEl) {
             finalTotalEl.textContent = new Intl.NumberFormat('vi-VN').format(finalTotal) + ' VNĐ';
         }
-        
+
         // Hiển thị/ẩn giá gốc và thông tin tiết kiệm
         updatePricingDisplay(subtotal, discount, finalTotal);
-        
+
         // Enable/disable checkout button
         updateCheckoutButton(checkedItems.length > 0);
     }
@@ -1414,9 +1406,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function updatePricingDisplay(subtotal, discount, finalTotal) {
         const summaryTotalContainer = document.querySelector('.summary-total .text-end');
         if (!summaryTotalContainer) return;
-        
+
         let priceHTML = '';
-        
+
         if (discount > 0 && subtotal > 0) {
             // Có voucher và có sản phẩm được chọn - hiển thị giá gốc bị gạch và giá sau giảm
             priceHTML = `
@@ -1437,7 +1429,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <small class="text-muted">(Đã bao gồm VAT nếu có)</small>
             `;
         }
-        
+
         summaryTotalContainer.innerHTML = priceHTML;
     }
 
@@ -1446,13 +1438,13 @@ document.addEventListener("DOMContentLoaded", function() {
         if (checkoutBtn) {
             // Kiểm tra xem còn cart items không
             const totalCartItems = document.querySelectorAll('.cart-item-checkbox').length;
-            
+
             if (totalCartItems === 0) {
                 // Nếu cart trống, ẩn button hoặc disable hoàn toàn
                 checkoutBtn.style.display = 'none';
                 return;
             }
-            
+
             checkoutBtn.disabled = !hasSelectedItems;
             if (hasSelectedItems) {
                 checkoutBtn.classList.remove('btn-secondary');
@@ -1474,7 +1466,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll('.product-card').forEach(productCard => {
             const productName = productCard.querySelector('.product-name')?.textContent || 'Sản phẩm';
             const variantRows = productCard.querySelectorAll('.variant-row');
-            
+
             // Check if any variant in this product is selected
             const hasSelectedVariants = Array.from(variantRows).some(row => {
                 const checkbox = row.querySelector('.cart-item-checkbox');
@@ -1496,9 +1488,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         const quantity = checkbox.getAttribute('data-quantity') || '0';
                         const sizeSelect = row.querySelector('select[data-cart-id] option:checked');
                         const colorSelects = row.querySelectorAll('select[data-cart-id]');
-                        
+
                         let variantInfo = [];
-                        
+
                         // Get variant info from selects
                         colorSelects.forEach(select => {
                             const selectedOption = select.options[select.selectedIndex];
@@ -1511,11 +1503,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         });
 
                         const variantText = variantInfo.length > 0 ? variantInfo.join(', ') : 'Sản phẩm cơ bản';
-                        
+
                         summaryHTML += `
                             <div class="variant-item ms-3 mb-1" style="font-size: 12px; color: #666;">
                                 <i class="fa-solid fa-angle-right me-1"></i>
-                                ${variantText}: 
+                                ${variantText}:
                                 <span class="text-primary fw-semibold">${quantity} sp</span>
                             </div>
                         `;
@@ -1544,7 +1536,7 @@ document.addEventListener("DOMContentLoaded", function() {
         select.addEventListener('change', function() {
             const cartId = this.getAttribute('data-cart-id');
             const variantId = this.value;
-            
+
             if (!cartId || !variantId) return;
 
             const variantItem = this.closest('.variant-row');
@@ -1594,10 +1586,10 @@ document.addEventListener("DOMContentLoaded", function() {
         console.error('Coupon elements not found');
         return;
     }
-    
+
     let appliedCoupon = null;
     let isInCancelMode = false;
-    
+
     // Không load từ session - luôn bắt đầu với trạng thái mặc định
 
     // Function xử lý chung cho button
@@ -1620,7 +1612,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function handleApplyCoupon() {
         const couponCode = couponInput.value.trim();
-        
+
         if (!couponCode) {
             showCouponMessage('Vui lòng nhập mã voucher', 'error');
             return;
@@ -1660,12 +1652,12 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             console.log('Validate coupon response:', data);
-            
+
             if (data.success) {
                 // Chỉ lưu thông tin voucher tạm thời trong JavaScript
                 appliedCoupon = data;
                 window.appliedCouponCode = couponCode;
-                
+
                 // Lưu đầy đủ thông tin coupon để tính toán lại sau này
                 window.appliedCouponInfo = {
                     code: couponCode,
@@ -1677,9 +1669,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     max_discount: data.coupon_info?.max_discount || 0,
                     original_subtotal: selectedSubtotal // Lưu subtotal ban đầu để tham khảo
                 };
-                
+
                 console.log('Saved coupon info:', window.appliedCouponInfo);
-                
+
                 // Cập nhật discount amount trong biến global
                 if (data.discount_amount) {
                     window.voucherDiscount = data.discount_amount;
@@ -1687,18 +1679,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else {
                     window.voucherDiscount = 0;
                 }
-                
+
                 // Hiển thị UI success
                 showCouponSuccess(data.message, window.appliedCouponInfo);
                 switchToCancelMode();
-                
+
                 // Tính toán lại total với discount
                 calculateTotal();
-                
+
                 // Hiển thị thông báo thành công với thông tin chi tiết
                 const savingsAmount = data.discount_amount || 0;
                 const discountPercent = selectedSubtotal > 0 ? Math.round((savingsAmount / selectedSubtotal) * 100) : 0;
-                
+
                 showToast(`Áp dụng mã giảm giá thành công! Tiết kiệm ${savingsAmount.toLocaleString()} VNĐ (${discountPercent}%)`, 'success');
             } else {
                 showCouponMessage(data.message || 'Mã voucher không hợp lệ', 'error');
@@ -1718,16 +1710,16 @@ document.addEventListener("DOMContentLoaded", function() {
         window.appliedCouponCode = '';
         window.appliedCouponInfo = null;
         window.voucherDiscount = 0;
-        
+
         // Reset UI elements
         couponInput.value = '';
         couponResult.innerHTML = '';
-        
+
         // Tính toán lại total
         calculateTotal();
         resetCouponButton();
         isInCancelMode = false;
-        
+
         showToast('Đã hủy mã giảm giá', 'success');
     }
 
@@ -1735,11 +1727,11 @@ document.addEventListener("DOMContentLoaded", function() {
         couponInput.readOnly = true;
         couponInput.style.backgroundColor = '#f8fff9';
         couponInput.style.borderColor = '#28a745';
-        
+
         applyCouponBtn.innerHTML = '<i class="fa-solid fa-times me-1"></i>HỦY';
         applyCouponBtn.className = 'btn voucher-btn-cancel';
         applyCouponBtn.disabled = false;
-        
+
         isInCancelMode = true;
     }
 
@@ -1747,7 +1739,7 @@ document.addEventListener("DOMContentLoaded", function() {
         couponInput.readOnly = false;
         couponInput.style.backgroundColor = '';
         couponInput.style.borderColor = '';
-        
+
         applyCouponBtn.disabled = false;
         applyCouponBtn.innerHTML = 'ÁP DỤNG';
         applyCouponBtn.className = 'btn voucher-btn';
@@ -1756,7 +1748,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function showCouponMessage(message, type) {
         const className = type === 'success' ? 'applied-voucher' : 'text-danger';
         const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-        
+
         couponResult.innerHTML = `
             <div class="${className}">
                 <i class="fa-solid ${icon} me-1"></i>
@@ -1778,62 +1770,62 @@ document.addEventListener("DOMContentLoaded", function() {
     // Hàm tự động hủy mã giảm giá khi không có sản phẩm nào được chọn
     function autoRemoveCoupon() {
         console.log('Auto removing coupon - no products selected');
-        
+
         // Chỉ reset local variables, không gọi API
         appliedCoupon = null;
         window.appliedCouponCode = '';
         window.appliedCouponInfo = null;
         window.voucherDiscount = 0;
-        
+
         // Reset UI elements
         const couponInput = document.getElementById('coupon-input');
         const couponResult = document.getElementById('coupon-result');
         const applyCouponBtn = document.getElementById('apply-coupon');
-        
+
         if (couponInput) {
             couponInput.value = '';
             couponInput.readOnly = false;
             couponInput.style.backgroundColor = '';
             couponInput.style.borderColor = '';
         }
-        
+
         if (couponResult) {
             couponResult.innerHTML = '';
         }
-        
+
         if (applyCouponBtn) {
             applyCouponBtn.disabled = false;
             applyCouponBtn.innerHTML = '<i class="fa-solid fa-tag me-1"></i>ÁP DỤNG';
             applyCouponBtn.className = 'btn voucher-btn';
         }
-        
+
         // Reset global variables
         isInCancelMode = false;
-        
+
         // Tính toán lại tổng tiền
         calculateTotal();
-        
+
         showToast('Đã tự động hủy mã giảm giá do không có sản phẩm nào được chọn', 'info');
     }
 
     // Hàm kiểm tra và cập nhật voucher discount khi có thay đổi trong selection
     function checkVoucherValidityOnSelection() {
         console.log('checkVoucherValidityOnSelection called');
-        
+
         // Chỉ kiểm tra nếu có voucher được áp dụng
         if (!window.appliedCouponCode || !window.appliedCouponInfo) {
             console.log('No coupon applied, skipping recalculation');
             return;
         }
-        
+
         const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
-        
+
         // Nếu không có sản phẩm nào được chọn, hàm autoRemoveCoupon đã xử lý trong calculateTotal
         if (checkedItems.length === 0) {
             console.log('No items selected, auto remove will handle this');
             return;
         }
-        
+
         // Tính subtotal của sản phẩm được chọn
         let currentSubtotal = 0;
         checkedItems.forEach(checkbox => {
@@ -1841,31 +1833,31 @@ document.addEventListener("DOMContentLoaded", function() {
             const price = parseFloat(checkbox.getAttribute('data-price')) || 0;
             currentSubtotal += price * quantity;
         });
-        
+
         console.log('Current selection subtotal:', currentSubtotal);
-        
+
         // Tính toán lại discount dựa trên coupon info và subtotal hiện tại
         if (currentSubtotal > 0 && window.appliedCouponInfo) {
             let newDiscount = 0;
             const couponInfo = window.appliedCouponInfo;
-            
+
             console.log('Recalculating discount with:', {
                 couponInfo: couponInfo,
                 currentSubtotal: currentSubtotal,
                 oldDiscount: window.voucherDiscount
             });
-            
+
             // Tính toán discount mới dựa trên loại coupon
             if (couponInfo.type === 'percentage' || couponInfo.discount_type === 'percentage') {
                 const percentage = couponInfo.value || couponInfo.discount || 0;
                 newDiscount = (currentSubtotal * percentage) / 100;
-                
+
                 // Áp dụng max discount nếu có
                 const maxDiscount = couponInfo.max_discount_amount || couponInfo.max_discount || 0;
                 if (maxDiscount > 0) {
                     newDiscount = Math.min(newDiscount, maxDiscount);
                 }
-                
+
                 console.log('Percentage calculation:', {
                     percentage: percentage,
                     calculated: (currentSubtotal * percentage) / 100,
@@ -1876,20 +1868,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Fixed amount - giữ nguyên giá trị nhưng không vượt quá subtotal
                 const fixedAmount = couponInfo.value || couponInfo.discount || 0;
                 newDiscount = Math.min(fixedAmount, currentSubtotal);
-                
+
                 console.log('Fixed amount calculation:', {
                     fixedAmount: fixedAmount,
                     currentSubtotal: currentSubtotal,
                     finalDiscount: newDiscount
                 });
             }
-            
+
             // Cập nhật global discount
             const oldDiscount = window.voucherDiscount;
             window.voucherDiscount = newDiscount;
-            
+
             console.log('Updated voucher discount from', oldDiscount, 'to', newDiscount);
-            
+
             // Hiển thị thông báo nếu discount thay đổi
             if (Math.abs(newDiscount - oldDiscount) > 1) {
                 const changeType = newDiscount > oldDiscount ? 'tăng' : 'giảm';
@@ -1904,15 +1896,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function proceedToCheckout() {
     console.log('proceedToCheckout called');
-    
+
     const checkedItems = document.querySelectorAll('.cart-item-checkbox:checked');
     const allItems = document.querySelectorAll('.cart-item-checkbox');
-    
+
     console.log('Found checkboxes:', {
         total: allItems.length,
         checked: checkedItems.length
     });
-    
+
     // Fallback: nếu không có checkbox nào, có thể là đã thanh toán rồi
     if (allItems.length === 0) {
         console.log('No cart items found - possibly after successful payment');
@@ -1920,7 +1912,7 @@ function proceedToCheckout() {
         window.location.href = '/orders';
         return;
     }
-    
+
     if (checkedItems.length === 0) {
         alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
         return;
@@ -1929,7 +1921,7 @@ function proceedToCheckout() {
     const selectedItems = Array.from(checkedItems).map(checkbox => {
         return checkbox.getAttribute('data-cart-id');
     }).filter(id => id);
-    
+
     console.log('Selected items:', selectedItems);
 
     // Nếu có voucher được áp dụng, lưu vào session trước khi checkout
@@ -1941,7 +1933,7 @@ function proceedToCheckout() {
             const price = parseFloat(checkbox.getAttribute('data-price')) || 0;
             selectedSubtotal += price * quantity;
         });
-        
+
         // Gọi API để lưu voucher vào session
         fetch('/cart/apply-coupon', {
             method: 'POST',
@@ -1975,7 +1967,7 @@ function proceedToCheckout() {
 function submitCheckoutForm(selectedItems) {
     const checkoutForm = document.getElementById('checkout-form');
     const selectedItemsInput = document.getElementById('selected-items-input');
-    
+
     if (checkoutForm && selectedItemsInput) {
         selectedItemsInput.value = selectedItems.join(',');
         checkoutForm.submit();
