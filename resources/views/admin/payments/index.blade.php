@@ -83,6 +83,7 @@
                             @php
                             $statusText = [
     'pending' => 'Chờ xác nhận',
+    'confirmed' => 'Đã xác nhận',
     'completed' => 'Đã thanh toán',
     'rejected' => 'Đã hủy',
     'refunded' => 'Đã hoàn tiền'
@@ -90,11 +91,11 @@
 
 $statusColor = [
     'pending' => 'warning',
+    'confirmed' => 'info',
     'completed' => 'success',
     'rejected' => 'danger',
     'refunded' => 'info'
 ];
-
                             @endphp
                             <span class="badge bg-{{ $statusColor[$payment->status] ?? 'secondary' }}" style="font-size: 1rem;">
                                 {{ $statusText[$payment->status] ?? ucfirst($payment->status) }}
@@ -110,42 +111,91 @@ $statusColor = [
                             @endif
                         </td>
                         <td>
-                            @if($payment->status === 'pending')
-                                <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
-                                    <form action="{{ route('payments.confirm', $payment->id) }}" method="POST"
-                                        onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-success btn-xs px-2 py-1"
-                                            style="font-size: 0.85rem; background-color: #28a745; border-color: #28a745;">
-                                            <i class="fa-solid fa-check me-1"></i> Xác nhận
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('payments.reject', $payment->id) }}" method="POST"
-                                        onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-danger btn-xs px-2 py-1"
-                                            style="font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545;">
-                                            <i class="fa-solid fa-times me-1"></i> Hủy đơn
-                                        </button>
-                                    </form>
-                                </div>
-                            @elseif($payment->status === 'completed')
-                                <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
-                                    <span class="badge bg-success text-white" style="background-color: #28a745;">
-                                        Đã xác nhận lúc
+                            @if($payment->paymentMethod && $payment->paymentMethod->payment_type == 'COD')
+                                {{-- Flow COD: pending → confirmed → completed --}}
+                                @if($payment->status === 'pending')
+                                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                        <form action="{{ route('payments.confirm', $payment->id) }}" method="POST"
+                                            onsubmit="return confirm('Xác nhận đơn hàng COD này?');" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-info btn-xs px-2 py-1"
+                                                style="font-size: 0.85rem;">
+                                                <i class="fa-solid fa-check me-1"></i> Xác nhận đơn
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('payments.reject', $payment->id) }}" method="POST"
+                                            onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger btn-xs px-2 py-1"
+                                                style="font-size: 0.85rem;">
+                                                <i class="fa-solid fa-times me-1"></i> Hủy đơn
+                                            </button>
+                                        </form>
+                                    </div>
+                                @elseif($payment->status === 'confirmed')
+                                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                        <form action="{{ route('payments.complete', $payment->id) }}" method="POST"
+                                            onsubmit="return confirm('Hoàn thành đơn hàng COD này? (Khách đã thanh toán)');" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-xs px-2 py-1"
+                                                style="font-size: 0.85rem;">
+                                                <i class="fa-solid fa-check-double me-1"></i> Hoàn thành
+                                            </button>
+                                        </form>
+                                        <span class="badge bg-info text-white" style="font-size: 0.85rem;">
+                                            Đã xác nhận lúc
+                                            {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m H:i') : '' }}
+                                        </span>
+                                    </div>
+                                @elseif($payment->status === 'completed')
+                                    <span class="badge bg-success text-white">
+                                        Đã hoàn thành lúc
                                         {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
                                     </span>
-                                </div>
-                            @elseif($payment->status === 'rejected')
-                                <span class="badge bg-danger text-white" style="background-color: #dc3545;">
-                                    Đã hủy lúc
-                                    {{ $payment->rejected_at ? \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') : '' }}
-                                </span>
+                                @elseif($payment->status === 'rejected')
+                                    <span class="badge bg-danger text-white">
+                                        Đã hủy lúc
+                                        {{ $payment->rejected_at ? \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') : '' }}
+                                    </span>
+                                @endif
+                            @else
+                                {{-- Flow Online: pending → completed (giữ nguyên) --}}
+                                @if($payment->status === 'pending')
+                                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                        <form action="{{ route('payments.confirm', $payment->id) }}" method="POST"
+                                            onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-xs px-2 py-1"
+                                                style="font-size: 0.85rem; background-color: #28a745; border-color: #28a745;">
+                                                <i class="fa-solid fa-check me-1"></i> Xác nhận
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('payments.reject', $payment->id) }}" method="POST"
+                                            onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger btn-xs px-2 py-1"
+                                                style="font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545;">
+                                                <i class="fa-solid fa-times me-1"></i> Hủy đơn
+                                            </button>
+                                        </form>
+                                    </div>
+                                @elseif($payment->status === 'completed')
+                                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                        <span class="badge bg-success text-white" style="background-color: #28a745;">
+                                            Đã xác nhận lúc
+                                            {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m/Y H:i') : '' }}
+                                        </span>
+                                    </div>
+                                @elseif($payment->status === 'rejected')
+                                    <span class="badge bg-danger text-white" style="background-color: #dc3545;">
+                                        Đã hủy lúc
+                                        {{ $payment->rejected_at ? \Carbon\Carbon::parse($payment->rejected_at)->format('d/m/Y H:i') : '' }}
+                                    </span>
+                                @endif
                             @endif
                         </td>
                         <td>
-                        @if(in_array($payment->status, ['completed', 'rejected']))
-
+                        @if(in_array($payment->status, ['completed']))
                                 <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
                                     <a href="{{ route('admin.payments.invoice', $payment->id) }}" class="btn btn-primary btn-xs px-2 py-1"
                                         style="font-size: 0.85rem;">
@@ -162,10 +212,8 @@ $statusColor = [
                                     <i class="fa-solid fa-file-invoice me-1"></i> Xem hóa đơn
                                 </a>
                             @else
-                                <span class="text-muted">---</span>
+                                <span class="text-muted">Chưa có hóa đơn</span>
                             @endif
-
-
                         </td>
                     </tr>
                 @endforeach

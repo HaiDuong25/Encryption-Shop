@@ -150,6 +150,7 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Payments
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
+    Route::post('payments/{id}/complete', [PaymentController::class, 'complete'])->name('payments.complete');
     Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
     Route::get('payments/download-invoice/{id}', [PaymentController::class, 'downloadInvoice'])->name('admin.payments.download-invoice');
     Route::get('payments/export-pdf/{id}', [PaymentController::class, 'exportPdf'])->name('admin.payments.export-pdf');
