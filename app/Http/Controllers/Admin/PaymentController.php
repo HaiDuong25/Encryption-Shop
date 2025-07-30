@@ -37,44 +37,109 @@ class PaymentController extends Controller
             return redirect()->back()->with('info', 'Thanh toán đã được xác nhận trước đó');
         }
 
-        $payment->status = 'completed';
-        $payment->confirmed_at = now();
+        // Xác định flow dựa trên loại thanh toán
+        $isCOD = $payment->paymentMethod && strtolower($payment->paymentMethod->payment_type) === 'cod';
+        
+        if ($isCOD) {
+            // Flow COD: pending → confirmed
+            $payment->status = 'confirmed';
+            $payment->confirmed_at = now();
+            
+            // Cập nhật trạng thái đơn hàng thành confirmed
+            $order = $payment->order;
+            if ($order) {
+                $order->status = 'confirmed';
+                $order->save();
+            }
+            
+            $message = 'Đã xác nhận đơn hàng COD!';
+        } else {
+            // Flow Online: pending → completed (giữ nguyên)
+            $payment->status = 'completed';
+            $payment->confirmed_at = now();
 
-        // Tạo transaction code nếu chưa có (đối với COD)
+            // Tạo transaction code nếu chưa có
+            if (!$payment->transaction_code) {
+                $payment->transaction_code = 'MANUAL-' . $payment->order_id . '-' . time();
+            }
+
+            // Cập nhật trạng thái đơn hàng
+            $order = $payment->order;
+            if ($order) {
+                $order->status = 'confirmed';
+                $order->save();
+            }
+
+            // Tự động tạo hóa đơn cho đơn online
+            try {
+                $payment->generateInvoice();
+                Log::info("Invoice generated for online payment {$payment->id} upon confirmation");
+            } catch (\Exception $e) {
+                Log::error("Error generating invoice for online payment {$payment->id}: " . $e->getMessage());
+            }
+            
+            $message = 'Đã xác nhận thanh toán và cập nhật trạng thái đơn hàng!';
+        }
+
+        $payment->save();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function complete($id)
+    {
+        $payment = Payment::findOrFail($id);
+
+        // Chỉ áp dụng cho COD và trạng thái confirmed
+        if (!$payment->paymentMethod || strtolower($payment->paymentMethod->payment_type) !== 'cod') {
+            return redirect()->back()->with('error', 'Chức năng này chỉ áp dụng cho đơn hàng COD');
+        }
+
+        if ($payment->status !== 'confirmed') {
+            return redirect()->back()->with('error', 'Đơn hàng COD phải được xác nhận trước khi hoàn thành');
+        }
+
+        // COD: confirmed → completed
+        $payment->status = 'completed';
+        $payment->confirmed_at = now(); // Cập nhật thời gian hoàn thành
+
+        // Tạo transaction code cho COD
         if (!$payment->transaction_code) {
             $payment->transaction_code = 'COD-' . $payment->order_id . '-' . time();
         }
 
         $payment->save();
 
-        // Cập nhật trạng thái đơn hàng
+        // Cập nhật trạng thái đơn hàng thành completed
         $order = $payment->order;
         if ($order) {
-            // Nếu là COD thì chuyển sang hoàn thành, còn lại thì xác nhận
-            if ($payment->paymentMethod && strtolower($payment->paymentMethod->payment_type) === 'cod') {
-                $order->status = 'completed';
-
-                // Tự động tạo hóa đơn cho đơn COD khi confirm
-                try {
-                    $payment->generateInvoice();
-                    Log::info("Invoice generated for COD payment {$payment->id} upon confirmation");
-                } catch (\Exception $e) {
-                    Log::error("Error generating invoice for COD payment {$payment->id}: " . $e->getMessage());
-                }
-            } else {
-                $order->status = 'confirmed'; // Xác nhận
-            }
+            $order->status = 'completed';
             $order->save();
+        }
+
+        // Tự động tạo hóa đơn cho đơn COD khi hoàn thành
+        try {
+            $payment->generateInvoice();
+            Log::info("Invoice generated for COD payment {$payment->id} upon completion");
+        } catch (\Exception $e) {
+            Log::error("Error generating invoice for COD payment {$payment->id}: " . $e->getMessage());
         }
 
         if (request()->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Đã xác nhận thanh toán và cập nhật trạng thái đơn hàng!'
+                'message' => 'Đã hoàn thành đơn hàng COD!'
             ]);
         }
 
-        return redirect()->back()->with('success', 'Đã xác nhận thanh toán và cập nhật trạng thái đơn hàng!');
+        return redirect()->back()->with('success', 'Đã hoàn thành đơn hàng COD!');
     }
 
     public function invoice($id)
