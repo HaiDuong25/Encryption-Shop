@@ -75,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
     Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
     // Đánh giá
-  Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])->name('client.rates.store');
+    Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])->name('client.rates.store');
 
 
 
@@ -135,11 +135,11 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
 
     // Categories
     Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('categories/parent/create', [CategoryController::class, 'createParent'])->name('categories.create-parent');
-    Route::post('categories/parent/store', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
+        Route::get('categories/parent/create', [CategoryController::class, 'createParent'])->name('categories.create-parent');
+        Route::post('categories/parent/store', [CategoryController::class, 'storeParent'])->name('categories.store-parent');
 
-    Route::resource('categories', CategoryController::class);
-});
+        Route::resource('categories', CategoryController::class);
+    });
 
     // Brands
     Route::resource('brands', BrandController::class);
@@ -177,9 +177,9 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 
     // Trả hàng (Admin)
-Route::get('/returns', [\App\Http\Controllers\Admin\ReturnController::class, 'index'])->name('admin.returns.index');
-Route::get('/returns/{id}', [\App\Http\Controllers\Admin\ReturnController::class, 'show'])->name('admin.returns.show');
-Route::post('/returns/{id}/update-status', [\App\Http\Controllers\Admin\ReturnController::class, 'updateStatus'])->name('admin.returns.updateStatus');
+    Route::get('/returns', [\App\Http\Controllers\Admin\ReturnController::class, 'index'])->name('admin.returns.index');
+    Route::get('/returns/{id}', [\App\Http\Controllers\Admin\ReturnController::class, 'show'])->name('admin.returns.show');
+    Route::post('/returns/{id}/update-status', [\App\Http\Controllers\Admin\ReturnController::class, 'updateStatus'])->name('admin.returns.updateStatus');
 
 });
 
@@ -244,7 +244,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('addresses/{address}/set-default', [ClientShippingAddressController::class, 'setDefault'])->name('client.addresses.set-default');
 
 
-        // Trả hàng (client)
+    // Trả hàng (client)
     Route::prefix('returns')->name('client.returns.')->group(function () {
         Route::get('/', [ReturnRequestController::class, 'index'])->name('index');
         Route::get('/create', [ReturnRequestController::class, 'create'])->name('create');
@@ -257,3 +257,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('category/{id}', [CategoryClientController::class, 'show'])->name('categories.show');
 
 });
+
+// Add this route for coupons page
+Route::get('/my-coupons', function () {
+    return view('client.coupons.index');
+})->name('my-coupons');
