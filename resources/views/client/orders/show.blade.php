@@ -1,6 +1,8 @@
 @extends('client.layout.main')
 
 @section('title', 'Chi tiết đơn hàng')
+
+@section('content')
 <style>
     .rating-stars {
         display: flex;
@@ -77,7 +79,6 @@
         background-color: #06b6d4 !important;
     }
 </style>
-@section('content')
 
     <div class="container py-4">
         @php
@@ -97,6 +98,8 @@
                 '4' => 'received',
                 '5' => 'completed',
                 '6' => 'cancelled',
+                '7' => 'returning',
+                '8' => 'approved',
             ];
             $statusValue = is_numeric($order->status)
                 ? $statusMap[(string) $order->status] ?? 'pending'
@@ -219,33 +222,22 @@
                         </div>
                         <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
                             @php
-                                $isPaid =
-                                    $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                 $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
                                 $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
-                                $statusValue = is_numeric($order->status)
-                                    ? $statusMap[$order->status] ?? 'pending'
-                                    : $order->status;
                             @endphp
                             @switch($statusValue)
                                 @case('refunded')
                                 @case('returned')
-                                    {{-- Đã trả hàng xong --}}
+                                @case('approved')
                                     <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
                                         {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
                                     </span>
                                 @break
 
                                 @case('returning')
-                                    {{-- Đang trả hàng --}}
                                     <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-                                        {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
-                                    </span>
-                                @break
-
-                                @case('approved')
-                                    <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
-                                        {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                        {{ $isMomo ? 'Đang hoàn tiền' : 'Chưa thanh toán' }}
                                     </span>
                                 @break
 
@@ -254,10 +246,9 @@
                                         {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                                     </span>
                             @endswitch
-
                         </div>
                         <div class="mb-2"><strong>Phương thức thanh toán:</strong>
-                            {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}
+                            {{ optional($order->paymentMethod)->payment_type ?? 'Chưa chọn' }}
                         </div>
                         <div class="mb-2"><strong>Phương thức vận chuyển:</strong>
                             {{ $order->shipping_method ?? 'Giao hàng tận nơi' }}
@@ -395,7 +386,8 @@
                                 <tbody>
                                     @foreach ($order->orderDetails as $item)
                                         @php
-                                            $image = $item->variant->product->image ?? null;
+                                            $product = $item->variant->product ?? $item->product;
+                                            $image = $product->image ?? null;
                                             $imageUrl = $image
                                                 ? (Str::startsWith($image, ['http://', 'https://'])
                                                     ? $image
@@ -403,7 +395,7 @@
                                                 : 'https://via.placeholder.com/80?text=No+Image';
 
                                             // Kiểm tra xem người dùng đã đánh giá cho order_detail_id này chưa
-                                            $hasRated = $item->variant->product
+                                            $hasRated = $product
                                                 ->rates()
                                                 ->where('user_id', auth()->id())
                                                 ->where('order_detail_id', $item->id)
@@ -412,14 +404,13 @@
                                         <tr>
                                             <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
 
-
                                             <td class="align-top">
                                                 {{-- Tên và danh mục sản phẩm --}}
                                                 <div class="fw-bold text-dark fs-6">
-                                                    {{ $item->product->name ?? 'Sản phẩm đã xóa' }}
+                                                    {{ $product->name ?? 'Sản phẩm đã xóa' }}
                                                 </div>
                                                 <div class="text-muted small mb-1">
-                                                    {{ $item->product->category->name ?? 'Danh mục đã xóa' }}
+                                                    {{ optional($product->category)->name ?? 'Danh mục đã xóa' }}
                                                 </div>
 
                                                 {{-- Mã SKU --}}
@@ -429,7 +420,7 @@
                                                 @endif
 
                                                 {{-- Hiển thị các thuộc tính biến thể (Size, Màu, Khác) --}}
-                                                @if ($item->variant && $item->variant->attributeValues->count())
+                                                @if ($item->variant && $item->variant->attributeValues && $item->variant->attributeValues->count())
                                                     <div class="d-flex flex-wrap gap-2 mt-1">
                                                         @foreach ($item->variant->attributeValues as $attrValue)
                                                             @php
@@ -462,11 +453,11 @@
                                                 </div>
 
                                                 {{-- Đánh giá nếu đơn đã hoàn thành --}}
-                                                @if ($statusValue === 'completed')
+                                                @if ($statusValue === 'completed' && Auth::check())
                                                     @if (!$hasRated)
                                                         <form
-                                                            action="{{ route('client.rates.store', [$item->variant->product->id, $item->id]) }}"
-                                                            method="POST">
+                                                            action="{{ route('client.rates.store', [$product->id, $item->id]) }}"
+                                                            method="POST" class="mt-2">
                                                             @csrf
                                                             <div class="mb-2">
                                                                 <label class="small">Đánh giá của bạn:</label>
@@ -505,7 +496,7 @@
                                                 @endif
 
                                                 {{-- Trả hàng nếu đã nhận --}}
-                                                @if ($statusValue === 'received' && !$item->returnRequest)
+                                                @if ($statusValue === 'received' && Auth::check() && !optional($item->returnRequest)->exists())
                                                     <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
                                                         class="btn btn-warning btn-sm mt-1">Trả hàng</a>
                                                 @endif
@@ -513,18 +504,13 @@
 
                                             <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
                                         </tr>
-
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
-
-
     </div>
-
 @endsection

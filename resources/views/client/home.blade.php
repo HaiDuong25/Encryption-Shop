@@ -614,14 +614,15 @@
                                                 $isDisabled = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
                                             @endphp
                                             <button
-                                                class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
-                                                data-code="{{ $coupon->code }}"
+                                                class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
+                                                data-code="{{ $coupon->code }}" data-discount="{{ $discountText }}"
+                                                data-description="{{ $coupon->description ?? 'Mã giảm giá đặc biệt' }}"
                                                 style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
                                                 {{ $isDisabled ? 'disabled' : '' }}
                                                 onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
                                                 onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
-                                                <i class="fa-solid fa-{{ $isDisabled ? 'check' : 'copy' }} me-2"></i>
-                                                {{ $isDisabled ? 'Đã sử dụng' : 'Sao chép mã' }}
+                                                <i class="fa-solid fa-{{ $isDisabled ? 'check' : 'bookmark' }} me-2"></i>
+                                                {{ $isDisabled ? 'Đã sử dụng' : 'Đã lưu' }}
                                             </button>
                                             <span class="badge bg-white {{ $colorScheme['border_class'] }} border px-3 py-1 shadow-sm"
                                                 style="font-size: 0.9rem; font-weight: 600;">{{ $badges[$index % count($badges)] }}</span>
@@ -652,11 +653,13 @@
                                 </div>
                                 <h4 class="fw-bold text-danger mb-3" style="font-size:1.4rem;">Giảm 10%</h4>
                                 <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn hàng đầu tiên</p>
-                                <button class="btn btn-danger btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
-                                    data-code="WELCOME10" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                <button
+                                    class="btn btn-danger btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
+                                    data-code="WELCOME10" data-discount="Giảm 10%" data-description="Cho đơn hàng đầu tiên"
+                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
                                     onmouseover="this.style.transform='scale(1.05)';"
                                     onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-copy me-2"></i> Sao chép mã
+                                    <i class="fa-solid fa-bookmark me-2"></i> Đã lưu
                                 </button>
                                 <span class="badge bg-white text-warning border border-warning px-3 py-1 shadow-sm"
                                     style="font-size: 0.9rem; font-weight: 600;">🔥 Hot</span>
@@ -684,11 +687,13 @@
                                 </div>
                                 <h4 class="fw-bold text-success mb-3" style="font-size:1.4rem;">Giảm 20%</h4>
                                 <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn từ 1.000.000₫</p>
-                                <button class="btn btn-success btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
-                                    data-code="SAVE20" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                <button
+                                    class="btn btn-success btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
+                                    data-code="SAVE20" data-discount="Giảm 20%" data-description="Cho đơn từ 1.000.000₫"
+                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
                                     onmouseover="this.style.transform='scale(1.05)';"
                                     onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-copy me-2"></i> Sao chép mã
+                                    <i class="fa-solid fa-bookmark me-2"></i> Đã lưu
                                 </button>
                                 <span class="badge bg-white text-success border border-success px-3 py-1 shadow-sm"
                                     style="font-size: 0.9rem; font-weight: 600;">⚡ Giới hạn</span>
@@ -716,40 +721,142 @@
                                 </div>
                                 <h4 class="fw-bold text-primary mb-3" style="font-size:1.4rem;">Freeship toàn quốc</h4>
                                 <p class="text-muted mb-3" style="font-size:1.1rem;">Không giới hạn giá trị đơn</p>
-                                <button class="btn btn-primary btn-lg fw-bold px-4 py-2 rounded-pill copy-btn mb-3 shadow-lg"
-                                    data-code="FREESHIP" style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                <button
+                                    class="btn btn-primary btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
+                                    data-code="FREESHIP" data-discount="Freeship toàn quốc"
+                                    data-description="Không giới hạn giá trị đơn"
+                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
                                     onmouseover="this.style.transform='scale(1.05)';"
                                     onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-copy me-2"></i> Sao chép mã
+                                    <i class="fa-solid fa-bookmark me-2"></i> Đã lưu
                                 </button>
-                                <span class="badge bg-white text-primary border border-primary px-3 py-1 shadow-sm"
-                                    style="font-size: 0.9rem; font-weight: 600;">🚚 Freeship</span>
                             </div>
                         </div>
                     </div>
                 @endif
             </div>
+
+            <!-- View All Coupons Button -->
+            <div class="d-flex justify-content-center mt-5">
+                <a href="/my-coupons" class="btn btn-outline-warning btn-lg rounded-pill px-5 py-3 fw-semibold"
+                    style="border: 2px solid #ffc107; color: #ffc107; transition: all 0.3s ease;"
+                    onmouseover="this.style.backgroundColor='#ffc107'; this.style.color='white';"
+                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ffc107';">
+                    <i class="fa-solid fa-ticket me-2"></i>
+                    Xem mã giảm giá đã lưu
+                    <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            </div>
         </div>
     </section>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div id="couponToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fa-solid fa-check-circle me-2"></i>
+                    <span id="toastMessage">Đã lưu mã vào tài khoản!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.copy-btn').forEach(function (btn) {
+            // Coupon management functions
+            function getSavedCoupons() {
+                const saved = localStorage.getItem('savedCoupons');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            function saveCoupon(couponData) {
+                let savedCoupons = getSavedCoupons();
+
+                // Check if coupon already exists
+                const existingIndex = savedCoupons.findIndex(c => c.code === couponData.code);
+                if (existingIndex === -1) {
+                    savedCoupons.push({
+                        code: couponData.code,
+                        discount: couponData.discount,
+                        description: couponData.description,
+                        savedAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('savedCoupons', JSON.stringify(savedCoupons));
+                    updateHeaderCouponBadge();
+                    return true;
+                }
+                return false;
+            }
+
+            function updateHeaderCouponBadge() {
+                const savedCoupons = getSavedCoupons();
+                const badge = document.getElementById('headerCouponCount');
+
+                if (badge) {
+                    if (savedCoupons.length > 0) {
+                        badge.textContent = savedCoupons.length;
+                        badge.style.display = 'inline-block';
+
+                        // Add pulse animation
+                        badge.style.animation = 'pulse 0.5s ease-in-out';
+                        setTimeout(() => {
+                            badge.style.animation = '';
+                        }, 500);
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('couponToast');
+                const toastMessage = document.getElementById('toastMessage');
+
+                toastMessage.textContent = message;
+                toast.className = `toast align-items-center text-white bg-${type} border-0`;
+
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            }
+
+            // Handle save coupon buttons
+            document.querySelectorAll('.save-coupon-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    // Kiểm tra nếu button bị disabled
+                    // Check if button is disabled
                     if (btn.disabled || btn.classList.contains('disabled')) {
                         return;
                     }
 
-                    const code = btn.getAttribute('data-code');
-                    navigator.clipboard.writeText(code).then(function () {
+                    const couponData = {
+                        code: btn.getAttribute('data-code'),
+                        discount: btn.getAttribute('data-discount'),
+                        description: btn.getAttribute('data-description')
+                    };
+
+                    if (saveCoupon(couponData)) {
                         const originalHTML = btn.innerHTML;
-                        btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Đã sao chép';
+                        btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Đã lưu thành công';
                         btn.disabled = true;
+
                         setTimeout(function () {
-                            btn.innerHTML = originalHTML;
-                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fa-solid fa-bookmark me-2"></i> Đã lưu';
+                            btn.disabled = true; // Keep disabled after saving
                         }, 2000);
-                    });
+
+                        showToast(`Đã lưu mã ${couponData.code} thành công! Xem tại trang Mã giảm giá của tôi.`, 'success');
+
+                        // Add link to view saved coupons in toast with coupon icon
+                        setTimeout(() => {
+                            showToast('Nhấp vào đây để xem mã đã lưu', 'info');
+                            document.getElementById('toastMessage').innerHTML = '<a href="/my-coupons" class="text-white text-decoration-underline"><i class="fa-solid fa-ticket me-1"></i>Xem mã giảm giá đã lưu</a>';
+                        }, 3000);
+                    } else {
+                        showToast(`Mã ${couponData.code} đã có trong danh sách!`, 'warning');
+                    }
                 });
             });
         });
@@ -1144,7 +1251,7 @@
                 @if($news && $news->count() > 0)
                         @foreach($news->take(3) as $index => $article)
                                 <div class="col">
-                                    <div class="card border-0 shadow-lg h-100"
+                                    <div class="card border-0 shadow-lg h-100 news-card"
                                         style="border-radius: 2rem; overflow: hidden; transition: transform 0.3s ease;"
                                         onmouseover="this.style.transform='translateY(-10px)'"
                                         onmouseout="this.style.transform='translateY(0)'">
@@ -1170,7 +1277,7 @@
                                                     $badgeColors = ['bg-warning text-dark', 'bg-success text-white', 'bg-primary text-white', 'bg-info text-white', 'bg-secondary text-white', 'bg-danger text-white'];
                                                     $badgeIndex = $index % count($badges);
                                                 @endphp
-                                                <span
+                             <span
                                                     class="badge {{ $badgeColors[$badgeIndex] }} px-3 py-2 rounded-pill shadow-sm fw-bold">
                                                     {{ $badges[$badgeIndex] }}
                                                 </span>
@@ -1206,13 +1313,11 @@
                         @endforeach
                 @else
                     <!-- Fallback news nếu không có dữ liệu -->
-                    <!-- News 1 -->
-                    <!-- News 1 -->
                     <div class="col">
                         <div class="card border-0 shadow-lg h-100 news-card"
                             style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
-                            onmouseover="this.style.transform='translateY(-15px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
-                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
+                            onmouseover="this.style.transform='translateY(-15px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
                             <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
                                 <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80"
                                     class="card-img-top img-fluid" alt="Tin tức 1"
@@ -1246,8 +1351,7 @@
                                     </div>
                                     <h4 class="card-title fw-bold text-dark mb-3"
                                         style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                                                                                               -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                        BST Thu Đông 2025: Xu hướng mới lên ngôi
+                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                     </h4>
                                     <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
                                         Khám phá những mẫu thiết kế mới nhất cho mùa thu đông, mang phong cách sang trọng và
@@ -1256,9 +1360,9 @@
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <a href="{{ route('client.news.index') }}"
-                                        class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
+                                        class="btn btn-warning rounded-pill fw-semibold text-white px-4 py-2"
                                         style="background: linear-gradient(135deg, #f9a825 0%, #f57c00 100%); border: none; 
-                                                                                                              box-shadow: 0 8px 25px rgba(249, 168, 37, 0.4); transition: all 0.3s ease;">
+                                                       box-shadow: 0 8px 25px rgba(249, 168, 37, 0.4); transition: all 0.3s ease;">
                                         <span class="position-relative z-index-2">
                                             Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
                                         </span>
@@ -1271,12 +1375,12 @@
                             </div>
                         </div>
                     </div>
-                    <!-- News 2 -->
+
                     <div class="col">
                         <div class="card border-0 shadow-lg h-100 news-card"
                             style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
-                            onmouseover="this.style.transform='translateY(-15px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
-                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
+                            onmouseover="this.style.transform='translateY(-15px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
                             <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
                                 <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80"
                                     class="card-img-top img-fluid" alt="Tin tức 2"
@@ -1284,138 +1388,123 @@
                                     onmouseover="this.style.transform='scale(1.08)';"
                                     onmouseout="this.style.transform='scale(1)';">
                                 <div class="position-absolute top-0 start-0 p-3">
-                                    <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm fw-bold"
-                                        style="backdrop-filter: blur(10px); background: linear-gradient(135deg, #00b894 0%, #00cec9 100%) !important;">
+                                    <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm fw-bold">
                                         💡 Bí quyết
-                                    </span>
-                                </div>
-                                <div class="position-absolute bottom-0 start-0 end-0 p-3"
-                                    style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
-                                    <div class="d-flex align-items-center text-white">
-                                        <i class="fa-solid fa-heart me-2"></i>
-                                        <span class="me-3">189</span>
-                                        <i class="fa-solid fa-share me-2"></i>
-                                        <span>43</span>
+                                    </span </div>
+                                    <div class="position-absolute bottom-0 start-0 end-0 p-3"
+                                        style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                                        <div class="d-flex align-items-center text-white">
+                                            <i class="fa-solid fa-heart me-2"></i>
+                                            <span class="me-3">312</span>
+                                            <i class="fa-solid fa-share me-2"></i>
+                                            <span>78</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body d-flex flex-column justify-content-between p-4">
-                                <div class="mb-3">
-                                    <div class="text-muted small mb-3 d-flex align-items-center">
-                                        <i class="fa-solid fa-calendar-days me-2 text-success"></i>
-                                        <span>8 Tháng 7, 2025</span>
-                                        <span class="mx-2">•</span>
-                                        <i class="fa-solid fa-clock me-1"></i>
-                                        <span>3 phút đọc</span>
+                                <div class="card-body d-flex flex-column justify-content-between p-4">
+                                    <div class="mb-3">
+                                        <div class="text-muted small mb-3 d-flex align-items-center">
+                                            <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
+                                            <span>5 Tháng 7, 2025</span>
+                                            <span class="mx-2">•</span>
+                                            <i class="fa-solid fa-clock me-1"></i>
+                                            <span>7 phút đọc</span>
+                                        </div>
+                                        <h4 class="card-title fw-bold text-dark mb-3"
+                                            style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); 
+                                                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                            Phong cách hè 2025: Đơn giản mà nổi bật
+                                        </h4>
+                                        <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
+                                            Cập nhật xu hướng thời trang hè với những gam màu tươi sáng và thiết kế thoải mái,
+                                            phù
+                                            hợp cho mọi hoạt động. ☀️
+                                        </p>
                                     </div>
-                                    <h4 class="card-title fw-bold text-dark mb-3"
-                                        style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
-                                                                                                               -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                        Bí quyết phối đồ công sở thanh lịch
-                                    </h4>
-                                    <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
-                                        Gợi ý cách phối đồ công sở giúp bạn tự tin và nổi bật mỗi ngày tại nơi làm việc với
-                                        phong cách chuyên nghiệp. 💼
-                                    </p>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <a href="{{ route('client.news.index') }}"
-                                        class="btn btn-success rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
-                                        style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); border: none; 
-                                                                                                              box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); transition: all 0.3s ease;">
-                                        <span class="position-relative z-index-2">
-                                            Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
-                                        </span>
-                                    </a>
-                                    <div class="d-flex align-items-center text-muted">
-                                        <i class="fa-solid fa-eye me-1 text-success"></i>
-                                        <span class="fw-semibold">856</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- News 3 -->
-                    <div class="col">
-                        <div class="card border-0 shadow-lg h-100 news-card"
-                            style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
-                            onmouseover="this.style.transform='translateY(-15px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
-                            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
-                            <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
-                                <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
-                                    class="card-img-top img-fluid" alt="Tin tức 3"
-                                    style="object-fit:cover; height:300px; transition: transform 0.4s ease;"
-                                    onmouseover="this.style.transform='scale(1.08)';"
-                                    onmouseout="this.style.transform='scale(1)';">
-                                <div class="position-absolute top-0 start-0 p-3">
-                                    <span
-                                        class="badge bg-primary text-white px-3 py-2 rounded-pill shadow-sm fw-bold position-relative"
-                                        style="backdrop-filter: blur(10px); background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%) !important; animation: pulse 2s infinite;">
-                                        🔥 Hot
-                                    </span>
-                                </div>
-                                <div class="position-absolute bottom-0 start-0 end-0 p-3"
-                                    style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
-                                    <div class="d-flex align-items-center text-white">
-                                        <i class="fa-solid fa-heart me-2"></i>
-                                        <span class="me-3">312</span>
-                                        <i class="fa-solid fa-share me-2"></i>
-                                        <span>78</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body d-flex flex-column justify-content-between p-4">
-                                <div class="mb-3">
-                                    <div class="text-muted small mb-3 d-flex align-items-center">
-                                        <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
-                                        <span>5 Tháng 7, 2025</span>
-                                        <span class="mx-2">•</span>
-                                        <i class="fa-solid fa-clock me-1"></i>
-                                        <span>7 phút đọc</span>
-                                    </div>
-                                    <h4 class="card-title fw-bold text-dark mb-3"
-                                        style="font-size:1.4rem; line-height: 1.4; background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); 
-                                                                                                               -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                        Phong cách hè 2025: Đơn giản mà nổi bật
-                                    </h4>
-                                    <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
-                                        Cập nhật xu hướng thời trang hè với những gam màu tươi sáng và thiết kế thoải mái, phù
-                                        hợp cho mọi hoạt động. ☀️
-                                    </p>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <a href="{{ route('client.news.index') }}"
-                                        class="btn btn-primary rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
-                                        style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); border: none; 
-                                                                                                              box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); transition: all 0.3s ease;">
-                                        <span class="position-relative z-index-2">
-                                            Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
-                                        </span>
-                                    </a>
-                                    <div class="d-flex align-items-center text-muted">
-                                        <i class="fa-solid fa-eye me-1 text-primary"></i>
-                                        <span class="fw-semibold">679</span>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ route('client.news.index') }}"
+                                            class="btn btn-primary rounded-pill fw-semibold text-white px-4 py-2 position-relative overflow-hidden"
+                                            style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); border: none; 
+                                                       box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); transition: all 0.3s ease;">
+                                            <span class="position-relative z-index-2">
+                                                Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                            </span>
+                                        </a>
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fa-solid fa-eye me-1 text-primary"></i>
+                                            <span class="fw-semibold">679</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="col">
+                            <div class="card border-0 shadow-lg h-100 news-card"
+                                style="border-radius: 2rem; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative;"
+                                onmouseover="this.style.transform='translateY(-15px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.15)'"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.1)'">
+                                <div class="position-relative" style="overflow: hidden; border-radius: 2rem 2rem 0 0;">
+                                    <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
+                                        class="card-img-top img-fluid" alt="Tin tức 3"
+                                        style="object-fit:cover; height:300px; transition: transform 0.4s ease;"
+                                        onmouseover="this.style.transform='scale(1.08)';"
+                                        onmouseout="this.style.transform='scale(1)';">
+                                    <div class="position-absolute top-0 start-0 p-3">
+                                        <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm fw-bold">
+                                            🔥 Hot
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-4">
+                                    <div class="mb-3">
+                                        <div class="text-muted small mb-3 d-flex align-items-center">
+                                            <i class="fa-solid fa-calendar-days me-2 text-success"></i>
+                                            <span>1 Tháng 7, 2025</span>
+                                            <span class="mx-2">•</span>
+                                            <i class="fa-solid fa-clock me-1"></i>
+                                            <span>3 phút đọc</span>
+                                        </div>
+                                        <h4 class="card-title fw-bold text-dark mb-3"
+                                            style="font-size:1.4rem; line-height: 1.4;">
+                                            Xu hướng phụ kiện 2025
+                                        </h4>
+                                        <p class="card-text text-secondary mb-3" style="font-size:1.1rem; line-height: 1.6;">
+                                            Những món phụ kiện không thể thiếu để hoàn thiện phong cách thời trang của bạn. 💎
+                                        </p>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ route('client.news.index') }}"
+                                            class="btn btn-success rounded-pill fw-semibold text-white px-4 py-2">
+                                            Đọc tiếp <i class="fa-solid fa-arrow-right ms-1"></i>
+                                        </a>
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fa-solid fa-eye me-1 text-success"></i>
+                                            <span class="fw-semibold">892</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 @endif
+                </div>
+
+                <!-- View More Button -->
+                <div class="d-flex justify-content-center mt-5">
+                    <a href="{{ route('client.news.index') }}"
+                        class="btn btn-outline-primary btn-lg rounded-pill px-5 py-3 fw-semibold"
+                        style="border: 2px solid #007bff; transition: all 0.3s ease;"
+                        onmouseover="this.style.backgroundColor='#007bff'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#007bff';">
+                        <i class="fa-solid fa-newspaper me-2"></i>
+                        Xem tất cả tin tức
+                        <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
-            <!-- View More Button -->
-            <div class="d-flex justify-content-center mt-5">
-                <a href="{{ route('client.news.index') }}"
-                    class="btn btn-outline-primary btn-lg rounded-pill px-5 py-3 fw-semibold"
-                    style="border: 2px solid #007bff; transition: all 0.3s ease;"
-                    onmouseover="this.style.backgroundColor='#007bff'; this.style.color='white';"
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#007bff';">
-                    <i class="fa-solid fa-newspaper me-2"></i>
-                    Xem tất cả tin tức
-                    <i class="fa-solid fa-arrow-right ms-2"></i>
-                </a>
-            </div>
-        </div>
     </section>
+    <!-- News Section End -->
+
     <!-- Service Section Start -->
     <section class="service-section section-b-space">
         <div class="container-fluid-lg">
