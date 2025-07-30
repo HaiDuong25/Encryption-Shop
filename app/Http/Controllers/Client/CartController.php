@@ -807,7 +807,15 @@ class CartController extends Controller
 
     public function success($order_id)
     {
-        $order = \App\Models\Order::with(['paymentMethod', 'shippingAddress'])->find($order_id);
+        $order = \App\Models\Order::with([
+            'paymentMethod', 
+            'shippingAddress',
+            'payments' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            },
+            'orderDetails.product',
+            'orderDetails.variant.attributeValues.attribute'
+        ])->find($order_id);
 
         if (!$order) {
             return redirect()->route('home')->with('error', 'Không tìm thấy đơn hàng');

@@ -492,6 +492,41 @@
 
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
+                
+                @php
+                    $latestPayment = $order->payments->where('status', 'completed')->first();
+                @endphp
+                @if($latestPayment && $latestPayment->payment_method_type && in_array($latestPayment->payment_method_type, ['MoMo', 'ZaloPay']))
+                    <div class="transaction-info mt-3 p-3" style="background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #007bff;">
+                        <p class="mb-2"><strong><i class="fas fa-receipt me-2"></i>Dữ liệu giao dịch:</strong></p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><span class="badge bg-info">{{ $latestPayment->payment_method_type }}</span></p>
+                                @if($latestPayment->transaction_code)
+                                    <p class="mb-1"><small class="text-muted">Mã giao dịch:</small><br>
+                                    <strong class="text-primary">{{ $latestPayment->transaction_code }}</strong></p>
+                                @endif
+                            </div>
+                            <div class="col-md-6">
+                                @if($order->transaction_id)
+                                    <p class="mb-1"><small class="text-muted">Mã đơn hàng:</small><br>
+                                    <strong class="text-success">{{ $order->transaction_id }}</strong></p>
+                                @endif
+                                @if($latestPayment->confirmed_at)
+                                    <p class="mb-0"><small class="text-muted">Thời gian GD:</small><br>
+                                    <strong class="text-dark">{{ \Carbon\Carbon::parse($latestPayment->confirmed_at)->format('d/m/Y H:i:s') }}</strong></p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @elseif($order->paymentMethod && $order->paymentMethod->payment_type == 'COD')
+                    <div class="transaction-info mt-3 p-3" style="background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #28a745;">
+                        <p class="mb-2"><strong><i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán:</strong></p>
+                        <span class="badge bg-success">Thanh toán khi nhận hàng (COD)</span>
+                        <p class="mb-0 mt-2"><small class="text-muted">Khách hàng sẽ thanh toán trực tiếp cho shipper</small></p>
+                    </div>
+                @endif
+                
                 @if($order->coupon_code)
                     <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>
