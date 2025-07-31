@@ -348,7 +348,7 @@
 </body>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
 
 <!-- Mirrored from themes.pixelstrap.com/fastkart/front-end/index-5.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 06 Nov 2024 13:12:43 GMT -->
 
