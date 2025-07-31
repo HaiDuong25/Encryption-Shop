@@ -550,13 +550,6 @@
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="product-summary text-end">
-                                            <div class="product-total-price text-primary fw-bold fs-5">
-                                                {{ number_format($productTotalPrice) }} VNĐ
-                                            </div>
-                                            <small class="product-total-qty text-muted">{{ $totalProductQuantity }} sản phẩm</small>
-                                        </div>
                                     </div>
 
                                     <!-- Body chứa các variants -->
@@ -958,10 +951,14 @@
             console.log('DOM loaded, initializing cart...');
             
             // Initialize functions
-            calculateTotal();
-            loadSavedSelections();
             initializeCouponManager();
             setupVoucherHandling();
+            
+            // Load saved selections first
+            loadSavedSelections();
+            
+            // Then calculate total (this will update button state)
+            calculateTotal();
             
             // Checkbox management
             const selectAllCheckbox = document.getElementById('select-all');
@@ -1514,6 +1511,8 @@
                         });
                         
                         updateSelectAllState();
+                        // Cập nhật lại tổng tiền và trạng thái nút mua hàng sau khi khôi phục selections
+                        calculateTotal();
                     } catch (error) {
                         console.error('Error loading saved selections:', error);
                     }
@@ -1647,13 +1646,21 @@
                         return;
                     }
                     
+                    checkoutBtn.style.display = 'block';
                     checkoutBtn.disabled = !hasSelectedItems;
+                    
                     if (hasSelectedItems) {
                         checkoutBtn.classList.remove('btn-secondary');
                         checkoutBtn.classList.add('checkout-btn');
+                        checkoutBtn.style.backgroundColor = '';
+                        checkoutBtn.style.borderColor = '';
+                        checkoutBtn.style.opacity = '1';
                     } else {
                         checkoutBtn.classList.remove('checkout-btn');
                         checkoutBtn.classList.add('btn-secondary');
+                        checkoutBtn.style.backgroundColor = '#6c757d';
+                        checkoutBtn.style.borderColor = '#6c757d';
+                        checkoutBtn.style.opacity = '0.6';
                     }
                 }
             }
