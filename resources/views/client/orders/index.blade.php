@@ -220,7 +220,7 @@
                                                 @break
 
                                                 @case('returning')
-                                                    <span class="badge status-badge {{ $isMoma ? 'badge-returning' : 'badge-unpaid' }}">
+                                                    <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
                                                         {{ $isMomo ? 'Đang hoàn tiền' : 'Chưa thanh toán' }}
                                                     </span>
                                                 @break
