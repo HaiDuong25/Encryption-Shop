@@ -118,8 +118,7 @@
                     'delivering' => 'Đang giao',
                     'received' => 'Đã nhận',
                     'completed' => 'Hoàn thành',
-                    'returning' => 'Đang trả hàng',
-                    'approved' => 'Đã trả hàng',
+
                 ];
                 $trackerKeys = array_keys($trackerSteps);
                 $currentStep = array_search($statusValue, $trackerKeys);
