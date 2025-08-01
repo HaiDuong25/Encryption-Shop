@@ -7,21 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_SHIPPING = 'shipping';
     public const STATUS_DELIVERING = 'delivering';
     public const STATUS_RECEIVED = 'received';
     public const STATUS_COMPLETED = 'completed';
+    public const STATUS_CANCELLED = 'cancelled';
 
     public static function getStatusLabels(): array
     {
         return [
             self::STATUS_PENDING => 'Chờ xử lý',
+            self::STATUS_APPROVED => 'Đã duyệt',
             self::STATUS_CONFIRMED => 'Đã xác nhận',
             self::STATUS_SHIPPING => 'Giao cho ĐVVC',
             self::STATUS_DELIVERING => 'Đang giao',
             self::STATUS_RECEIVED => 'Đã nhận',
-            self::STATUS_COMPLETED => 'Hoàn thành'
+            self::STATUS_COMPLETED => 'Hoàn thành',
+            self::STATUS_CANCELLED => 'Đã hủy'
         ];
     }
 

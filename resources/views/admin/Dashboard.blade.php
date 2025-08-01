@@ -172,7 +172,32 @@
                                 <td>
                                     <div class="product-detail-box">
                                         <h6>Trạng thái</h6>
-                                        <h5>{{ $order->status_label }}</h5>
+                                        @php
+                                            $statusLabels = [
+                                                'pending' => 'Chờ xử lý',
+                                                'approved' => 'Đã duyệt',
+                                                'confirmed' => 'Đã xác nhận', 
+                                                'shipping' => 'Giao cho ĐVVC',
+                                                'delivering' => 'Đang giao',
+                                                'received' => 'Đã nhận',
+                                                'completed' => 'Hoàn thành',
+                                                'cancelled' => 'Đã hủy',
+                                                'canceled' => 'Đã hủy'
+                                            ];
+                                            $statusLabel = $statusLabels[$order->status] ?? 'Không xác định';
+                                            $statusColor = match($order->status) {
+                                                'pending' => 'warning',
+                                                'approved' => 'info',
+                                                'confirmed' => 'info',
+                                                'shipping' => 'primary', 
+                                                'delivering' => 'primary',
+                                                'received' => 'success',
+                                                'completed' => 'success',
+                                                'cancelled', 'canceled' => 'danger',
+                                                default => 'secondary'
+                                            };
+                                        @endphp
+                                        <span class="badge bg-{{ $statusColor }}">{{ $statusLabel }}</span>
                                     </div>
                                 </td>
                                 <td>
@@ -346,4 +371,32 @@
         }
     });
 </script>
+@endpush
+
+@push('styles')
+<style>
+    .badge {
+        font-size: 11px;
+        padding: 6px 10px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        white-space: nowrap;
+    }
+    
+    .product-detail-box h6 {
+        color: #6c757d;
+        font-size: 12px;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+    
+    .product-detail-box h5 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+</style>
 @endpush
