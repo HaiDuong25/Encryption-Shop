@@ -184,6 +184,21 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
 
 });
 
+// Test route để debug coupon creation
+Route::post('/admin/test-coupon', function (\Illuminate\Http\Request $request) {
+    return response()->json([
+        'success' => true,
+        'message' => 'Test route works!',
+        'request_data' => $request->all(),
+        'is_ajax' => $request->ajax(),
+        'headers' => [
+            'accept' => $request->header('Accept'),
+            'content-type' => $request->header('Content-Type'),
+            'x-requested-with' => $request->header('X-Requested-With')
+        ]
+    ]);
+})->middleware(['web']);
+
 
 // --- API Routes for Location ---
 Route::get('/api/districts', [LocationController::class, 'getDistricts'])->name('api.districts');

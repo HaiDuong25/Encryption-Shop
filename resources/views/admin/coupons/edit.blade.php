@@ -184,10 +184,28 @@
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: formData
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    
+                    // Status 422 vẫn là response hợp lệ, chỉ là validation error
+                    if (response.status === 422 || (response.status >= 200 && response.status < 300)) {
+                        return response.json();
+                    }
+                    
+                    // Chỉ throw error cho các status code khác
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.log('Error response body:', text);
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        });
+                    }
+                    
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         // Hiển thị thông báo thành công

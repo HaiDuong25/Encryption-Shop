@@ -43,8 +43,6 @@
                                 <th>Giới hạn sử dụng</th>
                                 <th>Đã sử dụng</th>
                                 <th>Một lần/User</th>
-                                <th>Ngày bắt đầu</th>
-                                <th>Ngày kết thúc</th>
                                 <th>Trạng thái</th>
                                 <th>Hành động</th>
                             </tr>
@@ -107,10 +105,6 @@
                                                                 <span class="badge bg-secondary">Không</span>
                                                             @endif
                                                         </td>
-                                                        <td>{{ $coupon->start_date ? \Carbon\Carbon::parse($coupon->start_date)->format('d/m/Y') : '-' }}
-                                                        </td>
-                                                        <td>{{ $coupon->end_date ? \Carbon\Carbon::parse($coupon->end_date)->format('d/m/Y') : '-' }}
-                                                        </td>
                                                         <td>
                                                 @php
                                                     $now = \Carbon\Carbon::now();
@@ -149,7 +143,7 @@
                                                     </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted">
+                                    <td colspan="10" class="text-center text-muted">
                                         {{ request('discount') ? 'Không tìm thấy mã giảm giá nào phù hợp.' : 'Chưa có mã giảm giá nào.' }}
                                     </td>
                                 </tr>
@@ -225,7 +219,7 @@
                                     if (tbody && tbody.children.length === 0) {
                                         const emptyRow = document.createElement('tr');
                                         emptyRow.innerHTML = `
-                                                            <td colspan="9" class="text-center text-muted">
+                                                            <td colspan="10" class="text-center text-muted">
                                                                 Chưa có mã giảm giá nào.
                                                             </td>
                                                         `;
