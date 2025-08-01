@@ -88,10 +88,10 @@
                                         if ($coupon->discount_type === 'percentage') {
                                             $discountText = "Giảm {$coupon->discount}%";
                                             if ($coupon->max_discount_amount) {
-                                                $discountText .= " (tối đa " . number_format($coupon->max_discount_amount) . "₫)";
+                                                $discountText .= " (tối đa " . format_vnd($coupon->max_discount_amount) . "₫)";
                                             }
                                         } else {
-                                            $discountText = "Giảm " . number_format($coupon->discount) . "₫";
+                                            $discountText = "Giảm " . format_vnd($coupon->discount) . "₫";
                                         }
 
                                         // Check if coupon has been used
@@ -144,7 +144,7 @@
                                                 @if($coupon->min_order_amount)
                                                     <div class="condition-item d-flex align-items-center mb-2">
                                                         <i class="fa-solid fa-shopping-cart me-2 text-info" style="font-size: 0.9rem;"></i>
-                                                        <small class="text-muted">Đơn tối thiểu: {{ number_format($coupon->min_order_amount) }}₫</small>
+                                                        <small class="text-muted">Đơn tối thiểu: {{ format_vnd($coupon->min_order_amount) }}₫</small>
                                                     </div>
                                                 @endif
                                                 

@@ -78,8 +78,8 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Giá sản phẩm</label>
-                        <input type="number" step="0.01" name="price" class="form-control @error('price') is-invalid @enderror"
-                            value="{{ old('price', $product->price) }}">
+                        <input type="number" step="1" name="price" class="form-control @error('price') is-invalid @enderror"
+                            value="{{ old('price', (int)$product->price) }}">
                         @error('price')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -87,8 +87,8 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Giá khuyến mãi</label>
-                        <input type="number" step="0.01" name="sale_price" class="form-control @error('sale_price') is-invalid @enderror"
-                            value="{{ old('sale_price', $product->sale_price) }}">
+                        <input type="number" step="1" name="sale_price" class="form-control @error('sale_price') is-invalid @enderror"
+                            value="{{ old('sale_price', (int)$product->sale_price) }}">
                         @error('sale_price')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -144,7 +144,12 @@
                         <div class="input-group mb-2">
                             <select name="sizes[]" id="size-select" class="form-select @error('sizes') is-invalid @enderror" multiple>
                                 @foreach($sizes as $size)
-                                <option value="{{ $size->id }}">{{ $size->value }}</option>
+                                @php
+                                    $isSelected = $product->variants->contains(function($variant) use ($size) {
+                                        return $variant->attributeValues->contains('id', $size->id);
+                                    });
+                                @endphp
+                                <option value="{{ $size->id }}" {{ $isSelected ? 'selected' : '' }}>{{ $size->value }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -161,7 +166,12 @@
                         <div class="input-group mb-2">
                             <select name="colors[]" id="color-select" class="form-select @error('colors') is-invalid @enderror" multiple>
                                 @foreach($colors as $color)
-                                <option value="{{ $color->id }}">{{ $color->value }}</option>
+                                @php
+                                    $isSelected = $product->variants->contains(function($variant) use ($color) {
+                                        return $variant->attributeValues->contains('id', $color->id);
+                                    });
+                                @endphp
+                                <option value="{{ $color->id }}" {{ $isSelected ? 'selected' : '' }}>{{ $color->value }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -208,10 +218,10 @@
                                 <input type="text" name="old_variant_sku[{{ $idx }}]" class="form-control" value="{{ $variant->sku }}">
                             </td>
                             <td>
-                                <input type="number" step="0.01" name="old_variant_price[{{ $idx }}]" class="form-control" value="{{ $variant->display_price }}">
+                                <input type="number" step="1" name="old_variant_price[{{ $idx }}]" class="form-control" value="{{ (int)($variant->price ?: $product->price) }}">
                             </td>
                             <td>
-                                <input type="number" step="0.01" name="old_variant_sale_price[{{ $idx }}]" class="form-control" value="{{ $variant->sale_price }}">
+                                <input type="number" step="1" name="old_variant_sale_price[{{ $idx }}]" class="form-control" value="{{ (int)$variant->sale_price }}">
                             </td>
                             <td>
                                 <input type="number" name="old_variant_stock[{{ $idx }}]" class="form-control" value="{{ $variant->stock }}">
@@ -306,15 +316,15 @@
         sizes.forEach(s => {
             colors.forEach(c => combos.push([s, c]));
         });
-        let html = `<table class="table table-bordered mt-3"><tr class="table-primary"><th>STT</th><th>Size</th><th>Màu</th><th>SKU</th><th>Giá</th><th>Tồn kho</th><th>Ảnh</th></tr>`;
+        let html = `<table class="table table-bordered mt-3"><tr class="table-primary"><th>STT</th><th>Size</th><th>Màu</th><th>SKU</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>Ảnh</th></tr>`;
         combos.forEach((arr, idx) => {
             html += `<tr>
             <td>${idx+1}</td>
             <td><input type="hidden" name="variant_sizes[${idx}]" value="${arr[0].id}">${arr[0].text}</td>
             <td><input type="hidden" name="variant_colors[${idx}]" value="${arr[1].id}">${arr[1].text}</td>
             <td><input type="text" name="variant_sku[${idx}]" class="form-control" placeholder="SKU"></td>
-            <td><input type="number" step="0.01" name="variant_price[${idx}]" class="form-control" placeholder="Giá"></td>
-            <td><input type="number" step="0.01" name="variant_sale_price[${idx}]" class="form-control" placeholder="Giá KM"></td>
+            <td><input type="number" step="1" name="variant_price[${idx}]" class="form-control" placeholder="Giá"></td>
+            <td><input type="number" step="1" name="variant_sale_price[${idx}]" class="form-control" placeholder="Giá KM"></td>
             <td><input type="number" name="variant_stock[${idx}]" class="form-control" value="0" min="0"></td>
             <td><input type="file" name="variant_image[${idx}]" accept="image/*"></td>
         </tr>`;

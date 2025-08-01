@@ -46,7 +46,7 @@
                     </label>
                     <input type="number" name="discount" id="discount" class="form-control form-control-lg" required min="1"
                         max="{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? '100' : '10000000' }}"
-                        value="{{ old('discount', $coupon->discount) }}"
+                        value="{{ old('discount', (int)$coupon->discount) }}"
                         placeholder="{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Nhập giá trị từ 1-100' : 'Nhập số tiền giảm giá' }}"
                         style="color: #222; font-size: 1.3rem;">
                     <small id="discount-help" class="form-text text-muted">
@@ -59,7 +59,7 @@
                         Số tiền giảm tối đa (₫)
                     </label>
                     <input type="number" name="max_discount_amount" id="max_discount_amount" class="form-control form-control-lg" 
-                        min="0" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}" 
+                        min="0" step="1" value="{{ old('max_discount_amount', (int)$coupon->max_discount_amount) }}" 
                         placeholder="Nhập số tiền giảm tối đa" style="color: #222; font-size: 1.3rem;">
                     <small class="form-text text-muted">Áp dụng cho giảm giá theo %. VD: Giảm 10% tối đa 50,000₫</small>
                 </div>
@@ -69,8 +69,8 @@
                         Đơn hàng tối thiểu (₫)
                     </label>
                     <input type="number" name="min_order_amount" id="min_order_amount" class="form-control form-control-lg" 
-                        min="0" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" 
-                        placeholder="Nhập giá trị đơn hàng tối thiểu" style="color: #222; font-size: 1.3rem;">
+                        min="0" step="1" value="{{ old('min_order_amount', (int)$coupon->min_order_amount) }}" 
+                        placeholder="Nhập giá trị đơn hàng tối thiểu" style="color: #222; font-size: 1.3rem;">>
                     <small class="form-text text-muted">Để trống nếu không yêu cầu đơn hàng tối thiểu</small>
                 </div>
 

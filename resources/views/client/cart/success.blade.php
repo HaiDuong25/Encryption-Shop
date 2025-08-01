@@ -126,7 +126,7 @@
                                                     @endif
                                                     - SL: {{ $detail->quantity }}
                                                 </div>
-                                                <p class="mb-1"><strong>Tổng tiền:</strong> <span class="text-success fs-5 fw-bold">{{ number_format($order->total_price ?? $order->total, 0, ',', '.') }}đ</span></p>
+                                                <p class="mb-1"><strong>Tổng tiền:</strong> <span class="text-success fs-5 fw-bold">{{ format_vnd($order->total_price ?? $order->total) }}đ</span></p>
                                                     @endforeach
                                                 </div>
                                             @endif
@@ -184,7 +184,7 @@
                                                 </div>
                                                 <div class="mb-1">
                                                     <small class="text-muted">Số tiền cần thanh toán:</small><br>
-                                                    <strong class="text-danger fs-5">{{ number_format($order->total_price ?? $order->total, 0, ',', '.') }}đ</strong>
+                                                    <strong class="text-danger fs-5">{{ format_vnd($order->total_price ?? $order->total) }}đ</strong>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">

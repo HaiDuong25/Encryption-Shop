@@ -87,14 +87,14 @@
                 <div class="row g-3 mb-2">
                     <div class="col-lg-6">
                         <label class="form-label fw-semibold">Giá mặc định</label>
-                        <input type="number" class="form-control @error('price') is-invalid @enderror" name="price" step="0.01" value="{{ old('price') }}">
+                        <input type="number" class="form-control @error('price') is-invalid @enderror" name="price" id="price" step="1" value="{{ old('price') }}">
                         @error('price')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="col-lg-6">
                         <label class="form-label fw-semibold">Giá khuyến mãi</label>
-                        <input type="number" class="form-control @error('sale_price') is-invalid @enderror" name="sale_price" step="0.01" value="{{ old('sale_price') }}">
+                        <input type="number" class="form-control @error('sale_price') is-invalid @enderror" name="sale_price" id="sale_price" step="1" value="{{ old('sale_price') }}">
                         @error('sale_price')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -219,7 +219,7 @@
 function addNewSize() {
     let val = document.getElementById('new-size').value.trim();
     if (!val) return;
-    fetch('{{ url("admin/attributes/$sizeAttributeId/values") }}', {
+    fetch('/admin/attributes/{{ $sizeAttributeId }}/values', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ function addNewSize() {
 function addNewColor() {
     let val = document.getElementById('new-color').value.trim();
     if (!val) return;
-    fetch('{{ url("admin/attributes/$colorAttributeId/values") }}', {
+    fetch('/admin/attributes/{{ $colorAttributeId }}/values', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -262,15 +262,22 @@ function addNewColor() {
 function renderVariants() {
     let sizes = Array.from(document.getElementById('size-select').selectedOptions).map(o => ({id:o.value, text:o.text}));
     let colors = Array.from(document.getElementById('color-select').selectedOptions).map(o => ({id:o.value, text:o.text}));
+    
+    console.log('Sizes selected:', sizes);
+    console.log('Colors selected:', colors);
+    
     if (sizes.length == 0 || colors.length == 0) {
-        document.getElementById('variant-area').innerHTML = '<p class="text-danger">Hãy chọn size và màu!</p>'; return;
+        document.getElementById('variant-area').innerHTML = '<p class="text-danger">Hãy chọn size và màu!</p>'; 
+        return;
     }
     let combos = [];
     sizes.forEach(s => { colors.forEach(c => combos.push([s, c])); });
     
+    console.log('Combos generated:', combos);
+    
     // Get product price values for placeholders
-    let productPrice = document.getElementById('price').value || '';
-    let productSalePrice = document.getElementById('sale_price').value || '';
+    let productPrice = document.querySelector('#price').value || '';
+    let productSalePrice = document.querySelector('#sale_price').value || '';
     let pricePlaceholder = productPrice ? `Mặc định: ${productPrice}đ` : 'Giá';
     let salePricePlaceholder = productSalePrice ? `Mặc định: ${productSalePrice}đ` : 'Giá KM';
     
@@ -282,8 +289,8 @@ function renderVariants() {
             <td><input type="hidden" name="variant_sizes[${idx}]" value="${arr[0].id}">${arr[0].text}</td>
             <td><input type="hidden" name="variant_colors[${idx}]" value="${arr[1].id}">${arr[1].text}</td>
             <td><input type="text" name="variant_sku[${idx}]" class="form-control form-control-sm" placeholder="SKU"></td>
-            <td><input type="number"  name="variant_price[${idx}]" class="form-control form-control-sm" placeholder="${pricePlaceholder}"></td>
-            <td><input type="number" name="variant_sale_price[${idx}]" class="form-control form-control-sm" placeholder="${salePricePlaceholder}"></td>
+            <td><input type="number" step="1" name="variant_price[${idx}]" class="form-control form-control-sm" placeholder="${pricePlaceholder}"></td>
+            <td><input type="number" step="1" name="variant_sale_price[${idx}]" class="form-control form-control-sm" placeholder="${salePricePlaceholder}"></td>
             <td><input type="number" name="variant_stock[${idx}]" class="form-control form-control-sm" value="0" min="0"></td>
             <td><input type="file" name="variant_image[${idx}]" accept="image/*" class="form-control form-control-sm"></td>
         </tr>`;
@@ -291,6 +298,8 @@ function renderVariants() {
     html += `</table>
     <p class="text-muted"><i>Giá để trống sẽ lấy giá mặc định của sản phẩm.</i></p></div>`;
     document.getElementById('variant-area').innerHTML = html;
+    
+    console.log('Variant table rendered successfully');
 }
 
 // AJAX form submission

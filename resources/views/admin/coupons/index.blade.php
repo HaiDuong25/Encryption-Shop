@@ -64,16 +64,16 @@
                                                                 {{ $coupon->discount }}%
                                                                 @if($coupon->max_discount_amount)
                                                                     <small class="text-muted d-block">
-                                                                        (tối đa {{ number_format($coupon->max_discount_amount) }}₫)
+                                                                        (tối đa {{ format_vnd($coupon->max_discount_amount) }}₫)
                                                                     </small>
                                                                 @endif
                                                             @else
-                                                                {{ number_format($coupon->discount) }}₫
+                                                                {{ format_vnd($coupon->discount) }}₫
                                                             @endif
                                                         </td>
                                                         <td>
                                                             @if($coupon->min_order_amount)
-                                                                <span class="badge bg-info">{{ number_format($coupon->min_order_amount) }}₫</span>
+                                                                <span class="badge bg-info">{{ format_vnd($coupon->min_order_amount) }}₫</span>
                                                             @else
                                                                 <span class="text-muted">Không</span>
                                                             @endif

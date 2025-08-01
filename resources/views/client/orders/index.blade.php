@@ -135,7 +135,7 @@
                                         <td>{{ $order->recipient_name }}</td>
                                         <td>{{ $order->recipient_phone }}</td>
                                         <td class="text-start" style="max-width: 200px;">{{ Str::limit($order->recipient_address, 50) }}</td>
-                                        <td>{{ number_format($order->total_price) }} đ</td>
+                                        <td>{{ format_vnd($order->total_price) }} đ</td>
                                         <td>
                                             @php
                                                 $statusValue = $order->status;

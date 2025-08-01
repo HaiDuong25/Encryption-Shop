@@ -50,7 +50,7 @@
                         Số tiền giảm tối đa (₫)
                     </label>
                     <input type="number" name="max_discount_amount" id="max_discount_amount" class="form-control form-control-lg" 
-                        min="0" placeholder="Nhập số tiền giảm tối đa" style="color: #222; font-size: 1.2rem;">
+                        min="0" step="1" placeholder="Nhập số tiền giảm tối đa" style="color: #222; font-size: 1.2rem;">
                     <small class="form-text text-muted">Áp dụng cho giảm giá theo %. VD: Giảm 10% tối đa 50,000₫</small>
                 </div>
                 
@@ -59,7 +59,7 @@
                         Đơn hàng tối thiểu (₫)
                     </label>
                     <input type="number" name="min_order_amount" id="min_order_amount" class="form-control form-control-lg" 
-                        min="0" placeholder="Nhập giá trị đơn hàng tối thiểu" style="color: #222; font-size: 1.2rem;">
+                        min="0" step="1" placeholder="Nhập giá trị đơn hàng tối thiểu" style="color: #222; font-size: 1.2rem;">
                     <small class="form-text text-muted">Để trống nếu không yêu cầu đơn hàng tối thiểu</small>
                 </div>
                 

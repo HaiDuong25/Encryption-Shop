@@ -276,7 +276,7 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán</h5>
-                        <div class="mb-2">Tạm tính: <strong>{{ number_format($order->subtotal) }}₫</strong></div>
+                        <div class="mb-2">Tạm tính: <strong>{{ format_vnd($order->subtotal) }}₫</strong></div>
                         @if ($order->coupon || $order->coupon_code)
                             <div class="mb-2">
                                 Mã giảm giá:
@@ -290,16 +290,16 @@
                                     @if ($discountType === 'percentage')
                                         {{ rtrim(rtrim($discountValue, '0'), '.') }}%
                                     @else
-                                        {{ number_format($discountValue, 0, ',', '.') }}₫
+                                        {{ format_vnd($discountValue) }}₫
                                     @endif
                                 @endif
                             </div>
                             <div class="mb-2">Số tiền giảm:
-                                <strong>-{{ number_format($order->coupon_discount, 0, ',', '.') }}₫</strong>
+                                <strong>-{{ format_vnd($order->coupon_discount) }}₫</strong>
                             </div>
                         @endif
                         <div class="alert alert-warning fw-bold mt-3 mb-2">
-                            Tổng tiền: {{ number_format($order->total_price) }}₫
+                            Tổng tiền: {{ format_vnd($order->total_price) }}₫
                         </div>
                     </div>
 
@@ -447,7 +447,7 @@
 
                                                 {{-- Giá và số lượng --}}
                                                 <div class="mt-2 small">
-                                                    Giá: <strong>{{ number_format($item->price) }}₫</strong> x
+                                                    Giá: <strong>{{ format_vnd($item->price) }}₫</strong> x
                                                     {{ $item->quantity }}
                                                 </div>
 
@@ -501,7 +501,7 @@
                                                 @endif
                                             </td>
 
-                                            <td class="text-end fw-bold">{{ number_format($item->total_price) }}₫</td>
+                                            <td class="text-end fw-bold">{{ format_vnd($item->total_price) }}₫</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

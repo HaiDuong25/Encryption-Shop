@@ -42,7 +42,7 @@
                                 </a>
                             </h6>
                             <p class="card-text text-danger fw-bold">
-                                {{ number_format($item->product->price) }}₫
+                                {{ format_vnd($item->product->price) }}₫
                             </p>
                         </div>
                     </div>

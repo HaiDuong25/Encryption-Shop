@@ -464,15 +464,15 @@
                         <div class="col-md-2 text-center">
                             <div class="price-display">
                                 @if($salePrice && $salePrice < $originalPrice)
-                                    <div class="fw-semibold text-primary">{{ number_format($salePrice) }} VNĐ</div>
-                            <div class="text-muted small text-decoration-line-through">{{ number_format($originalPrice) }} VNĐ</div>
+                                    <div class="fw-semibold text-primary">{{ format_vnd($salePrice) }} VNĐ</div>
+                            <div class="text-muted small text-decoration-line-through">{{ format_vnd($originalPrice) }} VNĐ</div>
                             @else
-                            <div class="fw-semibold text-primary">{{ number_format($price) }} VNĐ</div>
+                            <div class="fw-semibold text-primary">{{ format_vnd($price) }} VNĐ</div>
                             @endif
                         </div>
                     </div>
                     <div class="col-md-2 text-center">
-                        <div class="fw-bold fs-5" style="color: #ee4d2d;">{{ number_format($itemTotal) }} VNĐ</div>
+                        <div class="fw-bold fs-5" style="color: #ee4d2d;">{{ format_vnd($itemTotal) }} VNĐ</div>
                     </div>
                 </div>
             </div>
@@ -673,7 +673,7 @@
                                     @if($couponInfo['type'] === 'percentage')
                                     {{ $couponInfo['value'] }}%
                                     @else
-                                    {{ number_format($couponInfo['value']) }}đ
+                                    {{ format_vnd($couponInfo['value']) }}đ
                                     @endif
                                 </span>
                                 @else
@@ -768,7 +768,7 @@
                         <!-- Tổng tiền hàng -->
                         <div class="summary-row">
                             <span><i class="fa-solid fa-box me-2 text-muted"></i>Tổng tiền hàng:</span>
-                            <span class="fw-semibold" id="subtotal">{{ number_format($subtotal) }} VNĐ</span>
+                            <span class="fw-semibold" id="subtotal">{{ format_vnd($subtotal) }} VNĐ</span>
                         </div>
 
                         <!-- Tổng tiền phí vận chuyển -->
@@ -785,7 +785,7 @@
                             <span class="text-success">
                                 <i class="fa-solid fa-ticket me-2"></i>Tổng cộng Voucher giảm giá:
                             </span>
-                            <span class="text-success fw-semibold" id="discount-amount">-{{ number_format($couponDiscount) }} VNĐ</span>
+                            <span class="text-success fw-semibold" id="discount-amount">-{{ format_vnd($couponDiscount) }} VNĐ</span>
                         </div>
                         @else
                         <div class="summary-row" id="discount-row" style="display: none;">
@@ -799,7 +799,7 @@
                         <!-- Tổng thanh toán -->
                         <div class="summary-row total-amount-row">
                             <span><i class="fa-solid fa-calculator me-2"></i>Tổng thanh toán:</span>
-                            <span id="total-amount">{{ number_format($total) }} VNĐ</span>
+                            <span id="total-amount">{{ format_vnd($total) }} VNĐ</span>
                         </div>
                     </div>
                 </div>
