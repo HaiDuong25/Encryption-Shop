@@ -39,14 +39,23 @@ class HomeController extends Controller
                 ->latest()
                 ->take(6)
                 ->get();
+                
+            // Lấy danh sách mã đã lưu của user
+            $userSavedCoupons = Auth::user()->savedCoupons()
+                ->with('coupon')
+                ->get()
+                ->pluck('coupon.code')
+                ->toArray();
         } else {
             // Nếu chưa đăng nhập, hiển thị tất cả coupon
             $coupons = Coupon::available()
                 ->latest()
                 ->take(6)
                 ->get();
+                
+            $userSavedCoupons = [];
         }
 
-        return view('client.home', compact('products', 'banners', 'news', 'coupons', 'categories'));
+        return view('client.home', compact('products', 'banners', 'news', 'coupons', 'categories', 'userSavedCoupons'));
     }
 }

@@ -527,9 +527,6 @@
                                         } else {
                                             $discountText = "Giảm " . format_vnd($coupon->discount) . "₫";
                                         }
-
-                                        // Generate badge labels
-                                        $badges = ['🔥 Hot', '⚡ Giới hạn', '🚚 Freeship', '💎 VIP', '⭐ Đặc biệt', '🎁 Khuyến mãi'];
                                     @endphp
 
                                     <div class="voucher-card h-100 text-center"
@@ -628,9 +625,10 @@
                                             @endif
                                             @php
                                                 $isDisabled = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
+                                                $isSaved = Auth::check() && in_array($coupon->code, $userSavedCoupons ?? []);
                                             @endphp
                                             <button
-                                                class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
+                                                class="btn {{ $isSaved ? 'btn-success' : $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
                                                 data-code="{{ $coupon->code }}" 
                                                 data-discount="{{ $discountText }}"
                                                 data-description="{{ $coupon->description ?? 'Mã giảm giá đặc biệt' }}"
@@ -641,146 +639,33 @@
                                                 style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
                                                 {{ $isDisabled ? 'disabled' : '' }}
                                                 onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
-                                                onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">>
-                                                <i class="fa-solid fa-{{ $isDisabled ? 'check' : 'bookmark' }} me-2"></i>
-                                                {{ $isDisabled ? 'Đã sử dụng' : 'Lưu mã' }}
+                                                onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
+                                                <i class="fa-solid fa-{{ $isDisabled ? 'check' : ($isSaved ? 'check' : 'bookmark') }} me-2"></i>
+                                                {{ $isDisabled ? 'Đã sử dụng' : ($isSaved ? 'Đã lưu' : 'Lưu mã') }}
                                             </button>
-                                            <span class="badge bg-white {{ $colorScheme['border_class'] }} border px-3 py-1 shadow-sm"
-                                                style="font-size: 0.9rem; font-weight: 600;">{{ $badges[$index % count($badges)] }}</span>
                                         </div>
                                     </div>
                                 </div>
                         @endforeach
                 @else
-                    <!-- Fallback vouchers nếu không có dữ liệu -->
-                    <!-- Voucher 1 -->
-                    <div class="col">
-                        <div class="voucher-card h-100 text-center"
-                            style="background: linear-gradient(135deg, #fff9e6 0%, #ffe0b3 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(255, 193, 7, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
-                            onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(255, 193, 7, 0.3)';"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(255, 193, 7, 0.2)';">
-                            <div class="voucher-decoration"
-                                style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255, 193, 7, 0.1); border-radius: 50%; transform: rotate(45deg);">
+                    <!-- Thông báo không có voucher -->
+                    <div class="col-12">
+                        <div class="empty-voucher-state text-center py-5"
+                            style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">
+                            <div class="mb-4">
+                                <i class="fa-solid fa-ticket-simple fa-4x text-muted" style="opacity: 0.5;"></i>
                             </div>
-                            <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
-                                style="position: relative; z-index: 1;">
-                                <div class="voucher-icon mb-3">
-                                    <i class="fa-solid fa-gift fa-3x text-warning"
-                                        style="background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);"></i>
-                                </div>
-                                <div class="voucher-code mb-3">
-                                    <span class="badge bg-warning text-dark px-4 py-2 rounded-pill shadow-sm fw-bold"
-                                        style="font-size:1.2rem; letter-spacing: 1px;">WELCOME10</span>
-                                </div>
-                                <h4 class="fw-bold text-danger mb-3" style="font-size:1.4rem;">Giảm 10% (tối đa 50k)</h4>
-                                <p class="text-muted mb-2" style="font-size:1rem;">Chào mừng khách hàng mới</p>
-                                <small class="text-info d-block mb-3">
-                                    <i class="fa-solid fa-shopping-cart me-1"></i>
-                                    Đơn tối thiểu: 100,000₫
-                                </small>
-                                <button
-                                    class="btn btn-danger btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
-                                    data-code="WELCOME10" 
-                                    data-discount="Giảm 10% (tối đa 50k)" 
-                                    data-description="Cho đơn hàng đầu tiên"
-                                    data-discount-type="percentage"
-                                    data-discount-value="10"
-                                    data-max-discount="50000"
-                                    data-min-order="100000"
-                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
-                                    onmouseover="this.style.transform='scale(1.05)';"
-                                    onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-bookmark me-2"></i> Lưu mã
-                                </button>
-                                <span class="badge bg-white text-warning border border-warning px-3 py-1 shadow-sm"
-                                    style="font-size: 0.9rem; font-weight: 600;">🔥 Hot</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Voucher 2 -->
-                    <div class="col">
-                        <div class="voucher-card h-100 text-center"
-                            style="background: linear-gradient(135deg, #e8f5e8 0%, #c3e6c3 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(40, 167, 69, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
-                            onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(40, 167, 69, 0.3)';"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(40, 167, 69, 0.2)';">
-                            <div class="voucher-decoration"
-                                style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(40, 167, 69, 0.1); border-radius: 50%; transform: rotate(45deg);">
-                            </div>
-                            <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
-                                style="position: relative; z-index: 1;">
-                                <div class="voucher-icon mb-3">
-                                    <i class="fa-solid fa-gift fa-3x text-success"
-                                        style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);"></i>
-                                </div>
-                                <div class="voucher-code mb-3">
-                                    <span class="badge bg-success text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
-                                        style="font-size:1.2rem; letter-spacing: 1px;">SAVE20</span>
-                                </div>
-                                <h4 class="fw-bold text-success mb-3" style="font-size:1.4rem;">Giảm 20% (tối đa 100k)</h4>
-                                <p class="text-muted mb-2" style="font-size:1rem;">Khuyến mãi mùa hè</p>
-                                <small class="text-info d-block mb-3">
-                                    <i class="fa-solid fa-shopping-cart me-1"></i>
-                                    Đơn tối thiểu: 300,000₫
-                                </small>
-                                <button
-                                    class="btn btn-success btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
-                                    data-code="SAVE20" 
-                                    data-discount="Giảm 20% (tối đa 100k)" 
-                                    data-description="Khuyến mãi mùa hè"
-                                    data-discount-type="percentage"
-                                    data-discount-value="20"
-                                    data-max-discount="100000"
-                                    data-min-order="300000"
-                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
-                                    onmouseover="this.style.transform='scale(1.05)';"
-                                    onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-bookmark me-2"></i> Lưu mã
-                                </button>
-                                <span class="badge bg-white text-success border border-success px-3 py-1 shadow-sm"
-                                    style="font-size: 0.9rem; font-weight: 600;">⚡ Giới hạn</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Voucher 3 -->
-                    <div class="col">
-                        <div class="voucher-card h-100 text-center"
-                            style="background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%); border-radius: 2rem; box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2); transition: all 0.3s ease; overflow: hidden; position: relative;"
-                            onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0, 123, 255, 0.3)';"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 30px rgba(0, 123, 255, 0.2)';">
-                            <div class="voucher-decoration"
-                                style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(0, 123, 255, 0.1); border-radius: 50%; transform: rotate(45deg);">
-                            </div>
-                            <div class="card-body d-flex flex-column align-items-center justify-content-between py-4 px-4"
-                                style="position: relative; z-index: 1;">
-                                <div class="voucher-icon mb-3">
-                                    <i class="fa-solid fa-gift fa-3x text-primary"
-                                        style="background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%); border-radius: 50%; padding: 20px; box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);"></i>
-                                </div>
-                                <div class="voucher-code mb-3">
-                                    <span class="badge bg-primary text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
-                                        style="font-size:1.2rem; letter-spacing: 1px;">FREESHIP</span>
-                                </div>
-                                <h4 class="fw-bold text-primary mb-3" style="font-size:1.4rem;">Giảm 30,000₫</h4>
-                                <p class="text-muted mb-2" style="font-size:1rem;">Miễn phí vận chuyển</p>
-                                <small class="text-info d-block mb-3">
-                                    <i class="fa-solid fa-shopping-cart me-1"></i>
-                                    Đơn tối thiểu: 200,000₫
-                                </small>
-                                <button
-                                    class="btn btn-primary btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
-                                    data-code="FREESHIP" 
-                                    data-discount="Freeship toàn quốc"
-                                    data-description="Miễn phí giao hàng"
-                                    data-discount-type="fixed"
-                                    data-discount-value="30000"
-                                    data-max-discount=""
-                                    data-min-order=""
-                                    data-description="Không giới hạn giá trị đơn"
-                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
-                                    onmouseover="this.style.transform='scale(1.05)';"
-                                    onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-bookmark me-2"></i> Lưu mã
-                                </button>
+                            <h3 class="text-muted mb-3 fw-bold">Hiện tại không có voucher nào</h3>
+                            <p class="text-muted mb-4" style="font-size: 1.1rem;">
+                                Hệ thống chưa có mã giảm giá nào. Vui lòng quay lại sau để nhận những ưu đãi hấp dẫn!
+                            </p>
+                            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                <a href="{{ route('client.coupons.index') }}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+                                    <i class="fa-solid fa-search me-2"></i>Tìm mã giảm giá
+                                </a>
+                                <a href="{{ route('my-coupons') }}" class="btn btn-outline-warning rounded-pill px-4 py-2">
+                                    <i class="fa-solid fa-bookmark me-2"></i>Mã đã lưu
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -828,6 +713,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Initialize button states on page load
+            updateButtonStates();
+
             // Show toast notification
             function showToast(message, type = 'success') {
                 const toast = document.getElementById('couponToast');
@@ -840,8 +728,31 @@
                 bsToast.show();
             }
 
-            // Save coupon via AJAX
-            function saveCoupon(couponId) {
+            // Update button states based on saved coupons
+            function updateButtonStates() {
+                const savedCoupons = JSON.parse(localStorage.getItem('savedCoupons') || '[]');
+                const savedCodes = savedCoupons.map(c => c.code);
+
+                document.querySelectorAll('.save-coupon-btn').forEach(button => {
+                    const code = button.getAttribute('data-code');
+                    const isDisabled = button.hasAttribute('disabled') || button.classList.contains('disabled');
+                    
+                    if (!isDisabled && savedCodes.includes(code)) {
+                        markAsSaved(button);
+                    }
+                });
+            }
+
+            // Mark button as saved
+            function markAsSaved(button) {
+                button.classList.remove('btn-primary', 'btn-danger', 'btn-warning');
+                button.classList.add('btn-success');
+                button.innerHTML = '<i class="fa-solid fa-check me-2"></i>Đã lưu';
+                // Don't disable the button, just change appearance
+            }
+
+            // Save coupon via AJAX and localStorage
+            function saveCoupon(couponId, couponCode, discountText) {
                 return fetch('{{ route("client.coupons.save") }}', {
                     method: 'POST',
                     headers: {
@@ -855,6 +766,17 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Save to localStorage for immediate state persistence
+                        let savedCoupons = JSON.parse(localStorage.getItem('savedCoupons') || '[]');
+                        if (!savedCoupons.find(c => c.code === couponCode)) {
+                            savedCoupons.push({
+                                code: couponCode,
+                                discount_text: discountText,
+                                savedAt: new Date().toISOString()
+                            });
+                            localStorage.setItem('savedCoupons', JSON.stringify(savedCoupons));
+                        }
+
                         // Update header badge
                         updateHeaderCouponBadge(data.saved_count);
                         return true;
@@ -892,8 +814,11 @@
             // Handle save coupon buttons
             document.querySelectorAll('.save-coupon-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    // Check if button is disabled
-                    if (btn.disabled || btn.classList.contains('disabled')) {
+                    // Check if button is disabled or already saved
+                    if (btn.disabled || btn.classList.contains('disabled') || btn.classList.contains('btn-success')) {
+                        if (btn.classList.contains('btn-success')) {
+                            showToast('Mã này đã được lưu rồi!', 'info');
+                        }
                         return;
                     }
 
@@ -903,6 +828,16 @@
                     @endguest
 
                     const couponCode = btn.getAttribute('data-code');
+                    const discountText = btn.getAttribute('data-discount');
+                    
+                    // Check if already saved in localStorage
+                    const savedCoupons = JSON.parse(localStorage.getItem('savedCoupons') || '[]');
+                    if (savedCoupons.find(c => c.code === couponCode)) {
+                        showToast('Mã này đã được lưu rồi!', 'info');
+                        markAsSaved(btn);
+                        return;
+                    }
+                    
                     // Find coupon ID from the current coupon list
                     const couponId = @json($coupons->pluck('id', 'code'));
                     
@@ -913,21 +848,20 @@
 
                     const originalHTML = btn.innerHTML;
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang lưu...';
-                    btn.disabled = true;
 
-                    saveCoupon(couponId[couponCode]).then(success => {
+                    saveCoupon(couponId[couponCode], couponCode, discountText).then(success => {
                         if (success) {
-                            btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Đã lưu thành công';
-                            showToast(`Đã lưu mã ${couponCode} thành công! Xem tại trang Mã giảm giá của tôi.`, 'success');
+                            markAsSaved(btn);
+                            showToast(`Đã lưu mã ${couponCode} thành công!`, 'success');
                             
-                            // Add link to view saved coupons in toast
-                            setTimeout(() => {
-                                showToast('Nhấp vào đây để xem mã đã lưu', 'info');
-                                document.getElementById('toastMessage').innerHTML = '<a href="/my-coupons" class="text-white text-decoration-underline"><i class="fa-solid fa-ticket me-1"></i>Xem mã giảm giá đã lưu</a>';
-                            }, 3000);
+                            // Update header badge if exists
+                            const headerBadge = document.getElementById('headerCouponCount');
+                            if (headerBadge) {
+                                const savedCoupons = JSON.parse(localStorage.getItem('savedCoupons') || '[]');
+                                updateHeaderCouponBadge(savedCoupons.length);
+                            }
                         } else {
                             btn.innerHTML = originalHTML;
-                            btn.disabled = false;
                         }
                     });
                 });

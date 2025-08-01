@@ -71,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/account/update', [AccountController::class, 'updateProfile'])->name('account.updateProfile');
     Route::get('/account/change-password', [AccountController::class, 'changePassword'])->name('account.changePassword');
     Route::post('/account/update-password', [AccountController::class, 'updatePassword'])->name('account.updatePassword');
+    Route::post('/account/upload-avatar', [AccountController::class, 'uploadAvatar'])->name('account.uploadAvatar');
+    Route::post('/account/upload-cover-image', [AccountController::class, 'uploadCoverImage'])->name('account.uploadCoverImage');
     // Yêu thích
     Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
@@ -285,6 +287,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/coupons/save', [ClientCouponController::class, 'saveCoupon'])->name('client.coupons.save');
     Route::post('/coupons/remove', [ClientCouponController::class, 'removeCoupon'])->name('client.coupons.remove');
     Route::post('/coupons/remove-used', [ClientCouponController::class, 'removeUsedCoupon'])->name('client.coupons.remove-used');
+    Route::post('/coupons/restore', [ClientCouponController::class, 'restoreSavedCoupon'])->name('client.coupons.restore');
     Route::get('/api/saved-coupons', [ClientCouponController::class, 'getSavedCoupons'])->name('client.coupons.api.saved');
 });
 

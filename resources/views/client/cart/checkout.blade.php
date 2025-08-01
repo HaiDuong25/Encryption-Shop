@@ -503,11 +503,8 @@
                     <h4 class="section-title mb-0"><i class="fa-solid fa-truck me-2"></i>Địa chỉ giao hàng</h4>
                     @auth
                     <div class="d-flex gap-2">
-                        <a href="{{ route('client.addresses.create') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fa-solid fa-plus me-1"></i>Thêm địa chỉ mới
-                        </a>
                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                            <i class="fa-solid fa-lightning me-1"></i>Thêm nhanh
+                            <i class="fa-solid fa-lightning me-1"></i>Thêm địa chỉ
                         </button>
                     </div>
                     @endauth
@@ -565,12 +562,6 @@
                             <p class="mb-0">Bạn cần thêm ít nhất một địa chỉ giao hàng để tiếp tục đặt hàng.</p>
                         </div>
                     </div>
-                    <a href="{{ route('client.addresses.create') }}" class="btn btn-warning mt-3 me-2">
-                        <i class="fa-solid fa-plus me-1"></i>Thêm địa chỉ ngay
-                    </a>
-                    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                        <i class="fa-solid fa-lightning me-1"></i>Thêm nhanh
-                    </button>
                 </div>
                 @endif
                 @else
@@ -813,9 +804,9 @@
                     <i class="fa-solid fa-lock me-2"></i>Đặt hàng ngay
                 </button>
                 @else
-                <a href="{{ route('client.addresses.create') }}" class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                <button type="button" class="btn btn-warning btn-lg px-5 py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
                     <i class="fa-solid fa-plus me-2"></i>Thêm địa chỉ để đặt hàng
-                </a>
+                </button>
                 @endif
                 @else
                 <a href="{{ route('auth') }}" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
@@ -868,7 +859,16 @@
                 <h5 class="modal-title" id="addAddressModalLabel">
                     <i class="fa-solid fa-plus me-2"></i>Thêm địa chỉ mới
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex gap-2">
+                    @auth
+                    @if(Auth::user()->address)
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="import-account-address" title="Import họ tên, số điện thoại và tự động chọn vùng miền từ tài khoản">
+                        <i class="fa-solid fa-user me-1"></i>Import thông tin cơ bản
+                    </button>
+                    @endif
+                    @endauth
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
             <form action="{{ route('client.addresses.store') }}" method="POST" id="quick-address-form">
                 @csrf
@@ -1021,6 +1021,14 @@
         // Initialize coupon management
         initializeCouponManager();
         
+        // Handle import account address button
+        const importAccountAddressBtn = document.getElementById('import-account-address');
+        if (importAccountAddressBtn) {
+            importAccountAddressBtn.addEventListener('click', function() {
+                importAccountAddress();
+            });
+        }
+        
         // Xử lý áp dụng mã giảm giá
         const applyCouponSelectBtn = document.getElementById('apply-coupon-select');
         const applyCouponInputBtn = document.getElementById('apply-coupon-input');
@@ -1151,6 +1159,9 @@
                         updateOrderSummary(data.discount_amount, data.total, data.coupon_info);
                         switchToCancelMode(source);
                         
+                        // Remove applied coupon from saved list to prevent reuse
+                        removeAppliedCouponFromSavedList(couponCode);
+                        
                         showToast('Áp dụng mã giảm giá thành công!', 'success');
                     } else {
                         // Hiển thị thông báo lỗi chi tiết
@@ -1219,6 +1230,11 @@
         }
 
         function handleCancelCoupon() {
+            // Store coupon info before clearing
+            const canceledCouponCode = appliedCoupon ? 
+                (appliedCoupon.coupon_info?.code || appliedCoupon.code) : 
+                (couponInput ? couponInput.value : '');
+            
             appliedCoupon = null;
             
             // Reset UI elements
@@ -1277,8 +1293,148 @@
                 }
             }).catch(error => console.log('Error removing coupon:', error));
 
+            // Restore canceled coupon back to saved list if it was from saved coupons
+            if (canceledCouponCode) {
+                restoreCouponToSavedList(canceledCouponCode);
+            }
+
             isInCancelMode = false;
-            showToast('Đã hủy mã giảm giá', 'info');
+            showToast('Đã hủy mã giảm giá và trả về danh sách đã lưu', 'info');
+        }
+
+        function restoreCouponToSavedList(couponCode) {
+            if (!couponCode) return;
+            
+            @auth
+            // Call API to restore coupon to database
+            fetch('{{ route("client.coupons.restore") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    coupon_code: couponCode
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`Restored coupon ${couponCode} to database`);
+                    
+                    // Reload saved coupons to reflect the change
+                    loadSavedCouponsToDropdown();
+                    
+                    // Show success message
+                    showToast(data.message, 'success');
+                    
+                    // Dispatch event to notify other parts of the app
+                    window.dispatchEvent(new CustomEvent('couponsUpdated'));
+                } else {
+                    console.warn(`Failed to restore coupon ${couponCode}:`, data.message);
+                    showToast(data.message, 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error restoring coupon to saved list:', error);
+                
+                // Fallback: add to dropdown temporarily if API fails
+                const couponSelect = document.getElementById('coupon-select-checkout');
+                if (couponSelect) {
+                    // Check if coupon already exists in dropdown
+                    let alreadyExists = false;
+                    for (const option of couponSelect.options) {
+                        if (option.value === couponCode) {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!alreadyExists) {
+                        // Add coupon back to dropdown temporarily
+                        const option = document.createElement('option');
+                        option.value = couponCode;
+                        option.textContent = couponCode;
+                        option.setAttribute('data-code', couponCode);
+                        option.setAttribute('data-type', 'restored');
+                        couponSelect.appendChild(option);
+                        
+                        // Update count badge
+                        const couponCountBadge = document.getElementById('available-coupons-count-checkout');
+                        if (couponCountBadge) {
+                            const currentCount = parseInt(couponCountBadge.textContent.match(/\d+/)[0]) || 0;
+                            couponCountBadge.textContent = `${currentCount + 1} mã khả dụng`;
+                        }
+                        
+                        showToast('Đã trả mã về danh sách tạm thời', 'info');
+                    }
+                }
+            });
+            @else
+            console.log('User not authenticated, cannot restore coupon to database');
+            @endauth
+        }
+
+        function removeAppliedCouponFromSavedList(couponCode) {
+            if (!couponCode) return;
+            
+            @auth
+            // Find coupon ID by code from the current dropdown
+            let couponId = null;
+            const couponSelect = document.getElementById('coupon-select-checkout');
+            if (couponSelect) {
+                for (const option of couponSelect.options) {
+                    if (option.value === couponCode && option.getAttribute('data-id')) {
+                        couponId = option.getAttribute('data-id');
+                        break;
+                    }
+                }
+            }
+            
+            // If couponId not found in dropdown, try to find it via API
+            if (!couponId) {
+                // For now, we'll use the couponManager's method
+                if (window.couponManager && window.couponManager.removeSavedCoupon) {
+                    window.couponManager.removeSavedCoupon(couponCode)
+                        .then(removed => {
+                            if (removed) {
+                                console.log(`Removed applied coupon ${couponCode} from saved list`);
+                                // Reload the dropdown to reflect changes
+                                loadSavedCouponsToDropdown();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error removing applied coupon from saved list:', error);
+                        });
+                }
+                return;
+            }
+            
+            // Remove from database using couponId
+            fetch('{{ route("client.coupons.remove") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    coupon_id: couponId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`Removed applied coupon ${couponCode} from saved list`);
+                    // Reload the dropdown to reflect changes
+                    loadSavedCouponsToDropdown();
+                } else {
+                    console.warn(`Failed to remove applied coupon ${couponCode}:`, data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error removing applied coupon from saved list:', error);
+            });
+            @endauth
         }
 
         function resetCouponButton(buttonElement, source) {
@@ -1417,7 +1573,17 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                return data.coupons || [];
+                                // Filter out expired coupons on client side
+                                const validCoupons = (data.coupons || []).filter(coupon => {
+                                    if (coupon.expiry_date) {
+                                        const expiryDate = new Date(coupon.expiry_date);
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0); // Set to start of day for comparison
+                                        return expiryDate >= today;
+                                    }
+                                    return true; // If no expiry date, consider it valid
+                                });
+                                return validCoupons;
                             }
                             return [];
                         })
@@ -1519,56 +1685,71 @@
                 console.log('Loading saved coupons to checkout:', savedCoupons.length);
                 
                 // Update count badge
-            if (couponCountBadge) {
-                couponCountBadge.textContent = `${savedCoupons.length} mã khả dụng`;
-            }
+                if (couponCountBadge) {
+                    couponCountBadge.textContent = `${savedCoupons.length} mã khả dụng`;
+                }
 
-            // Clear existing options
-            couponSelect.innerHTML = '<option value="">-- Chọn mã giảm giá --</option>';
+                // Clear existing options
+                couponSelect.innerHTML = '<option value="">-- Chọn mã giảm giá --</option>';
 
-            if (savedCoupons.length === 0) {
-                couponSelect.innerHTML += '<option value="" disabled>Không có mã giảm giá đã lưu</option>';
+                if (savedCoupons.length === 0) {
+                    couponSelect.innerHTML += '<option value="" disabled>Không có mã giảm giá khả dụng</option>';
+                    if (statusMessage) {
+                        statusMessage.innerHTML = `
+                            <small class="text-muted">
+                                <i class="fa-solid fa-info-circle me-1"></i>
+                                Không có mã giảm giá khả dụng. Mã hết hạn đã được ẩn. 
+                                <a href="/coupons" class="text-primary">Xem thêm mã mới</a>
+                            </small>
+                        `;
+                    }
+                    return;
+                }
+
+                // Add saved coupons to dropdown
+                savedCoupons.forEach(coupon => {
+                    const option = document.createElement('option');
+                    option.value = coupon.code;
+                    
+                    let displayText = `${coupon.code}`;
+                    if (coupon.discount) {
+                        displayText += ` - ${coupon.discount}`;
+                    }
+                    
+                    // Add expiry info if available
+                    if (coupon.expiry_date) {
+                        const expiryDate = new Date(coupon.expiry_date);
+                        const today = new Date();
+                        const diffTime = expiryDate - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays <= 3 && diffDays > 0) {
+                            displayText += ` (còn ${diffDays} ngày)`;
+                        }
+                    }
+                    
+                    option.textContent = displayText;
+                    
+                    option.setAttribute('data-id', coupon.id);
+                    option.setAttribute('data-code', coupon.code);
+                    option.setAttribute('data-discount', coupon.discount || '');
+                    option.setAttribute('data-description', coupon.description || '');
+                    option.setAttribute('data-saved-at', coupon.savedAt || '');
+                    option.setAttribute('data-expiry', coupon.expiry_date || '');
+                    option.setAttribute('data-type', 'saved');
+                    
+                    couponSelect.appendChild(option);
+                });
+
+                // Update status message
                 if (statusMessage) {
                     statusMessage.innerHTML = `
-                        <small class="text-muted">
-                            <i class="fa-solid fa-info-circle me-1"></i>
-                            Bạn chưa lưu mã giảm giá nào. 
-                            <a href="/coupons" class="text-primary">Xem mã khả dụng</a>
+                        <small class="text-success">
+                            <i class="fa-solid fa-check-circle me-1"></i>
+                            Đã tải ${savedCoupons.length} mã giảm giá khả dụng (đã lọc mã hết hạn)
                         </small>
                     `;
                 }
-                return;
-            }
-
-            // Add saved coupons to dropdown
-            savedCoupons.forEach(coupon => {
-                const option = document.createElement('option');
-                option.value = coupon.code;
-                
-                let displayText = `${coupon.code}`;
-                if (coupon.discount) {
-                    displayText += ` - ${coupon.discount}`;
-                }
-                option.textContent = displayText;
-                
-                option.setAttribute('data-code', coupon.code);
-                option.setAttribute('data-discount', coupon.discount || '');
-                option.setAttribute('data-description', coupon.description || '');
-                option.setAttribute('data-saved-at', coupon.savedAt || '');
-                option.setAttribute('data-type', 'saved');
-                
-                couponSelect.appendChild(option);
-            });
-
-            // Update status message
-            if (statusMessage) {
-                statusMessage.innerHTML = `
-                    <small class="text-success">
-                        <i class="fa-solid fa-check-circle me-1"></i>
-                        Đã tải ${savedCoupons.length} mã giảm giá từ danh sách đã lưu
-                    </small>
-                `;
-            }
             }).catch(error => {
                 console.error('Error loading saved coupons:', error);
                 if (couponCountBadge) {
@@ -1730,14 +1911,20 @@
 
         // Clear voucher khi rời khỏi trang mà không hoàn tất checkout
         window.addEventListener('beforeunload', function(e) {
-            if (!isCheckoutCompleted) {
-                // Gọi API để clear voucher session
+            if (!isCheckoutCompleted && appliedCoupon) {
+                // Store coupon info before clearing
+                const canceledCouponCode = appliedCoupon.coupon_info?.code || appliedCoupon.code;
+                
+                // Gọi API để clear voucher session và restore coupon
                 fetch('/cart/clear-checkout-voucher', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
+                    body: JSON.stringify({
+                        restore_coupon: canceledCouponCode
+                    }),
                     keepalive: true // Đảm bảo request được gửi kể cả khi trang đang đóng
                 }).catch(error => {
                     console.error('Error clearing coupon on page unload:', error);
@@ -1748,14 +1935,20 @@
         // Clear voucher khi nhấn nút "Quay lại giỏ hàng" hoặc navigate về cart
         document.addEventListener('click', function(e) {
             const target = e.target.closest('a[href*="cart"]');
-            if (target && !isCheckoutCompleted) {
-                // Gọi API để clear voucher session
+            if (target && !isCheckoutCompleted && appliedCoupon) {
+                // Store coupon info before clearing
+                const canceledCouponCode = appliedCoupon.coupon_info?.code || appliedCoupon.code;
+                
+                // Gọi API để clear voucher session và restore coupon
                 fetch('/cart/clear-checkout-voucher', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                    },
+                    body: JSON.stringify({
+                        restore_coupon: canceledCouponCode
+                    })
                 }).catch(error => {
                     console.error('Error clearing coupon on back to cart:', error);
                 });
@@ -1833,6 +2026,241 @@
             const appliedDisplay = document.getElementById('applied-coupon-display');
             if (appliedDisplay) {
                 appliedDisplay.style.display = 'none';
+            }
+        }
+
+        // Import account address function
+        function importAccountAddress() {
+            @auth
+            const accountAddress = @json(Auth::user()->address);
+            const accountName = @json(Auth::user()->name);
+            const accountPhone = @json(Auth::user()->phone);
+            
+            if (!accountAddress) {
+                showToast('Tài khoản chưa có địa chỉ để import', 'warning');
+                return;
+            }
+
+            // Import name, phone, and clean address detail
+            const nameInput = document.getElementById('modal_name');
+            const phoneInput = document.getElementById('modal_phone');
+            const addressDetailInput = document.getElementById('modal_address_detail');
+            
+            // Fill the basic info (name and phone)
+            if (nameInput && accountName) {
+                nameInput.value = accountName;
+            }
+            if (phoneInput && accountPhone) {
+                phoneInput.value = accountPhone;
+            }
+
+            // Extract clean address detail (remove administrative divisions)
+            const cleanAddressDetail = extractCleanAddressDetail(accountAddress);
+            if (addressDetailInput && cleanAddressDetail) {
+                addressDetailInput.value = cleanAddressDetail;
+            }
+
+            // Show info message
+            showToast('đang nhập thông tin từ tài khoản!', 'success');
+            
+            // Try to parse and auto-select province/district/ward from address string
+            tryParseAddress(accountAddress);
+            @else
+            showToast('Vui lòng đăng nhập để sử dụng tính năng này', 'warning');
+            @endauth
+        }
+
+        function extractCleanAddressDetail(fullAddress) {
+            if (!fullAddress) return '';
+            
+            // Remove common administrative divisions patterns
+            let cleanAddress = fullAddress;
+            
+            // List of administrative patterns to remove
+            const adminPatterns = [
+                // Provinces/Cities
+                /,?\s*(Tỉnh|Thành phố|TP\.?)\s+[^,]*/gi,
+                /,?\s*[^,]*\s+(Tỉnh|Thành phố|TP\.?)/gi,
+                
+                // Districts
+                /,?\s*(Quận|Huyện|Thành phố|Thị xã|TP\.?)\s+[^,]*/gi,
+                /,?\s*[^,]*\s+(Quận|Huyện|Thành phố|Thị xã)/gi,
+                
+                // Wards
+                /,?\s*(Phường|Xã|Thị trấn)\s+[^,]*/gi,
+                /,?\s*[^,]*\s+(Phường|Xã|Thị trấn)/gi,
+                
+                // Specific city names (common ones)
+                /,?\s*(Hà Nội|TP\.?\s*Hồ Chí Minh|TPHCM|Đà Nẵng|Hải Phòng|Cần Thơ)/gi,
+                /,?\s*(An Giang|Bà Rịa - Vũng Tàu|Bắc Giang|Bắc Kạn|Bạc Liêu|Bắc Ninh|Bến Tre)/gi,
+                /,?\s*(Bình Định|Bình Dương|Bình Phước|Bình Thuận|Cà Mau|Cao Bằng)/gi,
+                /,?\s*(Đắk Lắk|Đắk Nông|Điện Biên|Đồng Nai|Đồng Tháp|Gia Lai)/gi,
+                /,?\s*(Hà Giang|Hà Nam|Hà Tĩnh|Hải Dương|Hậu Giang|Hòa Bình|Hưng Yên)/gi,
+                /,?\s*(Khánh Hòa|Kiên Giang|Kon Tum|Lai Châu|Lâm Đồng|Lạng Sơn|Lào Cai)/gi,
+                /,?\s*(Long An|Nam Định|Nghệ An|Ninh Bình|Ninh Thuận|Phú Thọ|Phú Yên)/gi,
+                /,?\s*(Quảng Bình|Quảng Nam|Quảng Ngãi|Quảng Ninh|Quảng Trị|Sóc Trăng|Sơn La)/gi,
+                /,?\s*(Tây Ninh|Thái Bình|Thái Nguyên|Thanh Hóa|Thừa Thiên Huế|Tiền Giang)/gi,
+                /,?\s*(Trà Vinh|Tuyên Quang|Vĩnh Long|Vĩnh Phúc|Yên Bái)/gi
+            ];
+            
+            // Remove each pattern
+            adminPatterns.forEach(pattern => {
+                cleanAddress = cleanAddress.replace(pattern, '');
+            });
+            
+            // Clean up extra commas and spaces
+            cleanAddress = cleanAddress
+                .replace(/^[,\s]+|[,\s]+$/g, '') // Remove leading/trailing commas and spaces
+                .replace(/,+/g, ',') // Replace multiple commas with single comma
+                .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+                .replace(/,\s*,/g, ',') // Remove empty segments
+                .trim();
+            
+            return cleanAddress;
+        }
+
+        function tryParseAddress(addressString) {
+            // Enhanced address parsing to extract province, district, ward
+            if (!addressString) return;
+            
+            const provinceSelect = document.getElementById('modal_province');
+            if (!provinceSelect) return;
+            
+            // Common province patterns
+            const provincePatterns = [
+                'Hà Nội', 'TP. Hồ Chí Minh', 'TP Hồ Chí Minh', 'Hồ Chí Minh', 'TPHCM',
+                'Đà Nẵng', 'Hải Phòng', 'Cần Thơ', 'An Giang', 'Bà Rịa - Vũng Tàu',
+                'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu', 'Bắc Ninh', 'Bến Tre',
+                'Bình Định', 'Bình Dương', 'Bình Phước', 'Bình Thuận', 'Cà Mau',
+                'Cao Bằng', 'Đắk Lắk', 'Đắk Nông', 'Điện Biên', 'Đồng Nai',
+                'Đồng Tháp', 'Gia Lai', 'Hà Giang', 'Hà Nam', 'Hà Tĩnh',
+                'Hải Dương', 'Hậu Giang', 'Hòa Bình', 'Hưng Yên', 'Khánh Hòa',
+                'Kiên Giang', 'Kon Tum', 'Lai Châu', 'Lâm Đồng', 'Lạng Sơn',
+                'Lào Cai', 'Long An', 'Nam Định', 'Nghệ An', 'Ninh Bình',
+                'Ninh Thuận', 'Phú Thọ', 'Phú Yên', 'Quảng Bình', 'Quảng Nam',
+                'Quảng Ngãi', 'Quảng Ninh', 'Quảng Trị', 'Sóc Trăng', 'Sơn La',
+                'Tây Ninh', 'Thái Bình', 'Thái Nguyên', 'Thanh Hóa', 'Thừa Thiên Huế',
+                'Tiền Giang', 'Trà Vinh', 'Tuyên Quang', 'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái'
+            ];
+            
+            // Find matching province
+            let matchedProvince = null;
+            for (const province of provincePatterns) {
+                if (addressString.toLowerCase().includes(province.toLowerCase())) {
+                    matchedProvince = province;
+                    break;
+                }
+            }
+            
+            if (matchedProvince) {
+                // Select province in dropdown
+                for (const option of provinceSelect.options) {
+                    if (option.text.toLowerCase().includes(matchedProvince.toLowerCase()) || 
+                        option.value.toLowerCase().includes(matchedProvince.toLowerCase())) {
+                        option.selected = true;
+                        
+                        // Trigger province change and wait for districts to load
+                        loadModalDistricts();
+                        
+                        // Wait a bit for districts to load, then try to parse district
+                        setTimeout(() => {
+                            tryParseDistrict(addressString, matchedProvince);
+                        }, 1000);
+                        
+                        break;
+                    }
+                }
+            }
+        }
+        
+        function tryParseDistrict(addressString, province) {
+            const districtSelect = document.getElementById('modal_district');
+            if (!districtSelect || districtSelect.options.length <= 1) return;
+            
+            // Common district/ward patterns
+            const districtPatterns = [
+                'Quận', 'Huyện', 'Thành phố', 'Thị xã', 'TP'
+            ];
+            
+            let matchedDistrict = null;
+            
+            // Try to find district in the loaded options
+            for (const option of districtSelect.options) {
+                if (option.value && addressString.toLowerCase().includes(option.value.toLowerCase())) {
+                    matchedDistrict = option.value;
+                    option.selected = true;
+                    
+                    // Trigger district change and load wards
+                    loadModalWards();
+                    
+                    // Wait for wards to load, then try to parse ward
+                    setTimeout(() => {
+                        tryParseWard(addressString, province, matchedDistrict);
+                    }, 1000);
+                    
+                    break;
+                }
+            }
+            
+            // If no exact match, try partial matching
+            if (!matchedDistrict) {
+                for (const option of districtSelect.options) {
+                    if (option.value) {
+                        // Remove common prefixes for comparison
+                        const cleanDistrict = option.value.replace(/^(Quận|Huyện|Thành phố|Thị xã|TP)\s*/i, '');
+                        if (addressString.toLowerCase().includes(cleanDistrict.toLowerCase())) {
+                            matchedDistrict = option.value;
+                            option.selected = true;
+                            loadModalWards();
+                            
+                            setTimeout(() => {
+                                tryParseWard(addressString, province, matchedDistrict);
+                            }, 1000);
+                            
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function tryParseWard(addressString, province, district) {
+            const wardSelect = document.getElementById('modal_ward');
+            if (!wardSelect || wardSelect.options.length <= 1) return;
+            
+            let matchedWard = null;
+            
+            // Try to find ward in the loaded options
+            for (const option of wardSelect.options) {
+                if (option.value && addressString.toLowerCase().includes(option.value.toLowerCase())) {
+                    matchedWard = option.value;
+                    option.selected = true;
+                    break;
+                }
+            }
+            
+            // If no exact match, try partial matching
+            if (!matchedWard) {
+                for (const option of wardSelect.options) {
+                    if (option.value) {
+                        // Remove common prefixes for comparison
+                        const cleanWard = option.value.replace(/^(Phường|Xã|Thị trấn)\s*/i, '');
+                        if (addressString.toLowerCase().includes(cleanWard.toLowerCase())) {
+                            matchedWard = option.value;
+                            option.selected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Show completion message
+            if (matchedWard) {
+                showToast(`Đã tự động chọn vị trí: ${province} → ${district} → ${matchedWard}. Vui lòng nhập địa chỉ chi tiết`, 'success');
+            } else if (district) {
+                showToast(`Đã tự động chọn: ${province} → ${district}. Vui lòng chọn Phường/Xã và nhập địa chỉ chi tiết`, 'info');
+            } else {
+                showToast(`Đã tự động chọn: ${province}. Vui lòng chọn Quận/Huyện, Phường/Xã và nhập địa chỉ chi tiết`, 'info');
             }
         }
     });

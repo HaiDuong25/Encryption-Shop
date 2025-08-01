@@ -256,11 +256,41 @@ class CouponController extends Controller
         }
 
         $user = Auth::user();
-        $savedCoupons = $user->savedCoupons()->with('coupon')->get();
+        
+        // Get saved coupons with valid, non-expired coupons only
+        $savedCoupons = $user->savedCoupons()
+            ->with(['coupon' => function($query) {
+                $query->where('is_active', true)
+                      ->where(function ($q) {
+                          // Filter by expiration
+                          $q->whereNull('expires_at')
+                            ->orWhere('expires_at', '>=', now());
+                      })
+                      ->where(function ($q) {
+                          // Filter by date range
+                          $q->where(function ($subQ) {
+                              $subQ->whereNull('start_date')
+                                   ->whereNull('end_date');
+                          })
+                          ->orWhere(function ($subQ) {
+                              $subQ->where('start_date', '<=', now())
+                                   ->where('end_date', '>=', now());
+                          })
+                          ->orWhere(function ($subQ) {
+                              $subQ->whereNull('start_date')
+                                   ->where('end_date', '>=', now());
+                          })
+                          ->orWhere(function ($subQ) {
+                              $subQ->where('start_date', '<=', now())
+                                   ->whereNull('end_date');
+                          });
+                      });
+            }])
+            ->get();
 
         $coupons = $savedCoupons->map(function($savedCoupon) {
             $coupon = $savedCoupon->coupon;
-            if (!$coupon) return null;
+            if (!$coupon) return null; // Skip expired or invalid coupons
             
             return [
                 'id' => $coupon->id,
@@ -270,13 +300,84 @@ class CouponController extends Controller
                 'description' => $coupon->description,
                 'min_order_amount' => $coupon->min_order_amount,
                 'max_discount_amount' => $coupon->max_discount_amount,
+                'expiry_date' => $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : null,
+                'end_date' => $coupon->end_date ? $coupon->end_date->format('Y-m-d') : null,
                 'saved_at' => $savedCoupon->saved_at
             ];
-        })->filter(); // Remove null values
+        })->filter(); // Remove null values (expired coupons)
 
         return response()->json([
             'success' => true, 
-            'coupons' => $coupons->values()
+            'coupons' => $coupons->values(),
+            'message' => 'Đã lọc mã hết hạn và không khả dụng'
+        ]);
+    }
+
+    /**
+     * Restore coupon vào danh sách đã lưu (khi user hủy checkout)
+     */
+    public function restoreSavedCoupon(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        $request->validate([
+            'coupon_code' => 'required|string'
+        ]);
+
+        $user = Auth::user();
+        $couponCode = $request->coupon_code;
+
+        // Tìm coupon theo code
+        $coupon = Coupon::where('code', $couponCode)
+                        ->where('is_active', true)
+                        ->first();
+
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá không tồn tại hoặc đã hết hạn']);
+        }
+
+        // Kiểm tra mã có hết hạn không
+        if ($coupon->expires_at && $coupon->expires_at < now()) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết hạn']);
+        }
+
+        if ($coupon->end_date && $coupon->end_date < now()) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết thời gian sử dụng']);
+        }
+
+        // Kiểm tra xem đã lưu chưa
+        $existingSave = UserSavedCoupon::where('user_id', $user->id)
+                                      ->where('coupon_id', $coupon->id)
+                                      ->first();
+
+        if ($existingSave) {
+            return response()->json(['success' => true, 'message' => 'Mã giảm giá đã có trong danh sách đã lưu']);
+        }
+
+        // Lưu mã giảm giá trở lại
+        UserSavedCoupon::create([
+            'user_id' => $user->id,
+            'coupon_id' => $coupon->id,
+            'saved_at' => now()
+        ]);
+
+        $savedCount = $user->savedCoupons()->count();
+
+        Log::info("Restored coupon {$couponCode} to user {$user->id} saved list after checkout cancellation");
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Đã trả mã giảm giá về danh sách đã lưu',
+            'saved_count' => $savedCount,
+            'coupon' => [
+                'id' => $coupon->id,
+                'code' => $coupon->code,
+                'discount' => $coupon->discount,
+                'discount_type' => $coupon->discount_type,
+                'description' => $coupon->description
+            ]
         ]);
     }
     /**

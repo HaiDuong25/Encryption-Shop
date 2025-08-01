@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\Product;
+use App\Models\UserSavedCoupon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -97,6 +98,23 @@ public function cancel(Request $request, Order $order)
                         // Giảm số lần sử dụng của coupon
                         $coupon->decrementUsage();
                         
+                        // TRẢ MÃ VỀ DANH SÁCH ĐÃ LƯU CỦA USER
+                        // Kiểm tra xem user đã lưu mã này chưa (để tránh trùng lặp)
+                        $existingSaved = UserSavedCoupon::where('user_id', Auth::id())
+                            ->where('coupon_id', $coupon->id)
+                            ->first();
+                        
+                        if (!$existingSaved) {
+                            // Thêm mã vào danh sách đã lưu của user
+                            UserSavedCoupon::create([
+                                'user_id' => Auth::id(),
+                                'coupon_id' => $coupon->id,
+                                'saved_at' => now(),
+                            ]);
+                            
+                            Log::info("Restored coupon {$order->coupon_code} to user's saved list for cancelled order {$order->id}");
+                        }
+                        
                         Log::info("Returned coupon {$order->coupon_code} usage for cancelled order {$order->id}. Current usage: {$coupon->used_count}");
                     }
                     
@@ -132,12 +150,12 @@ public function cancel(Request $request, Order $order)
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.'
+                'message' => 'Đơn hàng đã được hủy thành công. Số lượng sản phẩm và mã giảm giá đã được trả lại.'
             ]);
         }
         // Redirect về trang chi tiết đơn hàng với flash message
         return redirect()->route('client.orders.show', $order->id)
-            ->with('success', 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.');
+            ->with('success', 'Đơn hàng đã được hủy thành công. Số lượng sản phẩm và mã giảm giá đã được trả lại.');
 
     } catch (\Exception $e) {
         DB::rollBack();

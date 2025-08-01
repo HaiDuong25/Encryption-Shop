@@ -85,6 +85,28 @@
             @enderror
         </div>
 
+        <div class="col-md-6">
+            <label class="form-label">Ngày sinh</label>
+            <input type="date" name="date_of_birth" class="form-control @error('date_of_birth') is-invalid @enderror"
+                value="{{ old('date_of_birth') }}">
+            @error('date_of_birth')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Giới tính</label>
+            <select name="gender" class="form-select @error('gender') is-invalid @enderror">
+                <option value="">-- Chọn giới tính --</option>
+                <option value="male" @selected(old('gender')=='male')>Nam</option>
+                <option value="female" @selected(old('gender')=='female')>Nữ</option>
+                <option value="other" @selected(old('gender')=='other')>Khác</option>
+            </select>
+            @error('gender')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="col-md-12">
             <label class="form-label">Địa chỉ</label>
             <input type="text" name="address" class="form-control @error('address') is-invalid @enderror"
@@ -99,6 +121,15 @@
             <input type="file" name="avatar" class="form-control @error('avatar') is-invalid @enderror"
                 accept=".jpg,.jpeg,.png,.webp">
             @error('avatar')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-12">
+            <label class="form-label">Ảnh bìa</label>
+            <input type="file" name="cover_image" class="form-control @error('cover_image') is-invalid @enderror"
+                accept=".jpg,.jpeg,.png,.webp">
+            @error('cover_image')
             <div class="invalid-feedback d-block">{{ $message }}</div>
             @enderror
         </div>

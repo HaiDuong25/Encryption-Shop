@@ -198,7 +198,15 @@
                         @if(Auth::check())
                             <a href="{{ route('account.index') }}" class="user-box">
                                 <span class="header-icon">
-                                    <i class="fa-solid fa-user"></i>
+                                    @if(auth()->user()->avatar)
+                                    <img class="user-profile rounded-circle"
+                                    src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                                    alt="{{ auth()->user()->name }}"
+                                    style="width: 35px; height: 35px; object-fit: cover;"
+                                    title="Quản lý tài khoản">
+                                    @else
+                                    <i class="fa-solid fa-user" title="{{ auth()->user()->name }}"></i>
+                                    @endif
                                 </span>
                             </a>
                             <form action="{{ route('logout') }}" method="POST">
@@ -292,6 +300,18 @@
     .user-box .header-icon i {
         box-shadow: none !important;
         background: transparent !important;
+    }
+
+    /* Style cho avatar user */
+    .user-profile {
+        border: 2px solid #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .user-profile:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 </style>
 <style>
