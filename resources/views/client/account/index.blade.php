@@ -1,133 +1,403 @@
 @extends('client.layout.main')
 
+@section('title', 'Hồ sơ cá nhân')
+
 @section('content')
-<section class="user-dashboard-section section-b-space">
-    <div class="container-fluid-lg">
+<div class="address-form-wrapper">
+    <div class="container-fluid">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-xxl-3 col-lg-4">
-                <div class="dashboard-left-sidebar">
-                    <div class="close-button d-flex d-lg-none">
-                        <button class="close-sidebar">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-
-                    <div class="profile-box">
-                        <div class="cover-image">
-                            <img src="{{ asset('assets-front/images/inner-page/cover-img.jpg') }}" class="img-fluid blur-up lazyloaded" alt="">
-                        </div>
-                        <div class="profile-contain">
-                            <div class="profile-image">
-                                <div class="position-relative">
-                                    <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets-front/images/inner-page/users/1.png') }}" class="blur-up update_img lazyloaded rounded-circle" alt="">
-                                    <div class="cover-icon">
-                                        <i class="fa-solid fa-pen">
-                                            <input type="file" onchange="readURL(this,0)">
-                                        </i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="profile-name text-center mt-3">
-                                <h4>{{ auth()->user()->name }}</h4>
-                                <h6 class="text-muted">{{ auth()->user()->email }}</h6>
-                            </div>
-                        </div>
-                    </div>
-
-                    <ul class="nav nav-pills user-nav-pills mt-4">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('account.editProfile') }}">Edit Profile</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('account.changePassword') }}">Change Password</a>
-                        </li>
-                        {{-- Add more items like Order, Wishlist, etc. --}}
-                    </ul>
-                </div>
+            <div class="col-lg-3">
+                @include('client.account.sidebar')
             </div>
 
             <!-- Main Content -->
-            <div class="col-xxl-9 col-lg-8">
-                <button class="btn left-dashboard-show btn-animation btn-md fw-bold d-block mb-4 d-lg-none">Show Menu</button>
-
-                <div class="dashboard-right-sidebar">
-                    <div class="dashboard-profile">
-                        <div class="title">
-                            <h2>My Profile</h2>
-                            <span class="title-leaf">
-                                <svg class="icon-width bg-gray">
-                                    <use xlink:href="https://themes.pixelstrap.com/fastkart/assets/svg/leaf.svg#leaf"></use>
-                                </svg>
-                            </span>
-                        </div>
-
-                        <!-- Profile Details -->
-                        <div class="profile-detail dashboard-bg-box">
-                            <div class="dashboard-title d-flex justify-content-between align-items-center">
-                                <h3>Profile About</h3>
-                                <a href="{{ route('account.editProfile') }}" class="btn btn-outline-primary btn-sm">Edit</a>
-                            </div>
-                            <div class="profile mt-3">
-                                <ul class="list-unstyled">
-                                    <li class="mb-2 d-flex align-items-center">
-                                        <h5 class="mb-1">Tài khoản</h5>
-                                        <i class="feather-map-pin me-2"></i>
-                                        <span>:{{ auth()->user()->Name }}</span>
-                                    </li>
-                                    <li class="mb-2 d-flex align-items-center">
-                                        <h5 class="mb-1">Số Điện thoại</h5>
-                                        <i class="feather-mail me-2"></i>
-                                        <span>: {{ auth()->user()->Phone }}</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="location-profile mt-3">
-                                <ul class="list-unstyled">
-                                    <li class="mb-2 d-flex align-items-center">
-                                        <h5 class="mb-1">Địa chỉ</h5>
-                                        <i class="feather-map-pin me-2"></i>
-                                        <span>:{{ auth()->user()->address ?? 'No address set' }}</span>
-                                    </li>
-                                    <li class="mb-2 d-flex align-items-center">
-                                        <h5 class="mb-1">Email</h5>
-                                        <i class="feather-mail me-2"></i>
-                                        <span>: {{ auth()->user()->email }}</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div class="profile-description mt-3">
-                                <p>{{ auth()->user()->bio ?? 'This user has not added a bio yet.' }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Login Details -->
-                        <div class="profile-detail dashboard-bg-box mt-4">
-                            <div class="dashboard-title">
-                                <h3>Login Details</h3>
-                            </div>
-
-                            <div class="row mt-3">
-                                <div class="col-md-6 d-flex justify-content-between align-items-center">
-                                    <span><strong>Email:</strong> {{ auth()->user()->email }}</span>
-                                    <a href="{{ route('account.editProfile') }}" class="btn btn-link btn-sm">Edit</a>
-                                </div>
-                                <div class="col-md-6 d-flex justify-content-between align-items-center">
-                                    <span><strong>Password:</strong> ••••••••</span>
-                                    <a href="{{ route('account.changePassword') }}" class="btn btn-link btn-sm">Edit</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bạn có thể thêm thêm phần ảnh minh họa hoặc block đánh giá ở đây nếu muốn -->
+            <div class="col-lg-9">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h4><i class="fas fa-user me-2"></i>Hồ sơ cá nhân</h4>
+                        <p class="text-muted">Xem và quản lý thông tin cá nhân của bạn</p>
                     </div>
+
+                    <!-- Profile Summary -->
+                    <div class="profile-summary mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="profile-avatar">
+                                    <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets-front/images/inner-page/users/1.png') }}" 
+                                         alt="Ảnh đại diện" class="rounded-circle">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">{{ auth()->user()->name }}</h5>
+                                <p class="text-muted mb-2">{{ auth()->user()->email }}</p>
+                                @if(auth()->user()->phone)
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-phone me-1"></i>{{ auth()->user()->phone }}
+                                    </p>
+                                @endif
+                            </div>
+                            <div class="col-auto">
+                                <a href="{{ route('account.editProfile') }}" class="btn btn-primary">
+                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <h6><i class="fas fa-info-circle me-2"></i>Thông tin cá nhân</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Họ và tên</label>
+                                <div class="form-control-static" tabindex="-1">{{ auth()->user()->name }}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <div class="form-control-static" tabindex="-1">{{ auth()->user()->email }}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Số điện thoại</label>
+                                <div class="form-control-static" tabindex="-1">
+                                    {{ auth()->user()->phone ?: 'Chưa cập nhật' }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ngày sinh</label>
+                                <div class="form-control-static" tabindex="-1">
+                                    {{ auth()->user()->date_of_birth ? \Carbon\Carbon::parse(auth()->user()->date_of_birth)->format('d/m/Y') : 'Chưa cập nhật' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Giới tính</label>
+                                <div class="form-control-static" tabindex="-1">
+                                    @if(auth()->user()->gender == 'male')
+                                        Nam
+                                    @elseif(auth()->user()->gender == 'female')
+                                        Nữ
+                                    @elseif(auth()->user()->gender == 'other')
+                                        Khác
+                                    @else
+                                        Chưa cập nhật
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(auth()->user()->address)
+                            <div class="mb-3">
+                                <label class="form-label">Địa chỉ</label>
+                                <div class="form-control-static" tabindex="-1">{{ auth()->user()->address }}</div>
+                            </div>
+                        @endif
+
+                        @if(auth()->user()->bio)
+                            <div class="mb-3">
+                                <label class="form-label">Giới thiệu bản thân</label>
+                                <div class="form-control-static" tabindex="-1">{{ auth()->user()->bio }}</div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Security Information -->
+                    {{-- <div class="form-section">
+                        <h6><i class="fas fa-shield-alt me-2"></i>Bảo mật tài khoản</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="security-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Mật khẩu</strong>
+                                            <p class="text-muted small mb-0">Cập nhật lần cuối: {{ auth()->user()->updated_at->format('d/m/Y') }}</p>
+                                        </div>
+                                        <a href="{{ route('account.changePassword') }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-key me-1"></i>Đổi mật khẩu
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ --}}
+                    <!-- Quick Actions -->
+                    {{-- <div class="form-section">
+                        <h6><i class="fas fa-rocket me-2"></i>Truy cập nhanh</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <a href="{{ route('client.addresses.index') }}" class="quick-action-card">
+                                    <div class="icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div class="content">
+                                        <h6>Sổ địa chỉ</h6>
+                                        <p>Quản lý địa chỉ giao hàng</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <a href="{{ route('orders.index') }}" class="quick-action-card">
+                                    <div class="icon">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </div>
+                                    <div class="content">
+                                        <h6>Đơn hàng</h6>
+                                        <p>Theo dõi đơn hàng của bạn</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <a href="{{ route('wishlist.index') }}" class="quick-action-card">
+                                    <div class="icon">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                    <div class="content">
+                                        <h6>Yêu thích</h6>
+                                        <p>Sản phẩm đã lưu</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
+
+<style>
+.profile-summary {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+}
+
+.profile-avatar {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    overflow: hidden;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-control-static {
+    padding: 12px 15px !important;
+    min-height: 20px !important;
+    color: #495057 !important;
+    background: #fff !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: none !important;
+    cursor: default !important;
+    user-select: text !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.form-control-static:hover {
+    border-color: #e9ecef !important;
+    background: #fff !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.form-control-static:focus {
+    border-color: #e9ecef !important;
+    background: #fff !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.security-item {
+    padding: 20px;
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.security-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+}
+
+.security-item:last-child {
+    margin-bottom: 0;
+}
+
+.quick-action-card {
+    display: block;
+    padding: 25px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: inherit;
+    border-color: #667eea;
+}
+
+.quick-action-card .icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.quick-action-card:hover .icon {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.quick-action-card .icon i {
+    color: white;
+    font-size: 24px;
+}
+
+.quick-action-card h6 {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.quick-action-card p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Style cho các nút */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-outline-secondary {
+    background: #f8f9fa !important;
+    border: 2px solid #dee2e6 !important;
+    color: #6c757d !important;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: white !important;
+    transform: translateY(-1px);
+}
+
+/* Style cho form sections */
+.form-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.form-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Style cho alert */
+.alert-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    border-radius: 10px;
+    color: #155724;
+}
+
+/* Style cho form header */
+.form-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.form-header h4 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-header p {
+    color: #6c757d;
+    margin: 0;
+}
+</style>
 @endsection

@@ -63,6 +63,21 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">Ngày sinh</label>
+            <input type="date" name="date_of_birth" class="form-control" value="{{ old('date_of_birth', $user->date_of_birth) }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Giới tính</label>
+            <select name="gender" class="form-select">
+                <option value="">-- Chọn giới tính --</option>
+                <option value="male" @selected($user->gender == 'male')>Nam</option>
+                <option value="female" @selected($user->gender == 'female')>Nữ</option>
+                <option value="other" @selected($user->gender == 'other')>Khác</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label">Địa chỉ</label>
             <input type="text" name="address" class="form-control" value="{{ old('address', $user->address) }}">
         </div>
@@ -73,6 +88,14 @@
             <img src="{{ asset('storage/' . $user->avatar) }}" width="80" class="rounded mb-2">
             @endif
             <input type="file" name="avatar" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ảnh bìa</label><br>
+            @if($user->cover_image)
+            <img src="{{ asset('storage/' . $user->cover_image) }}" width="120" class="rounded mb-2" style="object-fit: cover; height: 60px;">
+            @endif
+            <input type="file" name="cover_image" class="form-control" accept=".jpg,.jpeg,.png,.webp">
         </div>
 
         <div class="d-flex justify-content-end">

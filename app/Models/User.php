@@ -25,7 +25,11 @@ class User extends Authenticatable
         'phone',
         'address',
         'status',
-        'avatar'
+        'avatar',
+        'cover_image',
+        'bio',
+        'date_of_birth',
+        'gender'
     ];
 
     public function isAdmin()

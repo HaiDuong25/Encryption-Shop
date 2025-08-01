@@ -154,8 +154,7 @@
                             $discountText = "Giảm " . format_vnd($coupon->discount) . "₫";
                         }
 
-                        // Generate badge labels
-                        $badges = ['🔥 Hot', '⚡ Giới hạn', '🚚 Freeship', '💎 VIP', '⭐ Đặc biệt', '🎁 Khuyến mãi'];
+                        // Generate badge labels - REMOVED
                     @endphp
 
                     <div class="coupon-card h-100"
@@ -259,7 +258,19 @@
 
                             <!-- Action Button -->
                             @php
-                                $isDisabled = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
+                                $isUsed = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
+                                $isSaved = Auth::check() && Auth::user()->hasSavedCoupon($coupon->id);
+                                $isDisabled = $isUsed || $isSaved;
+                                
+                                $buttonText = 'Lưu mã';
+                                $buttonIcon = 'bookmark';
+                                if ($isUsed) {
+                                    $buttonText = 'Đã sử dụng';
+                                    $buttonIcon = 'check';
+                                } elseif ($isSaved) {
+                                    $buttonText = 'Đã lưu';
+                                    $buttonIcon = 'check';
+                                }
                             @endphp
                             <div class="d-flex flex-column align-items-center justify-content-center text-center">
                                 <button class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn shadow {{ $isDisabled ? 'disabled' : '' }}"
@@ -274,13 +285,9 @@
                                         {{ $isDisabled ? 'disabled' : '' }}
                                         onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
                                         onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
-                                    <i class="fa-solid fa-{{ $isDisabled ? 'check' : 'bookmark' }} me-2"></i>
-                                    {{ $isDisabled ? 'Đã sử dụng' : 'Lưu mã' }}
+                                    <i class="fa-solid fa-{{ $buttonIcon }} me-2"></i>
+                                    {{ $buttonText }}
                                 </button>
-                                <div class="mt-2">
-                                    <span class="badge bg-white {{ $colorScheme['border_class'] }} border px-2 py-1 shadow-sm"
-                                          style="font-size: 0.8rem; font-weight: 600;">{{ $badges[$index % count($badges)] }}</span>
-                                </div>
                             </div>
                         </div>
                     </div>

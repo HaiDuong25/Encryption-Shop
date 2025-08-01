@@ -1132,6 +1132,8 @@ class CartController extends Controller
     {
         // Clear voucher session khi người dùng abandon checkout
         $hadCoupon = session('applied_coupon');
+        $restoreCoupon = $request->input('restore_coupon');
+        
         session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
 
         // Log để tracking
@@ -1139,14 +1141,21 @@ class CartController extends Controller
             Log::info('User abandoned checkout, cleared voucher: ' . $hadCoupon, [
                 'user_id' => Auth::id(),
                 'ip' => $request->ip(),
-                'user_agent' => $request->userAgent()
+                'user_agent' => $request->userAgent(),
+                'restore_coupon' => $restoreCoupon
             ]);
+        }
+
+        $message = 'Đã xóa mã giảm giá do không hoàn tất đơn hàng';
+        if ($restoreCoupon) {
+            $message .= ' và trả mã về danh sách đã lưu';
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã xóa mã giảm giá do không hoàn tất đơn hàng',
-            'cleared_coupon' => $hadCoupon
+            'message' => $message,
+            'cleared_coupon' => $hadCoupon,
+            'restored_coupon' => $restoreCoupon
         ]);
     }
 

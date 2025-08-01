@@ -32,13 +32,21 @@ class UserController extends Controller
             'phone'    => 'nullable|string',
             'address'  => 'nullable|string',
             'status'   => 'required|in:active,inactive,pending',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
-
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:male,female,other',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120'
         ]);
         if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('users', 'public');
+            $avatarPath = $request->file('avatar')->store('users', 'public');
         } else {
-            $path = null;
+            $avatarPath = null;
+        }
+
+        if ($request->hasFile('cover_image')) {
+            $coverImagePath = $request->file('cover_image')->store('covers', 'public');
+        } else {
+            $coverImagePath = null;
         }
 
         $user = User::create([
@@ -49,7 +57,10 @@ class UserController extends Controller
             'phone'    => $request->phone,
             'address'  => $request->address,
             'status'   => $request->status,
-            'avatar'   => $path
+            'date_of_birth' => $request->date_of_birth,
+            'gender'   => $request->gender,
+            'avatar'   => $avatarPath,
+            'cover_image' => $coverImagePath
         ]);
 
         if ($request->ajax()) {
@@ -77,8 +88,12 @@ class UserController extends Controller
             'phone'    => 'nullable|string',
             'address'  => 'nullable|string',
             'status'   => 'required|in:active,inactive,pending',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:male,female,other',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120'
         ]);
+
         $updateData = [
             'name'    => $request->name,
             'email'   => $request->email,
@@ -86,6 +101,8 @@ class UserController extends Controller
             'status'  => $request->status,
             'phone'   => $request->phone,
             'address' => $request->address,
+            'date_of_birth' => $request->date_of_birth,
+            'gender'  => $request->gender,
         ];
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
@@ -96,6 +113,13 @@ class UserController extends Controller
                 Storage::disk('public')->delete($user->avatar);
             }
             $updateData['avatar'] = $request->file('avatar')->store('users', 'public');
+        }
+
+        if ($request->hasFile('cover_image')) {
+            if ($user->cover_image) {
+                Storage::disk('public')->delete($user->cover_image);
+            }
+            $updateData['cover_image'] = $request->file('cover_image')->store('covers', 'public');
         }
 
         $user->update($updateData);

@@ -4,6 +4,11 @@
 
 @section('content')
 <style>
+.addresses-wrapper {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem 1rem;
+}
 .address-card {
     border: 1px solid #e3e6f0;
     border-radius: 8px;
@@ -61,7 +66,7 @@
 }
 </style>
 
-<div class="container-fluid px-0">
+<div class="addresses-wrapper">
     <!-- Page Header -->
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
