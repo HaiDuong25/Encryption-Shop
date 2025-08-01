@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -78,6 +79,35 @@ public function cancel(Request $request, Order $order)
             if ($variant) {
                 $variant->stock += $detail->quantity;
                 $variant->save();
+            }
+        }
+
+        // TRẢ LẠI MÃ GIẢM GIÁ CHO KHÁCH HÀNG KHI HỦY ĐỚN
+        if ($order->coupon_code) {
+            try {
+                // Tìm bản ghi sử dụng coupon của đơn hàng này
+                $couponUse = \App\Models\CouponUse::where('order_id', $order->id)
+                    ->where('user_id', Auth::id())
+                    ->first();
+
+                if ($couponUse) {
+                    // Tìm coupon để trả lại số lần sử dụng
+                    $coupon = \App\Models\Coupon::find($couponUse->coupon_id);
+                    if ($coupon) {
+                        // Giảm số lần sử dụng của coupon
+                        $coupon->decrementUsage();
+                        
+                        Log::info("Returned coupon {$order->coupon_code} usage for cancelled order {$order->id}. Current usage: {$coupon->used_count}");
+                    }
+                    
+                    // Xóa bản ghi sử dụng coupon
+                    $couponUse->delete();
+                    
+                    Log::info("Deleted coupon usage record for order {$order->id} and user " . Auth::id());
+                }
+            } catch (\Exception $e) {
+                Log::error('Error returning coupon for cancelled order: ' . $e->getMessage());
+                // Không throw exception để không ảnh hưởng đến việc hủy đơn hàng
             }
         }
 

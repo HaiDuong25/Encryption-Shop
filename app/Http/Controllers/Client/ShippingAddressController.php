@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ShippingAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ShippingAddressController extends Controller
 {
@@ -195,6 +197,21 @@ class ShippingAddressController extends Controller
      */
     private function getVietnameseProvinces()
     {
+        try {
+            // Try to get from API first
+            $response = Http::timeout(10)->get('https://provinces.open-api.vn/api/p/');
+            
+            if ($response->successful()) {
+                return collect($response->json())->map(function($province) {
+                    // Remove prefix for display
+                    return preg_replace('/^(Thành phố|Tỉnh)\s+/', '', $province['name']);
+                })->toArray();
+            }
+        } catch (\Exception $e) {
+            Log::warning('API provinces failed, using fallback: ' . $e->getMessage());
+        }
+
+        // Fallback to static list if API fails
         return [
             // Thành phố trực thuộc trung ương
             'Hà Nội', 'TP Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',

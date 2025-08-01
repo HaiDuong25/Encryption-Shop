@@ -55,11 +55,37 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all saved coupons for the user.
+     */
+    public function savedCoupons()
+    {
+        return $this->hasMany(UserSavedCoupon::class);
+    }
+
+    /**
+     * Get saved coupons with coupon details
+     */
+    public function savedCouponsWithDetails()
+    {
+        return $this->belongsToMany(Coupon::class, 'user_saved_coupons', 'user_id', 'coupon_id')
+                    ->withTimestamps()
+                    ->withPivot('saved_at');
+    }
+
+    /**
      * Kiểm tra user đã sử dụng coupon này chưa
      */
     public function hasUsedCoupon($couponId)
     {
         return $this->couponUses()->where('coupon_id', $couponId)->exists();
+    }
+
+    /**
+     * Kiểm tra user đã lưu coupon này chưa
+     */
+    public function hasSavedCoupon($couponId)
+    {
+        return $this->savedCoupons()->where('coupon_id', $couponId)->exists();
     }
 
     /**

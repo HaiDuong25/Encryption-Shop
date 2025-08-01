@@ -381,7 +381,28 @@
             // Coupon management functions
             function getSavedCoupons() {
                 const saved = localStorage.getItem('savedCoupons');
-                return saved ? JSON.parse(saved) : [];
+                if (!saved) return [];
+                
+                try {
+                    const coupons = JSON.parse(saved);
+                    // Validate and clean up data
+                    return coupons.map(coupon => ({
+                        code: coupon.code || 'UNKNOWN',
+                        discount: parseFloat(coupon.discount) || 0,
+                        discount_type: coupon.discount_type || 'percentage',
+                        discount_text: coupon.discount_text || null, // Don't auto-generate here
+                        max_discount_amount: parseFloat(coupon.max_discount_amount) || null,
+                        min_order_amount: parseFloat(coupon.min_order_amount) || null,
+                        description: coupon.description || 'Mã giảm giá đặc biệt',
+                        savedAt: coupon.savedAt || new Date().toISOString()
+                    })).filter(coupon => 
+                        coupon.code !== 'UNKNOWN' && 
+                        (coupon.discount > 0 || (coupon.discount_text && !coupon.discount_text.includes('Giảm 0')))
+                    );
+                } catch (e) {
+                    console.error('Error parsing saved coupons:', e);
+                    return [];
+                }
             }
 
             function removeSavedCoupon(code) {
@@ -551,26 +572,65 @@
                                                 </span>
                                             </div>
 
-                                            <h5 class="fw-bold ${colorScheme.text} mb-3" style="font-size: 1.3rem;">
-                                                ${coupon.discount}
-                                            </h5>
+                            <h5 class="fw-bold ${colorScheme.text} mb-3" style="font-size: 1.3rem;">
+                                ${(() => {
+                                    // Use discount_text if available and properly formatted
+                                    if (coupon.discount_text && 
+                                        !coupon.discount_text.includes('undefined') && 
+                                        !coupon.discount_text.includes('null') &&
+                                        !coupon.discount_text.includes('Giảm 0') &&
+                                        coupon.discount_text.trim() !== '') {
+                                        return coupon.discount_text;
+                                    }
+                                    
+                                    // Parse discount value properly
+                                    const discountValue = parseFloat(coupon.discount) || 0;
+                                    const discountType = coupon.discount_type || 'percentage';
+                                    const maxDiscount = parseFloat(coupon.max_discount_amount) || 0;
+                                    
+                                    // If no valid discount value, show fallback
+                                    if (discountValue === 0) {
+                                        return 'Mã giảm giá đặc biệt';
+                                    }
+                                    
+                                    if (discountType === 'percentage') {
+                                        let text = `Giảm ${discountValue}%`;
+                                        if (maxDiscount > 0) {
+                                            text += ` (tối đa ${new Intl.NumberFormat('vi-VN').format(maxDiscount)}₫)`;
+                                        }
+                                        return text;
+                                    } else {
+                                        return `Giảm ${new Intl.NumberFormat('vi-VN').format(discountValue)}₫`;
+                                    }
+                                })()}
+                            </h5>
 
-                                            <p class="text-muted mb-3 flex-grow-1" style="font-size: 0.95rem; line-height: 1.5;">
-                                                ${coupon.description}
-                                            </p>
+                            <p class="text-muted mb-3 flex-grow-1" style="font-size: 0.95rem; line-height: 1.5;">
+                                ${coupon.description || 'Mã giảm giá hấp dẫn cho đơn hàng của bạn'}
+                            </p>
 
-                                            <div class="coupon-meta mb-4 p-3 rounded-3" style="background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);">
-                                                <div class="d-flex align-items-center justify-content-center text-muted small">
-                                                    <i class="fa-solid fa-calendar-plus me-2"></i>
-                                                    <span>Lưu: ${new Date(coupon.savedAt).toLocaleDateString('vi-VN')}</span>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-center text-success small mt-2">
-                                                    <i class="fa-solid fa-check-circle me-2"></i>
-                                                    <span class="fw-bold">Sẵn sàng sử dụng</span>
-                                                </div>
+                            <div class="coupon-meta mb-4 p-3 rounded-3" style="background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3);">
+                                ${(() => {
+                                    const minOrder = parseFloat(coupon.min_order_amount) || 0;
+                                    if (minOrder > 0) {
+                                        return `
+                                            <div class="d-flex align-items-center justify-content-center text-info small mb-2">
+                                                <i class="fa-solid fa-shopping-cart me-2"></i>
+                                                <span>Đơn tối thiểu: ${new Intl.NumberFormat('vi-VN').format(minOrder)}₫</span>
                                             </div>
-
-                                            <div class="d-flex justify-content-center gap-2">
+                                        `;
+                                    }
+                                    return '';
+                                })()}
+                                <div class="d-flex align-items-center justify-content-center text-muted small">
+                                    <i class="fa-solid fa-calendar-plus me-2"></i>
+                                    <span>Lưu: ${new Date(coupon.savedAt).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center text-success small mt-2">
+                                    <i class="fa-solid fa-check-circle me-2"></i>
+                                    <span class="fw-bold">Sẵn sàng sử dụng</span>
+                                </div>
+                            </div>                                            <div class="d-flex justify-content-center gap-2">
                                                 <button class="btn btn-primary btn-enhanced btn-copy-coupon rounded-pill px-4 py-2 flex-grow-1" 
                                                         data-code="${coupon.code}" 
                                                         style="font-weight: 600;">
@@ -662,19 +722,55 @@
 
             // Initialize with loading state, then load coupons
             setTimeout(() => {
+                // Clean up invalid localStorage data first
+                const saved = localStorage.getItem('savedCoupons');
+                if (saved) {
+                    try {
+                        const coupons = JSON.parse(saved);
+                        const cleaned = coupons.filter(coupon => 
+                            coupon.code && 
+                            coupon.code !== 'UNKNOWN' && 
+                            !coupon.discount_text?.includes('undefined') &&
+                            !coupon.discount_text?.includes('null') &&
+                            !coupon.discount_text?.includes('Giảm 0') &&
+                            (parseFloat(coupon.discount) > 0 || (coupon.discount_text && coupon.discount_text.trim() !== ''))
+                        );
+                        if (cleaned.length !== coupons.length) {
+                            localStorage.setItem('savedCoupons', JSON.stringify(cleaned));
+                        }
+                    } catch (e) {
+                        localStorage.removeItem('savedCoupons');
+                    }
+                }
+                
                 loadSavedCoupons();
                 updateCounters();
             }, 500);
 
-            // Listen for payment success events to remove used coupons (optional - only if you want to remove after payment)
+            // Listen for payment success events to remove used coupons
             window.addEventListener('paymentSuccess', function (event) {
                 const couponCode = event.detail.couponCode;
-                if (couponCode && window.couponManager) {
-                    // Optional: Remove coupon after successful payment
-                    // window.couponManager.removeCouponAfterPayment(couponCode);
-
-                    // Just show a success message instead
-                    showToast(`Thanh toán thành công với mã ${couponCode}!`, 'success');
+                if (couponCode) {
+                    console.log('Payment success event received for coupon:', couponCode);
+                    
+                    // Remove coupon from localStorage saved list
+                    let savedCoupons = getSavedCoupons();
+                    const initialCount = savedCoupons.length;
+                    savedCoupons = savedCoupons.filter(c => c.code !== couponCode);
+                    
+                    if (savedCoupons.length < initialCount) {
+                        localStorage.setItem('savedCoupons', JSON.stringify(savedCoupons));
+                        console.log(`Removed used coupon ${couponCode} from localStorage`);
+                        
+                        // Refresh the display
+                        loadSavedCoupons();
+                        updateCounters();
+                        updateHeaderCouponBadge();
+                        
+                        showToast(`Mã ${couponCode} đã được xóa khỏi danh sách do đã sử dụng`, 'info');
+                    } else {
+                        showToast(`Thanh toán thành công với mã ${couponCode}!`, 'success');
+                    }
                 }
             });
         });

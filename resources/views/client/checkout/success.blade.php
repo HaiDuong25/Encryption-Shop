@@ -34,14 +34,44 @@
                 // Get coupon code from session or order data
                 const usedCouponCode = '{{ session("used_coupon_code") ?? ($order->coupon_code ?? "") }}';
 
-                if (usedCouponCode && window.couponManager) {
-                    // Dispatch payment success event to remove coupon permanently
-                    window.dispatchEvent(new CustomEvent('paymentSuccess', {
-                        detail: { couponCode: usedCouponCode }
-                    }));
+                if (usedCouponCode) {
+                    console.log('Processing used coupon:', usedCouponCode);
+                    
+                    // Call API to remove used coupon from saved list
+                    @auth
+                    fetch('{{ route("client.coupons.remove-used") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            coupon_code: usedCouponCode
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Remove used coupon result:', data);
+                        if (data.success && data.removed) {
+                            console.log(`Successfully removed used coupon ${usedCouponCode} from saved list`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing used coupon:', error);
+                    });
+                    @endauth
 
-                    // Also call directly if couponManager is available
-                    window.couponManager.removeCouponAfterPayment(usedCouponCode);
+                    // Dispatch event for other parts of the app that might listen
+                    if (window.couponManager) {
+                        window.dispatchEvent(new CustomEvent('paymentSuccess', {
+                            detail: { couponCode: usedCouponCode }
+                        }));
+
+                        // Also call the manager's method if available
+                        if (typeof window.couponManager.removeCouponAfterPayment === 'function') {
+                            window.couponManager.removeCouponAfterPayment(usedCouponCode);
+                        }
+                    }
                 }
             });
         </script>

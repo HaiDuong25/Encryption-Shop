@@ -336,12 +336,41 @@ class OrderController extends \App\Http\Controllers\Controller
             // Trả lại tồn kho nếu đơn hàng chưa hủy
             $this->restoreStock($order);
 
+            // TRẢ LẠI MÃ GIẢM GIÁ CHO KHÁCH HÀNG KHI ADMIN HỦY ĐỚN
+            if ($order->coupon_code) {
+                try {
+                    // Tìm bản ghi sử dụng coupon của đơn hàng này
+                    $couponUse = \App\Models\CouponUse::where('order_id', $order->id)
+                        ->where('user_id', $order->user_id)
+                        ->first();
+
+                    if ($couponUse) {
+                        // Tìm coupon để trả lại số lần sử dụng
+                        $coupon = \App\Models\Coupon::find($couponUse->coupon_id);
+                        if ($coupon) {
+                            // Giảm số lần sử dụng của coupon
+                            $coupon->decrementUsage();
+                            
+                            \Log::info("Admin returned coupon {$order->coupon_code} usage for cancelled order {$order->id}. Current usage: {$coupon->used_count}");
+                        }
+                        
+                        // Xóa bản ghi sử dụng coupon
+                        $couponUse->delete();
+                        
+                        \Log::info("Admin deleted coupon usage record for order {$order->id} and user {$order->user_id}");
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error returning coupon for admin cancelled order: ' . $e->getMessage());
+                    // Không throw exception để không ảnh hưởng đến việc hủy đơn hàng
+                }
+            }
+
             // Cập nhật trạng thái đơn hàng
             $order->update(['status' => 'cancelled']);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đã hủy đơn hàng thành công và trả lại tồn kho.'
+                'message' => 'Đã hủy đơn hàng thành công, trả lại tồn kho và mã giảm giá cho khách hàng.'
             ]);
         } catch (\Exception $e) {
             return response()->json([

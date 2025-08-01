@@ -14,6 +14,21 @@
                 <input type="hidden" id="couponId" value="{{ $coupon->id }}">
 
                 <div class="mb-4">
+                    <label for="code" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Mã giảm giá</label>
+                    <input type="text" name="code" id="code" class="form-control form-control-lg" 
+                        value="{{ old('code', $coupon->code) }}" placeholder="Mã giảm giá" 
+                        style="color: #222; font-size: 1.3rem;" maxlength="50">
+                    <small class="form-text text-muted">Để trống để hệ thống tự tạo mã ngẫu nhiên</small>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Mô tả</label>
+                    <textarea name="description" id="description" class="form-control form-control-lg" rows="3"
+                        placeholder="Mô tả về mã giảm giá này..." style="color: #222; font-size: 1.3rem;" maxlength="500">{{ old('description', $coupon->description) }}</textarea>
+                    <small class="form-text text-muted">Tối đa 500 ký tự</small>
+                </div>
+
+                <div class="mb-4">
                     <label for="discount_type" class="form-label fw-semibold"
                         style="color: #009966; font-size: 1.2rem;">Loại giảm giá</label>
                     <select name="discount_type" id="discount_type" class="form-control form-control-lg" required
@@ -39,6 +54,26 @@
                     </small>
                 </div>
 
+                <div class="mb-4" id="max-discount-container" style="display: {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'block' : 'none' }};">
+                    <label for="max_discount_amount" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">
+                        Số tiền giảm tối đa (₫)
+                    </label>
+                    <input type="number" name="max_discount_amount" id="max_discount_amount" class="form-control form-control-lg" 
+                        min="0" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}" 
+                        placeholder="Nhập số tiền giảm tối đa" style="color: #222; font-size: 1.3rem;">
+                    <small class="form-text text-muted">Áp dụng cho giảm giá theo %. VD: Giảm 10% tối đa 50,000₫</small>
+                </div>
+
+                <div class="mb-4">
+                    <label for="min_order_amount" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">
+                        Đơn hàng tối thiểu (₫)
+                    </label>
+                    <input type="number" name="min_order_amount" id="min_order_amount" class="form-control form-control-lg" 
+                        min="0" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" 
+                        placeholder="Nhập giá trị đơn hàng tối thiểu" style="color: #222; font-size: 1.3rem;">
+                    <small class="form-text text-muted">Để trống nếu không yêu cầu đơn hàng tối thiểu</small>
+                </div>
+
                 <div class="mb-4">
                     <label for="usage_limit" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Giới
                         hạn số lần sử dụng</label>
@@ -55,6 +90,17 @@
                             @endif
                         </div>
                     @endif
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_one_time_per_user" id="is_one_time_per_user" 
+                               value="1" {{ old('is_one_time_per_user', $coupon->is_one_time_per_user ?? true) ? 'checked' : '' }}>
+                        <label class="form-check-label fw-semibold" for="is_one_time_per_user" style="color: #009966; font-size: 1.2rem;">
+                            Giới hạn 1 lần sử dụng mỗi user
+                        </label>
+                    </div>
+                    <small class="form-text text-muted">Mỗi tài khoản chỉ có thể sử dụng mã này 1 lần duy nhất</small>
                 </div>
                 <div class="mb-4">
                     <label for="start_date" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Ngày
@@ -104,6 +150,7 @@
             const discountInput = document.getElementById('discount');
             const discountLabel = document.getElementById('discount-label');
             const discountHelp = document.getElementById('discount-help');
+            const maxDiscountContainer = document.getElementById('max-discount-container');
 
             // Handle discount type change
             discountType.addEventListener('change', function () {
@@ -112,50 +159,65 @@
                     discountInput.placeholder = 'Nhập giá trị từ 1-100';
                     discountInput.max = '100';
                     discountHelp.textContent = 'Nhập giá trị từ 1 đến 100';
+                    maxDiscountContainer.style.display = 'block';
                 } else {
                     discountLabel.textContent = 'Giảm giá (₫)';
-                    discountInput.placeholder = 'Nhập số tiền giảm giá';
+                    discountInput.placeholder = 'Nhập số tiền giảm';
                     discountInput.max = '10000000';
-                    discountHelp.textContent = 'Nhập số tiền giảm giá (tối đa 10.000.000₫)';
+                    discountHelp.textContent = 'Nhập số tiền từ 1 đến 10,000,000₫';
+                    maxDiscountContainer.style.display = 'none';
+                    document.getElementById('max_discount_amount').value = '';
                 }
             });
 
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
-
-                // Show loading state
-                submitBtn.disabled = true;
-                btnText.textContent = 'Đang cập nhật...';
+                
+                btnText.style.display = 'none';
                 spinner.classList.remove('d-none');
+                submitBtn.disabled = true;
 
                 const formData = new FormData(form);
-
+                
                 fetch(`/admin/coupons/${couponId}`, {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
                     },
                     body: formData
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.href = '{{ route('coupons.index') }}';
-                        } else {
-                            alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra, vui lòng thử lại!');
-                    })
-                    .finally(() => {
-                        submitBtn.disabled = false;
-                        btnText.textContent = 'Cập nhật';
-                        spinner.classList.add('d-none');
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Hiển thị thông báo thành công
+                        const successAlert = document.createElement('div');
+                        successAlert.className = 'alert alert-success';
+                        successAlert.textContent = data.message;
+                        form.insertBefore(successAlert, form.firstChild);
+                        
+                        // Chuyển hướng sau 2s
+                        setTimeout(() => {
+                            window.location.href = '{{ route("coupons.index") }}';
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message || 'Có lỗi xảy ra');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Hiển thị thông báo lỗi
+                    const errorAlert = document.createElement('div');
+                    errorAlert.className = 'alert alert-danger';
+                    errorAlert.textContent = error.message || 'Có lỗi xảy ra khi cập nhật mã giảm giá';
+                    form.insertBefore(errorAlert, form.firstChild);
+                })
+                .finally(() => {
+                    btnText.style.display = 'inline';
+                    spinner.classList.add('d-none');
+                    submitBtn.disabled = false;
+                });
             });
         });
     </script>

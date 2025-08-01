@@ -37,9 +37,12 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Mã giảm giá</th>
+                                <th>Mô tả</th>
                                 <th>Giá trị</th>
+                                <th>Đơn tối thiểu</th>
                                 <th>Giới hạn sử dụng</th>
                                 <th>Đã sử dụng</th>
+                                <th>Một lần/User</th>
                                 <th>Ngày bắt đầu</th>
                                 <th>Ngày kết thúc</th>
                                 <th>Trạng thái</th>
@@ -52,10 +55,29 @@
                                                         <td>{{ $coupon->id }}</td>
                                                         <td><strong>{{ $coupon->code }}</strong></td>
                                                         <td>
+                                                            @if($coupon->description)
+                                                                <span class="text-muted">{{ Str::limit($coupon->description, 30) }}</span>
+                                                            @else
+                                                                <span class="text-muted fst-italic">Không có mô tả</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
                                                             @if($coupon->discount_type === 'percentage')
                                                                 {{ $coupon->discount }}%
+                                                                @if($coupon->max_discount_amount)
+                                                                    <small class="text-muted d-block">
+                                                                        (tối đa {{ number_format($coupon->max_discount_amount) }}₫)
+                                                                    </small>
+                                                                @endif
                                                             @else
                                                                 {{ number_format($coupon->discount) }}₫
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($coupon->min_order_amount)
+                                                                <span class="badge bg-info">{{ number_format($coupon->min_order_amount) }}₫</span>
+                                                            @else
+                                                                <span class="text-muted">Không</span>
                                                             @endif
                                                         </td>
                                                         <td>
@@ -76,6 +98,13 @@
                                                                 <small class="text-muted d-block">
                                                                     Còn: {{ max(0, $coupon->usage_limit - $usedCount) }}
                                                                 </small>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if($coupon->is_one_time_per_user)
+                                                                <span class="badge bg-warning">Có</span>
+                                                            @else
+                                                                <span class="badge bg-secondary">Không</span>
                                                             @endif
                                                         </td>
                                                         <td>{{ $coupon->start_date ? \Carbon\Carbon::parse($coupon->start_date)->format('d/m/Y') : '-' }}

@@ -6,10 +6,279 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 use App\Models\CouponUse;
+use App\Models\UserSavedCoupon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class CouponController extends Controller
 {
+    /**
+     * Display all available coupons for clients
+     */
+    public function index(Request $request)
+    {
+        $query = Coupon::where('is_active', true);
+
+        // Filter by expiration
+        $query->where(function ($q) {
+            $q->whereNull('expires_at')
+              ->orWhere('expires_at', '>=', Carbon::now());
+        });
+
+        // Filter by date range
+        $query->where(function ($q) {
+            $q->where(function ($subQ) {
+                $subQ->whereNull('start_date')
+                     ->whereNull('end_date');
+            })
+            ->orWhere(function ($subQ) {
+                $subQ->where('start_date', '<=', Carbon::now())
+                     ->where('end_date', '>=', Carbon::now());
+            })
+            ->orWhere(function ($subQ) {
+                $subQ->whereNull('start_date')
+                     ->where('end_date', '>=', Carbon::now());
+            })
+            ->orWhere(function ($subQ) {
+                $subQ->where('start_date', '<=', Carbon::now())
+                     ->whereNull('end_date');
+            });
+        });
+
+        // Filter by usage limit
+        $query->where(function ($q) {
+            $q->where('usage_limit', 0) // unlimited
+              ->orWhereRaw('used_count < usage_limit');
+        });
+
+        // Search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by discount type
+        if ($request->has('type') && !empty($request->type)) {
+            $query->where('discount_type', $request->type);
+        }
+
+        // Filter by minimum order amount
+        if ($request->has('min_order') && !empty($request->min_order)) {
+            $minOrder = $request->min_order;
+            $query->where(function ($q) use ($minOrder) {
+                $q->whereNull('min_order_amount')
+                  ->orWhere('min_order_amount', '<=', $minOrder);
+            });
+        }
+
+        // Sort options
+        $sortBy = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
+        
+        switch ($sortBy) {
+            case 'discount':
+                $query->orderBy('discount', $sortOrder);
+                break;
+            case 'expires':
+                $query->orderBy('expires_at', $sortOrder);
+                break;
+            case 'usage':
+                $query->orderByRaw('(used_count / NULLIF(usage_limit, 0)) ' . $sortOrder);
+                break;
+            default:
+                $query->orderBy('created_at', $sortOrder);
+        }
+
+        $coupons = $query->paginate(12);
+
+        // Get filter counts for statistics
+        $totalCoupons = Coupon::where('is_active', true)->count();
+        $expiringSoon = Coupon::where('is_active', true)
+            ->where('expires_at', '>=', Carbon::now())
+            ->where('expires_at', '<=', Carbon::now()->addDays(7))
+            ->count();
+        $unlimitedCoupons = Coupon::where('is_active', true)
+            ->where('usage_limit', 0)
+            ->count();
+
+        return view('client.coupons.all', compact(
+            'coupons', 
+            'totalCoupons', 
+            'expiringSoon', 
+            'unlimitedCoupons'
+        ));
+    }
+
+    /**
+     * Display saved coupons page
+     */
+    public function myCoupons()
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login.form')->with('message', 'Vui lòng đăng nhập để xem mã giảm giá đã lưu');
+        }
+
+        $user = Auth::user();
+        // Get saved coupons through the pivot table
+        $savedCoupons = UserSavedCoupon::where('user_id', $user->id)
+                                     ->with('coupon')
+                                     ->orderBy('saved_at', 'desc')
+                                     ->paginate(12);
+
+        return view('client.coupons.my-coupons', compact('savedCoupons'));
+    }
+
+    /**
+     * Get coupon details for AJAX
+     */
+    public function show($id)
+    {
+        $coupon = Coupon::findOrFail($id);
+        return view('client.coupons.detail', compact('coupon'));
+    }
+
+    public function saveCoupon(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        $couponId = $request->coupon_id;
+        $user = Auth::user();
+
+        // Kiểm tra xem mã giảm giá có tồn tại không
+        $coupon = Coupon::find($couponId);
+        if (!$coupon) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá không tồn tại']);
+        }
+
+        // Kiểm tra xem đã lưu chưa
+        if ($user->hasSavedCoupon($couponId)) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá đã được lưu trước đó']);
+        }
+
+        // Lưu mã giảm giá
+        UserSavedCoupon::create([
+            'user_id' => $user->id,
+            'coupon_id' => $couponId,
+            'saved_at' => now()
+        ]);
+
+        $savedCount = $user->savedCoupons()->count();
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Đã lưu mã giảm giá thành công',
+            'saved_count' => $savedCount
+        ]);
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        $couponId = $request->coupon_id;
+        $user = Auth::user();
+
+        // Xóa mã giảm giá khỏi danh sách đã lưu
+        $deleted = UserSavedCoupon::where('user_id', $user->id)
+            ->where('coupon_id', $couponId)
+            ->delete();
+
+        if ($deleted) {
+            $savedCount = $user->savedCoupons()->count();
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa mã giảm giá khỏi danh sách',
+                'saved_count' => $savedCount
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Không thể xóa mã giảm giá']);
+    }
+
+    /**
+     * Xóa mã giảm giá đã sử dụng khỏi danh sách saved (sau khi thanh toán thành công)
+     */
+    public function removeUsedCoupon(Request $request)
+    {
+        $request->validate([
+            'coupon_code' => 'required|string|max:50'
+        ]);
+
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        try {
+            $couponCode = $request->coupon_code;
+            $user = Auth::user();
+
+            // Tìm coupon theo code
+            $coupon = Coupon::where('code', $couponCode)->first();
+            if (!$coupon) {
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy mã giảm giá']);
+            }
+
+            // Xóa khỏi danh sách đã lưu nếu user đã lưu mã này
+            $deleted = UserSavedCoupon::where('user_id', $user->id)
+                ->where('coupon_id', $coupon->id)
+                ->delete();
+
+            if ($deleted) {
+                Log::info("Removed used coupon {$couponCode} from user {$user->id} saved list after successful payment");
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mã giảm giá đã được xóa khỏi danh sách đã lưu sau khi sử dụng thành công',
+                'removed' => $deleted > 0
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error removing used coupon from saved list: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xóa mã giảm giá'
+            ]);
+        }
+    }
+
+    public function getSavedCoupons()
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        $user = Auth::user();
+        $savedCoupons = $user->savedCoupons()->with('coupon')->get();
+
+        $coupons = $savedCoupons->map(function($savedCoupon) {
+            $coupon = $savedCoupon->coupon;
+            if (!$coupon) return null;
+            
+            return [
+                'id' => $coupon->id,
+                'code' => $coupon->code,
+                'discount' => $coupon->discount,
+                'discount_type' => $coupon->discount_type,
+                'description' => $coupon->description,
+                'min_order_amount' => $coupon->min_order_amount,
+                'max_discount_amount' => $coupon->max_discount_amount,
+                'saved_at' => $savedCoupon->saved_at
+            ];
+        })->filter(); // Remove null values
+
+        return response()->json([
+            'success' => true, 
+            'coupons' => $coupons->values()
+        ]);
+    }
     /**
      * Kiểm tra tính hợp lệ của coupon
      */

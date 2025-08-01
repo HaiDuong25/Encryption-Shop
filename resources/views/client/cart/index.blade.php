@@ -702,18 +702,6 @@
                                 </div>
 
                                 <div class="voucher-input-group">
-                                    <!-- Tab buttons -->
-                                    <div class="d-flex gap-2 mb-3">
-                                        <button type="button" class="btn btn-outline-primary btn-sm voucher-tab active" 
-                                                data-tab="select" id="select-tab">
-                                            <i class="fa-solid fa-list me-1"></i>Chọn mã đã lưu
-                                        </button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm voucher-tab" 
-                                                data-tab="input" id="input-tab">
-                                            <i class="fa-solid fa-keyboard me-1"></i>Nhập mã khác
-                                        </button>
-                                    </div>
-
                                     <!-- Select coupon tab -->
                                     <div id="select-coupon-tab" class="voucher-tab-content">
                                         <div class="input-group mb-2">
@@ -1096,17 +1084,37 @@
                 if (!window.couponManager) {
                     window.couponManager = {
                         getSavedCoupons: function() {
-                            try {
-                                const saved = localStorage.getItem('savedCoupons');
-                                return saved ? JSON.parse(saved) : [];
-                            } catch (error) {
+                            @auth
+                            return fetch('/api/saved-coupons', {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    return data.coupons || [];
+                                }
+                                return [];
+                            })
+                            .catch(error => {
                                 console.error('Error loading saved coupons:', error);
                                 return [];
-                            }
+                            });
+                            @else
+                            return Promise.resolve([]);
+                            @endauth
                         },
                         isCouponSaved: function(code) {
-                            const savedCoupons = this.getSavedCoupons();
-                            return savedCoupons.find(c => c.code === code) !== undefined;
+                            @auth
+                            return this.getSavedCoupons().then(savedCoupons => {
+                                return savedCoupons.find(c => c.code === code) !== undefined;
+                            });
+                            @else
+                            return Promise.resolve(false);
+                            @endauth
                         }
                     };
                 }
@@ -1128,18 +1136,19 @@
             }
 
             function loadSavedCouponsToDropdown() {
-                const savedCoupons = window.couponManager ? window.couponManager.getSavedCoupons() : [];
+                const savedCouponsPromise = window.couponManager ? window.couponManager.getSavedCoupons() : Promise.resolve([]);
                 const couponSelect = document.getElementById('coupon-select');
                 const couponCountBadge = document.getElementById('available-coupons-count');
                 const statusMessage = document.getElementById('coupon-status-message');
                 
-                console.log('Loading saved coupons:', savedCoupons.length);
-                
                 if (!couponSelect) return;
 
-                // Update count badge
-                if (couponCountBadge) {
-                    couponCountBadge.textContent = `${savedCoupons.length} mã khả dụng`;
+                savedCouponsPromise.then(savedCoupons => {
+                    console.log('Loading saved coupons:', savedCoupons.length);
+                    
+                    // Update count badge
+                    if (couponCountBadge) {
+                        couponCountBadge.textContent = `${savedCoupons.length} mã khả dụng`;
                 }
 
                 // Clear existing options
@@ -1188,6 +1197,12 @@
                         </small>
                     `;
                 }
+                }).catch(error => {
+                    console.error('Error loading saved coupons:', error);
+                    if (couponCountBadge) {
+                        couponCountBadge.textContent = '0 mã khả dụng';
+                    }
+                });
             }
 
             function showCouponDetails(option) {
