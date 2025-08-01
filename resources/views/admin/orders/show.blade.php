@@ -239,17 +239,17 @@
 
             @if ($actualDiscountAmount > 0)
                 <span><i class="fas fa-calculator text-info"></i> Tạm tính:
-                    <strong>{{ number_format($subtotal, 0, ',', '.') }}
+                    <strong>{{ format_vnd($subtotal) }}
                         đ</strong></span>
                 <span><i class="fas fa-tag text-success"></i> Giảm giá: <strong
-                        style="color:#10b981">-{{ number_format($actualDiscountAmount, 0, ',', '.') }} đ</strong>
+                        style="color:#10b981">-{{ format_vnd($actualDiscountAmount) }} đ</strong>
                     @if ($order->coupon_code)
                         <span class="badge bg-primary ms-1">{{ $order->coupon_code }}</span>
                     @endif
                 </span>
             @endif
             <span><i class="fas fa-money-bill-wave text-danger"></i> Tổng: <strong
-                    style="color:#e11d48">{{ number_format($total, 0, ',', '.') }} đ</strong></span>
+                    style="color:#e11d48">{{ format_vnd($total) }} đ</strong></span>
         </div>
     </div>
 
@@ -329,8 +329,8 @@
                             @endif
                             </td>
                             <td>{{ $detail->quantity }}</td>
-                            <td>{{ number_format($detail->price, 0, ',', '.') }} đ</td>
-                            <td>{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
+                            <td>{{ format_vnd($detail->price) }} đ</td>
+                            <td>{{ format_vnd($detail->price * $detail->quantity) }} đ</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -359,7 +359,7 @@
                         <li>
                             <i class="fas fa-calculator text-info"></i>
                             Tạm tính:
-                            <span class="fw-bold">{{ number_format($subtotal, 0, ',', '.') }} đ</span>
+                            <span class="fw-bold">{{ format_vnd($subtotal) }} đ</span>
                         </li>
                         <li>
                             <i class="fas fa-tag text-success"></i>
@@ -368,7 +368,7 @@
                                 ({{ $order->coupon_code }})
                             @endif
                             :
-                            <span class="text-success fw-bold">-{{ number_format($actualDiscountAmount, 0, ',', '.') }}
+                            <span class="text-success fw-bold">-{{ format_vnd($actualDiscountAmount) }}
                                 đ</span>
                         </li>
                     @endif
@@ -376,7 +376,7 @@
                     <li>
                         <i class="fas fa-money-bill-wave text-success"></i>
                         Tổng tiền thanh toán:
-                        <span class="text-success fw-bold">{{ number_format($total, 0, ',', '.') }} đ</span>
+                        <span class="text-success fw-bold">{{ format_vnd($total) }} đ</span>
                         @php
                             $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                             $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
@@ -533,7 +533,7 @@
                         @if ($order->coupon_type == 'percentage')
                             ({{ $order->coupon_discount }}%)
                         @else
-                            (-{{ number_format($order->coupon_discount, 0, ',', '.') }} đ)
+                            (-{{ format_vnd($order->coupon_discount) }} đ)
                         @endif
                     </p>
                 @else

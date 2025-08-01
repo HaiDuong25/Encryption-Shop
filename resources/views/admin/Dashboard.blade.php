@@ -9,7 +9,7 @@
                 <div class="media align-items-center static-top-widget">
                     <div class="media-body p-0">
                         <span class="m-0">Tổng doanh thu</span>
-                        <h4 class="mb-0 counter">{{ number_format($totalRevenue) }} đ</h4>
+                        <h4 class="mb-0 counter">{{ format_vnd($totalRevenue) }} đ</h4>
                     </div>
                     <div class="align-self-center text-center">
                         <i class="ri-database-2-line"></i>
@@ -111,7 +111,7 @@
                                 <td>
                                     <div class="product-detail-box">
                                         <h6>Giá</h6>
-                                        <h5>{{ number_format($product->sale_price ?? $product->price) }} đ</h5>
+                                        <h5>{{ format_vnd($product->sale_price ?? $product->price) }} đ</h5>
                                     </div>
                                 </td>
                                 <td>
@@ -123,7 +123,7 @@
                                 <td>
                                     <div class="product-detail-box">
                                         <h6>Doanh thu</h6>
-                                        <h5>{{ number_format(($product->sale_price ?? $product->price) * $product->total_orders) }} đ</h5>
+                                        <h5>{{ format_vnd(($product->sale_price ?? $product->price) * $product->total_orders) }} đ</h5>
                                     </div>
                                 </td>
                             </tr>
@@ -166,7 +166,7 @@
                                 <td>
                                     <div class="product-detail-box">
                                         <h6>Giá trị</h6>
-                                        <h5>{{ number_format($order->total_price) }} đ</h5>
+                                        <h5>{{ format_vnd($order->total_price) }} đ</h5>
                                     </div>
                                 </td>
                                 <td>
@@ -228,7 +228,7 @@
                                         <p>{{ $transaction->paymentMethod->description }}</p>
                                     </div>
                                 </td>
-                                <td class="success">+ {{ number_format($transaction->total_amount) }} đ</td>
+                                <td class="success">+ {{ format_vnd($transaction->total_amount) }} đ</td>
                             </tr>
                             @endforeach
                         </tbody>

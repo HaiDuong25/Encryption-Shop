@@ -639,10 +639,10 @@
 
                                                                 <div class="price-display text-end">
                                                                     @if($salePrice && $salePrice < $originalPrice)
-                                                                        <div class="sale-price">{{ number_format($salePrice) }} VNĐ</div>
-                                                                        <div class="original-price">{{ number_format($originalPrice) }} VNĐ</div>
+                                                                        <div class="sale-price">{{ format_vnd($salePrice) }} VNĐ</div>
+                                                                        <div class="original-price">{{ format_vnd($originalPrice) }} VNĐ</div>
                                                                     @else
-                                                                        <div class="current-price">{{ number_format($currentPrice) }} VNĐ</div>
+                                                                        <div class="current-price">{{ format_vnd($currentPrice) }} VNĐ</div>
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -668,7 +668,7 @@
                                                             <!-- Tổng tiền item -->
                                                             <div class="col-auto total-col me-3">
                                                                 <div class="item-total text-end">
-                                                                    {{ number_format($currentPrice * $cart->quantity) }} VNĐ
+                                                                    {{ format_vnd($currentPrice * $cart->quantity) }} VNĐ
                                                                 </div>
                                                             </div>
 

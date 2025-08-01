@@ -182,9 +182,9 @@
                                     <h6 class="unit">{{ $product->material ?? 'Đang cập nhật' }}</h6>
 
                                     <h5 class="price">
-                                        <span class="theme-color">{{ number_format($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }} đ</span>
+                                        <span class="theme-color">{{ format_vnd($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }} đ</span>
                                         @if($product->sale_price && $product->sale_price < $product->price)
-                                            <del>{{ number_format($product->price) }} đ</del>
+                                            <del>{{ format_vnd($product->price) }} đ</del>
                                             @endif
                                     </h5>
 

@@ -295,14 +295,14 @@
                 <div class="price-area mb-3" id="price-display">
                     @if ($product->sale_price && $product->sale_price < $product->price)
                         <span class="price fs-3 text-danger fw-bold"
-                            id="current-price">{{ number_format($product->sale_price) }} đ</span>
-                        <del class="old-price text-muted ms-2" id="original-price">{{ number_format($product->price) }}
+                            id="current-price">{{ format_vnd($product->sale_price) }} đ</span>
+                        <del class="old-price text-muted ms-2" id="original-price">{{ format_vnd($product->price) }}
                             đ</del>
                     @else
                         <span class="price fs-3 text-danger fw-bold"
-                            id="current-price">{{ number_format($product->price) }} đ</span>
+                            id="current-price">{{ format_vnd($product->price) }} đ</span>
                         <del class="old-price text-muted ms-2 d-none"
-                            id="original-price">{{ number_format($product->price) }} đ</del>
+                            id="original-price">{{ format_vnd($product->price) }} đ</del>
                     @endif
                 </div>
 
@@ -353,7 +353,7 @@
                 </div>
                 <div class="mb-2" id="expected-price-block">
                     <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price"
-                        class="text-danger fw-bold">{{ number_format($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}</span>
+                        class="text-danger fw-bold">{{ format_vnd($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}</span>
                     đ
                 </div>
 
@@ -487,12 +487,12 @@
                                         <h6 class="card-title">{{ $item->name }}</h6>
                                         @if ($item->sale_price && $item->sale_price < $item->price)
                                             <p class="text-center mb-2">
-                                                <span class="text-danger fw-bold">{{ number_format($item->sale_price) }}
+                                                <span class="text-danger fw-bold">{{ format_vnd($item->sale_price) }}
                                                     đ</span>
-                                                <del class="text-muted ms-1">{{ number_format($item->price) }} đ</del>
+                                                <del class="text-muted ms-1">{{ format_vnd($item->price) }} đ</del>
                                             </p>
                                         @else
-                                            <p class="text-danger fw-bold">{{ number_format($item->price) }} đ</p>
+                                            <p class="text-danger fw-bold">{{ format_vnd($item->price) }} đ</p>
                                         @endif
 
                                         <a href="{{ route('client.products.show', $item->id) }}"

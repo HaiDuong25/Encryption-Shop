@@ -196,10 +196,10 @@
                                         <div class="price-info">
                                             @if ($actualDiscountAmount > 0)
                                                 <div class="subtotal text-muted">
-                                                    {{ number_format($subtotal, 0, ',', '.') }}đ
+                                                    {{ format_vnd($subtotal) }}đ
                                                 </div>
                                                 <div class="discount text-danger">
-                                                    -{{ number_format($actualDiscountAmount, 0, ',', '.') }}đ
+                                                    -{{ format_vnd($actualDiscountAmount) }}đ
                                                     @if ($order->coupon_code)
                                                         <span class="badge bg-primary ms-1"
                                                             style="font-size: 0.65rem;">{{ $order->coupon_code }}</span>
@@ -207,7 +207,7 @@
                                                 </div>
                                             @endif
                                             <div class="total fw-bold">
-                                                {{ number_format($total, 0, ',', '.') }}đ
+                                                {{ format_vnd($total) }}đ
                                             </div>
                                         </div>
                                     </td>

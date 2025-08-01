@@ -289,10 +289,10 @@
                                     <span class="text-muted">Mặc định</span>
                                 @endif
                             </td>
-                                            <td class="text-center align-middle fw-bold">{{ number_format($detail->price, 0, ',', '.') }} đ</td>                            <td class="text-center align-middle">
+                                            <td class="text-center align-middle fw-bold">{{ format_vnd($detail->price) }} đ</td>                            <td class="text-center align-middle">
                                 <span class="badge text-dark fs-6 px-3 py-2" >{{ $detail->quantity }}</span>
                             </td>
-                                            <td class="text-center align-middle fw-bold text-primary fs-6">{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
+                                            <td class="text-center align-middle fw-bold text-primary fs-6">{{ format_vnd($detail->price * $detail->quantity) }} đ</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -310,7 +310,7 @@
                                     <tbody>
                                         <tr class="border-bottom">
                                             <td class="fw-semibold text-muted" style="width: 60%;">Tạm tính:</td>
-                                            <td class="text-end fw-bold">{{ number_format($orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }} đ</td>
+                                            <td class="text-end fw-bold">{{ format_vnd($orderDetails->sum(fn($d) => $d->price * $d->quantity)) }} đ</td>
                                         </tr>
                                         @if($payment->order->coupon_code)
                                         <tr class="border-bottom">
@@ -319,7 +319,7 @@
                                             </td>
                                             <td class="text-end fw-bold text-success">
                                                 @if($payment->order->coupon_discount > 0)
-                                                    -{{ number_format($payment->order->coupon_discount, 0, ',', '.') }} đ
+                                                    -{{ format_vnd($payment->order->coupon_discount) }} đ
                                                 @else
                                                     0 đ
                                                 @endif
@@ -328,7 +328,7 @@
                                         @endif
                                         <tr class="border-bottom">
                                             <td class="fw-semibold text-muted">Phí vận chuyển:</td>
-                                            <td class="text-end fw-bold">{{ number_format($payment->order->shipping_fee ?? 0, 0, ',', '.') }} đ</td>
+                                            <td class="text-end fw-bold">{{ format_vnd($payment->order->shipping_fee ?? 0) }} đ</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -337,7 +337,7 @@
                                 <div class="card border-3 border-primary h-100" style="background: linear-gradient(45deg, #007bff, #0056b3);">
                                     <div class="card-body text-white text-center d-flex flex-column justify-content-center p-4">
                                         <h6 class="mb-2 fw-semibold">TỔNG CỘNG</h6>
-                                        <h3 class="mb-1 fw-bold">{{ number_format(($orderDetails->sum(fn($d) => $d->price * $d->quantity)) - ($payment->order->coupon_discount ?? 0) + ($payment->order->shipping_fee ?? 0), 0, ',', '.') }} đ</h3>
+                                        <h3 class="mb-1 fw-bold">{{ format_vnd(($orderDetails->sum(fn($d) => $d->price * $d->quantity)) - ($payment->order->coupon_discount ?? 0) + ($payment->order->shipping_fee ?? 0)) }} đ</h3>
                                         <small class="opacity-75">Đã bao gồm VAT</small>
                                     </div>
                                 </div>

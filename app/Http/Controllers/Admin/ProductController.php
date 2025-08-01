@@ -126,13 +126,15 @@ class ProductController extends Controller
             'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'sizes' => 'required|array|min:1',
-            'colors' => 'required|array|min:1',
-            'variant_price' => 'array',
-            'variant_sale_price' => 'array',
-            'variant_stock' => 'array',
-            'variant_sku' => 'array',
-            'variant_image' => 'array',
+            'sizes' => 'nullable|array',
+            'colors' => 'nullable|array',
+            'variant_sizes.*' => 'nullable|integer|exists:attribute_values,id',
+            'variant_colors.*' => 'nullable|integer|exists:attribute_values,id',
+            'variant_price.*' => 'nullable|numeric',
+            'variant_sale_price.*' => 'nullable|numeric',
+            'variant_stock.*' => 'nullable|integer',
+            'variant_sku.*' => 'nullable|string',
+            'variant_image.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'material' => 'nullable|string|max:255',
         ]);
 
@@ -151,20 +153,32 @@ class ProductController extends Controller
         $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
         $product = Product::create($data);
 
-        $combinations = $this->cartesian([$request->sizes, $request->colors]);
-        foreach ($combinations as $index => $combo) {
-            $variantSku = $request->input("variant_sku.$index") ?: ($product->sku ? $product->sku . '-' : '') . implode('-', $combo);
-            $variantImage = $request->hasFile("variant_image.$index")
-                ? $request->file("variant_image.$index")->store('variants', 'public')
-                : null;
-            $variant = $product->variants()->create([
-                'sku' => strtoupper($variantSku),
-                'price' => $request->input("variant_price.$index") ?? $data['price'],
-                'sale_price' => $request->input("variant_sale_price.$index") ?? $data['sale_price'],
-                'stock' => $request->input("variant_stock.$index") ?? 0,
-                'image' => $variantImage,
-            ]);
-            $variant->attributeValues()->attach($combo);
+        // Tạo biến thể nếu có size và color được chọn
+        if ($request->has('variant_sizes') && $request->has('variant_colors')) {
+            $sizes = $request->input('variant_sizes', []);
+            $colors = $request->input('variant_colors', []);
+            
+            foreach ($sizes as $index => $sizeId) {
+                $colorId = $colors[$index] ?? null;
+                if ($colorId) {
+                    $variantSku = $request->input("variant_sku.$index") ?: 
+                        ($product->sku ? $product->sku . '-' : '') . $sizeId . '-' . $colorId;
+                    
+                    $variantImage = $request->hasFile("variant_image.$index")
+                        ? $request->file("variant_image.$index")->store('variants', 'public')
+                        : null;
+
+                    $variant = $product->variants()->create([
+                        'sku' => strtoupper($variantSku),
+                        'price' => $request->input("variant_price.$index") ?: $product->price,
+                        'sale_price' => $request->input("variant_sale_price.$index") ?: $product->sale_price,
+                        'stock' => $request->input("variant_stock.$index") ?: 0,
+                        'image' => $variantImage,
+                    ]);
+
+                    $variant->attributeValues()->attach([$sizeId, $colorId]);
+                }
+            }
         }
 
         if ($request->ajax()) {
@@ -206,6 +220,23 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'gallery.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'remove_gallery' => 'nullable|string',
+            
+            // Validation cho biến thể hiện có
+            'old_variant_ids.*' => 'nullable|integer|exists:product_variants,id',
+            'old_variant_sku.*' => 'nullable|string|max:100',
+            'old_variant_price.*' => 'nullable|numeric|min:0',
+            'old_variant_sale_price.*' => 'nullable|numeric|min:0',
+            'old_variant_stock.*' => 'nullable|integer|min:0',
+            'old_variant_image.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            
+            // Validation cho biến thể mới
+            'variant_sizes.*' => 'nullable|integer|exists:attribute_values,id',
+            'variant_colors.*' => 'nullable|integer|exists:attribute_values,id',
+            'variant_sku.*' => 'nullable|string|max:100',
+            'variant_price.*' => 'nullable|numeric|min:0',
+            'variant_sale_price.*' => 'nullable|numeric|min:0',
+            'variant_stock.*' => 'nullable|integer|min:0',
+            'variant_image.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -242,7 +273,70 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        // TODO: Cập nhật variant như trong code cũ, nếu cần thiết
+        // Xử lý cập nhật biến thể hiện có
+        if ($request->has('old_variant_ids')) {
+            $oldVariantIds = $request->input('old_variant_ids', []);
+            
+            foreach ($oldVariantIds as $index => $variantId) {
+                $variant = $product->variants()->find($variantId);
+                if ($variant) {
+                    $variantData = [
+                        'sku' => $request->input("old_variant_sku.$index") ?: $variant->sku,
+                        'price' => $request->input("old_variant_price.$index") ?: $variant->price,
+                        'sale_price' => $request->input("old_variant_sale_price.$index") ?: $variant->sale_price,
+                        'stock' => $request->input("old_variant_stock.$index") ?: $variant->stock,
+                    ];
+
+                    // Xử lý ảnh biến thể
+                    if ($request->hasFile("old_variant_image.$index")) {
+                        // Xóa ảnh cũ nếu có
+                        if ($variant->image && Storage::disk('public')->exists($variant->image)) {
+                            Storage::disk('public')->delete($variant->image);
+                        }
+                        $variantData['image'] = $request->file("old_variant_image.$index")->store('variants', 'public');
+                    }
+
+                    $variant->update($variantData);
+                }
+            }
+        }
+
+        // Xử lý tạo biến thể mới (nếu người dùng bấm "Tạo lại biến thể")
+        if ($request->has('variant_sizes') && $request->has('variant_colors')) {
+            // Xóa tất cả biến thể cũ
+            foreach ($product->variants as $variant) {
+                if ($variant->image && Storage::disk('public')->exists($variant->image)) {
+                    Storage::disk('public')->delete($variant->image);
+                }
+            }
+            $product->variants()->delete();
+
+            // Tạo biến thể mới
+            $sizes = $request->input('variant_sizes', []);
+            $colors = $request->input('variant_colors', []);
+            
+            foreach ($sizes as $index => $sizeId) {
+                $colorId = $colors[$index] ?? null;
+                if ($colorId) {
+                    $variantSku = $request->input("variant_sku.$index") ?: 
+                        ($product->sku ? $product->sku . '-' : '') . $sizeId . '-' . $colorId;
+                    
+                    $variantImage = $request->hasFile("variant_image.$index")
+                        ? $request->file("variant_image.$index")->store('variants', 'public')
+                        : null;
+
+                    $variant = $product->variants()->create([
+                        'sku' => strtoupper($variantSku),
+                        'price' => $request->input("variant_price.$index") ?: $product->price,
+                        'sale_price' => $request->input("variant_sale_price.$index") ?: $product->sale_price,
+                        'stock' => $request->input("variant_stock.$index") ?: 0,
+                        'image' => $variantImage,
+                    ]);
+
+                    $variant->attributeValues()->attach([$sizeId, $colorId]);
+                }
+            }
+        }
 
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => 'Cập nhật sản phẩm thành công!', 'product' => $product]);

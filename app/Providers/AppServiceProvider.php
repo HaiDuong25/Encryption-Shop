@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use App\Models\Order;
+use App\Observers\OrderObserver;
+use App\Http\View\Composers\HeaderComposer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,9 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Đăng ký OrderObserver để xử lý logic payment khi order thay đổi trạng thái
-        \App\Models\Order::observe(\App\Observers\OrderObserver::class);
+        Order::observe(OrderObserver::class);
         
         // Đăng ký View Composer cho header để truyền savedCouponsCount
-        view()->composer('client.layout.partials.header', \App\Http\View\Composers\HeaderComposer::class);
+        View::composer('client.layout.partials.header', HeaderComposer::class);
     }
 }

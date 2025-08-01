@@ -105,7 +105,7 @@
                 @if($payment->order->coupon_code)
                     <span class="text-success fw-bold">{{ $payment->order->coupon_code }}</span>
                     @if($payment->order->coupon_discount > 0)
-                        (Giảm {{ number_format($payment->order->coupon_discount, 0, ',', '.') }} đ)
+                        (Giảm {{ format_vnd($payment->order->coupon_discount) }} đ)
                     @endif
                 @else
                     -
@@ -128,9 +128,9 @@
             @foreach($orderDetails as $detail)
                 <tr>
                     <td>{{ $detail->product->name ?? '-' }}</td>
-                    <td class="text-right">{{ number_format($detail->price, 0, ',', '.') }} đ</td>
+                    <td class="text-right">{{ format_vnd($detail->price) }} đ</td>
                     <td class="text-center">{{ $detail->quantity }}</td>
-                    <td class="text-right">{{ number_format($detail->price * $detail->quantity, 0, ',', '.') }} đ</td>
+                    <td class="text-right">{{ format_vnd($detail->price * $detail->quantity) }} đ</td>
                 </tr>
             @endforeach
         </tbody>
@@ -138,19 +138,19 @@
             <tr>
                 <td colspan="3" class="text-right">Tạm tính:</td>
                 <td class="text-right">
-                    {{ number_format($orderDetails->sum(fn($d) => $d->price * $d->quantity), 0, ',', '.') }} đ</td>
+                    {{ format_vnd($orderDetails->sum(fn($d) => $d->price * $d->quantity)) }} đ</td>
             </tr>
             @if($payment->order->coupon_discount > 0)
                 <tr>
                     <td colspan="3" class="text-right">Giảm giá:</td>
-                    <td class="text-right text-danger">-{{ number_format($payment->order->coupon_discount, 0, ',', '.') }} đ
+                    <td class="text-right text-danger">-{{ format_vnd($payment->order->coupon_discount) }} đ
                     </td>
                 </tr>
             @endif
             <tr class="total-row">
                 <td colspan="3" class="text-right">Tổng cộng:</td>
                 <td class="text-right">
-                    {{ number_format(($orderDetails->sum(fn($d) => $d->price * $d->quantity)) - ($payment->order->coupon_discount ?? 0), 0, ',', '.') }}
+                    {{ format_vnd(($orderDetails->sum(fn($d) => $d->price * $d->quantity)) - ($payment->order->coupon_discount ?? 0)) }}
                     đ</td>
             </tr>
         </tfoot>

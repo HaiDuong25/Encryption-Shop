@@ -50,7 +50,7 @@
                                 @if($coupon->discount_type === 'percentage')
                                     <h4 class="text-primary">Giảm {{ $coupon->discount }}%</h4>
                                 @else
-                                    <h4 class="text-primary">Giảm {{ number_format($coupon->discount) }}₫</h4>
+                                    <h4 class="text-primary">Giảm {{ format_vnd($coupon->discount) }}₫</h4>
                                 @endif
                                 
                                 @if($coupon->description)
@@ -59,7 +59,7 @@
 
                                 @if($coupon->min_order_amount)
                                     <small class="text-muted d-block">
-                                        Đơn tối thiểu: {{ number_format($coupon->min_order_amount) }}₫
+                                        Đơn tối thiểu: {{ format_vnd($coupon->min_order_amount) }}₫
                                     </small>
                                 @endif
 
@@ -78,7 +78,7 @@
                                 @endif
 
                                 <button class="btn btn-primary mt-2" 
-                                        onclick="saveCoupon('{{ $coupon->code }}', '{{ $coupon->discount_type === 'percentage' ? 'Giảm ' . $coupon->discount . '%' : 'Giảm ' . number_format($coupon->discount) . '₫' }}')">
+                                        onclick="saveCoupon('{{ $coupon->code }}', '{{ $coupon->discount_type === 'percentage' ? 'Giảm ' . $coupon->discount . '%' : 'Giảm ' . format_vnd($coupon->discount) . '₫' }}')">
                                     <i class="fa-solid fa-bookmark me-1"></i>
                                     Lưu mã
                                 </button>

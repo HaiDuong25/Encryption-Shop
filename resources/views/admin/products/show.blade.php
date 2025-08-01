@@ -14,8 +14,8 @@
                     <h3 class="mb-2">{{ $product->name }}</h3>
                     <div class="mb-1">Danh mục: <span class="badge bg-info ">{{ $product->category->name ?? '-' }}</span></div>
                     <div class="mb-1">Thương hiệu: <span class="badge btn-warning">{{ $product->brand->name ?? '-' }}</span></div>
-                    <div class="mb-1 text-danger">Giá mặc định: <b>{{ number_format($product->price,0,',','.') }} đ</b></div>
-                    <div class="mb-1 text-danger">Giá khuyến mãi: <b>{{ number_format($product->sale_price,0,',','.') }} đ</b></div>
+                    <div class="mb-1 text-danger">Giá mặc định: <b>{{ format_vnd($product->price) }} đ</b></div>
+                    <div class="mb-1 text-danger">Giá khuyến mãi: <b>{{ format_vnd($product->sale_price) }} đ</b></div>
                     <div class="mb-1">
                         Trạng thái:
                         <span class="badge bg-{{ $product->status=='active'?'primary':'danger' }}">
@@ -62,10 +62,10 @@
                                 @endforeach
                             </td>
                             <td class="text-danger fw-bold">
-                                {{ number_format($variant->display_price ?? $variant->price,0,',','.') }} đ
+                                {{ format_vnd($variant->display_price ?? $variant->price) }} đ
                             </td>
                             <td class="text-danger fw-bold">
-                                {{ number_format($variant->sale_price ?? 0, 0, ',', '.') }} đ
+                                {{ format_vnd($variant->sale_price ?? 0) }} đ
                             </td>
                             <td>{{ $variant->stock }}</td>
                             <td>

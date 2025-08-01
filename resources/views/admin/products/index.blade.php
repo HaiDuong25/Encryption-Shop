@@ -77,14 +77,14 @@
                             <td>
                                 @if($product->sale_price)
                                     <span class="text-muted text-decoration-line-through small">
-                                        {{ number_format($product->price,0,',','.') }} đ
+                                        {{ format_vnd($product->price) }} đ
                                     </span><br>
                                     <span class="text-danger fw-bold">
-                                        {{ number_format($product->sale_price, 0, ',', '.') }} đ
+                                        {{ format_vnd($product->sale_price) }} đ
                                     </span>
                                 @else
                                     <span class="text-danger fw-bold">
-                                        {{ number_format($product->price,0,',','.') }} đ
+                                        {{ format_vnd($product->price) }} đ
                                     </span>
                                 @endif
                             </td>

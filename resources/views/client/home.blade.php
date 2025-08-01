@@ -522,10 +522,10 @@
                                         if ($coupon->discount_type === 'percentage') {
                                             $discountText = "Giảm {$coupon->discount}%";
                                             if ($coupon->max_discount_amount) {
-                                                $discountText .= " (tối đa " . number_format($coupon->max_discount_amount) . "₫)";
+                                                $discountText .= " (tối đa " . format_vnd($coupon->max_discount_amount) . "₫)";
                                             }
                                         } else {
-                                            $discountText = "Giảm " . number_format($coupon->discount) . "₫";
+                                            $discountText = "Giảm " . format_vnd($coupon->discount) . "₫";
                                         }
 
                                         // Generate badge labels
@@ -562,7 +562,7 @@
                                                 @if($coupon->min_order_amount)
                                                     <small class="text-info d-block">
                                                         <i class="fa-solid fa-shopping-cart me-1"></i>
-                                                        Đơn tối thiểu: {{ number_format($coupon->min_order_amount) }}₫
+                                                        Đơn tối thiểu: {{ format_vnd($coupon->min_order_amount) }}₫
                                                     </small>
                                                 @endif
                                             </div>
@@ -1011,19 +1011,19 @@
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="fw-bold text-danger"
                                                         style="font-size: 1.4rem; text-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);">
-                                                        {{ number_format($product->sale_price) }}₫
+                                                        {{ format_vnd($product->sale_price) }}₫
                                                     </span>
                                                     <span class="text-muted text-decoration-line-through" style="font-size: 1rem;">
-                                                        {{ number_format($product->price) }}₫
+                                                        {{ format_vnd($product->price) }}₫
                                                     </span>
                                                 </div>
                                                 <div class="text-success fw-semibold" style="font-size: 0.9rem;">
-                                                    💰 Tiết kiệm {{ number_format($product->price - $product->sale_price) }}₫
+                                                    💰 Tiết kiệm {{ format_vnd($product->price - $product->sale_price) }}₫
                                                 </div>
                                             @else
                                                 <span class="fw-bold text-danger"
                                                     style="font-size: 1.4rem; text-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);">
-                                                    {{ number_format($product->price) }}₫
+                                                    {{ format_vnd($product->price) }}₫
                                                 </span>
                                             @endif
                                         </div>

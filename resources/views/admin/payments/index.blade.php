@@ -52,7 +52,7 @@
                             <span class="badge text-dark" style="font-size: 1rem;">Đơn hàng {{ $payment->order->id ?? 'N/A' }}</span><br>
                             <small class="text-muted">{{ $payment->order->recipient_name ?? '' }}</small>
                         </td>
-                        <td class="text-end">{{ number_format($payment->order->total_price ?? 0, 0, ',', '.') }} <span class="text-secondary">VND</span></td>
+                        <td class="text-end">{{ format_vnd($payment->order->total_price ?? 0) }} <span class="text-secondary">VND</span></td>
                         <td>
                             <span class="badge bg-light text-dark border border-1 border-secondary">{{ $payment->paymentMethod->payment_type ?? 'Chưa chọn' }}</span>
                         </td>
