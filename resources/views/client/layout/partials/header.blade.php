@@ -154,10 +154,12 @@
                                 $cartItems = collect([]);
                                 $totalQuantity = 0;
                                 $totalOrders = 0;
+                                $savedCouponsCount = 0;
                                 if (Auth::check()) {
                                     $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
                                     $totalQuantity = $cartItems->sum('quantity');
                                     $totalOrders = \App\Models\Order::where('user_id', Auth::id())->count();
+                                    $savedCouponsCount = \App\Models\UserSavedCoupon::where('user_id', Auth::id())->count();
                                 }
                             @endphp
 
@@ -170,6 +172,14 @@
                                 </a>
                             </li>
 
+                            <li>
+                                <a href="{{ route('my-coupons') }}" class="header-icon" title="Mã giảm giá đã lưu">
+                                    <i class="fa-solid fa-ticket"></i>
+                                    @if(Auth::check() && $savedCouponsCount > 0)
+                                        <small class="badge-number badge-light">{{ $savedCouponsCount }}</small>
+                                    @endif
+                                </a>
+                            </li>
 
                             <li>
                                 <a href="{{ route('client.orders.index') }}" class="header-icon bag-icon">
@@ -178,6 +188,7 @@
                                     @endif
                                     <i class="fa-solid fa-bag-shopping"></i>
                                 </a>
+                            </li>
                             </li>
                         </ul>
 
@@ -359,6 +370,28 @@
         // Reset khi click ngoài menu
         document.addEventListener('click', function (e) {
             if (!danhMucToggle.contains(e.target)) {
+                isOpen = false;
+            }
+        });
+
+        // Update coupon badge on page load
+        updateHeaderCouponBadge();
+    });
+
+    // Function to update header coupon badge
+    function updateHeaderCouponBadge() {
+        const saved = localStorage.getItem('savedCoupons');
+        const savedCoupons = saved ? JSON.parse(saved) : [];
+        const badge = document.getElementById('headerCouponCount');
+
+        if (badge) {
+            badge.textContent = savedCoupons.length;
+            badge.style.display = 'inline-block';
+        }
+    }
+
+    // Make it globally available
+    window.updateHeaderCouponBadge = updateHeaderCouponBadge;
                 isOpen = false;
             }
         });

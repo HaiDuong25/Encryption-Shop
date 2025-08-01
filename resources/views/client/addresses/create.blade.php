@@ -201,6 +201,9 @@ function loadDistricts() {
     if (province) {
         console.log('Loading districts for province:', province);
         
+        // Show loading
+        districtSelect.innerHTML = '<option value="">Đang tải...</option>';
+        
         fetch(`/api/districts?province=${encodeURIComponent(province)}`)
             .then(response => {
                 console.log('Districts API response status:', response.status);
@@ -211,6 +214,9 @@ function loadDistricts() {
             })
             .then(districts => {
                 console.log('Districts received:', districts);
+                
+                // Reset select with default option
+                districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
                 
                 if (Array.isArray(districts) && districts.length > 0) {
                     districts.forEach(district => {
@@ -230,10 +236,10 @@ function loadDistricts() {
             })
             .catch(error => {
                 console.error('Error loading districts:', error);
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'Lỗi tải dữ liệu Quận/Huyện';
-                districtSelect.appendChild(option);
+                districtSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                
+                // Show user-friendly error message
+                alert('Không thể tải danh sách Quận/Huyện. Vui lòng thử lại sau.');
             });
     }
 }
@@ -247,8 +253,11 @@ function loadWards() {
     wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
     wardSelect.disabled = true;
     
-    if (district) {
+    if (district && province) {
         console.log('Loading wards for district:', district, 'in province:', province);
+        
+        // Show loading
+        wardSelect.innerHTML = '<option value="">Đang tải...</option>';
         
         const url = `/api/wards?district=${encodeURIComponent(district)}&province=${encodeURIComponent(province)}`;
         fetch(url)
@@ -261,6 +270,9 @@ function loadWards() {
             })
             .then(wards => {
                 console.log('Wards received:', wards);
+                
+                // Reset select with default option
+                wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
                 
                 if (Array.isArray(wards) && wards.length > 0) {
                     wards.forEach(ward => {
@@ -280,10 +292,10 @@ function loadWards() {
             })
             .catch(error => {
                 console.error('Error loading wards:', error);
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'Lỗi tải dữ liệu Phường/Xã';
-                wardSelect.appendChild(option);
+                wardSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                
+                // Show user-friendly error message
+                alert('Không thể tải danh sách Phường/Xã. Vui lòng thử lại sau.');
             });
     }
 }

@@ -37,6 +37,7 @@ use App\Http\Controllers\Client\NewsController as ClientNewsController;
 use App\Http\Controllers\Client\RateController as ClientRateController;
 use App\Http\Controllers\Client\ReturnRequestController;
 use App\Http\Controllers\Client\CategoryClientController;
+use App\Http\Controllers\Client\CouponController as ClientCouponController;
 use App\Http\Controllers\ZaloPayController;
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
@@ -219,6 +220,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
     Route::post('/cart/validate-coupon', [CartController::class, 'validateCoupon'])->name('cart.validate-coupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
+    Route::post('/cart/remove-used-coupon', [CartController::class, 'removeUsedCoupon'])->name('cart.remove-used-coupon');
 
     // MoMo Payment routes
     Route::get('/momo/payment', [\App\Http\Controllers\MoMoController::class, 'createPayment'])->name('momo.create');
@@ -258,7 +260,18 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+// --- Coupon Routes ---
+Route::get('/coupons', [ClientCouponController::class, 'index'])->name('client.coupons.index');
+Route::get('/my-coupons', [ClientCouponController::class, 'myCoupons'])->name('my-coupons');
+Route::get('/coupons/{id}', [ClientCouponController::class, 'show'])->name('client.coupons.show');
+
+// AJAX API for coupon saving/removing (requires authentication)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/coupons/save', [ClientCouponController::class, 'saveCoupon'])->name('client.coupons.save');
+    Route::post('/coupons/remove', [ClientCouponController::class, 'removeCoupon'])->name('client.coupons.remove');
+    Route::post('/coupons/remove-used', [ClientCouponController::class, 'removeUsedCoupon'])->name('client.coupons.remove-used');
+    Route::get('/api/saved-coupons', [ClientCouponController::class, 'getSavedCoupons'])->name('client.coupons.api.saved');
+});
+
 // Add this route for coupons page
-Route::get('/my-coupons', function () {
-    return view('client.coupons.index');
-})->name('my-coupons');
+Route::get('/api/locations', [LocationController::class, 'index'])->name('api.locations');

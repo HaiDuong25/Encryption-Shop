@@ -517,10 +517,13 @@
                                         ];
                                         $colorScheme = $colors[$index % 3];
 
-                                        // Format discount value
+                                        // Format discount value with max discount info
                                         $discountText = '';
                                         if ($coupon->discount_type === 'percentage') {
                                             $discountText = "Giảm {$coupon->discount}%";
+                                            if ($coupon->max_discount_amount) {
+                                                $discountText .= " (tối đa " . number_format($coupon->max_discount_amount) . "₫)";
+                                            }
                                         } else {
                                             $discountText = "Giảm " . number_format($coupon->discount) . "₫";
                                         }
@@ -550,6 +553,19 @@
                                             <h4 class="fw-bold {{ $colorScheme['text_color'] }} mb-3" style="font-size:1.4rem;">
                                                 {{ $discountText }}
                                             </h4>
+                                            
+                                            <!-- Description with conditions -->
+                                            <div class="mb-3">
+                                                @if($coupon->description)
+                                                    <p class="text-muted mb-2" style="font-size:1rem;">{{ $coupon->description }}</p>
+                                                @endif
+                                                @if($coupon->min_order_amount)
+                                                    <small class="text-info d-block">
+                                                        <i class="fa-solid fa-shopping-cart me-1"></i>
+                                                        Đơn tối thiểu: {{ number_format($coupon->min_order_amount) }}₫
+                                                    </small>
+                                                @endif
+                                            </div>
                                             @if($coupon->start_date && $coupon->end_date)
                                                 <p class="text-muted mb-2" style="font-size:1.1rem;">
                                                     Từ {{ $coupon->start_date->format('d/m/Y') }} đến {{ $coupon->end_date->format('d/m/Y') }}
@@ -615,14 +631,19 @@
                                             @endphp
                                             <button
                                                 class="btn {{ $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
-                                                data-code="{{ $coupon->code }}" data-discount="{{ $discountText }}"
+                                                data-code="{{ $coupon->code }}" 
+                                                data-discount="{{ $discountText }}"
                                                 data-description="{{ $coupon->description ?? 'Mã giảm giá đặc biệt' }}"
+                                                data-discount-type="{{ $coupon->discount_type ?? 'percentage' }}"
+                                                data-discount-value="{{ $coupon->discount }}"
+                                                data-max-discount="{{ $coupon->max_discount_amount ?? '' }}"
+                                                data-min-order="{{ $coupon->min_order_amount ?? '' }}"
                                                 style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
                                                 {{ $isDisabled ? 'disabled' : '' }}
                                                 onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
-                                                onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
+                                                onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">>
                                                 <i class="fa-solid fa-{{ $isDisabled ? 'check' : 'bookmark' }} me-2"></i>
-                                                {{ $isDisabled ? 'Đã sử dụng' : 'Đã lưu' }}
+                                                {{ $isDisabled ? 'Đã sử dụng' : 'Lưu mã' }}
                                             </button>
                                             <span class="badge bg-white {{ $colorScheme['border_class'] }} border px-3 py-1 shadow-sm"
                                                 style="font-size: 0.9rem; font-weight: 600;">{{ $badges[$index % count($badges)] }}</span>
@@ -651,15 +672,25 @@
                                     <span class="badge bg-warning text-dark px-4 py-2 rounded-pill shadow-sm fw-bold"
                                         style="font-size:1.2rem; letter-spacing: 1px;">WELCOME10</span>
                                 </div>
-                                <h4 class="fw-bold text-danger mb-3" style="font-size:1.4rem;">Giảm 10%</h4>
-                                <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn hàng đầu tiên</p>
+                                <h4 class="fw-bold text-danger mb-3" style="font-size:1.4rem;">Giảm 10% (tối đa 50k)</h4>
+                                <p class="text-muted mb-2" style="font-size:1rem;">Chào mừng khách hàng mới</p>
+                                <small class="text-info d-block mb-3">
+                                    <i class="fa-solid fa-shopping-cart me-1"></i>
+                                    Đơn tối thiểu: 100,000₫
+                                </small>
                                 <button
                                     class="btn btn-danger btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
-                                    data-code="WELCOME10" data-discount="Giảm 10%" data-description="Cho đơn hàng đầu tiên"
+                                    data-code="WELCOME10" 
+                                    data-discount="Giảm 10% (tối đa 50k)" 
+                                    data-description="Cho đơn hàng đầu tiên"
+                                    data-discount-type="percentage"
+                                    data-discount-value="10"
+                                    data-max-discount="50000"
+                                    data-min-order="100000"
                                     style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
                                     onmouseover="this.style.transform='scale(1.05)';"
                                     onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-bookmark me-2"></i> Đã lưu
+                                    <i class="fa-solid fa-bookmark me-2"></i> Lưu mã
                                 </button>
                                 <span class="badge bg-white text-warning border border-warning px-3 py-1 shadow-sm"
                                     style="font-size: 0.9rem; font-weight: 600;">🔥 Hot</span>
@@ -685,15 +716,25 @@
                                     <span class="badge bg-success text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
                                         style="font-size:1.2rem; letter-spacing: 1px;">SAVE20</span>
                                 </div>
-                                <h4 class="fw-bold text-success mb-3" style="font-size:1.4rem;">Giảm 20%</h4>
-                                <p class="text-muted mb-3" style="font-size:1.1rem;">Cho đơn từ 1.000.000₫</p>
+                                <h4 class="fw-bold text-success mb-3" style="font-size:1.4rem;">Giảm 20% (tối đa 100k)</h4>
+                                <p class="text-muted mb-2" style="font-size:1rem;">Khuyến mãi mùa hè</p>
+                                <small class="text-info d-block mb-3">
+                                    <i class="fa-solid fa-shopping-cart me-1"></i>
+                                    Đơn tối thiểu: 300,000₫
+                                </small>
                                 <button
                                     class="btn btn-success btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
-                                    data-code="SAVE20" data-discount="Giảm 20%" data-description="Cho đơn từ 1.000.000₫"
+                                    data-code="SAVE20" 
+                                    data-discount="Giảm 20% (tối đa 100k)" 
+                                    data-description="Khuyến mãi mùa hè"
+                                    data-discount-type="percentage"
+                                    data-discount-value="20"
+                                    data-max-discount="100000"
+                                    data-min-order="300000"
                                     style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
                                     onmouseover="this.style.transform='scale(1.05)';"
                                     onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-bookmark me-2"></i> Đã lưu
+                                    <i class="fa-solid fa-bookmark me-2"></i> Lưu mã
                                 </button>
                                 <span class="badge bg-white text-success border border-success px-3 py-1 shadow-sm"
                                     style="font-size: 0.9rem; font-weight: 600;">⚡ Giới hạn</span>
@@ -719,16 +760,26 @@
                                     <span class="badge bg-primary text-white px-4 py-2 rounded-pill shadow-sm fw-bold"
                                         style="font-size:1.2rem; letter-spacing: 1px;">FREESHIP</span>
                                 </div>
-                                <h4 class="fw-bold text-primary mb-3" style="font-size:1.4rem;">Freeship toàn quốc</h4>
-                                <p class="text-muted mb-3" style="font-size:1.1rem;">Không giới hạn giá trị đơn</p>
+                                <h4 class="fw-bold text-primary mb-3" style="font-size:1.4rem;">Giảm 30,000₫</h4>
+                                <p class="text-muted mb-2" style="font-size:1rem;">Miễn phí vận chuyển</p>
+                                <small class="text-info d-block mb-3">
+                                    <i class="fa-solid fa-shopping-cart me-1"></i>
+                                    Đơn tối thiểu: 200,000₫
+                                </small>
                                 <button
                                     class="btn btn-primary btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg"
-                                    data-code="FREESHIP" data-discount="Freeship toàn quốc"
+                                    data-code="FREESHIP" 
+                                    data-discount="Freeship toàn quốc"
+                                    data-description="Miễn phí giao hàng"
+                                    data-discount-type="fixed"
+                                    data-discount-value="30000"
+                                    data-max-discount=""
+                                    data-min-order=""
                                     data-description="Không giới hạn giá trị đơn"
                                     style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
                                     onmouseover="this.style.transform='scale(1.05)';"
                                     onmouseout="this.style.transform='scale(1)';">
-                                    <i class="fa-solid fa-bookmark me-2"></i> Đã lưu
+                                    <i class="fa-solid fa-bookmark me-2"></i> Lưu mã
                                 </button>
                             </div>
                         </div>
@@ -738,14 +789,24 @@
 
             <!-- View All Coupons Button -->
             <div class="d-flex justify-content-center mt-5">
-                <a href="/my-coupons" class="btn btn-outline-warning btn-lg rounded-pill px-5 py-3 fw-semibold"
-                    style="border: 2px solid #ffc107; color: #ffc107; transition: all 0.3s ease;"
-                    onmouseover="this.style.backgroundColor='#ffc107'; this.style.color='white';"
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ffc107';">
-                    <i class="fa-solid fa-ticket me-2"></i>
-                    Xem mã giảm giá đã lưu
-                    <i class="fa-solid fa-arrow-right ms-2"></i>
-                </a>
+                <div class="btn-group" role="group">
+                    <a href="{{ route('client.coupons.index') }}" class="btn btn-outline-primary btn-lg rounded-pill px-5 py-3 fw-semibold me-3"
+                        style="border: 2px solid #007bff; color: #007bff; transition: all 0.3s ease;"
+                        onmouseover="this.style.backgroundColor='#007bff'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#007bff';">
+                        <i class="fa-solid fa-list me-2"></i>
+                        Xem tất cả mã giảm giá
+                        <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </a>
+                    <a href="{{ route('my-coupons') }}" class="btn btn-outline-warning btn-lg rounded-pill px-5 py-3 fw-semibold"
+                        style="border: 2px solid #ffc107; color: #ffc107; transition: all 0.3s ease;"
+                        onmouseover="this.style.backgroundColor='#ffc107'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#ffc107';">
+                        <i class="fa-solid fa-bookmark me-2"></i>
+                        Mã đã lưu
+                        <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -767,51 +828,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Coupon management functions
-            function getSavedCoupons() {
-                const saved = localStorage.getItem('savedCoupons');
-                return saved ? JSON.parse(saved) : [];
-            }
-
-            function saveCoupon(couponData) {
-                let savedCoupons = getSavedCoupons();
-
-                // Check if coupon already exists
-                const existingIndex = savedCoupons.findIndex(c => c.code === couponData.code);
-                if (existingIndex === -1) {
-                    savedCoupons.push({
-                        code: couponData.code,
-                        discount: couponData.discount,
-                        description: couponData.description,
-                        savedAt: new Date().toISOString()
-                    });
-                    localStorage.setItem('savedCoupons', JSON.stringify(savedCoupons));
-                    updateHeaderCouponBadge();
-                    return true;
-                }
-                return false;
-            }
-
-            function updateHeaderCouponBadge() {
-                const savedCoupons = getSavedCoupons();
-                const badge = document.getElementById('headerCouponCount');
-
-                if (badge) {
-                    if (savedCoupons.length > 0) {
-                        badge.textContent = savedCoupons.length;
-                        badge.style.display = 'inline-block';
-
-                        // Add pulse animation
-                        badge.style.animation = 'pulse 0.5s ease-in-out';
-                        setTimeout(() => {
-                            badge.style.animation = '';
-                        }, 500);
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
-            }
-
+            // Show toast notification
             function showToast(message, type = 'success') {
                 const toast = document.getElementById('couponToast');
                 const toastMessage = document.getElementById('toastMessage');
@@ -823,6 +840,55 @@
                 bsToast.show();
             }
 
+            // Save coupon via AJAX
+            function saveCoupon(couponId) {
+                return fetch('{{ route("client.coupons.save") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        coupon_id: couponId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update header badge
+                        updateHeaderCouponBadge(data.saved_count);
+                        return true;
+                    } else {
+                        showToast(data.message, 'warning');
+                        return false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Có lỗi xảy ra khi lưu mã giảm giá', 'danger');
+                    return false;
+                });
+            }
+
+            // Update header coupon badge
+            function updateHeaderCouponBadge(count = null) {
+                const badge = document.getElementById('headerCouponCount');
+                if (badge && count !== null) {
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-block';
+                        
+                        // Add pulse animation
+                        badge.style.animation = 'pulse 0.5s ease-in-out';
+                        setTimeout(() => {
+                            badge.style.animation = '';
+                        }, 500);
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+
             // Handle save coupon buttons
             document.querySelectorAll('.save-coupon-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
@@ -831,32 +897,39 @@
                         return;
                     }
 
-                    const couponData = {
-                        code: btn.getAttribute('data-code'),
-                        discount: btn.getAttribute('data-discount'),
-                        description: btn.getAttribute('data-description')
-                    };
+                    @guest
+                        showToast('Vui lòng đăng nhập để lưu mã giảm giá', 'warning');
+                        return;
+                    @endguest
 
-                    if (saveCoupon(couponData)) {
-                        const originalHTML = btn.innerHTML;
-                        btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Đã lưu thành công';
-                        btn.disabled = true;
-
-                        setTimeout(function () {
-                            btn.innerHTML = '<i class="fa-solid fa-bookmark me-2"></i> Đã lưu';
-                            btn.disabled = true; // Keep disabled after saving
-                        }, 2000);
-
-                        showToast(`Đã lưu mã ${couponData.code} thành công! Xem tại trang Mã giảm giá của tôi.`, 'success');
-
-                        // Add link to view saved coupons in toast with coupon icon
-                        setTimeout(() => {
-                            showToast('Nhấp vào đây để xem mã đã lưu', 'info');
-                            document.getElementById('toastMessage').innerHTML = '<a href="/my-coupons" class="text-white text-decoration-underline"><i class="fa-solid fa-ticket me-1"></i>Xem mã giảm giá đã lưu</a>';
-                        }, 3000);
-                    } else {
-                        showToast(`Mã ${couponData.code} đã có trong danh sách!`, 'warning');
+                    const couponCode = btn.getAttribute('data-code');
+                    // Find coupon ID from the current coupon list
+                    const couponId = @json($coupons->pluck('id', 'code'));
+                    
+                    if (!couponId[couponCode]) {
+                        showToast('Không tìm thấy mã giảm giá', 'danger');
+                        return;
                     }
+
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang lưu...';
+                    btn.disabled = true;
+
+                    saveCoupon(couponId[couponCode]).then(success => {
+                        if (success) {
+                            btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Đã lưu thành công';
+                            showToast(`Đã lưu mã ${couponCode} thành công! Xem tại trang Mã giảm giá của tôi.`, 'success');
+                            
+                            // Add link to view saved coupons in toast
+                            setTimeout(() => {
+                                showToast('Nhấp vào đây để xem mã đã lưu', 'info');
+                                document.getElementById('toastMessage').innerHTML = '<a href="/my-coupons" class="text-white text-decoration-underline"><i class="fa-solid fa-ticket me-1"></i>Xem mã giảm giá đã lưu</a>';
+                            }, 3000);
+                        } else {
+                            btn.innerHTML = originalHTML;
+                            btn.disabled = false;
+                        }
+                    });
                 });
             });
         });

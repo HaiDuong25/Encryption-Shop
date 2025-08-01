@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Cart;
 use App\Models\CouponUse;
+use App\Models\UserSavedCoupon;
 use App\Models\ShippingAddress;
 use App\Models\Coupon;
 use App\Models\Payment;
@@ -113,14 +114,16 @@ class ZaloPayController extends Controller
             
             if ($order) {
                 // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
+                Log::info("ZaloPay payment successful, created order {$order->id}, redirecting to success page");
                 $this->clearCheckoutSession();
                 return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán ZaloPay thành công!');
             } else {
+                Log::error('ZaloPay payment successful but failed to create order');
                 return redirect()->route('cart.checkout')->with('error', 'Có lỗi khi tạo đơn hàng sau thanh toán');
             }
         } else {
             // Thanh toán thất bại hoặc bị hủy
-            Log::info('ZaloPay payment failed or cancelled');
+            Log::info('ZaloPay payment failed or cancelled, status: ' . $status);
             return redirect()->route('cart.checkout')->with('error', 'Thanh toán ZaloPay thất bại hoặc đã bị hủy');
         }
     }
@@ -237,28 +240,41 @@ class ZaloPayController extends Controller
                 }
             }
 
+            // GHI NHẬN VIỆC SỬ DỤNG COUPON VÀ XÓA KHỎI DANH SÁCH ĐÃ LƯU
+            if (!empty($orderData['coupon_code']) && $orderData['discount'] > 0) {
+                try {
+                    $coupon = Coupon::where('code', $orderData['coupon_code'])->first();
+                    if ($coupon) {
+                        CouponUse::create([
+                            'user_id' => $user->id,
+                            'coupon_id' => $coupon->id,
+                            'order_id' => $order->id,
+                            'discount_amount' => $orderData['discount'],
+                            'used_at' => now()
+                        ]);
+                        $coupon->incrementUsage();
+
+                        // XÓA MÃ KHỎI DANH SÁCH ĐÃ LƯU CỦA USER
+                        UserSavedCoupon::where('user_id', $user->id)
+                            ->where('coupon_id', $coupon->id)
+                            ->delete();
+
+                        Log::info("Coupon {$orderData['coupon_code']} used by user {$user->id} for order {$order->id} (ZaloPay payment) and removed from saved list");
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error recording coupon usage in ZaloPay payment: ' . $e->getMessage());
+                }
+            }
+
             // Xóa chỉ những sản phẩm đã thanh toán khỏi giỏ hàng (giống như COD)
             $selectedCartItems = Session::get('selected_cart_items', []);
             if (!empty($selectedCartItems)) {
                 Cart::where('user_id', $user->id)->whereIn('id', $selectedCartItems)->delete();
+                Log::info("Deleted selected cart items for ZaloPay order {$order->id}: " . implode(',', $selectedCartItems));
             } else {
                 // Fallback: xóa tất cả nếu không có selected_items
                 Cart::where('user_id', $user->id)->delete();
-            }
-
-            // Cập nhật lượt sử dụng mã giảm giá nếu có
-            if (!empty($orderData['coupon_code']) && $orderData['discount'] > 0) {
-                $coupon = Coupon::where('code', $orderData['coupon_code'])->first();
-                if ($coupon) {
-                    CouponUse::create([
-                        'user_id' => $user->id,
-                        'coupon_id' => $coupon->id,
-                        'order_id' => $order->id,
-                        'discount_amount' => $orderData['discount'],
-                        'used_at' => now()
-                    ]);
-                    $coupon->increment('used_count');
-                }
+                Log::info("Deleted all cart items for ZaloPay order {$order->id} (no selection found)");
             }
 
             // Lưu thanh toán
