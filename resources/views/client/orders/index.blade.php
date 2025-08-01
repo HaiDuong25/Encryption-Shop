@@ -235,7 +235,7 @@
                                         <td>
                                             <a href="{{ route('client.orders.show', $order->id) }}"
                                                 class="btn btn-sm btn-outline-primary">Xem</a>
-                                            
+
                                             @if ($statusValue == 'received')
                                                 <form action="{{ route('orders.confirm', $order->id) }}" method="POST"
                                                     style="display:inline;" class="mt-1">
