@@ -12,13 +12,23 @@ class ReturnController extends Controller
 {
     $query = ReturnRequest::with(['user', 'orderDetail.product']);
 
-    if ($request->has('keyword') && $request->keyword) {
-        $keyword = $request->keyword;
-        $query->whereHas('user', fn($q) => $q->where('name', 'like', "%$keyword%"))
-              ->orWhereHas('orderDetail.product', fn($q) => $q->where('name', 'like', "%$keyword%"));
+    // Xử lý tìm kiếm
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->whereHas('user', function($userQuery) use ($search) {
+                $userQuery->where('name', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->orWhereHas('orderDetail.product', function($productQuery) use ($search) {
+                $productQuery->where('name', 'like', "%{$search}%");
+            })
+            ->orWhere('reason', 'like', "%{$search}%");
+        });
     }
 
     $returns = $query->orderByDesc('created_at')->paginate(10);
+    $returns->appends($request->query());
 
     return view('admin.returns.index', compact('returns'));
 }

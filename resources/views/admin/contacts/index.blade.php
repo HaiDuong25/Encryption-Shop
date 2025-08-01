@@ -11,6 +11,21 @@
 
                     <div class="d-sm-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Danh sách Liên hệ Khách hàng</h5>
+                        <div class="right-options d-flex gap-2 align-items-center">
+                            {{-- Form tìm kiếm theo tên, email hoặc nội dung --}}
+                            <form method="GET" action="{{ route('contacts.index') }}" class="d-flex">
+                                <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên, email hoặc nội dung..." 
+                                       value="{{ request('search') }}" style="width: 280px;">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="ri-search-line"></i> Tìm
+                                </button>
+                                @if(request('search'))
+                                    <a href="{{ route('contacts.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                                        <i class="ri-refresh-line"></i> Xóa bộ lọc
+                                    </a>
+                                @endif
+                            </form>
+                        </div>
                     </div>
 
                     @foreach (['success', 'error'] as $msg)

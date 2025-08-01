@@ -19,11 +19,13 @@
                         <form action="{{ route('news.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
                             <input type="text" name="title" value="{{ request('title') }}" placeholder="Tìm theo tiêu đề..."
                                 class="form-control" style="width:220px;">
-                            <button class="btn btn-outline-primary" type="submit">
+                            <button class="btn btn-primary me-2" type="submit">
                                 <i class="ri-search-line"></i> Tìm
                             </button>
                             @if(request('title'))
-                                <a href="{{ route('news.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                                <a href="{{ route('news.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                                    <i class="ri-refresh-line"></i> Xóa bộ lọc
+                                </a>
                             @endif
                         </form>
 

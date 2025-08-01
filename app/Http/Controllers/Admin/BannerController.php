@@ -11,10 +11,19 @@ class BannerController extends \App\Http\Controllers\Controller
     public function index(Request $request)
     {
         $query = \App\Models\Banner::query();
-        if ($request->filled('title')) {
-            $query->where('title', 'like', '%' . $request->title . '%');
+        
+        // Xử lý tìm kiếm
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
         }
-        $banners = $query->paginate(15);
+        
+        $banners = $query->latest()->paginate(15);
+        $banners->appends($request->query());
+        
         return view('admin.banners.index', compact('banners'));
     }
 

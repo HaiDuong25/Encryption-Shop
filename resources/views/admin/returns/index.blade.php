@@ -7,10 +7,17 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">📦 Danh sách yêu cầu trả hàng</h2>
 
-            <form action="{{ route('admin.returns.index') }}" method="GET" class="d-flex" style="max-width: 400px;">
-                <input type="text" name="search" class="form-control me-2" placeholder="Tìm khách hàng hoặc sản phẩm..."
+            <form action="{{ route('admin.returns.index') }}" method="GET" class="d-flex gap-2" style="max-width: 400px;">
+                <input type="text" name="search" class="form-control" placeholder="Tìm khách hàng, sản phẩm, lý do..."
                        value="{{ request('search') }}">
-                <button class="btn btn-outline-primary">🔍</button>
+                <button class="btn btn-primary me-2">
+                    <i class="ri-search-line"></i> Tìm
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('admin.returns.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                        <i class="ri-refresh-line"></i> Xóa bộ lọc
+                    </a>
+                @endif
             </form>
         </div>
 

@@ -19,15 +19,18 @@
                         <i data-feather="plus"></i> Tạo mã mới
                     </a>
                 </div>
-                {{-- Form tìm kiếm theo giá trị giảm giá --}}
-                <form action="{{ route('coupons.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
-                    <input type="number" name="discount" value="{{ request('discount') }}" placeholder="Nhập giá trị (%)"
-                        class="form-control" style="width:180px;">
-                    <button class="btn btn-outline-primary" type="submit">
-                        <i data-feather="search"></i> Tìm
+                {{-- Form tìm kiếm --}}
+                <form action="{{ route('coupons.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                    <div class="search-box" style="width:250px;">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm kiếm theo mã, mô tả..." class="form-control">
+                    </div>
+                    <button class="btn btn-primary me-2" type="submit">
+                        <i class="ri-search-line"></i> Tìm
                     </button>
-                    @if(request('discount'))
-                        <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    @if(request('search'))
+                        <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                            <i class="ri-refresh-line"></i> Xóa bộ lọc
+                        </a>
                     @endif
                 </form>
 
@@ -144,7 +147,7 @@
                             @empty
                                 <tr>
                                     <td colspan="10" class="text-center text-muted">
-                                        {{ request('discount') ? 'Không tìm thấy mã giảm giá nào phù hợp.' : 'Chưa có mã giảm giá nào.' }}
+                                        {{ request('search') ? 'Không tìm thấy mã giảm giá nào phù hợp.' : 'Chưa có mã giảm giá nào.' }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -153,7 +156,7 @@
 
                     @if(method_exists($coupons, 'links'))
                         <div class="mt-3 d-flex justify-content-end">
-                            {{ $coupons->links() }}
+                            {{ $coupons->withQueryString()->links() }}
                         </div>
                     @endif
                 </div>

@@ -13,10 +13,19 @@ class CouponController extends \App\Http\Controllers\Controller
     public function index(Request $request)
     {
         $query = \App\Models\Coupon::with('couponUses');
-        if ($request->filled('discount')) {
-            $query->where('discount', $request->discount);
+        
+        // Tìm kiếm theo mã coupon
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('code', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
         }
-        $coupons = $query->paginate(15);
+        
+        $coupons = $query->latest()->paginate(15);
+        $coupons->appends($request->query());
+        
         return view('admin.coupons.index', compact('coupons'));
     }
 

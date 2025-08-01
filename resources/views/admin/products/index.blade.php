@@ -20,7 +20,9 @@
                 </a>
             </div>
             <form action="{{ route('products.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
-                <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm theo tên" class="form-control" style="width:200px;">
+                <div class="search-box" style="width:250px;">
+                    <input type="text" name="search" value="{{ request('search') ?? request('keyword') }}" placeholder="Tìm kiếm theo tên sản phẩm..." class="form-control">
+                </div>
 
                 <select name="category_id" class="form-select" style="width:180px;">
                     <option value="">-- Danh mục --</option>
@@ -40,9 +42,14 @@
                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Ẩn</option>
                 </select>
 
-                <button class="btn btn-outline-primary" type="submit">
-                    <i data-feather="search"></i> Tìm
+                <button class="btn btn-primary me-2" type="submit">
+                    <i class="ri-search-line"></i> Tìm
                 </button>
+                @if(request()->hasAny(['search', 'keyword', 'category_id', 'price_from', 'price_to', 'status']))
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                        <i class="ri-refresh-line"></i> Xóa bộ lọc
+                    </a>
+                @endif
             </form>
 
 

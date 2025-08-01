@@ -9,9 +9,24 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Tất cả phương thức</h5>
-            <a href="{{ route('payment-methods.create') }}" class="btn btn-success btn-sm">
-                <i class="fas fa-plus"></i> Thêm mới
-            </a>
+            <div class="right-options d-flex gap-2 align-items-center">
+                {{-- Form tìm kiếm theo loại thanh toán hoặc mô tả --}}
+                <form method="GET" action="{{ route('payment-methods.index') }}" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo loại hoặc mô tả..." 
+                           value="{{ request('search') }}" style="width: 250px;">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="ri-search-line"></i> Tìm
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('payment-methods.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                            <i class="ri-refresh-line"></i> Xóa bộ lọc
+                        </a>
+                    @endif
+                </form>
+                <a href="{{ route('payment-methods.create') }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus"></i> Thêm mới
+                </a>
+            </div>
         </div>
 
         <div class="card-body">

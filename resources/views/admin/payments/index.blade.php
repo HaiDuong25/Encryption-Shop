@@ -1,49 +1,61 @@
 @extends('admin.layouts.main')
 
+@section('title', 'Quản lý Thanh Toán')
+
 @section('content')
     @php use Carbon\Carbon; @endphp
 
+<div class="container-fluid">
+    <div class="card card-table">
+        <div class="card-body">
+            <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
+                <h5>Quản lý Thanh Toán</h5>
+                <div class="right-options d-flex gap-2 align-items-center">
+                    {{-- Form tìm kiếm --}}
+                    <form method="GET" action="{{ route('payments.index') }}" class="d-flex">
+                        <input type="text" name="search" value="{{ request('search') }}" class="form-control me-2" 
+                               placeholder="Tìm theo tên người nhận hoặc ID đơn hàng..." style="width: 280px;">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="ri-search-line"></i> Tìm
+                        </button>
+                        @if(request('search'))
+                            <a href="{{ route('payments.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                                <i class="ri-refresh-line"></i> Xóa bộ lọc
+                            </a>
+                        @endif
+                    </form>
+                </div>
+            </div>
 
-    <h1>Quản lý Thanh Toán</h1>
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show mt-3">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show mt-3">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
 
-    <form method="GET" action="" class="mb-3 d-flex align-items-center" style="gap: 8px;">
-        <input type="text" name="search" value="{{ request('search') }}" class="form-control" style="max-width: 220px;" placeholder="Tìm theo tên người nhận hoặc ID đơn hàng...">
-        <button type="submit" class="btn btn-primary btn-sm">Tìm kiếm</button>
-        @if(request('search'))
-            <a href="{{ route('payments.index') }}" class="btn btn-link btn-sm">Xóa lọc</a>
-        @endif
-    </form>
-
-    @if(session('success'))
-        <div style="color: green">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div style="color: red">{{ session('error') }}</div>
-    @endif
-
-    <style>
-        th,
-        td {
-            text-align: center;
-            vertical-align: middle;
-        }
-    </style>
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle text-center" style="background: #fff; border-radius: 8px; overflow: hidden;">
-            <thead class="table-light">
-                <tr>
-                    <th style="min-width: 60px;">ID</th>
-                    <th style="min-width: 120px;">Đơn hàng</th>
-                    <th style="min-width: 120px;">Số tiền</th>
-                    <th style="min-width: 120px;">Phương thức</th>
-                    <th style="min-width: 180px;">Dữ liệu giao dịch</th>
-                    <th style="min-width: 120px;">Trạng thái</th>
-                    <th style="min-width: 150px;">Ngày thanh toán</th>
-                    <th style="min-width: 120px;">Hành động</th>
-                    <th style="min-width: 120px;">Xem hóa đơn</th>
-                </tr>
-            </thead>
+            <div class="table-responsive table-product mt-3">
+                <table class="table theme-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Đơn hàng</th>
+                            <th>Số tiền</th>
+                            <th>Phương thức</th>
+                            <th>Dữ liệu giao dịch</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày thanh toán</th>
+                            <th>Hành động</th>
+                            <th>Xem hóa đơn</th>
+                        </tr>
+                    </thead>
             <tbody>
                 @foreach($payments as $payment)
                     <tr>

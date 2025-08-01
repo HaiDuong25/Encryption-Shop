@@ -19,7 +19,7 @@
                          alt="Ảnh đại diện">
                     <div class="avatar-overlay">
                         <i class="fas fa-camera"></i>
-                        <input type="file" id="avatar-upload" accept="image/*" onchange="uploadAvatar(this)">
+                        <input type="file" id="avatar-upload" accept="image/*" onchange="uploadAvatar(this)" title="nhấn để thay đổi ảnh đại diện">
                     </div>
                 </div>
             </div>

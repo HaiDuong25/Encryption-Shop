@@ -17,8 +17,9 @@ class ProductController extends Controller
     {
         $query = Product::query()->with('category', 'brand');
 
-        if ($request->filled('keyword')) {
-            $query->where('name', 'like', '%' . $request->keyword . '%');
+        if ($request->filled('search') || $request->filled('keyword')) {
+            $searchTerm = $request->search ?? $request->keyword;
+            $query->where('name', 'like', '%' . $searchTerm . '%');
         }
 
         if ($request->filled('category_id')) {

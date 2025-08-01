@@ -22,8 +22,9 @@ class CategoryController extends \App\Http\Controllers\Controller
             }
             $categories = $categories->merge($children);
         } else {
-            $query->when($request->filled('keyword'), function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->keyword . '%');
+            $query->when($request->filled('search') || $request->filled('keyword'), function ($q) use ($request) {
+                $searchTerm = $request->search ?? $request->keyword;
+                $q->where('name', 'like', '%' . $searchTerm . '%');
             });
             $query->when($request->filled('status'), function ($q) use ($request) {
                 $q->where('status', $request->status);

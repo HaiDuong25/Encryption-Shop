@@ -16,6 +16,9 @@
                     </div>
 
                     <form action="{{ route('admin.categories.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                        <div class="search-box" style="width:250px;">
+                            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm theo tên..." value="{{ request('search') }}">
+                        </div>
                         <select name="parent_id" class="form-select" style="width:200px;">
                             <option value="">-- Danh mục cha --</option>
                             @foreach ($parentCategories as $parent)
@@ -29,9 +32,14 @@
                             <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hiển thị</option>
                             <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ẩn</option>
                         </select>
-                        <button class="btn btn-outline-primary" type="submit">
+                        <button class="btn btn-primary me-2" type="submit">
                             <i class="ri-search-line"></i> Tìm
                         </button>
+                        @if(request()->hasAny(['search', 'parent_id', 'status']))
+                            <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                                <i class="ri-refresh-line"></i> Xóa bộ lọc
+                            </a>
+                        @endif
                     </form>
 
                     @if(session('success'))

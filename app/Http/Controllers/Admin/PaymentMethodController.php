@@ -8,9 +8,19 @@ use App\Models\PaymentMethod;
 
 class PaymentMethodController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $methods = PaymentMethod::paginate(10);
+        $query = PaymentMethod::query();
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('payment_type', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
+        
+        $methods = $query->paginate(10)->withQueryString();
         return view('admin.payment-methods.index', compact('methods'));
     }
 

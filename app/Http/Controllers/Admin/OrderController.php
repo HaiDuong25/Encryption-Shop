@@ -15,16 +15,29 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends \App\Http\Controllers\Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with([
+        $query = Order::with([
             'orderDetails.variant.product.productImages',
             'orderDetails.product.productImages',
-            'paymentMethod'
-        ])
-            ->latest()
-            ->paginate(10);
-
+            'paymentMethod',
+            'user'
+        ]);
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                  ->orWhere('recipient_name', 'like', '%' . $search . '%')
+                  ->orWhere('orderer_name', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $orders = $query->latest()->paginate(10);
         return view('admin.orders.index', compact('orders'));
     }
 

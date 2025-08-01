@@ -8,9 +8,17 @@ use Illuminate\Support\Facades\Storage;
 
 class BrandController extends \App\Http\Controllers\Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $brands = Brand::all();
+        $query = Brand::query();
+        
+        // Xử lý tìm kiếm
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+        
+        $brands = $query->orderBy('created_at', 'desc')->get();
         return view('admin.brands.index', compact('brands'));
     }
     public function create()
