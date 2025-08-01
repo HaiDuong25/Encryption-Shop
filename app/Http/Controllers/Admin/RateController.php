@@ -10,11 +10,23 @@ use Illuminate\Validation\Rule;
 class RateController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $rates = Rate::with('user')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        $query = Rate::with('user');
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('rating', 'like', '%' . $search . '%')
+                  ->orWhere('comment', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $rates = $query->orderBy('created_at', 'desc')->paginate(15);
         return view('admin.rates.index', compact('rates'));
     }
 

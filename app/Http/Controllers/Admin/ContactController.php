@@ -6,12 +6,25 @@ use App\Models\Contact;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
-        $contacts = Contact::with('user')->latest()->paginate(20);
+        $query = Contact::with('user');
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%')
+                  ->orWhere('phone', 'like', '%' . $search . '%')
+                  ->orWhere('content', 'like', '%' . $search . '%');
+            });
+        }
+        
+        $contacts = $query->orderBy('created_at', 'desc')->paginate(15);
         return view('admin.contacts.index', compact('contacts'));
     }
 

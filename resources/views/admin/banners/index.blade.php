@@ -15,15 +15,19 @@
                     </div>
                 </div>
 
-                {{-- Form tìm kiếm theo tên --}}
-                <form action="{{ route('banners.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
-                    <input type="text" name="title" value="{{ request('title') }}" placeholder="Tìm theo tiêu đề..."
-                        class="form-control" style="width:220px;">
-                    <button class="btn btn-outline-primary" type="submit">
-                        <i class="ri-search-line"></i> Tìm
+                {{-- Form tìm kiếm --}}
+                <form action="{{ route('banners.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                    <div class="search-box" style="width:250px;">
+                        <input type="text" name="search" value="{{ request('search') ?? request('title') }}" placeholder="Tìm kiếm theo tiêu đề..."
+                            class="form-control">
+                    </div>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="ri-search-line"></i> Tìm kiếm
                     </button>
-                    @if(request('title'))
-                        <a href="{{ route('banners.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    @if(request()->hasAny(['search', 'title']))
+                        <a href="{{ route('banners.index') }}" class="btn btn-outline-secondary">
+                            <i class="ri-refresh-line"></i> Xóa bộ lọc
+                        </a>
                     @endif
                 </form>
 

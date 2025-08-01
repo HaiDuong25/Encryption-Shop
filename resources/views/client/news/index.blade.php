@@ -4,19 +4,26 @@
 
 @section('content')
     <!-- Page Header -->
-    <section class="page-header py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="container">
+    <section class="page-header py-5" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); position: relative;">
+        <!-- Overlay for better text readability -->
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.3);"></div>
+        <div class="container position-relative">
             <div class="row align-items-center">
                 <div class="col-lg-8">
-                    <h1 class="text-white fw-bold display-5 mb-3">Tin tức & Bài viết</h1>
-                    <p class="text-white-50 lead mb-0">Cập nhật những xu hướng thời trang mới nhất và bí quyết phối đồ</p>
+                    <h1 class="text-white fw-bold display-5 mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Tin tức & Bài viết</h1>
+                    <p class="text-white lead mb-0" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5); opacity: 0.95;">Cập nhật những xu hướng thời trang mới nhất và bí quyết phối đồ</p>
                 </div>
                 <div class="col-lg-4">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb justify-content-lg-end">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-white-50">Trang chủ</a>
+                        <ol class="breadcrumb justify-content-lg-end mb-0" style="background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 8px;">
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('home') }}" class="text-white text-decoration-none" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                                    <i class="fas fa-home me-1"></i>Trang chủ
+                                </a>
                             </li>
-                            <li class="breadcrumb-item text-white active" aria-current="page">Tin tức</li>
+                            <li class="breadcrumb-item text-white active fw-semibold" aria-current="page" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                                Tin tức
+                            </li>
                         </ol>
                     </nav>
                 </div>
@@ -253,8 +260,25 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="1000,100 1000,0 0,100"/></svg>');
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.05"><polygon points="1000,100 1000,0 0,100"/></svg>');
             background-size: cover;
+        }
+
+        /* Breadcrumb styling */
+        .breadcrumb {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #ffd700 !important;
+            transition: color 0.3s ease;
         }
 
         .search-bar .input-group-text {

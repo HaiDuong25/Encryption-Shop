@@ -13,9 +13,15 @@ class CouponController extends \App\Http\Controllers\Controller
     public function index(Request $request)
     {
         $query = \App\Models\Coupon::with('couponUses');
+        
+        if ($request->filled('search')) {
+            $query->where('code', 'like', '%' . $request->search . '%');
+        }
+        
         if ($request->filled('discount')) {
             $query->where('discount', $request->discount);
         }
+        
         $coupons = $query->paginate(15);
         return view('admin.coupons.index', compact('coupons'));
     }

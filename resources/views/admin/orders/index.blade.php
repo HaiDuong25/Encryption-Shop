@@ -97,8 +97,23 @@
     </style>
     <div class="card card-table">
         <div class="card-body">
-            <div class="title-header option-title">
+            <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                 <h5>Order List</h5>
+                <div class="right-options d-flex gap-2 align-items-center">
+                    {{-- Form tìm kiếm theo ID đơn hàng hoặc tên người nhận --}}
+                    <form method="GET" action="{{ route('orders.index') }}" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo ID hoặc tên người nhận..." 
+                               value="{{ request('search') }}" style="width: 280px;">
+                        <button type="submit" class="btn btn-primary btn-sm me-2">
+                            <i class="ri-search-line"></i> Tìm
+                        </button>
+                        @if(request('search'))
+                            <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="ri-close-line"></i>
+                            </a>
+                        @endif
+                    </form>
+                </div>
             </div>
             <div>
                 <div class="table-responsive">

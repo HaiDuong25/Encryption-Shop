@@ -19,15 +19,20 @@
                         <i data-feather="plus"></i> Tạo mã mới
                     </a>
                 </div>
-                {{-- Form tìm kiếm theo giá trị giảm giá --}}
-                <form action="{{ route('coupons.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2">
+                {{-- Form tìm kiếm --}}
+                <form action="{{ route('coupons.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
+                    <div class="search-box" style="width:200px;">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm kiếm theo mã..." class="form-control">
+                    </div>
                     <input type="number" name="discount" value="{{ request('discount') }}" placeholder="Nhập giá trị (%)"
                         class="form-control" style="width:180px;">
-                    <button class="btn btn-outline-primary" type="submit">
-                        <i data-feather="search"></i> Tìm
+                    <button class="btn btn-primary" type="submit">
+                        <i data-feather="search"></i> Tìm kiếm
                     </button>
-                    @if(request('discount'))
-                        <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    @if(request()->hasAny(['search', 'discount']))
+                        <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary bg-dark">
+                            <i class="ri-refresh-line"></i> Xóa bộ lọc
+                        </a>
                     @endif
                 </form>
 

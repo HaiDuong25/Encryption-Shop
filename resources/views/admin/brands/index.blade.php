@@ -11,6 +11,19 @@
                     <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                         <h5>Danh sách thương hiệu</h5>
                         <div class="right-options d-flex gap-2 align-items-center">
+                            {{-- Form tìm kiếm theo tên thương hiệu --}}
+                            <form method="GET" action="{{ route('brands.index') }}" class="d-flex">
+                                <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên thương hiệu..." 
+                                       value="{{ request('search') }}" style="width: 250px;">
+                                <button type="submit" class="btn btn-primary btn-sm me-2">
+                                    <i class="ri-search-line"></i> Tìm
+                                </button>
+                                @if(request('search'))
+                                                                        <a href="{{ route('brands.index') }}" btn btn-outline-secondary btn-sm me-2>
+                                        <i class="ri-refresh-line"></i> Xóa bộ lọc
+                                    </a>
+                                @endif
+                            </form>
                             <a class="btn btn-solid btn-sm" href="{{ route('brands.create') }}">Thêm mới</a>
                         </div>
                     </div>

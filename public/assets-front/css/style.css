@@ -6,7 +6,236 @@
  * Font Awesome Free 6.0.0 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  * Copyright 2022 Fonticons, Inc.
- */:root,:host{--fa-font-regular: normal 400 1em/1 "Font Awesome 6 Free"}@font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:400;font-display:block;src:url("https://themes.pixelstrap.com/fastkart/assets/fonts/fa-regular-400.woff2") format("woff2"),url("https://themes.pixelstrap.com/fastkart/assets/fonts/fa-regular-400.ttf") format("truetype")}.far,.fa-regular{font-family:"Font Awesome 6 Free";font-weight:400}/*!
+ */:root,:host{--fa-font-regular: normal 400 1em/1 "Font Awesome 6 Free"}@font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:400;font-display:block;src:url("https://themes.pixelstrap.com/fastkart/assets/fonts/fa-regular-400.woff2") format("woff2"),url("https://themes.pixelstrap.com/fastkart/assets/fonts/fa-regular-400.ttf") format("truetype")}.far,.fa-regular{font-family:"Font Awesome 6 Free";font-weight:400}
+
+/* Custom Account Page Styles */
+.profile-summary {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+}
+
+.profile-avatar {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    overflow: hidden;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-control-static {
+    padding: 12px 15px !important;
+    min-height: 20px !important;
+    color: #495057 !important;
+    background: #fff !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: none !important;
+    cursor: default !important;
+    user-select: text !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.form-control-static:hover {
+    border-color: #e9ecef !important;
+    background: #fff !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.form-control-static:focus {
+    border-color: #e9ecef !important;
+    background: #fff !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.security-item {
+    padding: 20px;
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.security-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+}
+
+.security-item:last-child {
+    margin-bottom: 0;
+}
+
+.quick-action-card {
+    display: block;
+    padding: 25px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: inherit;
+    border-color: #667eea;
+}
+
+.quick-action-card .icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.quick-action-card:hover .icon {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.quick-action-card .icon i {
+    color: white;
+    font-size: 24px;
+}
+
+.quick-action-card h6 {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.quick-action-card p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Style cho các nút - Override Bootstrap */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-primary:focus {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-outline-secondary {
+    background: #f8f9fa !important;
+    border: 2px solid #dee2e6 !important;
+    color: #6c757d !important;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: white !important;
+    transform: translateY(-1px);
+}
+
+/* Style cho form sections */
+.form-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.form-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Style cho alert */
+.alert-success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    border-radius: 10px;
+    color: #155724;
+}
+
+/* Style cho form header */
+.form-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.form-header h4 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-header p {
+    color: #6c757d;
+    margin: 0;
+}/*!
  * Font Awesome Free 6.0.0 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  * Copyright 2022 Fonticons, Inc.

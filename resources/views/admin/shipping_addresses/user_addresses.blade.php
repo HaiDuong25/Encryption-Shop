@@ -73,7 +73,7 @@
             <div class="text-end">
                 <div class="badge bg-light text-dark fs-6">{{ $addresses->count() }} địa chỉ</div>
                 <div class="mt-2">
-                    <a href="{{ route('shipping-addresses.index') }}" class="btn btn-light btn-sm">
+                    <a href="{{ route('shipping-addresses.index') }}" class="btn btn-outline-secondary btn-sm">
                         <i class="ri-arrow-left-line"></i> Quay lại
                     </a>
                     <a href="{{ route('shipping-addresses.create', ['user_id' => $user->id]) }}" class="btn btn-success btn-sm">
