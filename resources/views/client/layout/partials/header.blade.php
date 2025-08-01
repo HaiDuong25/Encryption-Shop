@@ -11,10 +11,13 @@
                                 <i class="iconly-Category icli"></i>
                             </span>
                         </button>
-                        <a href="{{ route('home') }}" class="web-logo nav-logo">
-                            <img src="{{ asset('assets-front/images/logo/4.png') }}" class="img-fluid blur-up lazyload"
-                                alt="">
-                        </a>
+                       <a href="{{ route('home') }}" class="web-logo nav-logo">
+    <img src="{{ asset('assets-front/images/logo/anhlogo2.png') }}"
+         class="img-fluid blur-up lazyload"
+         alt=""
+         style="width: 300px; height: auto;">
+</a>
+
 
                         <div class="search-full">
                             <div class="input-group">

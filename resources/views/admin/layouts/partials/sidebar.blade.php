@@ -3,8 +3,8 @@
     <div>
         <div class="logo-wrapper logo-wrapper-center">
             <a href="index.html" data-bs-original-title="" title="">
-                <img class="img-fluid for-white" src="{{ asset('assets/images/logo/full-white.png') }}" alt="logo">
-            </a>
+        <img class="img-fluid for-white" src="{{ asset('assets/images/logo/anhlogo2.png') }}" alt="logo" style="width: 200px; height: auto;">
+    </a>
             <div class="back-btn">
                 <i class="fa fa-angle-left"></i>
             </div>
