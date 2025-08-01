@@ -550,6 +550,13 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div class="product-summary text-end">
+                                            <div class="product-total-price text-primary fw-bold fs-5">
+                                                {{ number_format($productTotalPrice) }} VNĐ
+                                            </div>
+                                            <small class="product-total-qty text-muted">{{ $totalProductQuantity }} sản phẩm</small>
+                                        </div>
                                     </div>
 
                                     <!-- Body chứa các variants -->
@@ -703,16 +710,7 @@
 
                                 <div class="voucher-input-group">
                                     <!-- Tab buttons -->
-                                    <div class="d-flex gap-2 mb-3">
-                                        <button type="button" class="btn btn-outline-primary btn-sm voucher-tab active" 
-                                                data-tab="select" id="select-tab">
-                                            <i class="fa-solid fa-list me-1"></i>Chọn mã đã lưu
-                                        </button>
-                                        <button type="button" class="btn btn-outline-primary btn-sm voucher-tab" 
-                                                data-tab="input" id="input-tab">
-                                            <i class="fa-solid fa-keyboard me-1"></i>Nhập mã khác
-                                        </button>
-                                    </div>
+                            
 
                                     <!-- Select coupon tab -->
                                     <div id="select-coupon-tab" class="voucher-tab-content">
@@ -951,14 +949,10 @@
             console.log('DOM loaded, initializing cart...');
             
             // Initialize functions
+            calculateTotal();
+            loadSavedSelections();
             initializeCouponManager();
             setupVoucherHandling();
-            
-            // Load saved selections first
-            loadSavedSelections();
-            
-            // Then calculate total (this will update button state)
-            calculateTotal();
             
             // Checkbox management
             const selectAllCheckbox = document.getElementById('select-all');
@@ -1053,8 +1047,14 @@
                     const tabType = this.getAttribute('data-tab');
                     
                     // Update active tab
-                    voucherTabs.forEach(t => t.classList.remove('active'));
+                    voucherTabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.classList.remove('btn-outline-primary');
+                        t.classList.add('btn-outline-secondary');
+                    });
                     this.classList.add('active');
+                    this.classList.add('btn-outline-primary');
+                    this.classList.remove('btn-outline-secondary');
                     
                     // Show/hide tab content
                     if (tabType === 'select') {
@@ -1511,8 +1511,6 @@
                         });
                         
                         updateSelectAllState();
-                        // Cập nhật lại tổng tiền và trạng thái nút mua hàng sau khi khôi phục selections
-                        calculateTotal();
                     } catch (error) {
                         console.error('Error loading saved selections:', error);
                     }
@@ -1646,21 +1644,13 @@
                         return;
                     }
                     
-                    checkoutBtn.style.display = 'block';
                     checkoutBtn.disabled = !hasSelectedItems;
-                    
                     if (hasSelectedItems) {
                         checkoutBtn.classList.remove('btn-secondary');
                         checkoutBtn.classList.add('checkout-btn');
-                        checkoutBtn.style.backgroundColor = '';
-                        checkoutBtn.style.borderColor = '';
-                        checkoutBtn.style.opacity = '1';
                     } else {
                         checkoutBtn.classList.remove('checkout-btn');
                         checkoutBtn.classList.add('btn-secondary');
-                        checkoutBtn.style.backgroundColor = '#6c757d';
-                        checkoutBtn.style.borderColor = '#6c757d';
-                        checkoutBtn.style.opacity = '0.6';
                     }
                 }
             }
