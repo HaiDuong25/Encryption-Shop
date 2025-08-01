@@ -20,11 +20,11 @@
                     <form method="GET" action="{{ route('users.index') }}" class="d-flex">
                         <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên, email hoặc SĐT..." 
                                value="{{ request('search') }}" style="width: 280px;">
-                        <button type="submit" class="btn btn-primary btn-sm me-2">
+                        <button type="submit" class="btn btn-primary me-2">
                             <i class="ri-search-line"></i> Tìm
                         </button>
                         @if(request('search'))
-                            <a href="{{ route('users.index') }}" class="btn btn-outline-secondary btn-sm me-2 bg-dark">
+                            <a href="{{ route('users.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
                                 <i class="ri-refresh-line"></i> Xóa bộ lọc
                             </a>
                         @endif

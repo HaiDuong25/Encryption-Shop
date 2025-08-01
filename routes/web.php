@@ -131,10 +131,10 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');
     Route::post('orders/{order}/cancel-by-admin', [OrderController::class, 'cancelOrderByAdmin'])->name('admin.orders.cancel-by-admin');
 
-    // Shipping Addresses
-    Route::resource('shipping-addresses', \App\Http\Controllers\Admin\ShippingAddressController::class);
+    // Shipping Addresses (Read-only for admin)
+    Route::get('shipping-addresses', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'index'])->name('shipping-addresses.index');
+    Route::get('shipping-addresses/{shippingAddress}', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'show'])->name('shipping-addresses.show');
     Route::get('shipping-addresses/user/{user}/addresses', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'userAddresses'])->name('shipping-addresses.user-addresses');
-    Route::patch('shipping-addresses/{shippingAddress}/set-default', [\App\Http\Controllers\Admin\ShippingAddressController::class, 'setDefault'])->name('shipping-addresses.set-default');
 
     // Categories
     Route::prefix('admin')->name('admin.')->group(function () {

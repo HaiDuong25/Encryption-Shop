@@ -20,7 +20,7 @@ class PaymentMethodController extends Controller
             });
         }
         
-        $methods = $query->paginate(10);
+        $methods = $query->paginate(10)->withQueryString();
         return view('admin.payment-methods.index', compact('methods'));
     }
 

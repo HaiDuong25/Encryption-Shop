@@ -14,11 +14,11 @@
                 <form method="GET" action="{{ route('payment-methods.index') }}" class="d-flex">
                     <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo loại hoặc mô tả..." 
                            value="{{ request('search') }}" style="width: 250px;">
-                    <button type="submit" class="btn btn-primary btn-sm me-2">
+                    <button type="submit" class="btn btn-primary me-2">
                         <i class="ri-search-line"></i> Tìm
                     </button>
                     @if(request('search'))
-                                                <a href="{{ route('payment-methods.index') }}" btn btn-outline-secondary btn-sm me-2>
+                        <a href="{{ route('payment-methods.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
                             <i class="ri-refresh-line"></i> Xóa bộ lọc
                         </a>
                     @endif

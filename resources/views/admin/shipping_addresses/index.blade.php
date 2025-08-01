@@ -128,12 +128,6 @@
                                         <i class="ri-map-pin-line"></i>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="{{ route('shipping-addresses.create', ['user_id' => $user->id]) }}" 
-                                       title="Thêm địa chỉ mới" style="color: #28a745;">
-                                        <i class="ri-add-line"></i>
-                                    </a>
-                                </li>
                             </ul>
                         </td>
                     </tr>

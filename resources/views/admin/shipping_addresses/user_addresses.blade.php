@@ -76,9 +76,6 @@
                     <a href="{{ route('shipping-addresses.index') }}" class="btn btn-outline-secondary btn-sm">
                         <i class="ri-arrow-left-line"></i> Quay lại
                     </a>
-                    <a href="{{ route('shipping-addresses.create', ['user_id' => $user->id]) }}" class="btn btn-success btn-sm">
-                        <i class="ri-add-line"></i> Thêm địa chỉ
-                    </a>
                 </div>
             </div>
         </div>
@@ -143,35 +140,6 @@
                                         <i class="ri-eye-line"></i>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="{{ route('shipping-addresses.edit', $address) }}" 
-                                       title="Chỉnh sửa" style="color: #ffc107;">
-                                        <i class="ri-pencil-line"></i>
-                                    </a>
-                                </li>
-                                @if(!$address->is_default)
-                                <li>
-                                    <form action="{{ route('shipping-addresses.set-default', $address) }}" 
-                                          method="POST" style="display: inline;">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" title="Đặt mặc định" style="color: #007bff;">
-                                            <i class="ri-star-line"></i>
-                                        </button>
-                                    </form>
-                                </li>
-                                @endif
-                                <li>
-                                    <form action="{{ route('shipping-addresses.destroy', $address) }}" 
-                                          method="POST" style="display: inline;" 
-                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" title="Xóa" style="color: #dc3545;">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </form>
-                                </li>
                             </ul>
                         </td>
                     </tr>
@@ -181,7 +149,7 @@
                             <div class="text-muted">
                                 <i class="ri-inbox-line" style="font-size: 2rem;"></i>
                                 <p class="mt-2">{{ $user->name }} chưa có địa chỉ giao hàng nào</p>
-                                <a href="{{ route('shipping-addresses.create', ['user_id' => $user->id]) }}" class="btn btn-primary">Thêm địa chỉ đầu tiên</a>
+                                <small class="text-muted">Người dùng cần tự thêm địa chỉ từ phần tài khoản của họ</small>
                             </div>
                         </td>
                     </tr>

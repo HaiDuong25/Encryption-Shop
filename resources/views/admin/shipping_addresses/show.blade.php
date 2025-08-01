@@ -8,10 +8,7 @@
         <div class="title-header">
             <h5>Chi tiết địa chỉ giao hàng #{{ $shippingAddress->id }}</h5>
             <div>
-                <a href="{{ route('shipping-addresses.edit', $shippingAddress) }}" class="btn btn-warning me-2">
-                    <i class="ri-pencil-line"></i> Chỉnh sửa
-                </a>
-                <a href="{{ route('shipping-addresses.index') }}" class="btn btn-secondary">
+                <a href="{{ route('shipping-addresses.index') }}" class="btn btn-outline-secondary btn-sm">
                     <i class="ri-arrow-left-line"></i> Quay lại
                 </a>
             </div>
@@ -127,35 +124,13 @@
                 </div>
             </div>
         </div>
-
-        <!-- Thao tác nhanh -->
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6><i class="ri-tools-line"></i> Thao tác nhanh</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-flex gap-2">
-                    @if(!$shippingAddress->is_default)
-                        <form action="{{ route('shipping-addresses.set-default', $shippingAddress) }}" method="POST" style="display: inline;">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn btn-primary">
-                                <i class="ri-star-line"></i> Đặt làm mặc định
-                            </button>
-                        </form>
-                    @endif
-
-                    <form action="{{ route('shipping-addresses.destroy', $shippingAddress) }}" method="POST" 
-                          style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="ri-delete-bin-line"></i> Xóa địa chỉ
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
+</div>
+
+<!-- Thông báo chỉ đọc -->
+<div class="alert alert-info mt-3">
+    <i class="ri-information-line"></i>
+    <strong>Lưu ý:</strong> Admin chỉ có quyền xem địa chỉ giao hàng để hỗ trợ xử lý đơn hàng. 
+    Để tôn trọng quyền riêng tư, người dùng phải tự quản lý địa chỉ của họ.
 </div>
 @endsection

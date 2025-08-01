@@ -17,8 +17,8 @@ class RateController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('rating', 'like', '%' . $search . '%')
-                  ->orWhere('comment', 'like', '%' . $search . '%')
+                $q->where('score', 'like', '%' . $search . '%')
+                  ->orWhere('content', 'like', '%' . $search . '%')
                   ->orWhereHas('user', function($userQuery) use ($search) {
                       $userQuery->where('name', 'like', '%' . $search . '%')
                                 ->orWhere('email', 'like', '%' . $search . '%');
@@ -27,6 +27,8 @@ class RateController extends Controller
         }
         
         $rates = $query->orderBy('created_at', 'desc')->paginate(15);
+        $rates->appends($request->query());
+        
         return view('admin.rates.index', compact('rates'));
     }
 

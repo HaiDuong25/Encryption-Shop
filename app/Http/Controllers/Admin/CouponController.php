@@ -14,15 +14,18 @@ class CouponController extends \App\Http\Controllers\Controller
     {
         $query = \App\Models\Coupon::with('couponUses');
         
+        // Tìm kiếm theo mã coupon
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('code', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            });
         }
         
-        if ($request->filled('discount')) {
-            $query->where('discount', $request->discount);
-        }
+        $coupons = $query->latest()->paginate(15);
+        $coupons->appends($request->query());
         
-        $coupons = $query->paginate(15);
         return view('admin.coupons.index', compact('coupons'));
     }
 

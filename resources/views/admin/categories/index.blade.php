@@ -32,11 +32,11 @@
                             <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hiển thị</option>
                             <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ẩn</option>
                         </select>
-                        <button class="btn btn-primary" type="submit">
-                            <i class="ri-search-line"></i> Tìm kiếm
+                        <button class="btn btn-primary me-2" type="submit">
+                            <i class="ri-search-line"></i> Tìm
                         </button>
                         @if(request()->hasAny(['search', 'parent_id', 'status']))
-                            <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
                                 <i class="ri-refresh-line"></i> Xóa bộ lọc
                             </a>
                         @endif

@@ -42,12 +42,12 @@
                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Ẩn</option>
                 </select>
 
-                <button class="btn btn-primary" type="submit">
-                    <i data-feather="search"></i> Tìm kiếm
+                <button class="btn btn-primary me-2" type="submit">
+                    <i class="ri-search-line"></i> Tìm
                 </button>
                 @if(request()->hasAny(['search', 'keyword', 'category_id', 'price_from', 'price_to', 'status']))
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
-                        <i data-feather="refresh-cw"></i> Xóa bộ lọc
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
+                        <i class="ri-refresh-line"></i> Xóa bộ lọc
                     </a>
                 @endif
             </form>

@@ -27,9 +27,9 @@ class OrderController extends \App\Http\Controllers\Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('order_code', 'like', '%' . $search . '%')
-                  ->orWhere('total_amount', 'like', '%' . $search . '%')
-                  ->orWhere('status', 'like', '%' . $search . '%')
+                $q->where('id', 'like', '%' . $search . '%')
+                  ->orWhere('recipient_name', 'like', '%' . $search . '%')
+                  ->orWhere('orderer_name', 'like', '%' . $search . '%')
                   ->orWhereHas('user', function($userQuery) use ($search) {
                       $userQuery->where('name', 'like', '%' . $search . '%')
                                 ->orWhere('email', 'like', '%' . $search . '%');
