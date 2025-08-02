@@ -972,9 +972,24 @@
         wardSelect.disabled = true;
 
         if (province) {
+            districtSelect.innerHTML = '<option value="">Đang tải...</option>';
+            
+            // Try internal API first, fallback to external
             fetch(`/api/districts?province=${encodeURIComponent(province)}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        // Fallback to external API
+                        return fetch('https://provinces.open-api.vn/api/?depth=2')
+                            .then(res => res.json())
+                            .then(provincesData => {
+                                const targetProvince = provincesData.find(p => p.name === province);
+                                return targetProvince ? targetProvince.districts.map(d => d.name) : [];
+                            });
+                    }
+                    return response.json();
+                })
                 .then(districts => {
+                    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
                     if (Array.isArray(districts) && districts.length > 0) {
                         districts.forEach(district => {
                             const option = document.createElement('option');
@@ -983,9 +998,14 @@
                             districtSelect.appendChild(option);
                         });
                         districtSelect.disabled = false;
+                    } else {
+                        districtSelect.innerHTML = '<option value="">Không có dữ liệu Quận/Huyện</option>';
                     }
                 })
-                .catch(error => console.error('Error loading districts:', error));
+                .catch(error => {
+                    console.error('Error loading districts:', error);
+                    districtSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                });
         }
     }
 
@@ -998,11 +1018,27 @@
         wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
         wardSelect.disabled = true;
 
-        if (district) {
+        if (district && province) {
+            wardSelect.innerHTML = '<option value="">Đang tải...</option>';
+            
             const url = `/api/wards?district=${encodeURIComponent(district)}&province=${encodeURIComponent(province)}`;
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        // Fallback to external API
+                        return fetch('https://provinces.open-api.vn/api/?depth=3')
+                            .then(res => res.json())
+                            .then(provincesData => {
+                                const targetProvince = provincesData.find(p => p.name === province);
+                                if (!targetProvince) return [];
+                                const targetDistrict = targetProvince.districts?.find(d => d.name === district);
+                                return targetDistrict ? targetDistrict.wards.map(w => w.name) : [];
+                            });
+                    }
+                    return response.json();
+                })
                 .then(wards => {
+                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
                     if (Array.isArray(wards) && wards.length > 0) {
                         wards.forEach(ward => {
                             const option = document.createElement('option');
@@ -1011,9 +1047,14 @@
                             wardSelect.appendChild(option);
                         });
                         wardSelect.disabled = false;
+                    } else {
+                        wardSelect.innerHTML = '<option value="">Không có dữ liệu Phường/Xã</option>';
                     }
                 })
-                .catch(error => console.error('Error loading wards:', error));
+                .catch(error => {
+                    console.error('Error loading wards:', error);
+                    wardSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                });
         }
     }
 
@@ -2256,7 +2297,7 @@
             
             // Show completion message
             if (matchedWard) {
-                showToast(`Đã tự động chọn vị trí: ${province} → ${district} → ${matchedWard}. Vui lòng nhập địa chỉ chi tiết`, 'success');
+                showToast(`Đã tự động chọn vị trí: ${province} → ${district} → ${matchedWard}.`, 'success');
             } else if (district) {
                 showToast(`Đã tự động chọn: ${province} → ${district}. Vui lòng chọn Phường/Xã và nhập địa chỉ chi tiết`, 'info');
             } else {
