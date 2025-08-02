@@ -343,6 +343,63 @@
 
     <!-- theme setting js -->
     <script src="{{ asset('assets-front/js/theme-setting.js') }}"></script>
+    
+    <!-- Avatar Sync Script -->
+    <script>
+        // Global avatar sync function
+        window.syncAvatarGlobally = function(newAvatarUrl) {
+            // Cập nhật avatar preview trong sidebar
+            const avatarPreview = document.getElementById('avatar-preview');
+            if (avatarPreview) {
+                avatarPreview.src = newAvatarUrl;
+            }
+            
+            // Cập nhật avatar chính trong trang profile
+            const profileAvatarMain = document.getElementById('profile-avatar-main');
+            if (profileAvatarMain) {
+                profileAvatarMain.src = newAvatarUrl;
+            }
+            
+            // Cập nhật avatar trong header
+            const headerUserAvatar = document.getElementById('header-user-avatar');
+            if (headerUserAvatar) {
+                headerUserAvatar.src = newAvatarUrl;
+            }
+            
+            // Cập nhật tất cả các avatar có data-user-avatar attribute
+            const userAvatars = document.querySelectorAll('[data-user-avatar]');
+            userAvatars.forEach(element => {
+                if (element.tagName === 'IMG') {
+                    element.src = newAvatarUrl;
+                } else {
+                    element.style.backgroundImage = `url(${newAvatarUrl})`;
+                }
+            });
+            
+            // Cập nhật avatar trong header với các class khác nếu có
+            const headerAvatars = document.querySelectorAll('.user-avatar, .profile-image, .user-profile');
+            headerAvatars.forEach(element => {
+                if (element.tagName === 'IMG') {
+                    element.src = newAvatarUrl;
+                } else {
+                    element.style.backgroundImage = `url(${newAvatarUrl})`;
+                }
+            });
+            
+            console.log('Avatar synced globally:', newAvatarUrl);
+        };
+        
+        // Event listener để đồng bộ khi avatar thay đổi
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lắng nghe sự kiện custom từ upload avatar
+            document.addEventListener('avatarUpdated', function(event) {
+                if (event.detail && event.detail.avatarUrl) {
+                    window.syncAvatarGlobally(event.detail.avatarUrl);
+                }
+            });
+        });
+    </script>
+    
     @stack('scripts')
     @yield('scripts')
 </body>

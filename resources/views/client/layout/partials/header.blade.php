@@ -199,11 +199,13 @@
                             <a href="{{ route('account.index') }}" class="user-box">
                                 <span class="header-icon">
                                     @if(auth()->user()->avatar)
-                                    <img class="user-profile rounded-circle"
-                                    src="{{ asset('storage/' . auth()->user()->avatar) }}"
-                                    alt="{{ auth()->user()->name }}"
-                                    style="width: 35px; height: 35px; object-fit: cover;"
-                                    title="Quản lý tài khoản">
+                                    <img id="header-user-avatar" 
+                                         class="user-profile rounded-circle"
+                                         data-user-avatar
+                                         src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                                         alt="{{ auth()->user()->name }}"
+                                         style="width: 35px; height: 35px; object-fit: cover;"
+                                         title="Quản lý tài khoản">
                                     @else
                                     <i class="fa-solid fa-user" title="{{ auth()->user()->name }}"></i>
                                     @endif
@@ -312,6 +314,12 @@
     .user-profile:hover {
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Avatar transition mượt khi cập nhật */
+    .user-profile.updating {
+        opacity: 0.7;
+        transform: scale(0.95);
     }
 </style>
 <style>

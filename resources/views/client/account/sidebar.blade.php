@@ -138,7 +138,13 @@ function uploadAvatar(input) {
         // Preview ảnh ngay lập tức
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('avatar-preview').src = e.target.result;
+            // Sử dụng function global để đồng bộ preview
+            if (window.syncAvatarGlobally) {
+                window.syncAvatarGlobally(e.target.result);
+            } else {
+                // Fallback
+                document.getElementById('avatar-preview').src = e.target.result;
+            }
         }
         reader.readAsDataURL(file);
         
@@ -168,8 +174,19 @@ function uploadAvatar(input) {
         .then(data => {
             console.log('Response data:', data); // Debug
             if (data.success) {
-                // Cập nhật ảnh thành công
-                document.getElementById('avatar-preview').src = data.avatar_url;
+                // Sử dụng function global để đồng bộ avatar
+                if (window.syncAvatarGlobally) {
+                    window.syncAvatarGlobally(data.avatar_url);
+                } else {
+                    // Fallback nếu function global chưa load
+                    document.getElementById('avatar-preview').src = data.avatar_url;
+                }
+                
+                // Dispatch custom event để các component khác có thể lắng nghe
+                const avatarUpdateEvent = new CustomEvent('avatarUpdated', {
+                    detail: { avatarUrl: data.avatar_url }
+                });
+                document.dispatchEvent(avatarUpdateEvent);
                 
                 // Hiển thị thông báo thành công
                 showToast(data.message, 'success');

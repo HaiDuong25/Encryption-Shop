@@ -2,6 +2,42 @@
 
 @section('title', 'Hồ sơ cá nhân')
 
+@push('style')
+<style>
+/* Avatar transition mượt */
+.profile-avatar img, [data-user-avatar] {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.profile-avatar img.updating, [data-user-avatar].updating {
+    opacity: 0.7;
+}
+
+.profile-avatar {
+    position: relative;
+}
+
+.profile-avatar.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+</style>
+@endpush
+
 @section('content')
 <div class="address-form-wrapper">
     <div class="container-fluid">
@@ -31,7 +67,9 @@
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <div class="profile-avatar">
-                                    <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets-front/images/inner-page/users/1.png') }}" 
+                                    <img id="profile-avatar-main" 
+                                         data-user-avatar
+                                         src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets-front/images/inner-page/users/1.png') }}" 
                                          alt="Ảnh đại diện" class="rounded-circle">
                                 </div>
                             </div>
@@ -180,4 +218,46 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Lắng nghe sự kiện avatar update để tạo hiệu ứng mượt
+    document.addEventListener('avatarUpdated', function(event) {
+        const avatarElements = document.querySelectorAll('[data-user-avatar], #profile-avatar-main, #header-user-avatar');
+        
+        avatarElements.forEach(element => {
+            // Thêm class updating để tạo hiệu ứng
+            element.classList.add('updating');
+            
+            // Sau 150ms thì cập nhật ảnh và remove class
+            setTimeout(() => {
+                element.src = event.detail.avatarUrl;
+                element.classList.remove('updating');
+            }, 150);
+        });
+    });
+    
+    // Thêm loading indicator khi bắt đầu upload
+    const avatarUpload = document.getElementById('avatar-upload');
+    if (avatarUpload) {
+        avatarUpload.addEventListener('change', function() {
+            const profileAvatar = document.querySelector('.profile-avatar');
+            if (profileAvatar) {
+                profileAvatar.classList.add('loading');
+            }
+        });
+    }
+    
+    // Remove loading indicator sau khi upload xong
+    document.addEventListener('avatarUpdated', function() {
+        const profileAvatar = document.querySelector('.profile-avatar');
+        if (profileAvatar) {
+            profileAvatar.classList.remove('loading');
+        }
+    });
+});
+</script>
+@endpush
+
 @endsection
