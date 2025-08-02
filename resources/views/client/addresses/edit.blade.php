@@ -99,7 +99,7 @@
                             <div class="col-md-4 mb-3">
                                 <label for="province" class="form-label">Tỉnh/Thành phố <span class="required">*</span></label>
                                 <select class="form-select @error('province') is-invalid @enderror" 
-                                        id="province" name="province" required onchange="loadDistricts()">
+                                        id="province" name="province" required onchange="loadWards()">
                                     <option value="">Chọn Tỉnh/Thành phố</option>
                                     @foreach($provinces as $province)
                                         <option value="{{ $province }}" 
@@ -112,21 +112,11 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="district" class="form-label">Quận/Huyện <span class="required">*</span></label>
-                                <select class="form-select @error('district') is-invalid @enderror" 
-                                        id="district" name="district" required onchange="loadWards()">
-                                    <option value="">Chọn Quận/Huyện</option>
-                                </select>
-                                @error('district')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="ward" class="form-label">Phường/Xã <span class="required">*</span></label>
+                            <div class="col-md-6 mb-3">
+                                <label for="ward" class="form-label">Xã/Phường/Thị trấn <span class="required">*</span></label>
                                 <select class="form-select @error('ward') is-invalid @enderror" 
                                         id="ward" name="ward" required>
-                                    <option value="">Chọn Phường/Xã</option>
+                                    <option value="">Chọn Xã/Phường/Thị trấn</option>
                                 </select>
                                 @error('ward')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -154,12 +144,20 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="is_default" 
                                            name="is_default" value="1" 
-                                           {{ old('is_default', $address->is_default) ? 'checked' : '' }}>
+                                           {{ old('is_default', $address->is_default) ? 'checked' : '' }}
+                                           {{ ($totalAddresses == 1 && $address->is_default) ? 'disabled' : '' }}>
                                     <label class="form-check-label" for="is_default">
                                         Đặt làm địa chỉ mặc định
                                     </label>
                                     @if($address->is_default)
-                                        <small class="text-muted d-block">Đây hiện là địa chỉ mặc định của bạn</small>
+                                        <small class="text-muted d-block">
+                                            @if($totalAddresses == 1)
+                                                Bạn cần có ít nhất một địa chỉ mặc định
+                                                <input type="hidden" name="is_default" value="1">
+                                            @else
+                                                Đây hiện là địa chỉ mặc định của bạn
+                                            @endif
+                                        </small>
                                     @endif
                                 </div>
                             </div>
@@ -240,201 +238,88 @@
 // Store original values for edit form
 const originalValues = {
     province: '{{ old('province', $address->province) }}',
-    district: '{{ old('district', $address->district) }}',
     ward: '{{ old('ward', $address->ward) }}'
 };
 
 console.log('Original values:', originalValues);
 
-function loadDistricts() {
-    const province = document.getElementById('province').value;
-    const districtSelect = document.getElementById('district');
-    const wardSelect = document.getElementById('ward');
-    
-    // Reset districts and wards
-    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-    districtSelect.disabled = true;
-    wardSelect.disabled = true;
-    
-    if (province) {
-        console.log('Loading districts for province:', province);
-        
-        // Show loading state
-        districtSelect.innerHTML = '<option value="">Đang tải...</option>';
-        
-        fetch(`/api/districts?province=${encodeURIComponent(province)}`)
-            .then(response => {
-                console.log('Districts API response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(districts => {
-                console.log('Districts received:', districts);
-                
-                // Clear loading state
-                districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-                
-                if (Array.isArray(districts) && districts.length > 0) {
-                    districts.forEach(district => {
-                        const option = document.createElement('option');
-                        option.value = district;
-                        option.textContent = district;
-                        districtSelect.appendChild(option);
-                    });
-                    
-                    // Select the original/old value if it exists
-                    if (originalValues.district) {
-                        districtSelect.value = originalValues.district;
-                        console.log('Setting district to:', originalValues.district);
-                    }
-                    
-                    districtSelect.disabled = false;
-                    
-                    // If we have an original district value, load wards
-                    if (originalValues.district && districtSelect.value === originalValues.district) {
-                        setTimeout(() => loadWards(), 100);
-                    }
-                } else {
-                    console.warn('No districts found for province:', province);
-                    districtSelect.innerHTML = '<option value="">Không có dữ liệu Quận/Huyện</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading districts:', error);
-                districtSelect.innerHTML = '<option value="">Lỗi tải dữ liệu Quận/Huyện</option>';
-            });
-    }
-}
-
-function loadWards() {
-    const district = document.getElementById('district').value;
+async function loadWards() {
     const province = document.getElementById('province').value;
     const wardSelect = document.getElementById('ward');
     
     // Reset wards
-    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+    wardSelect.innerHTML = '<option value="">Chọn Xã/Phường/Thị trấn</option>';
     wardSelect.disabled = true;
     
-    if (district) {
-        console.log('Loading wards for district:', district, 'in province:', province);
+    if (province) {
+        console.log('Loading wards for province:', province);
         
         // Show loading state
         wardSelect.innerHTML = '<option value="">Đang tải...</option>';
         
-        const url = `/api/wards?district=${encodeURIComponent(district)}&province=${encodeURIComponent(province)}`;
-        fetch(url)
-            .then(response => {
-                console.log('Wards API response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(wards => {
-                console.log('Wards received:', wards);
-                
-                // Clear loading state
-                wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                
-                if (Array.isArray(wards) && wards.length > 0) {
-                    wards.forEach(ward => {
-                        const option = document.createElement('option');
-                        option.value = ward;
-                        option.textContent = ward;
-                        wardSelect.appendChild(option);
-                    });
-                    
-                    // Select the original/old value if it exists
-                    if (originalValues.ward) {
-                        wardSelect.value = originalValues.ward;
-                        console.log('Setting ward to:', originalValues.ward);
-                    }
-                    
-                    wardSelect.disabled = false;
-                } else {
-                    console.warn('No wards found for district:', district);
-                    wardSelect.innerHTML = '<option value="">Không có dữ liệu Phường/Xã</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading wards:', error);
-                wardSelect.innerHTML = '<option value="">Lỗi tải dữ liệu Phường/Xã</option>';
-            });
-    }
-}
-
-// Save current selections to localStorage for future use
-function saveCurrentSelections() {
-    const currentSelections = {
-        province: document.getElementById('province').value,
-        district: document.getElementById('district').value,
-        ward: document.getElementById('ward').value,
-        timestamp: Date.now()
-    };
-    
-    localStorage.setItem('lastSelectedAddress', JSON.stringify(currentSelections));
-    console.log('Saved current selections:', currentSelections);
-}
-
-// Load saved selections if no original values exist
-function loadSavedSelections() {
-    // Only load saved selections if we don't have original values (i.e., this is a new form or error occurred)
-    if (!originalValues.province && !originalValues.district && !originalValues.ward) {
-        const saved = localStorage.getItem('lastSelectedAddress');
-        if (saved) {
-            try {
-                const selections = JSON.parse(saved);
-                // Only use saved data if it's less than 24 hours old
-                if (Date.now() - selections.timestamp < 24 * 60 * 60 * 1000) {
-                    console.log('Loading saved selections:', selections);
-                    
-                    // Set province
-                    if (selections.province) {
-                        document.getElementById('province').value = selections.province;
-                        originalValues.province = selections.province;
-                        originalValues.district = selections.district;
-                        originalValues.ward = selections.ward;
-                        
-                        // Load districts and wards
-                        setTimeout(() => loadDistricts(), 100);
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading saved selections:', error);
-                localStorage.removeItem('lastSelectedAddress');
+        try {
+            const response = await fetch(`/api/wards?province=${encodeURIComponent(province)}`);
+            console.log('Wards API response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            
+            const wards = await response.json();
+            console.log('Wards received:', wards);
+            
+            // Clear loading state
+            wardSelect.innerHTML = '<option value="">Chọn Xã/Phường/Thị trấn</option>';
+            
+            // Handle different response formats
+            let wardsList = [];
+            if (Array.isArray(wards)) {
+                wardsList = wards;
+            } else if (wards.success && Array.isArray(wards.wards)) {
+                wardsList = wards.wards;
+            } else if (wards.value && Array.isArray(wards.value)) {
+                wardsList = wards.value;
+            }
+            
+            if (wardsList.length > 0) {
+                wardsList.forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward;
+                    option.textContent = ward;
+                    wardSelect.appendChild(option);
+                });
+                
+                // Select the original/old value if it exists
+                if (originalValues.ward) {
+                    wardSelect.value = originalValues.ward;
+                    console.log('Setting ward to:', originalValues.ward);
+                }
+                
+                wardSelect.disabled = false;
+            } else {
+                console.warn('No wards found for province:', province);
+                wardSelect.innerHTML = '<option value="">Không có dữ liệu</option>';
+            }
+        } catch (error) {
+            console.error('Error loading wards:', error);
+            wardSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+            alert('Không thể tải danh sách Xã/Phường/Thị trấn. Vui lòng thử lại sau.');
         }
     }
 }
 
-// Add event listeners to save selections when they change
+// Add event listeners
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Page loaded, original values:', originalValues);
     
-    // Load saved selections if needed
-    loadSavedSelections();
-    
-    // Load districts for the selected province
+    // Load wards for the selected province
     if (originalValues.province) {
-        setTimeout(() => loadDistricts(), 100);
+        setTimeout(() => loadWards(), 100);
     }
     
-    // Add event listeners to save selections
+    // Add event listeners
     document.getElementById('province').addEventListener('change', function() {
-        loadDistricts();
-        saveCurrentSelections();
-    });
-    
-    document.getElementById('district').addEventListener('change', function() {
         loadWards();
-        saveCurrentSelections();
-    });
-    
-    document.getElementById('ward').addEventListener('change', function() {
-        saveCurrentSelections();
     });
 });
 </script>

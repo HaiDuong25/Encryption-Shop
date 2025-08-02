@@ -106,22 +106,16 @@
                             <h6><i class="fas fa-map-marker-alt me-2"></i>Địa chỉ</h6>
                             
                             <div class="row">
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label for="province" class="form-label">Tỉnh/Thành phố</label>
                                     <select class="form-select" id="province" name="province">
                                         <option value="">Chọn Tỉnh/Thành phố</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="district" class="form-label">Quận/Huyện</label>
-                                    <select class="form-select" id="district" name="district" disabled>
-                                        <option value="">Chọn Quận/Huyện</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="ward" class="form-label">Phường/Xã</label>
+                                <div class="col-md-6 mb-3">
+                                    <label for="ward" class="form-label">Xã/Phường/Thị trấn</label>
                                     <select class="form-select" id="ward" name="ward" disabled>
-                                        <option value="">Chọn Phường/Xã</option>
+                                        <option value="">Chọn Xã/Phường/Thị trấn</option>
                                     </select>
                                 </div>
                             </div>
@@ -206,17 +200,23 @@
 </div>
 
 <script>
-// API Functions cho địa chỉ Việt Nam sử dụng provinces.open-api.vn
+// API Functions cho địa chỉ Việt Nam sử dụng Local JSON API
 let allProvinces = [];
 let currentUserAddress = null;
 
-// Load dữ liệu tỉnh thành từ API
+// Load dữ liệu tỉnh thành từ Local API
 async function loadProvinces() {
     try {
-        const response = await fetch('https://provinces.open-api.vn/api/p/');
+        const response = await fetch('/api/provinces');
         if (!response.ok) throw new Error('Failed to load provinces');
         
-        allProvinces = await response.json();
+        const provinces = await response.json();
+        
+        // Convert to format compatible with old code
+        allProvinces = provinces.map(provinceName => ({
+            name: provinceName,
+            code: provinceName // Use name as code for compatibility
+        }));
         
         const provinceSelect = document.getElementById('province');
         provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
@@ -237,60 +237,15 @@ async function loadProvinces() {
 }
 
 // Load quận/huyện theo tỉnh
-async function loadDistricts(provinceCode) {
-    const districtSelect = document.getElementById('district');
-    const wardSelect = document.getElementById('ward');
-    
-    // Reset districts và wards
-    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-    districtSelect.disabled = true;
-    wardSelect.disabled = true;
-    
-    if (!provinceCode) {
-        updateCombinedAddress();
-        return;
-    }
-    
-    try {
-        districtSelect.innerHTML = '<option value="">Đang tải...</option>';
-        
-        const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-        if (!response.ok) throw new Error('Failed to load districts');
-        
-        const province = await response.json();
-        
-        districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-        
-        if (province.districts && province.districts.length > 0) {
-            province.districts.forEach(district => {
-                const option = document.createElement('option');
-                option.value = district.code;
-                option.textContent = district.name;
-                option.dataset.name = district.name;
-                districtSelect.appendChild(option);
-            });
-            districtSelect.disabled = false;
-        }
-        
-        updateCombinedAddress();
-        console.log('Districts loaded successfully for province:', province.name);
-    } catch (error) {
-        console.error('Error loading districts:', error);
-        districtSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-        alert('Không thể tải danh sách quận/huyện. Vui lòng thử lại.');
-    }
-}
-
-// Load phường/xã theo quận/huyện
-async function loadWards(districtCode) {
+// Load xã/phường theo tỉnh (hệ thống 2 cấp)
+async function loadWards(provinceName) {
     const wardSelect = document.getElementById('ward');
     
     // Reset wards
-    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+    wardSelect.innerHTML = '<option value="">Chọn Xã/Phường/Thị trấn</option>';
     wardSelect.disabled = true;
     
-    if (!districtCode) {
+    if (!provinceName) {
         updateCombinedAddress();
         return;
     }
@@ -298,84 +253,100 @@ async function loadWards(districtCode) {
     try {
         wardSelect.innerHTML = '<option value="">Đang tải...</option>';
         
-        const response = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+        const response = await fetch(`/api/wards?province=${encodeURIComponent(provinceName)}`);
         if (!response.ok) throw new Error('Failed to load wards');
         
-        const district = await response.json();
+        const wards = await response.json();
         
-        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+        wardSelect.innerHTML = '<option value="">Chọn Xã/Phường/Thị trấn</option>';
         
-        if (district.wards && district.wards.length > 0) {
-            district.wards.forEach(ward => {
+        if (wards && wards.length > 0) {
+            wards.forEach(wardName => {
                 const option = document.createElement('option');
-                option.value = ward.code;
-                option.textContent = ward.name;
-                option.dataset.name = ward.name;
+                option.value = wardName;
+                option.textContent = wardName;
+                option.dataset.name = wardName;
                 wardSelect.appendChild(option);
             });
             wardSelect.disabled = false;
         }
         
         updateCombinedAddress();
-        console.log('Wards loaded successfully for district:', district.name);
+        console.log('Wards loaded successfully for province:', provinceName);
     } catch (error) {
         console.error('Error loading wards:', error);
         wardSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-        alert('Không thể tải danh sách phường/xã. Vui lòng thử lại.');
+        alert('Không thể tải danh sách xã/phường/thị trấn. Vui lòng thử lại.');
     }
 }
 
-// Parse địa chỉ hiện tại của user
+// Parse địa chỉ hiện tại của user (cập nhật cho hệ thống 2 cấp)
 function parseCurrentAddress() {
     const currentAddress = '{{ old("address", auth()->user()->address) }}';
     if (!currentAddress || currentAddress.trim() === '') return null;
     
-    // Tách địa chỉ: "Số nhà, Phường, Quận, Tỉnh"
+    // Tách địa chỉ: "Số nhà, Xã/Phường, Tỉnh" (2 cấp)
     const parts = currentAddress.split(',').map(part => part.trim());
-    if (parts.length >= 4) {
+    if (parts.length >= 3) {
         return {
             address_detail: parts[0] || '',
             ward_name: parts[1] || '',
-            district_name: parts[2] || '',
-            province_name: parts[3] || ''
+            province_name: parts[2] || ''
         };
     }
     
     return null;
 }
 
-// Tìm mã tỉnh theo tên
-function findProvinceByName(name) {
-    return allProvinces.find(p => 
-        p.name.toLowerCase().includes(name.toLowerCase()) ||
-        name.toLowerCase().includes(p.name.toLowerCase())
-    );
+// Load provinces từ API
+async function loadProvinces() {
+    try {
+        const response = await fetch('/api/provinces');
+        if (!response.ok) throw new Error('Failed to load provinces');
+        
+        const provinces = await response.json();
+        const provinceSelect = document.getElementById('province');
+        
+        provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
+        
+        if (provinces && provinces.length > 0) {
+            provinces.forEach(provinceName => {
+                const option = document.createElement('option');
+                option.value = provinceName;
+                option.textContent = provinceName;
+                option.dataset.name = provinceName;
+                provinceSelect.appendChild(option);
+            });
+        }
+        
+        console.log('Provinces loaded successfully');
+    } catch (error) {
+        console.error('Error loading provinces:', error);
+        alert('Không thể tải danh sách tỉnh/thành phố. Vui lòng thử lại.');
+    }
 }
 
-// Update địa chỉ tổng hợp
+// Update địa chỉ tổng hợp (cập nhật cho hệ thống 2 cấp)
 function updateCombinedAddress() {
     const provinceSelect = document.getElementById('province');
-    const districtSelect = document.getElementById('district');
     const wardSelect = document.getElementById('ward');
     const addressDetail = document.getElementById('address_detail').value.trim();
     
     const provinceName = provinceSelect.selectedOptions[0]?.dataset?.name || '';
-    const districtName = districtSelect.selectedOptions[0]?.dataset?.name || '';
     const wardName = wardSelect.selectedOptions[0]?.dataset?.name || '';
     
     let fullAddress = '';
     if (addressDetail) fullAddress = addressDetail;
     if (wardName) fullAddress += (fullAddress ? ', ' : '') + wardName;
-    if (districtName) fullAddress += (fullAddress ? ', ' : '') + districtName;
     if (provinceName) fullAddress += (fullAddress ? ', ' : '') + provinceName;
     
     document.getElementById('full_address').value = fullAddress;
     console.log('Combined address updated:', fullAddress);
 }
 
-// Khôi phục địa chỉ đã có
+// Khôi phục địa chỉ đã có (cập nhật cho hệ thống 2 cấp)
 async function restoreUserAddress() {
-    currentUserAddress = parseCurrentAddress();
+    const currentUserAddress = parseCurrentAddress();
     
     if (!currentUserAddress) {
         console.log('No current address to restore');
@@ -385,38 +356,30 @@ async function restoreUserAddress() {
     console.log('Restoring address:', currentUserAddress);
     
     // Tìm và set tỉnh
-    const province = findProvinceByName(currentUserAddress.province_name);
-    if (province) {
-        document.getElementById('province').value = province.code;
+    const provinceSelect = document.getElementById('province');
+    const provinceOption = Array.from(provinceSelect.options).find(option => 
+        option.value && (
+            option.value.toLowerCase().includes(currentUserAddress.province_name.toLowerCase()) ||
+            currentUserAddress.province_name.toLowerCase().includes(option.value.toLowerCase())
+        )
+    );
+    
+    if (provinceOption) {
+        provinceSelect.value = provinceOption.value;
         
-        // Load districts và tìm district
-        await loadDistricts(province.code);
+        // Load wards và tìm ward
+        await loadWards(provinceOption.value);
         
-        const districtSelect = document.getElementById('district');
-        const districtOption = Array.from(districtSelect.options).find(option => 
-            option.dataset.name && (
-                option.dataset.name.toLowerCase().includes(currentUserAddress.district_name.toLowerCase()) ||
-                currentUserAddress.district_name.toLowerCase().includes(option.dataset.name.toLowerCase())
+        const wardSelect = document.getElementById('ward');
+        const wardOption = Array.from(wardSelect.options).find(option => 
+            option.value && (
+                option.value.toLowerCase().includes(currentUserAddress.ward_name.toLowerCase()) ||
+                currentUserAddress.ward_name.toLowerCase().includes(option.value.toLowerCase())
             )
         );
         
-        if (districtOption) {
-            districtSelect.value = districtOption.value;
-            
-            // Load wards và tìm ward
-            await loadWards(districtOption.value);
-            
-            const wardSelect = document.getElementById('ward');
-            const wardOption = Array.from(wardSelect.options).find(option => 
-                option.dataset.name && (
-                    option.dataset.name.toLowerCase().includes(currentUserAddress.ward_name.toLowerCase()) ||
-                    currentUserAddress.ward_name.toLowerCase().includes(option.dataset.name.toLowerCase())
-                )
-            );
-            
-            if (wardOption) {
-                wardSelect.value = wardOption.value;
-            }
+        if (wardOption) {
+            wardSelect.value = wardOption.value;
         }
         
         // Set address detail
@@ -427,7 +390,7 @@ async function restoreUserAddress() {
 
 // Initialize khi trang load
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Initializing address selectors...');
+    console.log('Initializing address selectors (2-level system)...');
     
     // Load provinces trước
     await loadProvinces();
@@ -437,10 +400,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Add event listeners
     document.getElementById('province').addEventListener('change', function() {
-        loadDistricts(this.value);
-    });
-    
-    document.getElementById('district').addEventListener('change', function() {
         loadWards(this.value);
     });
     
@@ -452,7 +411,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateCombinedAddress();
     });
     
-    console.log('Address system initialized successfully');
+    console.log('Address system (2-level) initialized successfully');
 });
 </script>
 

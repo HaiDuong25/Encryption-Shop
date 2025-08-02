@@ -1,8 +1,6 @@
-@extends('client.layout.main')
+<?php $__env->startSection('title', 'Thêm địa chỉ mới'); ?>
 
-@section('title', 'Thêm địa chỉ mới')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
 .addresses-wrapper {
     max-width: 1500px;
@@ -37,15 +35,15 @@
             <h1 class="h3 mb-0 text-gray-800">Thêm địa chỉ mới</h1>
             <p class="mb-0 text-muted">Thêm địa chỉ giao hàng mới vào sổ địa chỉ</p>
         </div>
-        <a href="{{ route('client.addresses.index') }}" class="btn btn-secondary">
+        <a href="<?php echo e(route('client.addresses.index')); ?>" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-2"></i>Quay lại
         </a>
     </div>
 
     <div class="row">
         <div class="col-lg-8">
-            <form action="{{ route('client.addresses.store') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('client.addresses.store')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 
                 <div class="form-card">
                     <!-- Thông tin liên hệ -->
@@ -60,20 +58,48 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="name" class="form-label">Họ tên <span class="required">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                       id="name" name="name" value="{{ old('name') }}" placeholder="Nhập họ tên" required>
-                                @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <input type="text" class="form-control <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                       id="name" name="name" value="<?php echo e(old('name')); ?>" placeholder="Nhập họ tên" required>
+                                <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="phone" class="form-label">Số điện thoại <span class="required">*</span></label>
-                                <input type="text" class="form-control @error('phone') is-invalid @enderror" 
-                                       id="phone" name="phone" value="{{ old('phone') }}" 
+                                <input type="text" class="form-control <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                       id="phone" name="phone" value="<?php echo e(old('phone')); ?>" 
                                        placeholder="0123456789" required>
-                                @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                         </div>
                     </div>
@@ -85,39 +111,82 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="province" class="form-label">Tỉnh/Thành phố <span class="required">*</span></label>
-                                <select class="form-select @error('province') is-invalid @enderror" 
+                                <select class="form-select <?php $__errorArgs = ['province'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                         id="province" name="province" required onchange="loadWards()">
                                     <option value="">Chọn Tỉnh/Thành phố</option>
-                                    @foreach($provinces as $province)
-                                        <option value="{{ $province }}" {{ old('province') == $province ? 'selected' : '' }}>
-                                            {{ $province }}
+                                    <?php $__currentLoopData = $provinces; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $province): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($province); ?>" <?php echo e(old('province') == $province ? 'selected' : ''); ?>>
+                                            <?php echo e($province); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
-                                @error('province')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <?php $__errorArgs = ['province'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="ward" class="form-label">Xã/Phường/Thị trấn <span class="required">*</span></label>
-                                <select class="form-select @error('ward') is-invalid @enderror" 
+                                <select class="form-select <?php $__errorArgs = ['ward'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                         id="ward" name="ward" required disabled>
                                     <option value="">Chọn Xã/Phường/Thị trấn</option>
                                 </select>
-                                @error('ward')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <?php $__errorArgs = ['ward'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="address_detail" class="form-label">Địa chỉ chi tiết <span class="required">*</span></label>
-                            <textarea class="form-control @error('address_detail') is-invalid @enderror" 
+                            <textarea class="form-control <?php $__errorArgs = ['address_detail'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                       id="address_detail" name="address_detail" rows="3" 
-                                      placeholder="Số nhà, tên đường..." required>{{ old('address_detail') }}</textarea>
-                            @error('address_detail')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                                      placeholder="Số nhà, tên đường..." required><?php echo e(old('address_detail')); ?></textarea>
+                            <?php $__errorArgs = ['address_detail'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
                     </div>
 
@@ -130,27 +199,42 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="is_default" 
                                            name="is_default" value="1" 
-                                           {{ !$hasExistingAddresses ? 'checked disabled' : '' }}
-                                           {{ old('is_default') ? 'checked' : '' }}>
+                                           <?php echo e(!$hasExistingAddresses ? 'checked disabled' : ''); ?>
+
+                                           <?php echo e(old('is_default') ? 'checked' : ''); ?>>
                                     <label class="form-check-label" for="is_default">
                                         Đặt làm địa chỉ mặc định
                                     </label>
-                                    @if(!$hasExistingAddresses)
+                                    <?php if(!$hasExistingAddresses): ?>
                                         <small class="text-info d-block">Địa chỉ đầu tiên sẽ tự động được đặt làm mặc định</small>
                                         <input type="hidden" name="is_default" value="1">
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="note" class="form-label">Ghi chú</label>
-                            <textarea class="form-control @error('note') is-invalid @enderror" 
+                            <textarea class="form-control <?php $__errorArgs = ['note'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                       id="note" name="note" rows="2" 
-                                      placeholder="Ghi chú thêm về địa chỉ này...">{{ old('note') }}</textarea>
-                            @error('note')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                                      placeholder="Ghi chú thêm về địa chỉ này..."><?php echo e(old('note')); ?></textarea>
+                            <?php $__errorArgs = ['note'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
                     </div>
 
@@ -159,7 +243,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>Lưu địa chỉ
                         </button>
-                        <a href="{{ route('client.addresses.index') }}" class="btn btn-secondary">
+                        <a href="<?php echo e(route('client.addresses.index')); ?>" class="btn btn-secondary">
                             <i class="fas fa-times me-2"></i>Hủy bỏ
                         </a>
                     </div>
@@ -248,8 +332,8 @@ async function loadWards() {
 // Fill account information
 function fillAccountInfo() {
     // Get account info from server
-    const accountName = "{{ Auth::user()->name }}";
-    const accountPhone = "{{ Auth::user()->phone ?? '' }}";
+    const accountName = "<?php echo e(Auth::user()->name); ?>";
+    const accountPhone = "<?php echo e(Auth::user()->phone ?? ''); ?>";
     
     // Fill the form fields
     document.getElementById('name').value = accountName;
@@ -291,4 +375,6 @@ document.addEventListener('DOMContentLoaded', function() {
     provinceSelect.addEventListener('change', loadWards);
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('client.layout.main', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\DATN\Encryption-Shop\resources\views/client/addresses/create.blade.php ENDPATH**/ ?>
