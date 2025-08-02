@@ -203,6 +203,7 @@ Route::post('/admin/test-coupon', function (\Illuminate\Http\Request $request) {
 
 
 // --- API Routes for Location ---
+Route::get('/api/provinces', [LocationController::class, 'getProvinces'])->name('api.provinces');
 Route::get('/api/districts', [LocationController::class, 'getDistricts'])->name('api.districts');
 Route::get('/api/wards', [LocationController::class, 'getWards'])->name('api.wards');
 
