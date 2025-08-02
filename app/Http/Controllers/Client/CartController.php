@@ -343,8 +343,9 @@ class CartController extends Controller
 
             // Load provinces for quick address form using direct controller call
             try {
-                $locationController = new LocationController();
-                $provinces = $locationController->getVietnameseProvinces();
+                $locationController = new \App\Http\Controllers\Api\LocationController();
+                $response = $locationController->getProvinces();
+                $provinces = json_decode($response->getContent(), true) ?: [];
             } catch (\Exception $e) {
                 Log::error('Error loading provinces: ' . $e->getMessage());
                 $provinces = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng']; // Fallback
