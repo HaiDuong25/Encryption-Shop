@@ -1,6 +1,69 @@
 @extends('client.layout.main')
 
 @section('content')
+    <!-- Fix search button click issue caused by toast z-index -->
+    <style>
+        /* Ensure header search form has higher z-index than toast notifications */
+        header .top-nav {
+            position: relative !important;
+            z-index: 1060 !important;
+        }
+        
+        header .search-form {
+            position: relative !important;
+            z-index: 1061 !important;
+        }
+        
+        header .search-input-group {
+            position: relative !important;
+            z-index: 1062 !important;
+        }
+        
+        header .search-button {
+            position: relative !important;
+            z-index: 1063 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+        
+        header .search-input {
+            position: relative !important;
+            z-index: 1062 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Ensure toast notifications don't interfere with header */
+        .toast-container {
+            z-index: 1055 !important;
+        }
+        
+        /* Fix any potential overlay issues */
+        header .search-full {
+            z-index: 1050 !important;
+        }
+        
+        header .search-full.open {
+            z-index: 1059 !important;
+        }
+        
+        /* Mobile fixes */
+        @media (max-width: 768px) {
+            header .top-nav {
+                z-index: 1070 !important;
+            }
+            
+            header .search-form {
+                z-index: 1071 !important;
+            }
+            
+            header .search-button {
+                z-index: 1073 !important;
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+        }
+    </style>
+
     <style>
         /* News Section Animations */
         @keyframes pulse {
@@ -697,7 +760,7 @@
     </section>
 
     <!-- Toast Notification -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
         <div id="couponToast" class="toast align-items-center text-white bg-success border-0" role="alert"
             aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -1566,5 +1629,89 @@
     </section>
     <!-- Service Section End -->
     <!-- News Section End -->
+
+    <!-- JavaScript to fix search button being blocked by toast -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Home page: Fixing search button z-index conflict with toast...');
+            
+            // Fix search button being blocked by toast notifications
+            function fixSearchButtonZIndex() {
+                const searchButton = document.querySelector('header .search-button');
+                const searchForm = document.querySelector('header .search-form');
+                const searchInputGroup = document.querySelector('header .search-input-group');
+                const topNav = document.querySelector('header .top-nav');
+                
+                if (searchButton) {
+                    // Force high z-index on all search elements
+                    if (topNav) {
+                        topNav.style.cssText += 'position: relative !important; z-index: 1060 !important;';
+                    }
+                    
+                    if (searchForm) {
+                        searchForm.style.cssText += 'position: relative !important; z-index: 1061 !important;';
+                    }
+                    
+                    if (searchInputGroup) {
+                        searchInputGroup.style.cssText += 'position: relative !important; z-index: 1062 !important;';
+                    }
+                    
+                    searchButton.style.cssText += `
+                        position: relative !important;
+                        z-index: 1063 !important;
+                        pointer-events: auto !important;
+                        cursor: pointer !important;
+                    `;
+                    
+                    // Add click handler
+                    searchButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log('Search button clicked successfully!');
+                        
+                        // Close any open overlays
+                        const searchFull = document.querySelector('.search-full.open');
+                        if (searchFull) {
+                            searchFull.classList.remove('open');
+                        }
+                        
+                        // Submit form
+                        if (searchForm) {
+                            searchForm.submit();
+                        }
+                    });
+                    
+                    console.log('Search button z-index fix applied successfully!');
+                }
+            }
+            
+            // Apply fix immediately and after a delay
+            fixSearchButtonZIndex();
+            setTimeout(fixSearchButtonZIndex, 500);
+            
+            // Also fix whenever a toast is shown
+            const toastContainer = document.querySelector('.toast-container');
+            if (toastContainer) {
+                toastContainer.style.zIndex = '1055';
+                
+                // Watch for toast changes
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                            // Re-apply fix when toast appears
+                            setTimeout(fixSearchButtonZIndex, 100);
+                        }
+                    });
+                });
+                
+                observer.observe(toastContainer, {
+                    childList: true,
+                    attributes: true,
+                    subtree: true
+                });
+            }
+        });
+    </script>
 
 @endsection
