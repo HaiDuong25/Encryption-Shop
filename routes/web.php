@@ -202,8 +202,14 @@ Route::post('/admin/test-coupon', function (\Illuminate\Http\Request $request) {
 })->middleware(['web']);
 
 
+<<<<<<< HEAD
 // --- API Routes for Location (2-level: Province → Ward) ---
 Route::get('/api/provinces', [LocationController::class, 'getProvinces'])->name('api.provinces');
+=======
+// --- API Routes for Location ---
+Route::get('/api/provinces', [LocationController::class, 'getProvinces'])->name('api.provinces');
+Route::get('/api/districts', [LocationController::class, 'getDistricts'])->name('api.districts');
+>>>>>>> main
 Route::get('/api/wards', [LocationController::class, 'getWards'])->name('api.wards');
 
 // --- Client Routes ---
