@@ -130,12 +130,6 @@
                         </div>
                         <div class="col-md-4">
                             <div class="info-row">
-                                <div class="info-label">Quận/Huyện</div>
-                                <div class="info-value">{{ $address->district }}</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-row">
                                 <div class="info-label">Phường/Xã</div>
                                 <div class="info-value">{{ $address->ward }}</div>
                             </div>
@@ -150,7 +144,7 @@
                     <div class="info-row">
                         <div class="info-label">Địa chỉ đầy đủ</div>
                         <div class="info-value d-flex align-items-start">
-                            <span id="full-address">{{ $address->address_detail }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}</span>
+                            <span id="full-address">{{ $address->address_detail }}, {{ $address->ward }}, {{ $address->province }}</span>
                             <button type="button" class="copy-button ms-2" onclick="copyToClipboard('full-address')" title="Sao chép địa chỉ đầy đủ">
                                 <i class="fas fa-copy"></i>
                             </button>
@@ -258,7 +252,7 @@
             <div class="modal-body">
                 <p>Bạn có chắc chắn muốn xóa địa chỉ này không?</p>
                 <div class="alert alert-warning">
-                    <strong>Địa chỉ:</strong> {{ $address->address_detail }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}
+                    <strong>Địa chỉ:</strong> {{ $address->address_detail }}, {{ $address->ward }}, {{ $address->province }}
                 </div>
                 @if($address->is_default)
                 <div class="alert alert-danger">

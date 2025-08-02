@@ -1,39 +1,38 @@
-@extends('client.layout.main')
+<?php $__env->startSection('title', 'Chỉnh sửa hồ sơ'); ?>
 
-@section('title', 'Chỉnh sửa hồ sơ')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="address-form-wrapper">
     <div class="container-fluid">
-        @if(session('success'))
+        <?php if(session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <i class="fas fa-check-circle me-2"></i><?php echo e(session('success')); ?>
+
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+        <?php endif; ?>
 
-        @if($errors->any())
+        <?php if($errors->any()): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>
                 <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+        <?php endif; ?>
 
         <div class="row">
             <!-- Sidebar -->
             <div class="col-lg-3">
-                @include('client.account.sidebar')
+                <?php echo $__env->make('client.account.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
             </div>
 
             <!-- Main Content -->
             <div class="col-lg-9">
-                <form action="{{ route('account.updateProfile') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+                <form action="<?php echo e(route('account.updateProfile')); ?>" method="POST" enctype="multipart/form-data">
+                    <?php echo csrf_field(); ?>
                     <div class="form-card">
                         <div class="form-header">
                             <h4><i class="fas fa-edit me-2"></i>Chỉnh sửa hồ sơ cá nhân</h4>
@@ -47,55 +46,125 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label">Họ và tên <span class="required">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                           id="name" name="name" value="{{ old('name', auth()->user()->name) }}" required>
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <input type="text" class="form-control <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           id="name" name="name" value="<?php echo e(old('name', auth()->user()->name)); ?>" required>
+                                    <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="email" class="form-label">Email <span class="required">*</span></label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                           id="email" name="email" value="{{ old('email', auth()->user()->email) }}" required>
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <input type="email" class="form-control <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           id="email" name="email" value="<?php echo e(old('email', auth()->user()->email)); ?>" required>
+                                    <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="phone" class="form-label">Số điện thoại</label>
-                                    <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
-                                           id="phone" name="phone" value="{{ old('phone', auth()->user()->phone) }}" 
+                                    <input type="tel" class="form-control <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
+                                           id="phone" name="phone" value="<?php echo e(old('phone', auth()->user()->phone)); ?>" 
                                            placeholder="0123456789">
-                                    @error('phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="date_of_birth" class="form-label">Ngày sinh</label>
-                                    <input type="date" class="form-control @error('date_of_birth') is-invalid @enderror" 
+                                    <input type="date" class="form-control <?php $__errorArgs = ['date_of_birth'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                            id="date_of_birth" name="date_of_birth" 
-                                           value="{{ old('date_of_birth', auth()->user()->date_of_birth) }}">
-                                    @error('date_of_birth')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                           value="<?php echo e(old('date_of_birth', auth()->user()->date_of_birth)); ?>">
+                                    <?php $__errorArgs = ['date_of_birth'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="gender" class="form-label">Giới tính</label>
-                                    <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
+                                    <select class="form-select <?php $__errorArgs = ['gender'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="gender" name="gender">
                                         <option value="">Chọn giới tính</option>
-                                        <option value="male" {{ old('gender', auth()->user()->gender) == 'male' ? 'selected' : '' }}>Nam</option>
-                                        <option value="female" {{ old('gender', auth()->user()->gender) == 'female' ? 'selected' : '' }}>Nữ</option>
-                                        <option value="other" {{ old('gender', auth()->user()->gender) == 'other' ? 'selected' : '' }}>Khác</option>
+                                        <option value="male" <?php echo e(old('gender', auth()->user()->gender) == 'male' ? 'selected' : ''); ?>>Nam</option>
+                                        <option value="female" <?php echo e(old('gender', auth()->user()->gender) == 'female' ? 'selected' : ''); ?>>Nữ</option>
+                                        <option value="other" <?php echo e(old('gender', auth()->user()->gender) == 'other' ? 'selected' : ''); ?>>Khác</option>
                                     </select>
-                                    @error('gender')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <?php $__errorArgs = ['gender'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
                             </div>
 
@@ -127,68 +196,18 @@
                             </div>
 
                             <!-- Hidden field để lưu địa chỉ đầy đủ -->
-                            <input type="hidden" name="address" id="full_address" value="{{ old('address', auth()->user()->address) }}">
+                            <input type="hidden" name="address" id="full_address" value="<?php echo e(old('address', auth()->user()->address)); ?>">
                         </div>
 
                         <!-- Ảnh đại diện và ảnh bìa -->
-                        {{-- <div class="form-section">
-                            <h6><i class="fas fa-camera me-2"></i>Hình ảnh cá nhân</h6>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="avatar" class="form-label">Ảnh đại diện</label>
-                                    <input type="file" class="form-control @error('avatar') is-invalid @enderror" 
-                                           id="avatar" name="avatar" accept="image/*">
-                                    <small class="form-text text-muted">
-                                        Chấp nhận JPG, PNG, GIF. Tối đa 2MB.
-                                    </small>
-                                    @error('avatar')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    
-                                    @if(auth()->user()->avatar)
-                                        <div class="mt-2">
-                                            <label class="form-label">Ảnh hiện tại</label>
-                                            <div>
-                                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" 
-                                                     alt="Ảnh đại diện hiện tại" class="rounded-circle" 
-                                                     style="width: 80px; height: 80px; object-fit: cover;">
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <label for="cover_image" class="form-label">Ảnh bìa</label>
-                                    <input type="file" class="form-control @error('cover_image') is-invalid @enderror" 
-                                           id="cover_image" name="cover_image" accept="image/*">
-                                    <small class="form-text text-muted">
-                                        Chấp nhận JPG, PNG, GIF. Tối đa 5MB.
-                                    </small>
-                                    @error('cover_image')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    
-                                    @if(auth()->user()->cover_image)
-                                        <div class="mt-2">
-                                            <label class="form-label">Ảnh bìa hiện tại</label>
-                                            <div>
-                                                <img src="{{ asset('storage/' . auth()->user()->cover_image) }}" 
-                                                     alt="Ảnh bìa hiện tại" class="rounded" 
-                                                     style="width: 100%; height: 60px; object-fit: cover;">
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div> --}}
+                        
 
                         <!-- Submit buttons -->
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Lưu thay đổi
                             </button>
-                            <a href="{{ route('account.index') }}" class="btn btn-secondary">
+                            <a href="<?php echo e(route('account.index')); ?>" class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i>Hủy bỏ
                             </a>
                         </div>
@@ -282,7 +301,7 @@ async function loadWards(provinceName) {
 
 // Parse địa chỉ hiện tại của user (cập nhật cho hệ thống 2 cấp)
 function parseCurrentAddress() {
-    const currentAddress = '{{ old("address", auth()->user()->address) }}';
+    const currentAddress = '<?php echo e(old("address", auth()->user()->address)); ?>';
     if (!currentAddress || currentAddress.trim() === '') return null;
     
     // Tách địa chỉ: "Số nhà, Xã/Phường, Tỉnh" (2 cấp)
@@ -483,6 +502,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 }
 </style>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
 
+
+<?php echo $__env->make('client.layout.main', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\DATN\Encryption-Shop\resources\views/client/account/edit.blade.php ENDPATH**/ ?>

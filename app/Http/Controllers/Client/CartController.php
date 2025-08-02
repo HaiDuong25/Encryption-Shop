@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Traits\ClearsCheckoutSession;
 use Illuminate\Http\Request;
 use App\Models\Product;
@@ -340,13 +341,10 @@ class CartController extends Controller
             $addresses = Auth::user()->shippingAddresses()->get();
             $defaultAddress = $addresses->where('is_default', 1)->first();
 
-            // Load provinces for quick address form
+            // Load provinces for quick address form using direct controller call
             try {
-                $response = Http::timeout(10)->get('https://provinces.open-api.vn/api/p/');
-                if ($response->successful()) {
-                    $provinceData = $response->json();
-                    $provinces = collect($provinceData)->pluck('name')->sort()->values()->toArray();
-                }
+                $locationController = new LocationController();
+                $provinces = $locationController->getVietnameseProvinces();
             } catch (\Exception $e) {
                 Log::error('Error loading provinces: ' . $e->getMessage());
                 $provinces = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng']; // Fallback

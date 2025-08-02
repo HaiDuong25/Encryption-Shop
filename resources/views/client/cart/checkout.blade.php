@@ -537,7 +537,7 @@
                                 </p>
                                 <p class="text-muted small mb-0">
                                     <i class="fa-solid fa-map-marker-alt me-1"></i>
-                                    {{ $address->address_detail }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}
+                                    {{ $address->address_detail }}, {{ $address->ward }}, {{ $address->province }}
                                 </p>
                                 @if($address->note)
                                 <p class="text-muted small mt-2 mb-0">
@@ -887,7 +887,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="modal_province" class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
                             <select class="form-select" id="modal_province" name="province" required>
                                 <option value="">Chọn Tỉnh/Thành phố</option>
@@ -896,16 +896,10 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="modal_district" class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
-                            <select class="form-select" id="modal_district" name="district" required disabled>
-                                <option value="">Chọn Quận/Huyện</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="modal_ward" class="form-label">Phường/Xã <span class="text-danger">*</span></label>
+                        <div class="col-md-6 mb-3">
+                            <label for="modal_ward" class="form-label">Xã/Phường/Thị trấn <span class="text-danger">*</span></label>
                             <select class="form-select" id="modal_ward" name="ward" required disabled>
-                                <option value="">Chọn Phường/Xã</option>
+                                <option value="">Chọn Xã/Phường/Thị trấn</option>
                             </select>
                         </div>
                     </div>
@@ -960,87 +954,45 @@
         }
     }
 
-    function loadModalDistricts() {
-        const province = document.getElementById('modal_province').value;
-        const districtSelect = document.getElementById('modal_district');
-        const wardSelect = document.getElementById('modal_ward');
-
-        // Reset districts and wards
-        districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-        districtSelect.disabled = true;
-        wardSelect.disabled = true;
-
-        if (province) {
-            districtSelect.innerHTML = '<option value="">Đang tải...</option>';
-            
-            // Try internal API first, fallback to external
-            fetch(`/api/districts?province=${encodeURIComponent(province)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        // Fallback to external API
-                        return fetch('https://provinces.open-api.vn/api/?depth=2')
-                            .then(res => res.json())
-                            .then(provincesData => {
-                                const targetProvince = provincesData.find(p => p.name === province);
-                                return targetProvince ? targetProvince.districts.map(d => d.name) : [];
-                            });
-                    }
-                    return response.json();
-                })
-                .then(districts => {
-                    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-                    if (Array.isArray(districts) && districts.length > 0) {
-                        districts.forEach(district => {
-                            const option = document.createElement('option');
-                            option.value = district;
-                            option.textContent = district;
-                            districtSelect.appendChild(option);
-                        });
-                        districtSelect.disabled = false;
-                    } else {
-                        districtSelect.innerHTML = '<option value="">Không có dữ liệu Quận/Huyện</option>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading districts:', error);
-                    districtSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
-                });
-        }
-    }
-
     function loadModalWards() {
-        const district = document.getElementById('modal_district').value;
         const province = document.getElementById('modal_province').value;
         const wardSelect = document.getElementById('modal_ward');
 
         // Reset wards
-        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+        wardSelect.innerHTML = '<option value="">Chọn Xã/Phường/Thị trấn</option>';
         wardSelect.disabled = true;
 
-        if (district && province) {
+        if (province) {
+            // Show loading
             wardSelect.innerHTML = '<option value="">Đang tải...</option>';
             
-            const url = `/api/wards?district=${encodeURIComponent(district)}&province=${encodeURIComponent(province)}`;
+            const url = `/api/wards?province=${encodeURIComponent(province)}`;
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
-                        // Fallback to external API
-                        return fetch('https://provinces.open-api.vn/api/?depth=3')
-                            .then(res => res.json())
-                            .then(provincesData => {
-                                const targetProvince = provincesData.find(p => p.name === province);
-                                if (!targetProvince) return [];
-                                const targetDistrict = targetProvince.districts?.find(d => d.name === district);
-                                return targetDistrict ? targetDistrict.wards.map(w => w.name) : [];
-                            });
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
-                .then(wards => {
-                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                    if (Array.isArray(wards) && wards.length > 0) {
-                        wards.forEach(ward => {
+                .then(data => {
+                    // Reset with default option
+                    wardSelect.innerHTML = '<option value="">Chọn Xã/Phường/Thị trấn</option>';
+                    
+                    // Handle different response formats
+                    let wardsList = [];
+                    if (Array.isArray(data)) {
+                        // Direct array response
+                        wardsList = data;
+                    } else if (data.success && Array.isArray(data.wards)) {
+                        // {success: true, wards: [...]} format
+                        wardsList = data.wards;
+                    } else if (data.value && Array.isArray(data.value)) {
+                        // {value: [...]} format
+                        wardsList = data.value;
+                    }
+                    
+                    if (wardsList.length > 0) {
+                        wardsList.forEach(ward => {
                             const option = document.createElement('option');
                             option.value = ward;
                             option.textContent = ward;
@@ -1048,7 +1000,7 @@
                         });
                         wardSelect.disabled = false;
                     } else {
-                        wardSelect.innerHTML = '<option value="">Không có dữ liệu Phường/Xã</option>';
+                        wardSelect.innerHTML = '<option value="">Không có dữ liệu</option>';
                     }
                 })
                 .catch(error => {
@@ -1834,7 +1786,7 @@
         const modalDistrict = document.getElementById('modal_district');
 
         if (modalProvince) {
-            modalProvince.addEventListener('change', loadModalDistricts);
+            modalProvince.addEventListener('change', loadModalWards);
         }
         if (modalDistrict) {
             modalDistrict.addEventListener('change', loadModalWards);
@@ -2161,7 +2113,7 @@
         }
 
         function tryParseAddress(addressString) {
-            // Enhanced address parsing to extract province, district, ward
+            // Enhanced address parsing to extract province and ward for 2-level system
             if (!addressString) return;
             
             const provinceSelect = document.getElementById('modal_province');
@@ -2200,12 +2152,12 @@
                         option.value.toLowerCase().includes(matchedProvince.toLowerCase())) {
                         option.selected = true;
                         
-                        // Trigger province change and wait for districts to load
-                        loadModalDistricts();
+                        // Trigger province change and wait for wards to load
+                        loadModalWards();
                         
-                        // Wait a bit for districts to load, then try to parse district
+                        // Wait a bit for wards to load, then try to parse ward
                         setTimeout(() => {
-                            tryParseDistrict(addressString, matchedProvince);
+                            tryParseWard(addressString, matchedProvince);
                         }, 1000);
                         
                         break;
@@ -2214,60 +2166,14 @@
             }
         }
         
-        function tryParseDistrict(addressString, province) {
-            const districtSelect = document.getElementById('modal_district');
-            if (!districtSelect || districtSelect.options.length <= 1) return;
-            
-            // Common district/ward patterns
-            const districtPatterns = [
-                'Quận', 'Huyện', 'Thành phố', 'Thị xã', 'TP'
-            ];
-            
-            let matchedDistrict = null;
-            
-            // Try to find district in the loaded options
-            for (const option of districtSelect.options) {
-                if (option.value && addressString.toLowerCase().includes(option.value.toLowerCase())) {
-                    matchedDistrict = option.value;
-                    option.selected = true;
-                    
-                    // Trigger district change and load wards
-                    loadModalWards();
-                    
-                    // Wait for wards to load, then try to parse ward
-                    setTimeout(() => {
-                        tryParseWard(addressString, province, matchedDistrict);
-                    }, 1000);
-                    
-                    break;
-                }
-            }
-            
-            // If no exact match, try partial matching
-            if (!matchedDistrict) {
-                for (const option of districtSelect.options) {
-                    if (option.value) {
-                        // Remove common prefixes for comparison
-                        const cleanDistrict = option.value.replace(/^(Quận|Huyện|Thành phố|Thị xã|TP)\s*/i, '');
-                        if (addressString.toLowerCase().includes(cleanDistrict.toLowerCase())) {
-                            matchedDistrict = option.value;
-                            option.selected = true;
-                            loadModalWards();
-                            
-                            setTimeout(() => {
-                                tryParseWard(addressString, province, matchedDistrict);
-                            }, 1000);
-                            
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        function tryParseWard(addressString, province, district) {
+        function tryParseWard(addressString, province) {
             const wardSelect = document.getElementById('modal_ward');
             if (!wardSelect || wardSelect.options.length <= 1) return;
+            
+            // Common ward patterns
+            const wardPatterns = [
+                'Phường', 'Xã', 'Thị trấn'
+            ];
             
             let matchedWard = null;
             
@@ -2295,13 +2201,8 @@
                 }
             }
             
-            // Show completion message
             if (matchedWard) {
-                showToast(`Đã tự động chọn vị trí: ${province} → ${district} → ${matchedWard}.`, 'success');
-            } else if (district) {
-                showToast(`Đã tự động chọn: ${province} → ${district}. Vui lòng chọn Phường/Xã và nhập địa chỉ chi tiết`, 'info');
-            } else {
-                showToast(`Đã tự động chọn: ${province}. Vui lòng chọn Quận/Huyện, Phường/Xã và nhập địa chỉ chi tiết`, 'info');
+                showToast('Đã tự động chọn: ' + province + ' - ' + matchedWard, 'success');
             }
         }
     });

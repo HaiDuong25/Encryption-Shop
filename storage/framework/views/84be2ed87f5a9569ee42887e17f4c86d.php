@@ -1,8 +1,6 @@
-@extends('client.layout.main')
+<?php $__env->startSection('title', 'Sổ địa chỉ'); ?>
 
-@section('title', 'Sổ địa chỉ')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
 .addresses-wrapper {
     max-width: 1500px;
@@ -73,78 +71,82 @@
             <h1 class="h3 mb-0 text-gray-800">Sổ địa chỉ</h1>
             <p class="mb-0 text-muted">Quản lý địa chỉ giao hàng của bạn</p>
         </div>
-        <a href="{{ route('client.addresses.create') }}" class="btn btn-primary">
+        <a href="<?php echo e(route('client.addresses.create')); ?>" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Thêm địa chỉ mới
         </a>
     </div>
 
-    @if(session('success'))
+    <?php if(session('success')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <i class="fas fa-check-circle me-2"></i><?php echo e(session('success')); ?>
+
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    @endif
+    <?php endif; ?>
 
-    @if($addresses->count() > 0)
+    <?php if($addresses->count() > 0): ?>
         <div class="row">
-            @foreach($addresses as $address)
+            <?php $__currentLoopData = $addresses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $address): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="col-lg-6 col-xl-4 mb-4">
-                    <div class="address-card {{ $address->is_default ? 'default' : '' }}">
+                    <div class="address-card <?php echo e($address->is_default ? 'default' : ''); ?>">
                         <!-- Header với badge default -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="contact-info">
-                                <div class="fw-bold">{{ $address->name }}</div>
+                                <div class="fw-bold"><?php echo e($address->name); ?></div>
                                 <div class="text-success">
-                                    <i class="fas fa-phone me-1"></i>{{ $address->phone }}
+                                    <i class="fas fa-phone me-1"></i><?php echo e($address->phone); ?>
+
                                 </div>
                             </div>
-                            @if($address->is_default)
+                            <?php if($address->is_default): ?>
                                 <span class="default-badge">
                                     <i class="fas fa-star me-1"></i>Mặc định
                                 </span>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <!-- Địa chỉ -->
                         <div class="address-detail mb-3">
-                            <div class="mb-1">{{ $address->address_detail }}</div>
+                            <div class="mb-1"><?php echo e($address->address_detail); ?></div>
                             <div class="text-muted small">
-                                {{ $address->ward }}, {{ $address->province }}
+                                <?php echo e($address->ward); ?>, <?php echo e($address->province); ?>
+
                             </div>
                         </div>
 
                         <!-- Ghi chú nếu có -->
-                        @if($address->note)
+                        <?php if($address->note): ?>
                             <div class="text-muted small mb-3">
-                                <i class="fas fa-sticky-note me-1"></i>{{ $address->note }}
+                                <i class="fas fa-sticky-note me-1"></i><?php echo e($address->note); ?>
+
                             </div>
-                        @endif
+                        <?php endif; ?>
 
                         <!-- Action buttons -->
                         <div class="action-buttons">
-                            <a href="{{ route('client.addresses.show', $address) }}" 
+                            <a href="<?php echo e(route('client.addresses.show', $address)); ?>" 
                                class="btn btn-outline-info btn-action">
                                 <i class="fas fa-eye me-1"></i>Xem
                             </a>
-                            <a href="{{ route('client.addresses.edit', $address) }}" 
+                            <a href="<?php echo e(route('client.addresses.edit', $address)); ?>" 
                                class="btn btn-outline-warning btn-action">
                                 <i class="fas fa-edit me-1"></i>Sửa
                             </a>
-                            @if(!$address->is_default)
-                                <form action="{{ route('client.addresses.set-default', $address) }}" 
+                            <?php if(!$address->is_default): ?>
+                                <form action="<?php echo e(route('client.addresses.set-default', $address)); ?>" 
                                       method="POST" style="display: inline;">
-                                    @csrf
-                                    @method('PATCH')
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('PATCH'); ?>
                                     <button type="submit" class="btn btn-outline-success btn-action">
                                         <i class="fas fa-star me-1"></i>Đặt mặc định
                                     </button>
                                 </form>
-                            @endif
-                            <form action="{{ route('client.addresses.destroy', $address) }}" 
+                            <?php endif; ?>
+                            <form action="<?php echo e(route('client.addresses.destroy', $address)); ?>" 
                                   method="POST" style="display: inline;" 
                                   onsubmit="return confirm('Bạn có chắc muốn xóa địa chỉ này?')">
-                                @csrf
-                                @method('DELETE')
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('DELETE'); ?>
                                 <button type="submit" class="btn btn-outline-danger btn-action">
                                     <i class="fas fa-trash me-1"></i>Xóa
                                 </button>
@@ -152,18 +154,18 @@
                         </div>
                     </div>
                 </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
-    @else
+    <?php else: ?>
         <div class="empty-state">
             <i class="fas fa-map-marker-alt"></i>
             <h4>Chưa có địa chỉ nào</h4>
             <p class="mb-3">Thêm địa chỉ giao hàng đầu tiên để thuận tiện cho việc mua sắm</p>
-            <a href="{{ route('client.addresses.create') }}" class="btn btn-primary">
+            <a href="<?php echo e(route('client.addresses.create')); ?>" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>Thêm địa chỉ đầu tiên
             </a>
         </div>
-    @endif
+    <?php endif; ?>
 </div>
 
 <script>
@@ -177,4 +179,6 @@ setTimeout(function() {
     }
 }, 5000);
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('client.layout.main', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\DATN\Encryption-Shop\resources\views/client/addresses/index.blade.php ENDPATH**/ ?>

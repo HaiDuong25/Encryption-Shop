@@ -34,7 +34,9 @@ class ShippingAddressController extends Controller
         }
         
         $provinces = $this->getVietnameseProvinces();
-        return view('client.addresses.create', compact('provinces'));
+        $hasExistingAddresses = Auth::user()->shippingAddresses()->count() > 0;
+        
+        return view('client.addresses.create', compact('provinces', 'hasExistingAddresses'));
     }
 
     /**
@@ -49,13 +51,20 @@ class ShippingAddressController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|regex:/^[0-9]{10,11}$/',
             'province' => 'required|string|max:255',
-            'district' => 'required|string|max:255',
             'ward' => 'required|string|max:255',
             'address_detail' => 'required|string',
             'is_default' => 'nullable|boolean',
             'note' => 'nullable|string',
         ]);
 
+        // Kiểm tra xem user có địa chỉ nào chưa
+        $userAddressCount = Auth::user()->shippingAddresses()->count();
+        
+        // Nếu đây là địa chỉ đầu tiên, tự động set làm mặc định
+        if ($userAddressCount === 0) {
+            $validated['is_default'] = true;
+        }
+        
         // Nếu set làm mặc định, bỏ mặc định các địa chỉ khác của user
         if ($validated['is_default'] ?? false) {
             Auth::user()->shippingAddresses()
@@ -65,6 +74,7 @@ class ShippingAddressController extends Controller
 
         $validated['user_id'] = Auth::id();
         $validated['is_default'] = $validated['is_default'] ?? false;
+        $validated['district'] = null; // Set district to null for 2-level system
 
         $address = ShippingAddress::create($validated);
 
@@ -103,7 +113,9 @@ class ShippingAddressController extends Controller
         }
 
         $provinces = $this->getVietnameseProvinces();
-        return view('client.addresses.edit', compact('address', 'provinces'));
+        $totalAddresses = Auth::user()->shippingAddresses()->count();
+        
+        return view('client.addresses.edit', compact('address', 'provinces', 'totalAddresses'));
     }
 
     /**
@@ -120,12 +132,17 @@ class ShippingAddressController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|regex:/^[0-9]{10,11}$/',
             'province' => 'required|string|max:255',
-            'district' => 'required|string|max:255',
             'ward' => 'required|string|max:255',
             'address_detail' => 'required|string',
             'is_default' => 'nullable|boolean',
             'note' => 'nullable|string',
         ]);
+
+        // Kiểm tra nếu chỉ có 1 địa chỉ và đang cố gắng bỏ mặc định
+        $totalAddresses = Auth::user()->shippingAddresses()->count();
+        if ($totalAddresses == 1 && $address->is_default && !($validated['is_default'] ?? false)) {
+            $validated['is_default'] = true; // Force keep default
+        }
 
         // Nếu set làm mặc định, bỏ mặc định các địa chỉ khác của user
         if ($validated['is_default'] ?? false) {
@@ -136,6 +153,9 @@ class ShippingAddressController extends Controller
         }
 
         $validated['is_default'] = $validated['is_default'] ?? false;
+        // Add explicit district field setting for 2-level system
+        $validated['district'] = null;
+
         $address->update($validated);
 
         if (request()->ajax()) {
@@ -193,30 +213,27 @@ class ShippingAddressController extends Controller
     }
 
     /**
-     * Get Vietnamese provinces data
+     * Get Vietnamese provinces data from LocationController API directly
      */
     private function getVietnameseProvinces()
     {
         try {
-            // Try to get from API first
-            $response = Http::timeout(10)->get('https://provinces.open-api.vn/api/p/');
+            // Create LocationController instance and call method directly
+            $locationController = new \App\Http\Controllers\Api\LocationController();
+            $response = $locationController->getProvinces();
             
-            if ($response->successful()) {
-                return collect($response->json())->map(function($province) {
-                    // Remove prefix for display
-                    return preg_replace('/^(Thành phố|Tỉnh)\s+/', '', $province['name']);
-                })->toArray();
+            if ($response->getStatusCode() === 200) {
+                return json_decode($response->getContent(), true);
             }
         } catch (\Exception $e) {
-            Log::warning('API provinces failed, using fallback: ' . $e->getMessage());
+            Log::warning('Failed to load provinces from LocationController: ' . $e->getMessage());
         }
 
-        // Fallback to static list if API fails
+        // Fallback to static list if everything fails
         return [
-            // Thành phố trực thuộc trung ương
-            'Hà Nội', 'TP Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',
-            // Các tỉnh thành khác
-            'An Giang', 'Bà Rịa - Vũng Tàu', 'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu',
+            'Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng', 
+            'Thành phố Hải Phòng', 'Thành phố Cần Thơ',
+            'Tỉnh An Giang', 'Tỉnh Bà Rịa - Vũng Tàu', 'Tỉnh Bắc Giang', 'Tỉnh Bắc Kạn', 'Tỉnh Bạc Liêu',
             'Bắc Ninh', 'Bến Tre', 'Bình Định', 'Bình Dương', 'Bình Phước',
             'Bình Thuận', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Đắk Nông',
             'Điện Biên', 'Đồng Nai', 'Đồng Tháp', 'Gia Lai', 'Hà Giang',

@@ -29,7 +29,7 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
-use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\Client\WishlistController;
 use App\Http\Controllers\Client\AccountController;
 use App\Http\Controllers\Client\ContactController as ClientContactController;
 use App\Http\Controllers\Client\ShippingAddressController as ClientShippingAddressController;
@@ -74,9 +74,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/account/upload-avatar', [AccountController::class, 'uploadAvatar'])->name('account.uploadAvatar');
     Route::post('/account/upload-cover-image', [AccountController::class, 'uploadCoverImage'])->name('account.uploadCoverImage');
     // Yêu thích
-    Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
-    Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::get('/yeu-thích', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/yeu-thích/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::delete('/yeu-thích/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
     // Đánh giá
     Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])->name('client.rates.store');
 
@@ -202,9 +202,8 @@ Route::post('/admin/test-coupon', function (\Illuminate\Http\Request $request) {
 })->middleware(['web']);
 
 
-// --- API Routes for Location ---
+// --- API Routes for Location (2-level: Province → Ward) ---
 Route::get('/api/provinces', [LocationController::class, 'getProvinces'])->name('api.provinces');
-Route::get('/api/districts', [LocationController::class, 'getDistricts'])->name('api.districts');
 Route::get('/api/wards', [LocationController::class, 'getWards'])->name('api.wards');
 
 // --- Client Routes ---

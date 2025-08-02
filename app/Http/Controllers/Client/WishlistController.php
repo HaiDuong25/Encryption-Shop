@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Client;
 
+use App\Http\Controllers\Controller;
 use App\Models\Wishlist;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
