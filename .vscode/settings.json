@@ -1,0 +1,5 @@
+{
+  "files.associations": {
+    "**/**/**/*.php": "blade" // Áp dụng cho tất cả các file .php trong thư mục app
+  }
+}

@@ -148,54 +148,80 @@ class UserController extends Controller
 
     public function toggle(User $user)
     {
-        if ($user->role === 'admin') {
+        try {
+            if ($user->role === 'admin') {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Không thể khóa/mở khóa admin!'
+                    ], 400);
+                }
+                return back()->with('error', 'Không thể khóa/mở khóa admin!');
+            }
+            
+            // Toggle status giữa active và inactive
+            $user->status = $user->status === 'active' ? 'inactive' : 'active';
+            $user->save();
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $user->status === 'active' ? 'Đã mở khóa!' : 'Đã khóa!',
+                    'status' => $user->status
+                ], 200);
+            }
+            return back()->with('success', $user->status === 'active' ? 'Đã mở khóa!' : 'Đã khóa!');
+        } catch (\Exception $e) {
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Không thể khóa/mở khóa admin!'
-                ]);
+                    'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                ], 500);
             }
-            return back()->with('error', 'Không thể khóa/mở khóa admin!');
+            return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
-        // Toggle status giữa active và inactive
-        $user->status = $user->status === 'active' ? 'inactive' : 'active';
-        $user->save();
-
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => $user->status === 'active' ? 'Đã mở khóa!' : 'Đã khóa!',
-                'status' => $user->status
-            ]);
-        }
-        return back()->with('success', $user->status === 'active' ? 'Đã mở khóa!' : 'Đã khóa!');
     }
 
 
     public function destroy(User $user)
     {
-        // Nếu user là admin thì không cho xóa
-        if ($user->role === 'admin') {
+        try {
+            // Nếu user là admin thì không cho xóa
+            if ($user->role === 'admin') {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Không thể xóa tài khoản admin!'
+                    ], 400);
+                }
+                return redirect()->route('users.index')->with('error', 'Không thể xóa tài khoản admin!');
+            }
+
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
+            if ($user->cover_image) {
+                Storage::disk('public')->delete($user->cover_image);
+            }
+            
+            $user->delete();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đã xoá người dùng'
+                ], 200);
+            }
+            return redirect()->route('users.index')->with('success', 'Đã xoá người dùng');
+        } catch (\Exception $e) {
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Không thể xóa tài khoản admin!'
-                ]);
+                    'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                ], 500);
             }
-            return redirect()->route('users.index')->with('error', 'Không thể xóa tài khoản admin!');
+            return redirect()->route('users.index')->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
-
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
-        }
-        $user->delete();
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã xoá người dùng'
-            ]);
-        }
-        return redirect()->route('users.index')->with('success', 'Đã xoá người dùng');
     }
 }
