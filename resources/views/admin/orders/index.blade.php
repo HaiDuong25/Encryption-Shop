@@ -311,60 +311,150 @@
     </div>
 
     <script>
-        function cancelOrder(orderId) {
-            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xử lý" hoặc "Đã xác nhận". Số lượng sản phẩm sẽ được trả lại.')) {
-                return;
-            }
+        // Function để hiển thị alert
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.card');
+            container.parentNode.insertBefore(alertDiv, container);
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
 
-            fetch(`/admin/orders/${orderId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        location.reload();
-                    } else {
-                        alert('Lỗi: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi hủy đơn hàng');
-                });
+        // Function để hiển thị modal xác nhận
+        function showConfirmModal(message, onConfirm, type = 'warning') {
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmButton = document.getElementById('confirmButton');
+            const confirmIcon = document.getElementById('confirmIcon');
+            
+            // Cập nhật nội dung modal
+            confirmMessage.textContent = message;
+            
+            // Cập nhật icon và màu sắc dựa trên type
+            if (type === 'danger') {
+                confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
+                confirmButton.className = 'btn btn-danger';
+                confirmButton.innerHTML = '<i class="ri-delete-bin-line me-1"></i>Xóa';
+            } else if (type === 'warning') {
+                confirmIcon.innerHTML = '<i class="ri-alert-line" style="font-size: 48px; color: #ffc107;"></i>';
+                confirmButton.className = 'btn btn-warning';
+                confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+            } else {
+                confirmIcon.innerHTML = '<i class="ri-question-line" style="font-size: 48px; color: #0d6efd;"></i>';
+                confirmButton.className = 'btn btn-primary';
+                confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+            }
+            
+            // Xóa event listener cũ và thêm mới
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            
+            // Thêm event listener cho nút xác nhận
+            newConfirmButton.addEventListener('click', function() {
+                modal.hide();
+                onConfirm();
+            });
+            
+            // Hiển thị modal
+            modal.show();
+        }
+
+        function cancelOrder(orderId) {
+            showConfirmModal(
+                'Bạn có chắc chắn muốn hủy đơn hàng này không? Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xử lý" hoặc "Đã xác nhận". Số lượng sản phẩm sẽ được trả lại.',
+                () => {
+                    fetch(`/admin/orders/${orderId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert(data.message, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showAlert('Lỗi: ' + data.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert('Có lỗi xảy ra khi hủy đơn hàng', 'danger');
+                    });
+                },
+                'warning'
+            );
         }
 
         function deleteOrder(orderId) {
-            if (!confirm(
-                    'Bạn có chắc chắn muốn xóa đơn hàng này không? CHỈ có thể xóa đơn hàng ở trạng thái "Đã hủy". Các đơn hàng đang trả hàng KHÔNG được phép xóa.'
-                )) {
-                return;
-            }
-
-            fetch(`/admin/orders/${orderId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        location.reload();
-                    } else {
-                        alert('Lỗi: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa đơn hàng');
-                });
+            showConfirmModal(
+                'Bạn có chắc chắn muốn xóa đơn hàng này không? CHỈ có thể xóa đơn hàng ở trạng thái "Đã hủy". Các đơn hàng đang trả hàng KHÔNG được phép xóa.',
+                () => {
+                    fetch(`/admin/orders/${orderId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showAlert(data.message, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showAlert('Lỗi: ' + data.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert('Có lỗi xảy ra khi xóa đơn hàng', 'danger');
+                    });
+                },
+                'danger'
+            );
         }
     </script>
+
+    <!-- Modal xác nhận -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 9999;">
+        <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">
+                        <i class="ri-question-line text-warning me-2"></i>
+                        Xác nhận hành động
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="confirmIcon" class="mb-3">
+                        <i class="ri-question-line" style="font-size: 48px; color: #ffc107;"></i>
+                    </div>
+                    <p id="confirmMessage" class="mb-0"></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="ri-close-line me-1"></i>Hủy
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmButton">
+                        <i class="ri-check-line me-1"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
