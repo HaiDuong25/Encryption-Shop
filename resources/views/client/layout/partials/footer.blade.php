@@ -8,8 +8,7 @@
                             alt="Shop Quần Áo">
                     </a>
                     <p class="information-text information-text-2">
-                        Shop Quần Áo chuyên cung cấp các sản phẩm thời trang nam nữ, phụ kiện hiện đại, chất lượng và
-                        hợp xu hướng. Đem lại trải nghiệm mua sắm tốt nhất cho bạn!
+                        Encryption Store chuyên cung cấp các sản phẩm thời trang nam nữ, phụ kiện hiện đại, chất lượng và hợp xu hướng. Đem lại trải nghiệm mua sắm tốt nhất cho bạn!
                     </p>
                     <ul class="social-icon">
                         <li class="light-bg">
@@ -36,19 +35,16 @@
                     </div>
                     <ul class="footer-list footer-contact footer-list-light">
                         <li>
-                            <a href="about-us.html" class="light-text">Giới thiệu</a>
+                            <a href="#" class="light-text">Giới thiệu</a>
                         </li>
                         <li>
-                            <a href="contact-us.html" class="light-text">Liên hệ</a>
+                            <a href="#" class="light-text">Liên hệ</a>
                         </li>
                         <li>
-                            <a href="term_condition.html" class="light-text">Điều khoản & Chính sách</a>
+                            <a href="#" class="light-text">Điều khoản & Chính sách</a>
                         </li>
                         <li>
-                            <a href="careers.html" class="light-text">Tuyển dụng</a>
-                        </li>
-                        <li>
-                            <a href="blog-list.html" class="light-text">Tin tức thời trang</a>
+                            <a href="#" class="light-text">Tin tức thời trang</a>
                         </li>
                     </ul>
                 </div>
@@ -59,19 +55,16 @@
                     </div>
                     <ul class="footer-list footer-list-light footer-contact">
                         <li>
-                            <a href="order-success.html" class="light-text">Đơn hàng của bạn</a>
+                            <a href="{{ route('client.orders.index') }}" class="light-text">Đơn hàng của bạn</a>
                         </li>
                         <li>
-                            <a href="user-dashboard.html" class="light-text">Tài khoản</a>
+                            <a href="{{ route('account.index') }}" class="light-text">Tài khoản</a>
                         </li>
                         <li>
-                            <a href="order-tracking.html" class="light-text">Tra cứu đơn hàng</a>
+                            <a href="{{ route('wishlist.index') }}" class="light-text">Sản phẩm yêu thích</a>
                         </li>
                         <li>
-                            <a href="wishlist.html" class="light-text">Sản phẩm yêu thích</a>
-                        </li>
-                        <li>
-                            <a href="faq.html" class="light-text">Câu hỏi thường gặp</a>
+                            <a href="#" class="light-text">Câu hỏi thường gặp</a>
                         </li>
                     </ul>
                 </div>
@@ -108,7 +101,7 @@
                             <a href="javascript:void(0)" class="light-text">
                                 <div class="inform-box flex-start-box">
                                     <i data-feather="map-pin"></i>
-                                    <p>123 Đường Thời Trang, Quận 1, TP.HCM</p>
+                                    <p>13 Trịnh Văn Bô, </p>
                                 </div>
                             </a>
                         </li>
@@ -143,7 +136,7 @@
 
         <div class="sub-footer sub-footer-lite section-b-space section-t-space">
             <div class="left-footer">
-                <p class="light-text">© 2025 Shop Quần Áo. All rights reserved.</p>
+                <p class="light-text">© Encryption Store. All rights reserved.</p>
             </div>
 
             <ul class="payment-box">
