@@ -48,8 +48,13 @@ jobs:
         php artisan config:clear
         php artisan route:clear
 
-    - name: Directory Permissions
-      run: chmod -R 777 storage bootstrap/cache
+    - name: Create directories and set permissions
+      run: |
+        mkdir -p storage/{app,framework,logs}
+        mkdir -p storage/framework/{cache,sessions,testing,views}
+        mkdir -p storage/app/public
+        mkdir -p bootstrap/cache
+        chmod -R 777 storage bootstrap/cache
       
     - name: Create Database
       run: |
