@@ -8,8 +8,7 @@
                             alt="Shop Quần Áo">
                     </a>
                     <p class="information-text information-text-2">
-                        Shop Quần Áo chuyên cung cấp các sản phẩm thời trang nam nữ, phụ kiện hiện đại, chất lượng và
-                        hợp xu hướng. Đem lại trải nghiệm mua sắm tốt nhất cho bạn!
+                        Encryption Store chuyên cung cấp các sản phẩm thời trang nam nữ, phụ kiện hiện đại, chất lượng và hợp xu hướng. Đem lại trải nghiệm mua sắm tốt nhất cho bạn!
                     </p>
                     <ul class="social-icon">
                         <li class="light-bg">
@@ -36,19 +35,16 @@
                     </div>
                     <ul class="footer-list footer-contact footer-list-light">
                         <li>
-                            <a href="about-us.html" class="light-text">Giới thiệu</a>
+                            <a href="#" class="light-text">Giới thiệu</a>
                         </li>
                         <li>
-                            <a href="contact-us.html" class="light-text">Liên hệ</a>
+                            <a href="#" class="light-text">Liên hệ</a>
                         </li>
                         <li>
-                            <a href="term_condition.html" class="light-text">Điều khoản & Chính sách</a>
+                            <a href="#" class="light-text">Điều khoản & Chính sách</a>
                         </li>
                         <li>
-                            <a href="careers.html" class="light-text">Tuyển dụng</a>
-                        </li>
-                        <li>
-                            <a href="blog-list.html" class="light-text">Tin tức thời trang</a>
+                            <a href="#" class="light-text">Tin tức thời trang</a>
                         </li>
                     </ul>
                 </div>
@@ -59,19 +55,16 @@
                     </div>
                     <ul class="footer-list footer-list-light footer-contact">
                         <li>
-                            <a href="order-success.html" class="light-text">Đơn hàng của bạn</a>
+                            <a href="{{ route('client.orders.index') }}" class="light-text">Đơn hàng của bạn</a>
                         </li>
                         <li>
-                            <a href="user-dashboard.html" class="light-text">Tài khoản</a>
+                            <a href="{{ route('account.index') }}" class="light-text">Tài khoản</a>
                         </li>
                         <li>
-                            <a href="order-tracking.html" class="light-text">Tra cứu đơn hàng</a>
+                            <a href="{{ route('wishlist.index') }}" class="light-text">Sản phẩm yêu thích</a>
                         </li>
                         <li>
-                            <a href="wishlist.html" class="light-text">Sản phẩm yêu thích</a>
-                        </li>
-                        <li>
-                            <a href="faq.html" class="light-text">Câu hỏi thường gặp</a>
+                            <a href="#" class="light-text">Câu hỏi thường gặp</a>
                         </li>
                     </ul>
                 </div>
@@ -108,12 +101,12 @@
                             <a href="javascript:void(0)" class="light-text">
                                 <div class="inform-box flex-start-box">
                                     <i data-feather="map-pin"></i>
-                                    <p>123 Đường Thời Trang, Quận 1, TP.HCM</p>
+                                    <p>13 Trịnh Văn Bô, Phường Xuân Phương, TP Hà Nội</p>
                                 </div>
                             </a>
                         </li>
                         <li>
-                            <a href="tel:0123456789" class="light-text">
+                            <a href="#" class="light-text">
                                 <div class="inform-box">
                                     <i data-feather="phone"></i>
                                     <p>Hotline: 0123 456 789</p>
@@ -124,15 +117,7 @@
                             <a href="mailto:support@shopquanao.com" class="light-text">
                                 <div class="inform-box">
                                     <i data-feather="mail"></i>
-                                    <p>Email: support@shopquanao.com</p>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0)" class="light-text">
-                                <div class="inform-box">
-                                    <i data-feather="clock"></i>
-                                    <p>Giờ mở cửa: 8:00 - 22:00 (T2 - CN)</p>
+                                    <p>Email: support@encryptionstore.com</p>
                                 </div>
                             </a>
                         </li>
@@ -143,24 +128,16 @@
 
         <div class="sub-footer sub-footer-lite section-b-space section-t-space">
             <div class="left-footer">
-                <p class="light-text">© 2025 Shop Quần Áo. All rights reserved.</p>
+                <p class="light-text">© Encryption Store. All rights reserved.</p>
             </div>
 
             <ul class="payment-box">
                 <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/visa.png') }}" class="blur-up lazyload"
-                        alt="Visa">
+                    <img src="https://play-lh.googleusercontent.com/dQbjuW6Jrwzavx7UCwvGzA_sleZe3-Km1KISpMLGVf1Be5N6hN6-tdKxE5RDQvOiGRg" class="blur-up lazyload"
+                        alt="MOMO">
                 </li>
                 <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/master-card.png') }}" alt="MasterCard"
-                        class="blur-up lazyload">
-                </li>
-                <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/american.png') }}" alt="American Express"
-                        class="blur-up lazyload">
-                </li>
-                <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/giro-pay.png') }}" alt="GiroPay"
+                    <img src="https://play-lh.googleusercontent.com/woYAzPCG1I8Z8HXCsdH3diL7oly0N8uth_1g6k7R_9Gu7lbxrsYeriEXLecRG2E9rP0=w240-h480" alt="ZaloPay"
                         class="blur-up lazyload">
                 </li>
             </ul>

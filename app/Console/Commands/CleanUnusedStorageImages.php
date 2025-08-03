@@ -63,6 +63,15 @@ class CleanUnusedStorageImages extends Command
         // Product
         foreach (Product::all() as $product) {
             if ($product->image) $usedImages[] = $product->image;
+            // Bổ sung xử lý gallery nếu có
+            if ($product->gallery) {
+                $galleryImgs = json_decode($product->gallery, true);
+                if (is_array($galleryImgs)) {
+                    $usedImages = array_merge($usedImages, $galleryImgs);
+                } elseif (is_string($product->gallery) && $product->gallery) {
+                    $usedImages[] = $product->gallery;
+                }
+            }
         }
 
         // ProductVariant
@@ -70,9 +79,10 @@ class CleanUnusedStorageImages extends Command
             if ($variant->image) $usedImages[] = $variant->image;
         }
 
-        // User avatar
+        // User avatar và cover
         foreach (User::all() as $user) {
             if ($user->avatar) $usedImages[] = $user->avatar;
+            if ($user->cover_image) $usedImages[] = $user->cover_image;
         }
 
         // Nếu có model khác có ảnh, thêm vào đây...
@@ -82,15 +92,36 @@ class CleanUnusedStorageImages extends Command
         // Lấy tất cả file trong storage/app/public và các thư mục con
         $allFiles = Storage::disk('public')->allFiles();
 
-        $deleted = 0;
+        $unusedFiles = [];
         foreach ($allFiles as $file) {
             // Bỏ qua file hệ thống
             if ($file === '.gitignore') continue;
             if (!in_array($file, $usedImages)) {
-                Storage::disk('public')->delete($file);
-                $deleted++;
+                $unusedFiles[] = $file;
             }
         }
-        $this->info("Đã xóa $deleted ảnh dư thừa trong storage/app/public.");
+
+        $storagePath = Storage::disk('public')->path('');
+        // Hiển thị danh sách ảnh dư thừa
+        if (count($unusedFiles)) {
+            $this->info("Danh sách ảnh dư thừa (không sử dụng trong database):");
+            foreach ($unusedFiles as $file) {
+                $this->line($storagePath . $file);
+            }
+            $this->line("\nNhấn Enter để xóa toàn bộ các ảnh trên, hoặc nhập bất kỳ ký tự nào rồi Enter để hủy bỏ.");
+            $input = trim(fgets(STDIN));
+            if ($input === '') {
+                $deleted = 0;
+                foreach ($unusedFiles as $file) {
+                    Storage::disk('public')->delete($file);
+                    $deleted++;
+                }
+                $this->info("Đã xóa $deleted ảnh dư thừa trong storage/app/public.");
+            } else {
+                $this->info("Đã hủy thao tác xóa ảnh dư thừa.");
+            }
+        } else {
+            $this->info("Không có ảnh dư thừa nào để xóa.");
+        }
     }
 }
