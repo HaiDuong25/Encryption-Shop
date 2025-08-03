@@ -70,9 +70,10 @@ class CleanUnusedStorageImages extends Command
             if ($variant->image) $usedImages[] = $variant->image;
         }
 
-        // User avatar
+        // User avatar và cover
         foreach (User::all() as $user) {
             if ($user->avatar) $usedImages[] = $user->avatar;
+            if ($user->cover_image) $usedImages[] = $user->cover_image;
         }
 
         // Nếu có model khác có ảnh, thêm vào đây...
