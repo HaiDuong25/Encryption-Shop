@@ -74,9 +74,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/account/upload-avatar', [AccountController::class, 'uploadAvatar'])->name('account.uploadAvatar');
     Route::post('/account/upload-cover-image', [AccountController::class, 'uploadCoverImage'])->name('account.uploadCoverImage');
     // Yêu thích
-    Route::get('/yeu-thích', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/yeu-thích/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
-    Route::delete('/yeu-thích/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
     // Đánh giá
     Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])->name('client.rates.store');
 
@@ -115,6 +115,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // --- Admin ---
+Route::get('/admin', function() {
+    return redirect()->route('admin.dashboard');
+});
 Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
