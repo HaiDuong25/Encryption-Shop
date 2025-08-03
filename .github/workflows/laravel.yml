@@ -50,7 +50,10 @@ jobs:
 
     - name: Create directories and set permissions
       run: |
-        mkdir -p storage bootstrap/cache
+        mkdir -p storage/{app,framework,logs}
+        mkdir -p storage/framework/{cache,sessions,testing,views}
+        mkdir -p storage/app/public
+        mkdir -p bootstrap/cache
         chmod -R 777 storage bootstrap/cache
       
     - name: Create Database
