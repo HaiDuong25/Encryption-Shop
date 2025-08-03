@@ -101,12 +101,12 @@
                             <a href="javascript:void(0)" class="light-text">
                                 <div class="inform-box flex-start-box">
                                     <i data-feather="map-pin"></i>
-                                    <p>13 Trịnh Văn Bô, </p>
+                                    <p>13 Trịnh Văn Bô, Phường Xuân Phương, TP Hà Nội</p>
                                 </div>
                             </a>
                         </li>
                         <li>
-                            <a href="tel:0123456789" class="light-text">
+                            <a href="#" class="light-text">
                                 <div class="inform-box">
                                     <i data-feather="phone"></i>
                                     <p>Hotline: 0123 456 789</p>
@@ -117,15 +117,7 @@
                             <a href="mailto:support@shopquanao.com" class="light-text">
                                 <div class="inform-box">
                                     <i data-feather="mail"></i>
-                                    <p>Email: support@shopquanao.com</p>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0)" class="light-text">
-                                <div class="inform-box">
-                                    <i data-feather="clock"></i>
-                                    <p>Giờ mở cửa: 8:00 - 22:00 (T2 - CN)</p>
+                                    <p>Email: support@encryptionstore.com</p>
                                 </div>
                             </a>
                         </li>
@@ -141,19 +133,11 @@
 
             <ul class="payment-box">
                 <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/visa.png') }}" class="blur-up lazyload"
-                        alt="Visa">
+                    <img src="https://play-lh.googleusercontent.com/dQbjuW6Jrwzavx7UCwvGzA_sleZe3-Km1KISpMLGVf1Be5N6hN6-tdKxE5RDQvOiGRg" class="blur-up lazyload"
+                        alt="MOMO">
                 </li>
                 <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/master-card.png') }}" alt="MasterCard"
-                        class="blur-up lazyload">
-                </li>
-                <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/american.png') }}" alt="American Express"
-                        class="blur-up lazyload">
-                </li>
-                <li>
-                    <img src="{{ asset('assets-front/images/icon/paymant/giro-pay.png') }}" alt="GiroPay"
+                    <img src="https://play-lh.googleusercontent.com/woYAzPCG1I8Z8HXCsdH3diL7oly0N8uth_1g6k7R_9Gu7lbxrsYeriEXLecRG2E9rP0=w240-h480" alt="ZaloPay"
                         class="blur-up lazyload">
                 </li>
             </ul>
