@@ -171,38 +171,80 @@
             feather.replace();
         }
 
+        // Function để hiển thị modal xác nhận
+        function showConfirmModal(message, onConfirm, type = 'warning') {
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmButton = document.getElementById('confirmButton');
+            const confirmIcon = document.getElementById('confirmIcon');
+            
+            // Cập nhật nội dung modal
+            confirmMessage.textContent = message;
+            
+            // Cập nhật icon và màu sắc dựa trên type
+            if (type === 'danger') {
+                confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
+                confirmButton.className = 'btn btn-danger';
+                confirmButton.innerHTML = '<i class="ri-delete-bin-line me-1"></i>Xóa';
+            } else if (type === 'warning') {
+                confirmIcon.innerHTML = '<i class="ri-alert-line" style="font-size: 48px; color: #ffc107;"></i>';
+                confirmButton.className = 'btn btn-warning';
+                confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+            } else {
+                confirmIcon.innerHTML = '<i class="ri-question-line" style="font-size: 48px; color: #0d6efd;"></i>';
+                confirmButton.className = 'btn btn-primary';
+                confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+            }
+            
+            // Xóa event listener cũ và thêm mới
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+            
+            // Thêm event listener cho nút xác nhận
+            newConfirmButton.addEventListener('click', function() {
+                modal.hide();
+                onConfirm();
+            });
+            
+            // Hiển thị modal
+            modal.show();
+        }
+
         // AJAX Delete functionality
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function () {
                 const couponId = this.dataset.id;
                 const couponCode = this.dataset.name;
 
-                if (confirm(`Bạn có chắc muốn xóa mã "${couponCode}"?`)) {
-                    // Show loading state
-                    const icon = this.querySelector('i');
-                    const originalContent = this.innerHTML;
-                    this.innerHTML = '<i data-feather="loader" class="rotating"></i>';
-                    this.disabled = true;
+                // Sử dụng modal xác nhận thay vì confirm()
+                showConfirmModal(
+                    `Bạn có chắc muốn xóa mã "${couponCode}"?`,
+                    () => {
+                        // Show loading state
+                        const icon = this.querySelector('i');
+                        const originalContent = this.innerHTML;
+                        this.innerHTML = '<i data-feather="loader" class="rotating"></i>';
+                        this.disabled = true;
 
-                    // Get CSRF token
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                    if (!csrfToken) {
-                        alert('Không tìm thấy CSRF token. Vui lòng tải lại trang.');
-                        this.innerHTML = originalContent;
-                        this.disabled = false;
-                        feather.replace();
-                        return;
-                    }
-
-                    fetch(`/admin/coupons/${couponId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': csrfToken.content,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                        if (!csrfToken) {
+                            alert('Không tìm thấy CSRF token. Vui lòng tải lại trang.');
+                            this.innerHTML = originalContent;
+                            this.disabled = false;
+                            feather.replace();
+                            return;
                         }
-                    })
+
+                        fetch(`/admin/coupons/${couponId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': csrfToken.content,
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        })
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -251,7 +293,9 @@
                             this.disabled = false;
                             feather.replace();
                         });
-                }
+                    },
+                    'danger'
+                );
             });
         });
 
@@ -296,3 +340,32 @@
         }
     </style>
 @endpush
+
+<!-- Modal xác nhận -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="ri-question-line text-warning me-2"></i>
+                    Xác nhận hành động
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="confirmIcon" class="mb-3">
+                    <i class="ri-question-line" style="font-size: 48px; color: #ffc107;"></i>
+                </div>
+                <p id="confirmMessage" class="mb-0"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="ri-close-line me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmButton">
+                    <i class="ri-check-line me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

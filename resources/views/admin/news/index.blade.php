@@ -129,25 +129,87 @@
 
 @push('scripts')
 <script>
+    // Function để hiển thị alert
+    function showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.container-fluid');
+        const card = document.querySelector('.card');
+        container.insertBefore(alertDiv, card);
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // Function để hiển thị modal xác nhận
+    function showConfirmModal(message, onConfirm, type = 'warning') {
+        const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmButton = document.getElementById('confirmButton');
+        const confirmIcon = document.getElementById('confirmIcon');
+        
+        // Cập nhật nội dung modal
+        confirmMessage.textContent = message;
+        
+        // Cập nhật icon và màu sắc dựa trên type
+        if (type === 'danger') {
+            confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
+            confirmButton.className = 'btn btn-danger';
+            confirmButton.innerHTML = '<i class="ri-delete-bin-line me-1"></i>Xóa';
+        } else if (type === 'warning') {
+            confirmIcon.innerHTML = '<i class="ri-alert-line" style="font-size: 48px; color: #ffc107;"></i>';
+            confirmButton.className = 'btn btn-warning';
+            confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+        } else {
+            confirmIcon.innerHTML = '<i class="ri-question-line" style="font-size: 48px; color: #0d6efd;"></i>';
+            confirmButton.className = 'btn btn-primary';
+            confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+        }
+        
+        // Xóa event listener cũ và thêm mới
+        const newConfirmButton = confirmButton.cloneNode(true);
+        confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+        
+        // Thêm event listener cho nút xác nhận
+        newConfirmButton.addEventListener('click', function() {
+            modal.hide();
+            onConfirm();
+        });
+        
+        // Hiển thị modal
+        modal.show();
+    }
+
     // AJAX Delete functionality
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', function() {
             const newsId = this.dataset.id;
             const newsTitle = this.dataset.name;
             
-            if (confirm(`Bạn có chắc muốn xóa tin tức "${newsTitle}"?`)) {
-                // Show loading state
-                const icon = this.querySelector('i');
-                const originalContent = this.innerHTML;
-                this.innerHTML = '<i class="ri-loader-line rotating"></i>';
-                this.disabled = true;
-                
-                fetch(`/admin/news/${newsId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+            showConfirmModal(
+                `Bạn có chắc muốn xóa tin tức "${newsTitle}"?`,
+                () => {
+                    // Show loading state
+                    const icon = this.querySelector('i');
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = '<i class="ri-loader-line rotating"></i>';
+                    this.disabled = true;
+                    
+                    fetch(`/admin/news/${newsId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -157,22 +219,9 @@
                         row.remove();
                         
                         // Show success message
-                        const alertDiv = document.createElement('div');
-                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                        alertDiv.innerHTML = `
-                            ${data.message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        `;
-                        document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.card'));
-                        
-                        // Auto hide after 3 seconds
-                        setTimeout(() => {
-                            if (alertDiv.parentNode) {
-                                alertDiv.remove();
-                            }
-                        }, 3000);
+                        showAlert(data.message, 'success');
                     } else {
-                        alert(data.message || 'Có lỗi xảy ra khi xóa tin tức!');
+                        showAlert(data.message || 'Có lỗi xảy ra khi xóa tin tức!', 'danger');
                         // Restore button state
                         this.innerHTML = originalContent;
                         this.disabled = false;
@@ -180,15 +229,47 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa tin tức!');
+                    showAlert('Có lỗi xảy ra khi xóa tin tức!', 'danger');
                     // Restore button state
                     this.innerHTML = originalContent;
                     this.disabled = false;
                 });
-            }
+                },
+                'danger'
+            );
         });
     });
 </script>
+
+<!-- Modal xác nhận -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="ri-question-line text-warning me-2"></i>
+                    Xác nhận hành động
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="confirmIcon" class="mb-3">
+                    <i class="ri-question-line" style="font-size: 48px; color: #ffc107;"></i>
+                </div>
+                <p id="confirmMessage" class="mb-0"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="ri-close-line me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmButton">
+                    <i class="ri-check-line me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .rotating {
         animation: spin 1s linear infinite;

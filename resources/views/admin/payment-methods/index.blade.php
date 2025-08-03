@@ -76,11 +76,11 @@
                                                 <p>Bạn có chắc chắn muốn xóa phương thức <strong>{{ $method->payment_type }}</strong> không?</p>
                                             </div>
                                             <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                                                 <form action="{{ route('payment-methods.destroy', $method) }}" method="POST">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-danger">Xóa</button>
                                                 </form>
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                                             </div>
                                         </div>
                                     </div>

@@ -127,33 +127,24 @@ $statusColor = [
                                 {{-- Flow COD: pending → confirmed → completed --}}
                                 @if($payment->status === 'pending')
                                     <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
-                                        <form action="{{ route('payments.confirm', $payment->id) }}" method="POST"
-                                            onsubmit="return confirm('Xác nhận đơn hàng COD này?');" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-info btn-xs px-2 py-1"
-                                                style="font-size: 0.85rem;">
-                                                <i class="fa-solid fa-check me-1"></i> Xác nhận đơn
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('payments.reject', $payment->id) }}" method="POST"
-                                            onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-danger btn-xs px-2 py-1"
-                                                style="font-size: 0.85rem;">
-                                                <i class="fa-solid fa-times me-1"></i> Hủy đơn
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-info btn-xs px-2 py-1 confirm-payment-btn"
+                                            data-action="confirm" data-id="{{ $payment->id }}" data-message="Xác nhận đơn hàng COD này?"
+                                            style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-check me-1"></i> Xác nhận đơn
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-xs px-2 py-1 confirm-payment-btn"
+                                            data-action="reject" data-id="{{ $payment->id }}" data-message="Bạn có chắc muốn hủy đơn này?"
+                                            style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-times me-1"></i> Hủy đơn
+                                        </button>
                                     </div>
                                 @elseif($payment->status === 'confirmed')
                                     <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
-                                        <form action="{{ route('payments.complete', $payment->id) }}" method="POST"
-                                            onsubmit="return confirm('Hoàn thành đơn hàng COD này? (Khách đã thanh toán)');" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success btn-xs px-2 py-1"
-                                                style="font-size: 0.85rem;">
-                                                <i class="fa-solid fa-check-double me-1"></i> Hoàn thành
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-success btn-xs px-2 py-1 confirm-payment-btn"
+                                            data-action="complete" data-id="{{ $payment->id }}" data-message="Hoàn thành đơn hàng COD này? (Khách đã thanh toán)"
+                                            style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-check-double me-1"></i> Hoàn thành
+                                        </button>
                                         <span class="badge bg-info text-white" style="font-size: 0.85rem;">
                                             Đã xác nhận lúc
                                             {{ $payment->confirmed_at ? \Carbon\Carbon::parse($payment->confirmed_at)->format('d/m H:i') : '' }}
@@ -174,22 +165,16 @@ $statusColor = [
                                 {{-- Flow Online: pending → completed (giữ nguyên) --}}
                                 @if($payment->status === 'pending')
                                     <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
-                                        <form action="{{ route('payments.confirm', $payment->id) }}" method="POST"
-                                            onsubmit="return confirm('Xác nhận thanh toán cho đơn này?');" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success btn-xs px-2 py-1"
-                                                style="font-size: 0.85rem; background-color: #28a745; border-color: #28a745;">
-                                                <i class="fa-solid fa-check me-1"></i> Xác nhận
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('payments.reject', $payment->id) }}" method="POST"
-                                            onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-danger btn-xs px-2 py-1"
-                                                style="font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545;">
-                                                <i class="fa-solid fa-times me-1"></i> Hủy đơn
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-success btn-xs px-2 py-1 confirm-payment-btn"
+                                            data-action="confirm" data-id="{{ $payment->id }}" data-message="Xác nhận thanh toán cho đơn này?"
+                                            style="font-size: 0.85rem; background-color: #28a745; border-color: #28a745;">
+                                            <i class="fa-solid fa-check me-1"></i> Xác nhận
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-xs px-2 py-1 confirm-payment-btn"
+                                            data-action="reject" data-id="{{ $payment->id }}" data-message="Bạn có chắc muốn hủy đơn này?"
+                                            style="font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545;">
+                                            <i class="fa-solid fa-times me-1"></i> Hủy đơn
+                                        </button>
                                     </div>
                                 @elseif($payment->status === 'completed')
                                     <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
@@ -236,4 +221,131 @@ $statusColor = [
     <div class="d-flex justify-content-end mt-3">
         {{ $payments->links() }}
     </div>
+
+<script>
+// Function để hiển thị alert
+function showAlert(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.card');
+    container.parentNode.insertBefore(alertDiv, container);
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Function để hiển thị modal xác nhận
+function showConfirmModal(message, onConfirm, type = 'warning') {
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmButton = document.getElementById('confirmButton');
+    const confirmIcon = document.getElementById('confirmIcon');
+    
+    // Cập nhật nội dung modal
+    confirmMessage.textContent = message;
+    
+    // Cập nhật icon và màu sắc dựa trên type
+    if (type === 'danger') {
+        confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
+        confirmButton.className = 'btn btn-danger';
+        confirmButton.innerHTML = '<i class="ri-delete-bin-line me-1"></i>Xóa';
+    } else if (type === 'warning') {
+        confirmIcon.innerHTML = '<i class="ri-alert-line" style="font-size: 48px; color: #ffc107;"></i>';
+        confirmButton.className = 'btn btn-warning';
+        confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+    } else {
+        confirmIcon.innerHTML = '<i class="ri-question-line" style="font-size: 48px; color: #0d6efd;"></i>';
+        confirmButton.className = 'btn btn-primary';
+        confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
+    }
+    
+    // Xóa event listener cũ và thêm mới
+    const newConfirmButton = confirmButton.cloneNode(true);
+    confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+    
+    // Thêm event listener cho nút xác nhận
+    newConfirmButton.addEventListener('click', function() {
+        modal.hide();
+        onConfirm();
+    });
+    
+    // Hiển thị modal
+    modal.show();
+}
+
+// Payment action functionality
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.confirm-payment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.dataset.action;
+            const paymentId = this.dataset.id;
+            const message = this.dataset.message;
+            
+            showConfirmModal(
+                message,
+                () => {
+                    // Show loading state
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang xử lý...';
+                    this.disabled = true;
+                    
+                    // Submit form programmatically
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/payments/${paymentId}/${action}`;
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').content;
+                    form.appendChild(csrfToken);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                'warning'
+            );
+        });
+    });
+});
+</script>
+
+<!-- Modal xác nhận -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="ri-question-line text-warning me-2"></i>
+                    Xác nhận hành động
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="confirmIcon" class="mb-3">
+                    <i class="ri-question-line" style="font-size: 48px; color: #ffc107;"></i>
+                </div>
+                <p id="confirmMessage" class="mb-0"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="ri-close-line me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmButton">
+                    <i class="ri-check-line me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
