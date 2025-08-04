@@ -108,17 +108,10 @@
                     </li> -->
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-focus-3-line"></i>
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('orders.index') }}">
+                            <i class="ri-shopping-cart-line"></i>
                             <span>Quản lý đơn hàng</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('orders.index') }}">Danh sách đơn hàng</a>
-                            </li>
-                        </ul>
-                    </li>
-
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('shipping-addresses.index') }}">
                             <i class="ri-map-pin-line"></i>

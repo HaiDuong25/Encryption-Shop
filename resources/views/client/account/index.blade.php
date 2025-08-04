@@ -190,13 +190,24 @@
                                 </a>
                             </div>
                             <div class="col-md-6 col-lg-4 mb-3">
-                                <a href="{{ route('orders.index') }}" class="quick-action-card">
+                                <a href="{{ route('client.orders.index') }}" class="quick-action-card">
                                     <div class="icon">
                                         <i class="fas fa-shopping-bag"></i>
                                     </div>
                                     <div class="content">
                                         <h6>Đơn hàng</h6>
                                         <p>Theo dõi đơn hàng của bạn</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <a href="{{ route('client.returns.index') }}" class="quick-action-card">
+                                    <div class="icon">
+                                        <i class="fas fa-undo-alt"></i>
+                                    </div>
+                                    <div class="content">
+                                        <h6>Trả hàng</h6>
+                                        <p>Quản lý yêu cầu trả hàng</p>
                                     </div>
                                 </a>
                             </div>

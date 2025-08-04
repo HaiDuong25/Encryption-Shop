@@ -61,12 +61,12 @@ if ($paymentMethod && !str_contains(strtolower($paymentMethod->payment_type), 'c
             'status' => 'pending',
         ]);
 
-        // Cập nhật trạng thái đơn hàng là 'returning'
-        $order = $orderDetail->order;
-        if ($order) {
-            $order->status = 'returning';
-            $order->save();
-        }
+        // Cập nhật trạng thái trả hàng cho OrderDetail này
+        $orderDetail->return_status = 'pending';
+        $orderDetail->save();
+
+        // Cập nhật trạng thái trả hàng của đơn hàng (không ảnh hưởng đến trạng thái giao hàng)
+        $orderDetail->order->updateReturnStatus();
 
         return redirect()->route('client.orders.index')->with('success', 'Gửi yêu cầu trả hàng thành công.');
     }

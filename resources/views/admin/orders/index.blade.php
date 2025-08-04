@@ -125,9 +125,10 @@
                                 <th width="15%">Địa chỉ</th>
                                 <th width="10%">Ngày đặt</th>
                                 <th width="10%">Thanh toán</th>
-                                <th width="10%">Trạng thái</th>
-                                <th width="20%">Tổng tiền</th>
-                                <th width="15%">Thao tác</th>
+                                <th width="8%">Giao hàng</th>
+                                <th width="8%">Trả hàng</th>
+                                <th width="15%">Tổng tiền</th>
+                                <th width="14%">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,9 +156,6 @@
                                                     '3' => 'delivering',
                                                     '4' => 'received',
                                                     '5' => 'completed',
-                                                    '6' => 'returning', // ✅ trạng thái đang trả hàng
-                                                    '7' => 'approved', // ✅ trạng thái đã trả hàng
-                                                    '8' => 'rejected', // ✅ trạng thái từ chối trả
                                                     '9' => 'cancelled',
                                                 ];
 
@@ -178,16 +176,32 @@
                                             <span class="badge bg-success status-badge">Hoàn thành</span>
                                         @elseif($statusValue == 'cancelled')
                                             <span class="badge bg-danger status-badge">Đã hủy</span>
-                                        @elseif($statusValue == 'returning')
-                                            <span class="badge bg-returning status-badge">Đang trả hàng</span>
-                                        @elseif($statusValue == 'approved')
-                                            <span class="badge bg-info status-badge">Đã trả hàng</span>
-                                        @elseif($statusValue == 'rejected')
-                                            <span class="badge bg-dark status-badge">Từ chối trả</span>
                                         @else
                                             <span class="badge bg-secondary status-badge">{{ $statusValue }}</span>
                                         @endif
 
+                                    </td>
+                                    <td>
+                                        @php
+                                            $returnStatus = $order->returnStatus;
+                                        @endphp
+                                        @if($returnStatus && $returnStatus->overall_status !== 'none')
+                                            @switch($returnStatus->overall_status)
+                                                @case('partial')
+                                                    <span class="badge bg-warning text-dark">Một phần</span>
+                                                    @break
+                                                @case('full')
+                                                    <span class="badge bg-info">Toàn bộ</span>
+                                                    @break
+                                                @case('completed')
+                                                    <span class="badge bg-success">Hoàn tất</span>
+                                                    @break
+                                                @default
+                                                    <span class="badge bg-secondary">{{ $returnStatus->overall_status }}</span>
+                                            @endswitch
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @php
@@ -250,9 +264,6 @@
                                                         '3' => 'delivering',
                                                         '4' => 'received',
                                                         '5' => 'completed',
-                                                        '6' => 'returning',
-                                                        '7' => 'approved',
-                                                        '8' => 'rejected',
                                                         '9' => 'cancelled',
                                                     ];
                                                     $cancelStatusValue = $cancelStatusMap[$cancelStatusValue] ?? 'pending';
@@ -280,9 +291,6 @@
                                                         '3' => 'delivering',
                                                         '4' => 'received',
                                                         '5' => 'completed',
-                                                        '6' => 'returning',
-                                                        '7' => 'approved',
-                                                        '8' => 'rejected',
                                                         '9' => 'cancelled',
                                                     ];
                                                     $deleteStatusValue = $deleteStatusMap[$deleteStatusValue] ?? 'pending';

@@ -122,7 +122,8 @@
                                     <th>SĐT</th>
                                     <th>Địa chỉ</th>
                                     <th>Tổng tiền</th>
-                                    <th>Trạng thái đơn</th>
+                                    <th>Trạng thái giao hàng</th>
+                                    <th>Trạng thái trả hàng</th>
                                     <th>Thanh toán</th>
                                     <th>Chi tiết</th>
                                 </tr>
@@ -148,10 +149,6 @@
                                                         '4' => 'received',
                                                         '5' => 'completed',
                                                         '6' => 'cancelled',
-                                                        '7' => 'returning',
-                                                        '8' => 'approved',
-                                                        '9' => 'refunded',
-                                                        '10' => 'pending',
                                                     ];
                                                     $statusValue = $statusMap[$statusValue] ?? 'pending';
                                                 }
@@ -186,21 +183,33 @@
                                                     <span class="badge bg-danger status-badge">Đã hủy</span>
                                                 @break
 
-                                                @case('returning')
-                                                    <span class="badge bg-warning text-dark status-badge">Đang trả hàng</span>
-                                                @break
-
-                                                @case('approved')
-                                                    <span class="badge bg-info text-dark status-badge">Đã trả hàng</span>
-                                                @break
-
-                                                @case('rejected')
-                                                    <span class="badge bg-danger status-badge">Bị từ chối</span>
-                                                @break
-
                                                 @default
                                                     <span class="badge bg-secondary status-badge">Không rõ</span>
                                             @endswitch
+                                        </td>
+
+                                        <td>
+                                            @if ($order->returnStatus)
+                                                <span class="badge 
+                                                    @switch($order->returnStatus->status)
+                                                        @case('pending')
+                                                            bg-warning
+                                                            @break
+                                                        @case('approved')
+                                                            bg-success
+                                                            @break
+                                                        @case('rejected')
+                                                            bg-danger
+                                                            @break
+                                                        @default
+                                                            bg-secondary
+                                                    @endswitch
+                                                ">
+                                                    {{ $order->returnStatus->statusText }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-light text-muted">Không trả hàng</span>
+                                            @endif
                                         </td>
 
                                         <td>
@@ -213,15 +222,8 @@
                                             @switch($statusValue)
                                                 @case('refunded')
                                                 @case('returned')
-                                                @case('approved')
                                                     <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
                                                         {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-                                                    </span>
-                                                @break
-
-                                                @case('returning')
-                                                    <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-                                                        {{ $isMomo ? 'Đang hoàn tiền' : 'Chưa thanh toán' }}
                                                     </span>
                                                 @break
 
@@ -236,7 +238,7 @@
                                             <a href="{{ route('client.orders.show', $order->id) }}"
                                                 class="btn btn-sm btn-outline-primary">Xem</a>
 
-                                            @if ($statusValue == 'received')
+                                            @if ($order->canCompleteInIndex())
                                                 <form action="{{ route('orders.confirm', $order->id) }}" method="POST"
                                                     style="display:inline;" class="mt-1">
                                                     @csrf

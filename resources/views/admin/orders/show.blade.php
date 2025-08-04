@@ -35,13 +35,18 @@
             color: #fff;
         }
 
-        .badge-returning {
+        .badge-return-pending {
             background-color: #ffc107;
             color: #000;
         }
 
-        .badge-refunded-approved {
-            background-color: #fd7e14;
+        .badge-return-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .badge-return-rejected {
+            background-color: #dc3545;
             color: #fff;
         }
 
@@ -119,12 +124,12 @@
         }
     </style>
 
-    {{-- Timeline tiến trình trạng thái --}}
+    {{-- Progress bar tiến trình giao hàng --}}
     @php
         $statuses = [
             'pending' => 'Chờ xử lý',
-            'confirmed' => 'Đã xác nhận',
-            'shipping' => 'Đã giao cho ĐVVC',
+            'confirmed' => 'Đã xác nhận', 
+            'shipping' => 'Giao cho ĐVVC',
             'delivering' => 'Đang giao',
             'received' => 'Đã nhận',
             'completed' => 'Hoàn thành',
@@ -138,54 +143,41 @@
             '5' => 'completed',
             '6' => 'cancelled',
         ];
-        $statusValue = is_numeric($order->status) ? $statusMap[(string) $order->status] ?? 'pending' : $order->status;
+        $statusValue = is_numeric($order->status) 
+            ? $statusMap[(string) $order->status] ?? 'pending' 
+            : $order->status;
         $statusKeys = array_keys($statuses);
         $currentStatusIndex = array_search($statusValue, $statusKeys);
         $isCancelled = $statusValue === 'cancelled';
-        $isReturning = $statusValue === 'returning';
-        $isReturned = $statusValue === 'approved';
     @endphp
 
-    @if (!$isCancelled && !$isReturning && !$isReturned)
-        <div class="progress" style="height: 10px; margin-top: -10px; margin-bottom: 10px;">
-            @foreach ($statuses as $key => $label)
-                <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-success' : 'bg-secondary' }}"
-                    style="width: {{ 100 / count($statuses) }}%"></div>
-            @endforeach
-        </div>
-        <div class="d-flex justify-content-between small mb-4 px-1">
-            @foreach ($statuses as $key => $label)
-                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-success fw-bold' : 'text-muted' }}"
-                    style="width: {{ 100 / count($statuses) }}%">
-                    {{ $label }}
-                </div>
-            @endforeach
-        </div>
-    @else
-        @if ($isReturned)
-            <div class="alert alert-success text-center mb-4">
-                <i class="fas fa-undo-alt me-2"></i> Đơn hàng đã được trả hàng
+    <div class="mb-4">
+        @if ($isCancelled)
+            <div class="alert alert-danger text-center mb-2">
+                <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
             </div>
-        @elseif ($isReturning)
-            <div class="alert alert-warning text-center mb-4">
-                <i class="fas fa-undo me-2"></i> Đơn hàng đang trong quá trình trả hàng
+        @else
+            {{-- Progress bar giao hàng --}}
+            <div class="progress" style="height: 10px;">
+                @foreach ($statuses as $key => $label)
+                    <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-primary' : 'bg-secondary' }}"
+                        style="width: {{ 100 / count($statuses) }}%"></div>
+                @endforeach
             </div>
-        @elseif ($isCancelled)
-            <div class="alert alert-danger text-center mb-4">
-                <i class="fas fa-times-circle me-2"></i> Đơn hàng đã bị hủy
+            <div class="d-flex justify-content-between mt-2 small">
+                @foreach ($statuses as $key => $label)
+                    <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-primary fw-bold' : 'text-muted' }}"
+                        style="width: {{ 100 / count($statuses) }}%">
+                        {{ $label }}
+                    </div>
+                @endforeach
             </div>
         @endif
-    @endif
+    </div>
 
 
-    {{-- Đặt timeline ngay dưới đây --}}
     {{-- Timeline chi tiết lịch sử trạng thái --}}
-    @if (
-        !$isCancelled &&
-            $order->statusHistories &&
-            $order->statusHistories->count() &&
-            !in_array($order->status, ['returning', 'approved']))
-
+    @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
@@ -253,6 +245,35 @@
         </div>
     </div>
 
+    {{-- Hiển thị trạng thái trả hàng --}}
+    @if ($order->returnStatus)
+        <div class="alert alert-info mb-4">
+            <h6 class="mb-2"><i class="fas fa-undo me-2"></i>Trạng thái trả hàng</h6>
+            <span class="badge 
+                @switch($order->returnStatus->status)
+                    @case('pending')
+                        badge-return-pending
+                        @break
+                    @case('approved')
+                        badge-return-approved
+                        @break
+                    @case('rejected')
+                        badge-return-rejected
+                        @break
+                    @default
+                        badge-secondary
+                @endswitch
+            ">
+                {{ $order->returnStatus->statusText }}
+            </span>
+            @if ($order->returnStatus->admin_note)
+                <div class="mt-2">
+                    <small class="text-muted">Ghi chú: {{ $order->returnStatus->admin_note }}</small>
+                </div>
+            @endif
+        </div>
+    @endif
+
 
 
     </div>
@@ -313,24 +334,28 @@
                                     <td>
                                         @if ($product)
                                             <div><strong>{{ $product->name }}</strong></div>
+                                        @else
+                                            <div class="text-danger">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                Sản phẩm không còn tồn tại
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td>
                                         {{-- Hiển thị các biến thể (attribute values) --}}
-                                        @foreach ($detail->variant->attributeValues as $attributeValue)
-                                            <span class="badge bg-light text-dark border">
-                                                {{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}
-                                            </span>
-                                        @endforeach
+                                        @if($detail->variant && $detail->variant->attributeValues->count() > 0)
+                                            @foreach ($detail->variant->attributeValues as $attributeValue)
+                                                <span class="badge bg-light text-dark border">
+                                                    {{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}
+                                                </span>
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">Không có</span>
+                                        @endif
                                     </td>
-                                @else
-                                    <div class="text-danger">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        Sản phẩm không còn tồn tại
-                                    </div>
-                            @endif
-                            </td>
-                            <td>{{ $detail->quantity }}</td>
-                            <td>{{ format_vnd($detail->price) }} đ</td>
-                            <td>{{ format_vnd($detail->price * $detail->quantity) }} đ</td>
+                                    <td>{{ $detail->quantity }}</td>
+                                    <td>{{ format_vnd($detail->price) }} đ</td>
+                                    <td>{{ format_vnd($detail->price * $detail->quantity) }} đ</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -390,19 +415,6 @@
                             @case('returned')
                                 {{-- Đã trả hàng xong --}}
                                 <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
-                                    {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-                                </span>
-                            @break
-
-                            @case('returning')
-                                {{-- Đang trả hàng --}}
-                                <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-                                    {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
-                                </span>
-                            @break
-
-                            @case('approved')
-                                <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
                                     {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
                                 </span>
                             @break

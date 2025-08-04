@@ -99,4 +99,99 @@ public function statusHistories()
         'total',
         'discount',
     ];
+
+    // Quan hệ với OrderReturnStatus
+    public function returnStatus()
+    {
+        return $this->hasOne(OrderReturnStatus::class);
+    }
+
+    // Lấy hoặc tạo trạng thái trả hàng
+    public function getOrCreateReturnStatus()
+    {
+        if (!$this->returnStatus) {
+            $this->returnStatus()->create([
+                'overall_status' => 'none'
+            ]);
+            $this->load('returnStatus');
+        }
+        return $this->returnStatus;
+    }
+
+    // Kiểm tra xem đơn hàng có thể trả hàng không
+    public function canReturn()
+    {
+        return in_array($this->status, ['received', 'completed']);
+    }
+
+    // Kiểm tra xem đơn hàng có thể hoàn thành không
+    public function canComplete()
+    {
+        // Phải ở trạng thái 'received' mới có thể hoàn thành
+        if ($this->status !== 'received') {
+            return false;
+        }
+
+        // Kiểm tra trạng thái trả hàng của các sản phẩm
+        $orderDetails = $this->orderDetails;
+        
+        // Nếu tất cả sản phẩm đều được duyệt trả hàng thì không thể hoàn thành đơn
+        $approvedReturns = $orderDetails->where('return_status', 'approved')->count();
+        $totalItems = $orderDetails->count();
+        
+        if ($approvedReturns == $totalItems) {
+            return false; // Tất cả sản phẩm đều trả hàng -> không thể hoàn thành
+        }
+
+        // Nếu có sản phẩm đang chờ duyệt trả hàng thì không thể hoàn thành
+        $pendingReturns = $orderDetails->where('return_status', 'pending')->count();
+        if ($pendingReturns > 0) {
+            return false; // Có sản phẩm đang chờ duyệt -> không thể hoàn thành
+        }
+
+        return true;
+    }
+
+    // Kiểm tra xem có thể xác nhận hoàn thành trong view index không
+    public function canCompleteInIndex()
+    {
+        // Chỉ được xác nhận ở index khi tất cả sản phẩm đều ở trạng thái 'none' (không trả hàng)
+        if ($this->status !== 'received') {
+            return false;
+        }
+
+        $orderDetails = $this->orderDetails;
+        $nonReturnItems = $orderDetails->where('return_status', 'none')->count();
+        $rejectedReturnItems = $orderDetails->where('return_status', 'rejected')->count();
+        $totalItems = $orderDetails->count();
+
+        // Có thể hoàn thành nếu tất cả sản phẩm đều không có yêu cầu trả hàng HOẶC bị từ chối trả hàng
+        return ($nonReturnItems + $rejectedReturnItems) == $totalItems;
+    }
+
+    // Cập nhật trạng thái trả hàng dựa trên các sản phẩm
+    public function updateReturnStatus()
+    {
+        $returnStatus = $this->getOrCreateReturnStatus();
+        
+        $totalItems = $this->orderDetails->count();
+        $pendingReturns = $this->orderDetails->where('return_status', 'pending')->count();
+        $approvedReturns = $this->orderDetails->where('return_status', 'approved')->count();
+        $rejectedReturns = $this->orderDetails->where('return_status', 'rejected')->count();
+        
+        if ($approvedReturns == $totalItems) {
+            $returnStatus->overall_status = 'completed';
+        } elseif ($approvedReturns > 0 || $pendingReturns > 0) {
+            if (($approvedReturns + $pendingReturns) == $totalItems) {
+                $returnStatus->overall_status = 'full';
+            } else {
+                $returnStatus->overall_status = 'partial';
+            }
+        } else {
+            $returnStatus->overall_status = 'none';
+        }
+        
+        $returnStatus->save();
+        return $returnStatus;
+    }
 }

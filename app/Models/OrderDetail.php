@@ -14,6 +14,7 @@ class OrderDetail extends Model
         'price',
         'total_price',
         'image', // thêm trường này nếu lưu ảnh vào order_details
+        'return_status',
     ];
 
     // Nếu muốn lấy đường dẫn đầy đủ
