@@ -209,6 +209,10 @@ Route::get('/news/{id}', [ClientNewsController::class, 'show'])->name('client.ne
 
 Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 
+    //danh mục client
+    Route::get('categories', [CategoryClientController::class, 'index'])->name('categories.index');
+    Route::get('category/{id}', [CategoryClientController::class, 'show'])->name('categories.show');
+
 // --- Routes cần auth ---
 Route::middleware(['auth'])->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -259,9 +263,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}', [ReturnRequestController::class, 'show'])->name('show');
     });
 
-    //danh mục client
-    Route::get('categories', [CategoryClientController::class, 'index'])->name('categories.index');
-    Route::get('category/{id}', [CategoryClientController::class, 'show'])->name('categories.show');
 
 });
 
