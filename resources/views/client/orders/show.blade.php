@@ -51,17 +51,20 @@
         color: #fff;
     }
 
-    .badge-returning {
-        background-color: #ffc107;
-        color: #000;
-    }
+        .badge-return-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
 
-    .badge-refunded-approved {
-        background-color: #fd7e14;
-        color: #fff;
-    }
+        .badge-return-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
 
-    .badge-paid {
+        .badge-return-rejected {
+            background-color: #dc3545;
+            color: #fff;
+        }    .badge-paid {
         background-color: #28a745;
         color: #fff;
     }
@@ -98,8 +101,6 @@
                 '4' => 'received',
                 '5' => 'completed',
                 '6' => 'cancelled',
-                '7' => 'returning',
-                '8' => 'approved',
             ];
             $statusValue = is_numeric($order->status)
                 ? $statusMap[(string) $order->status] ?? 'pending'
@@ -127,14 +128,6 @@
                 <div class="alert alert-danger text-center mb-2">
                     <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
                 </div>
-            @elseif ($statusValue === 'returning')
-                <div class="alert alert-warning text-center mb-2">
-                    <i class="fas fa-undo me-1"></i> Đơn hàng đang trong quá trình trả hàng
-                </div>
-            @elseif ($statusValue === 'approved')
-                <div class="alert alert-success text-center mb-2">
-                    <i class="fas fa-check-circle me-1"></i> Đơn hàng đã được trả hàng thành công
-                </div>
             @else
                 <div class="progress" style="height: 10px;">
                     @foreach ($trackerSteps as $key => $label)
@@ -153,11 +146,7 @@
             @endif
         </div>
         {{-- Timeline chi tiết lịch sử trạng thái --}}
-        @if (
-            !$isCancelled &&
-                $order->statusHistories &&
-                $order->statusHistories->count() &&
-                !in_array($order->status, ['returning', 'approved']))
+        @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
 
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
@@ -208,10 +197,6 @@
                                 <span class="badge bg-cyan">Đã nhận</span>
                             @elseif($statusValue == 'completed')
                                 <span class="badge bg-success">Hoàn thành</span>
-                            @elseif($statusValue == 'returning')
-                                <span class="badge bg-warning text-dark">Đang trả hàng</span>
-                            @elseif($statusValue == 'approved')
-                                <span class="badge bg-success">Đã trả hàng</span>
                             @else
                                 <span class="badge bg-secondary">{{ $statusValue }}</span>
                             @endif
@@ -219,6 +204,36 @@
                         <div class="mb-2 text-muted small"><i class="fas fa-calendar-alt me-1"></i> Ngày đặt:
                             {{ $order->created_at->format('d/m/Y H:i') }}
                         </div>
+
+                        {{-- Hiển thị trạng thái trả hàng --}}
+                        @if ($order->returnStatus)
+                            <div class="mb-2">
+                                <strong>Trạng thái trả hàng:</strong>
+                                <span class="badge 
+                                    @switch($order->returnStatus->status)
+                                        @case('pending')
+                                            badge-return-pending
+                                            @break
+                                        @case('approved')
+                                            badge-return-approved
+                                            @break
+                                        @case('rejected')
+                                            badge-return-rejected
+                                            @break
+                                        @default
+                                            bg-secondary
+                                    @endswitch
+                                ">
+                                    {{ $order->returnStatus->statusText }}
+                                </span>
+                                @if ($order->returnStatus->admin_note)
+                                    <div class="mt-1">
+                                        <small class="text-muted">Ghi chú: {{ $order->returnStatus->admin_note }}</small>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
                         <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
                             @php
                                 $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
@@ -228,15 +243,8 @@
                             @switch($statusValue)
                                 @case('refunded')
                                 @case('returned')
-                                @case('approved')
                                     <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
                                         {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-                                    </span>
-                                @break
-
-                                @case('returning')
-                                    <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-                                        {{ $isMomo ? 'Đang hoàn tiền' : 'Chưa thanh toán' }}
                                     </span>
                                 @break
 
@@ -255,6 +263,26 @@
                         <div class="mb-2"><strong>Ngày giao dự kiến:</strong>
                             {{ $order->created_at->addDays(3)->format('d/m/Y') }}
                         </div>
+                        @php
+                            $returnStatus = $order->returnStatus;
+                        @endphp
+                        @if($returnStatus && $returnStatus->overall_status !== 'none')
+                            <div class="mb-2"><strong>Trạng thái trả hàng:</strong>
+                                @switch($returnStatus->overall_status)
+                                    @case('partial')
+                                        <span class="badge bg-warning text-dark">Trả hàng một phần</span>
+                                        @break
+                                    @case('full')
+                                        <span class="badge bg-info">Trả hàng toàn bộ</span>
+                                        @break
+                                    @case('completed')
+                                        <span class="badge bg-success">Hoàn tất trả hàng</span>
+                                        @break
+                                    @default
+                                        <span class="badge bg-secondary">{{ $returnStatus->status_text }}</span>
+                                @endswitch
+                            </div>
+                        @endif
                         <hr>
                         <div class="mb-2"><strong>Người nhận:</strong>
                             {{ $order->recipient_name ?? $order->orderer_name }}
@@ -363,6 +391,16 @@
                             </div>
                         </div>
                     @endif
+                    
+                    {{-- Nút xác nhận hoàn thành đơn hàng trong view show --}}
+                    @if ($order->canComplete())
+                        <button type="button" class="btn btn-success flex-grow-1 flex-lg-grow-0 me-2 confirm-complete-btn"
+                            data-order-id="{{ $order->id }}"
+                            data-message="Bạn có chắc chắn muốn xác nhận hoàn thành đơn hàng này không?">
+                            <i class="fas fa-check-circle me-1"></i> Xác nhận hoàn thành
+                        </button>
+                    @endif
+                    
                     <a href="{{ route('client.orders.index') }}"
                         class="btn btn-outline-secondary flex-grow-1 flex-lg-grow-0">
                         ← Quay lại danh sách đơn hàng
@@ -452,7 +490,16 @@
                                                 </div>
 
                                                 {{-- Đánh giá nếu đơn đã hoàn thành --}}
-                                                @if ($statusValue === 'completed' && Auth::check())
+                                                @php
+                                                    // Chỉ hiển thị đánh giá khi:
+                                                    // 1. Đơn hàng đã hoàn thành
+                                                    // 2. Sản phẩm không được duyệt trả hàng (approved)
+                                                    // 3. Nếu bị từ chối trả hàng thì phải đợi đơn hoàn thành mới cho đánh giá
+                                                    $canRate = $statusValue === 'completed' && 
+                                                               $item->return_status !== 'approved' && 
+                                                               Auth::check();
+                                                @endphp
+                                                @if ($canRate)
                                                     @if (!$hasRated)
                                                         <form
                                                             action="{{ route('client.rates.store', [$product->id, $item->id]) }}"
@@ -494,10 +541,38 @@
                                                     @endif
                                                 @endif
 
-                                                {{-- Trả hàng nếu đã nhận --}}
-                                                @if ($statusValue === 'received' && Auth::check() && !optional($item->returnRequest)->exists())
+                                                {{-- Trả hàng nếu đơn hàng đã được nhận và sản phẩm chưa có yêu cầu trả hàng --}}
+                                                @php
+                                                    // Kiểm tra xem đơn hàng có thể trả hàng chưa (dựa trên trạng thái giao hàng)
+                                                    // Không thể trả hàng nếu đơn hàng đã hoàn thành
+                                                    $canReturn = $order->canReturn() && $statusValue !== 'completed';
+                                                @endphp
+                                                @if ($canReturn && Auth::check() && $item->return_status === 'none')
                                                     <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
-                                                        class="btn btn-warning btn-sm mt-1">Trả hàng</a>
+                                                        class="btn btn-sm bg-secondary text-white mt-1">Trả hàng</a>
+                                                @elseif($item->return_status === 'pending')
+                                                    <div class="mt-2 alert alert-warning p-2 small">
+                                                        <i class="fas fa-clock me-1"></i> Đang chờ duyệt trả hàng
+                                                    </div>
+                                                @elseif($item->return_status === 'approved')
+                                                    <div class="mt-2 alert alert-success p-2 small">
+                                                        <i class="fas fa-check-circle me-1"></i> Đã được duyệt trả hàng
+                                                    </div>
+                                                @elseif($item->return_status === 'rejected')
+                                                    {{-- Chỉ hiển thị thông báo từ chối nếu đơn hàng chưa hoàn thành --}}
+                                                    @if($statusValue !== 'completed')
+                                                        <div class="mt-2 alert alert-danger p-2 small">
+                                                            <i class="fas fa-times-circle me-1"></i> Yêu cầu trả hàng bị từ chối
+                                                        </div>
+                                                        {{-- Nút xác nhận hoàn thành cho sản phẩm bị từ chối trả hàng --}}
+                                                        @if($statusValue === 'received' && $order->canComplete())
+                                                            <button type="button" class="btn btn-success btn-sm mt-1 confirm-complete-btn"
+                                                                data-order-id="{{ $order->id }}"
+                                                                data-message="Xác nhận hoàn thành đơn hàng này? Sản phẩm bị từ chối trả hàng sẽ được coi là hoàn thành.">
+                                                                <i class="fas fa-check-circle me-1"></i> Xác nhận hoàn thành
+                                                            </button>
+                                                        @endif
+                                                    @endif
                                                 @endif
                                             </td>
 
@@ -512,4 +587,120 @@
             </div>
         </div>
     </div>
+
+<!-- Modal xác nhận hoàn thành -->
+<div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmCompleteModalLabel">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Xác nhận hoàn thành đơn hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="confirmCompleteIcon" class="mb-3">
+                    <i class="fas fa-check-circle" style="font-size: 48px; color: #28a745;"></i>
+                </div>
+                <p id="confirmCompleteMessage" class="mb-0"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-success" id="confirmCompleteButton">
+                    <i class="fas fa-check-circle me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Function để hiển thị alert
+function showAlert(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Function để hiển thị modal xác nhận hoàn thành
+function showConfirmCompleteModal(message, onConfirm) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmCompleteModal'));
+    const confirmMessage = document.getElementById('confirmCompleteMessage');
+    const confirmButton = document.getElementById('confirmCompleteButton');
+    
+    // Cập nhật nội dung modal
+    confirmMessage.textContent = message;
+    
+    // Xóa event listener cũ và thêm mới
+    const newConfirmButton = confirmButton.cloneNode(true);
+    confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+    
+    // Thêm event listener cho nút xác nhận
+    newConfirmButton.addEventListener('click', function() {
+        modal.hide();
+        onConfirm();
+    });
+    
+    // Hiển thị modal
+    modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    // Xử lý nút xác nhận hoàn thành
+    document.querySelectorAll('.confirm-complete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            const message = this.dataset.message;
+            
+            showConfirmCompleteModal(message, () => {
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
+                this.disabled = true;
+                
+                if (!csrfToken) {
+                    showAlert('Lỗi CSRF token không tìm thấy!', 'danger');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    return;
+                }
+                
+                // Tạo form ẩn để submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/lich-su-don-hang/${orderId}/confirm`;
+                form.style.display = 'none';
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    });
+});
+</script>
 @endsection

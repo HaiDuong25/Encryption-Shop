@@ -57,23 +57,25 @@ public function updateStatus(Request $request, $id)
     $return->status = $request->status;
     $return->save();
 
-    // ✅ Cập nhật trạng thái đơn hàng liên quan
-    if ($return->order) {
-        if ($request->status === 'returning') {
-            $return->order->status = 'returning';
-        } elseif ($request->status === 'approved') {
-            $return->order->status = 'approved';
-
+    // ✅ Cập nhật trạng thái trả hàng cho OrderDetail cụ thể
+    $orderDetail = $return->orderDetail;
+    if ($orderDetail) {
+        if ($request->status === 'approved') {
+            $orderDetail->return_status = 'approved';
+            
             // ✅ Cập nhật lại tồn kho của biến thể sản phẩm
-            $variant = $return->orderDetail->variant;
+            $variant = $orderDetail->variant;
             if ($variant) {
-                $variant->stock += $return->orderDetail->quantity;
+                $variant->stock += $orderDetail->quantity;
                 $variant->save();
             }
         } elseif ($request->status === 'rejected') {
-            $return->order->status = 'received'; // hoặc giữ nguyên nếu bạn muốn
+            $orderDetail->return_status = 'rejected';
         }
-        $return->order->save();
+        $orderDetail->save();
+
+        // ✅ Cập nhật trạng thái trả hàng của đơn hàng (không ảnh hưởng đến trạng thái giao hàng)
+        $orderDetail->order->updateReturnStatus();
     }
 
     return redirect()->route('admin.returns.index')->with('success', 'Cập nhật trạng thái thành công.');

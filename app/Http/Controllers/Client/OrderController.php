@@ -178,62 +178,51 @@ public function cancel(Request $request, Order $order)
     {
         $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-        // Chuyển đổi trạng thái sang chuẩn để xử lý
-        $statusValue = $order->status;
-        if (is_numeric($statusValue)) {
-            $statusMap = [
-                '0' => 'pending',
-                '1' => 'confirmed',
-                '2' => 'shipping',
-                '3' => 'delivering',
-                '4' => 'received',
-                '5' => 'completed',
-                '6' => 'cancelled',
-            ];
-            $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
+        // Kiểm tra xem đơn hàng có thể hoàn thành không
+        if (!$order->canComplete()) {
+            return back()->with('error', 'Đơn hàng này không thể hoàn thành lúc này.');
         }
 
-        // Chỉ cho phép xác nhận khi đơn hàng ở trạng thái "Đã nhận"
-        if ($statusValue === 'received') {
-            DB::beginTransaction();
-            try {
-                $oldStatus = $order->getOriginal('status');
-                $order->update(['status' => 'completed']);
+        DB::beginTransaction();
+        try {
+            $oldStatus = $order->getOriginal('status');
+            $order->update(['status' => 'completed']);
 
-                // Lưu lịch sử thay đổi trạng thái
-                $order->statusHistories()->create([
-                    'old_status' => $oldStatus,
-                    'new_status' => 'completed',
-                    'description' => 'Khách xác nhận đã nhận hàng',
-                    'changed_by' => Auth::id(),
-                ]);
+            // Lưu lịch sử thay đổi trạng thái
+            $order->statusHistories()->create([
+                'old_status' => $oldStatus,
+                'new_status' => 'completed',
+                'description' => 'Khách xác nhận đã nhận hàng',
+                'changed_by' => Auth::id(),
+            ]);
 
-                // Nếu là COD thì cập nhật trạng thái thanh toán
-                if ($order->paymentMethod && strtolower($order->paymentMethod->payment_type) === 'cod') {
-                    // Tìm payment chưa xác nhận hoặc tạo mới nếu chưa có
-                    $payment = $order->payments()->where('status', 'pending')->first();
-                    if (!$payment) {
-                        $payment = $order->payments()->create([
-                            'amount' => $order->total_price,
-                            'payment_method_id' => $order->payment_method_id,
-                            'status' => 'completed', // Sửa lại từ 'confirmed' thành 'completed'
-                            'confirmed_at' => now(),
-                        ]);
-                    } else {
-                        $payment->update([
-                            'status' => 'completed', // Sửa lại từ 'confirmed' thành 'completed'
-                            'confirmed_at' => now(),
-                        ]);
-                    }
+            // Nếu là COD thì cập nhật trạng thái thanh toán
+            if ($order->paymentMethod && strtolower($order->paymentMethod->payment_type) === 'cod') {
+                // Tìm payment chưa xác nhận hoặc tạo mới nếu chưa có
+                $payment = $order->payments()->where('status', 'pending')->first();
+                if (!$payment) {
+                    $payment = $order->payments()->create([
+                        'amount' => $order->total_price,
+                        'payment_method_id' => $order->payment_method_id,
+                        'status' => 'completed',
+                        'confirmed_at' => now(),
+                    ]);
+                } else {
+                    $payment->update([
+                        'status' => 'completed',
+                        'confirmed_at' => now(),
+                    ]);
                 }
-                DB::commit();
-                return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành và đã cập nhật trạng thái thanh toán.');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return back()->with('error', 'Có lỗi khi xác nhận hoàn thành: ' . $e->getMessage());
             }
-        }
 
-        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái "Đã nhận".');
+            // Cập nhật trạng thái trả hàng nếu cần
+            $order->updateReturnStatus();
+
+            DB::commit();
+            return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Có lỗi khi xác nhận hoàn thành: ' . $e->getMessage());
+        }
     }
 }
