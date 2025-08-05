@@ -15,7 +15,33 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $products = Product::where('status', 'active')->latest()->take(12)->get();
+        // Lấy 12 sản phẩm nổi bật sắp xếp theo lượt bán và đánh giá
+        $products = Product::with([
+            'rates' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])
+            ->leftJoin('order_details', 'products.id', '=', 'order_details.product_id')
+            ->leftJoin('orders', 'order_details.order_id', '=', 'orders.id')
+            ->select('products.*')
+            ->selectRaw('COALESCE(SUM(order_details.quantity), 0) as total_sales')
+            ->selectRaw('COALESCE(SUM(CASE 
+                WHEN orders.created_at >= ? AND orders.created_at <= ? AND orders.status IN ("completed", "delivered") 
+                THEN order_details.quantity 
+                ELSE 0 
+            END), 0) as monthly_sales', [
+                now()->startOfMonth(),
+                now()->endOfMonth()
+            ])
+            ->withAvg('rates as avg_rating', 'score')
+            ->withCount('rates as ratings_count')
+            ->where('products.status', 'active')
+            ->groupBy('products.id')
+            ->orderByDesc('monthly_sales')
+            ->orderByDesc('avg_rating')
+            ->orderByDesc('total_sales')
+            ->take(12)
+            ->get();
         $banners = Banner::where('is_active', true)
             ->orderBy('position', 'asc')
             ->get();
@@ -39,7 +65,7 @@ class HomeController extends Controller
                 ->latest()
                 ->take(6)
                 ->get();
-                
+
             // Lấy danh sách mã đã lưu của user
             $userSavedCoupons = Auth::user()->savedCoupons()
                 ->with('coupon')
@@ -52,7 +78,7 @@ class HomeController extends Controller
                 ->latest()
                 ->take(6)
                 ->get();
-                
+
             $userSavedCoupons = [];
         }
 
