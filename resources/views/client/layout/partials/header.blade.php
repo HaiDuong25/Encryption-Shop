@@ -45,13 +45,18 @@
                             <input type="hidden" name="min_price" value="{{ request('min_price') }}">
                             <input type="hidden" name="max_price" value="{{ request('max_price') }}">
 
-                            <div class="input-group shadow rounded search-input-group">
+                            <div class="input-group shadow rounded search-input-group position-relative">
                                 <input type="text" class="form-control border-0 search-input" id="search-product"
                                     name="keyword" placeholder="🔍 Tìm kiếm sản phẩm..."
-                                    value="{{ request('keyword') }}">
+                                    value="{{ request('keyword') }}" autocomplete="off">
                                 <button type="submit" class="btn btn-primary search-button">
                                     <i class="fa fa-search me-1"></i> Tìm kiếm
                                 </button>
+                                
+                                <!-- Dropdown hiển thị kết quả tìm kiếm real-time -->
+                                <div id="search-dropdown" class="search-dropdown position-absolute w-100 bg-white border rounded-bottom shadow-lg" style="top: 100%; left: 0; z-index: 9999 !important; max-height: 400px; overflow-y: auto; display: none;">
+                                    <div id="search-results"></div>
+                                </div>
                             </div>
 
                         </form>
@@ -322,6 +327,136 @@
         transform: scale(0.95);
     }
 </style>
+
+<style>
+/* Real-time Search Dropdown Styles */
+.search-dropdown {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.search-result-item {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(5px);
+}
+
+.search-result-item.selected {
+    background-color: #e3f2fd !important;
+    transform: translateX(5px);
+}
+
+.search-result-image {
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s ease;
+}
+
+.search-result-item:hover .search-result-image {
+    transform: scale(1.05);
+}
+
+.search-result-name {
+    color: #333;
+    line-height: 1.3;
+}
+
+.search-result-price {
+    color: #dc3545 !important;
+    font-weight: 600;
+}
+
+.search-result-category {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.search-view-all {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.search-view-all .btn-link {
+    color: #007bff !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.search-view-all .btn-link:hover {
+    background: rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.search-input-group {
+    position: relative;
+    z-index: 1050;
+}
+
+.search-dropdown {
+    z-index: 1060 !important;
+}
+
+/* Loading animation */
+.search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.search-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .search-dropdown {
+        max-height: 300px;
+    }
+    
+    .search-result-item {
+        padding: 0.75rem !important;
+    }
+    
+    .search-result-image {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .search-result-name {
+        font-size: 13px !important;
+    }
+    
+    .search-result-price {
+        font-size: 12px !important;
+    }
+}
+</style>
+
 <style>
 /* Dropdown toàn bộ */
 .dropdown-menu {
@@ -407,6 +542,9 @@
 
         // Update coupon badge on page load
         updateHeaderCouponBadge();
+
+        // Real-time search functionality
+        initializeRealTimeSearch();
     });
 
     // Function to update header coupon badge
@@ -421,11 +559,140 @@
         }
     }
 
-    // Make it globally available
-    window.updateHeaderCouponBadge = updateHeaderCouponBadge;
-                isOpen = false;
+    // Real-time search functionality
+    function initializeRealTimeSearch() {
+        const searchInput = document.getElementById('search-product');
+        const searchDropdown = document.getElementById('search-dropdown');
+        const searchResults = document.getElementById('search-results');
+        let searchTimeout;
+
+        console.log('Initializing search...', {searchInput, searchDropdown, searchResults});
+
+        if (!searchInput || !searchDropdown || !searchResults) {
+            console.error('Search elements not found!');
+            return;
+        }
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            console.log('Search query:', query);
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                searchDropdown.style.display = 'none';
+                return;
+            }
+
+            // Show loading
+            searchResults.innerHTML = '<div class="search-loading p-3 text-center text-muted">Đang tìm kiếm...</div>';
+            searchDropdown.style.display = 'block';
+
+            searchTimeout = setTimeout(() => {
+                const url = `{{ route('client.products.search') }}?query=${encodeURIComponent(query)}`;
+                console.log('Fetching:', url);
+                
+                fetch(url)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(products => {
+                        console.log('Products found:', products);
+                        displaySearchResults(products);
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<div class="p-3 text-danger text-center"><i class="fa fa-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tìm kiếm</div>';
+                    });
+            }, 300);
+        });
+
+        function displaySearchResults(products) {
+            if (products.length === 0) {
+                searchResults.innerHTML = '<div class="p-3 text-muted text-center"><i class="fa fa-search me-2"></i>Không tìm thấy sản phẩm nào</div>';
+                searchDropdown.style.display = 'block';
+                return;
+            }
+
+            const html = products.map(product => `
+                <a href="${product.url}" class="search-result-item d-flex align-items-center p-3 text-decoration-none border-bottom hover-bg-light">
+                    <img src="${product.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23f8f9fa\'/%3E%3Ctext x=\'50%\' y=\'50%\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236c757d\' font-family=\'Arial\' font-size=\'20\'%3E📦%3C/text%3E%3C/svg%3E'}" 
+                         alt="${product.name}" 
+                         class="search-result-image me-3 rounded"
+                         style="width: 50px; height: 50px; object-fit: cover;"
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23f8f9fa\'/%3E%3Ctext x=\'50%\' y=\'50%\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236c757d\' font-family=\'Arial\' font-size=\'20\'%3E📦%3C/text%3E%3C/svg%3E'">
+                    <div class="search-result-info flex-grow-1">
+                        <div class="search-result-name fw-semibold text-dark mb-1" style="font-size: 14px;">${product.name}</div>
+                        ${product.category_name ? `<div class="search-result-category text-muted mb-1" style="font-size: 12px;"><i class="fa fa-tag me-1"></i>${product.category_name}</div>` : ''}
+                        <div class="search-result-price text-primary fw-bold" style="font-size: 13px;">${product.formatted_price}₫</div>
+                    </div>
+                    <i class="fa fa-arrow-right text-muted ms-2"></i>
+                </a>
+            `).join('');
+
+            // Add view all results link
+            const viewAllHtml = `
+                <div class="search-view-all border-top">
+                    <button type="submit" class="btn btn-link text-primary w-100 py-3 text-decoration-none">
+                        <i class="fa fa-search me-2"></i>Xem tất cả kết quả tìm kiếm
+                        <i class="fa fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            `;
+
+            searchResults.innerHTML = html + viewAllHtml;
+            searchDropdown.style.display = 'block';
+        }
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                searchDropdown.style.display = 'none';
             }
         });
-    });
+
+        // Show dropdown when focusing on input (if has content)
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2 && searchResults.innerHTML.trim()) {
+                searchDropdown.style.display = 'block';
+            }
+        });
+
+        // Keyboard navigation
+        let selectedIndex = -1;
+        searchInput.addEventListener('keydown', function(e) {
+            const items = searchDropdown.querySelectorAll('.search-result-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(items);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                items[selectedIndex].click();
+            } else if (e.key === 'Escape') {
+                searchDropdown.style.display = 'none';
+                selectedIndex = -1;
+            }
+        });
+
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+    }
+
+    // Make it globally available
+    window.updateHeaderCouponBadge = updateHeaderCouponBadge;
 </script>
 

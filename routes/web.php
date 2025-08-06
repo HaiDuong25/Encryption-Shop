@@ -54,6 +54,7 @@ Route::get('/products', [ClientProductController::class, 'index'])->name('client
 Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
 Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
 Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('client.products.getStock');
+Route::get('/api/search-products', [ClientProductController::class, 'searchProducts'])->name('client.products.search');
 
 // --- Tin tức ---
 Route::get('/news', [ClientNewsController::class, 'index'])->name('client.news.index');

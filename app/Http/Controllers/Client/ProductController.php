@@ -151,7 +151,43 @@ public function getStock(Request $request)
     ]);
 }
 
+public function searchProducts(Request $request)
+{
+    $query = $request->get('query', '');
+    
+    if (strlen($query) < 2) {
+        return response()->json([]);
+    }
 
+    $products = Product::where('status', 1)
+        ->where(function($q) use ($query) {
+            $q->where('name', 'like', '%' . $query . '%')
+              ->orWhere('description', 'like', '%' . $query . '%')
+              ->orWhereHas('category', function($categoryQuery) use ($query) {
+                  $categoryQuery->where('name', 'like', '%' . $query . '%');
+              });
+        })
+        ->with('category')
+        ->select('id', 'name', 'image', 'price', 'sale_price', 'description', 'category_id')
+        ->limit(8)
+        ->get()
+        ->map(function ($product) {
+            $images = json_decode($product->image, true);
+            $mainImage = is_array($images) && !empty($images) ? $images[0] : $product->image;
+            
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'image' => $mainImage ? asset('storage/' . $mainImage) : null,
+                'price' => $product->price,
+                'sale_price' => $product->sale_price,
+                'formatted_price' => $product->sale_price ? format_vnd($product->sale_price) : format_vnd($product->price),
+                'category_name' => $product->category ? $product->category->name : '',
+                'url' => route('client.products.show', $product->id)
+            ];
+        });
 
+    return response()->json($products);
+}
 
 }
