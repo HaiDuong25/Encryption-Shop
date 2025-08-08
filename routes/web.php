@@ -130,7 +130,7 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::post('/attributes/{attribute}/values', [AttributeValueController::class, 'storeAjax']);
 
     // Orders
-    Route::resource('orders', OrderController::class)->except(['create', 'store']);
+    Route::resource('orders', OrderController::class)->except(['create', 'store', 'edit']);
     Route::get('orders/{id}/tracking', [OrderController::class, 'tracking'])->name('admin.orders.tracking');
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');

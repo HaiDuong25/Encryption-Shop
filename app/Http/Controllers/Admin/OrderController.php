@@ -50,69 +50,58 @@ class OrderController extends \App\Http\Controllers\Controller
             'paymentMethod',
             'coupon',
             'payments',
-            'user'
+            'user',
+            'statusHistories.user' // Load relationship với User cho statusHistories
         ]);
         return view('admin.orders.show', compact('order'));
     }
-
-    public function edit(Order $order)
-    {
-        $order->load(['coupon']); // Load relationship với bảng coupons
-        $users = User::all();
-        $coupons = Coupon::all();
-        $paymentMethods = PaymentMethod::all();
-
-        // Thêm danh sách các trạng thái để hiển thị đúng label trong view
-        $statuses = [
-            'pending' => 'Chờ xử lý',
-            'confirmed' => 'Đã xác nhận',
-            'shipping' => 'Đã giao cho ĐVVC',
-            'delivering' => 'Đang giao',
-            'received' => 'Đã nhận',
-            'completed' => 'Hoàn thành',
-            'cancelled' => 'Đã hủy',
-            'returning' => 'Đang trả hàng',
-            'approved' => 'Đã trả hàng',
-            'rejected' => 'Từ chối trả',
-        ];
-
-        return view('admin.orders.edit', compact('order', 'users', 'coupons', 'paymentMethods', 'statuses'));
-    }
-
 
     public function update(Request $request, Order $order)
     {
         $validated = $request->validate([
             'status' => 'required|string|in:pending,confirmed,shipping,delivering,received,completed,cancelled,returning,approved,rejected',
+            'cancel_reason' => 'required_if:status,cancelled|nullable|string|max:255',
+            'cancel_note' => 'required_if:status,cancelled|nullable|string|max:1000',
         ]);
-
 
         try {
             DB::beginTransaction();
 
             $oldStatus = $order->getOriginal('status');
+            $newStatus = $validated['status'];
+
+            // Validate status transition logic
+            $this->validateStatusTransition($oldStatus, $newStatus);
 
             // Load quan hệ cần thiết
             $order->load('orderDetails.variant', 'orderDetails.product');
 
             // Nếu cần thì cộng tồn trước
-            if ($oldStatus !== $validated['status'] && $validated['status'] === 'approved') {
+            if ($oldStatus !== $newStatus && $newStatus === 'approved') {
                 $this->restoreStock($order);
             }
 
-            // Sau đó mới update trạng thái
-            $order->update([
-                'status' => $validated['status'],
-            ]);
+            // Cập nhật dữ liệu đơn hàng
+            $updateData = [
+                'status' => $newStatus,
+            ];
+
+            // Nếu trạng thái là cancelled, thêm thông tin hủy đơn
+            if ($newStatus === 'cancelled') {
+                $updateData['cancel_reason'] = $validated['cancel_reason'];
+                $updateData['cancel_note'] = $validated['cancel_note'];
+            }
+
+            $order->update($updateData);
 
 
             // Xử lý logic thanh toán và hóa đơn khi chuyển trạng thái
-            if ($oldStatus !== $validated['status']) {
-                $this->handlePaymentAndInvoiceLogic($order, $oldStatus, $validated['status']);
+            if ($oldStatus !== $newStatus) {
+                $this->handlePaymentAndInvoiceLogic($order, $oldStatus, $newStatus);
 
                 $order->statusHistories()->create([
                     'old_status' => $oldStatus,
-                    'new_status' => $validated['status'],
+                    'new_status' => $newStatus,
                     'description' => $request->input('note') ?? null,
                     'changed_by' => auth()?->id(),
                 ]);
@@ -442,5 +431,63 @@ class OrderController extends \App\Http\Controllers\Controller
             Log::error("Error handling payment and invoice logic for order {$order->id}: " . $e->getMessage());
             // Không throw exception để không ảnh hưởng đến việc cập nhật đơn hàng
         }
+    }
+
+    /**
+     * Validate status transition logic
+     */
+    private function validateStatusTransition($oldStatus, $newStatus)
+    {
+        // Convert numeric status to string for compatibility
+        $statusMap = [
+            '0' => 'pending',
+            '1' => 'confirmed',
+            '2' => 'shipping',
+            '3' => 'delivering',
+            '4' => 'received',
+            '5' => 'completed',
+            '6' => 'cancelled',
+            '7' => 'returning',
+            '8' => 'approved',
+            '9' => 'rejected',
+        ];
+
+        if (is_numeric($oldStatus)) {
+            $oldStatus = $statusMap[$oldStatus] ?? 'pending';
+        }
+
+        // Define status order and final statuses
+        $statusOrder = ['pending', 'confirmed', 'shipping', 'delivering', 'received', 'completed'];
+        $finalStatuses = ['completed', 'cancelled', 'approved', 'rejected'];
+        
+        // If old status is final, don't allow any changes
+        if (in_array($oldStatus, $finalStatuses)) {
+            throw new \Exception("Không thể thay đổi trạng thái từ '{$oldStatus}' vì đây là trạng thái cuối.");
+        }
+
+        $oldIndex = array_search($oldStatus, $statusOrder);
+        $newIndex = array_search($newStatus, $statusOrder);
+
+        // Allow cancellation only before delivering stage
+        if ($newStatus === 'cancelled' && !in_array($oldStatus, ['delivering', 'received', 'completed', 'approved', 'rejected'])) {
+            return; // Allow cancellation before delivering
+        }
+
+        // Allow staying at same status
+        if ($oldStatus === $newStatus) {
+            return;
+        }
+
+        // For regular status flow, allow:
+        // 1. Moving forward (+1)
+        // 2. Moving backward (-1) for error correction
+        if ($oldIndex !== false && $newIndex !== false) {
+            $diff = $newIndex - $oldIndex;
+            if ($diff === 1 || $diff === -1) {
+                return; // Allow forward (+1) or backward (-1) movement
+            }
+        }
+
+        throw new \Exception("Chuyển đổi trạng thái từ '{$oldStatus}' sang '{$newStatus}' không được phép. Chỉ có thể tiến hoặc lùi 1 bước, hoặc hủy đơn.");
     }
 }

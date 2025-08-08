@@ -8,7 +8,7 @@
                 <div class="d-flex align-items-center">
                     <label class="me-3 mb-0">Lọc theo:</label>
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary filter-btn active" data-type="day">Ngày</button>
+                        <button type="button" class="btn btn-outline-primary filter-btn" data-type="day">Ngày</button>
                         <button type="button" class="btn btn-outline-primary filter-btn" data-type="week">Tuần</button>
                         <button type="button" class="btn btn-outline-primary filter-btn" data-type="month">Tháng</button>
                         <button type="button" class="btn btn-outline-primary filter-btn" data-type="year">Năm</button>
