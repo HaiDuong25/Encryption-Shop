@@ -363,7 +363,7 @@
                 </div>
 
                 <div class="d-flex gap-2 justify-content-between justify-content-lg-end mt-3 flex-wrap">
-                    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
+                    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed', 'shipping']))
                         <button class="btn btn-outline-danger flex-grow-1 flex-lg-grow-0" data-bs-toggle="modal"
                             data-bs-target="#cancelModal">
                             <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
