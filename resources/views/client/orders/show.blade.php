@@ -85,6 +85,15 @@
     .bg-cyan {
         background-color: #06b6d4 !important;
     }
+
+    /* Timeline toggle styles */
+    .timeline-item {
+        display: flex;
+        margin-bottom: 1rem;
+    }
+    .timeline-hidden {
+        display: none !important;
+    }
 </style>
 
     <div class="container py-4">
@@ -151,22 +160,33 @@
         </div>
     {{-- Timeline chi tiết lịch sử trạng thái --}}
     @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
+        @php
+            $clientHist = $order->statusHistories->sortByDesc('created_at')->values();
+        @endphp
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
-                <ul class="list-unstyled">
-                    @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
-                        <li class="mb-3 d-flex">
-                            <div class="me-3">
-                                @if ($history->new_status === $statusValue)
-                                    <i class="fas fa-check-circle text-success"></i>
-                                @else
-                                    <i class="far fa-circle text-muted"></i>
-                                @endif
-                            </div>
-                            <div>
-                                <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
-                                <div class="text-muted small">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+                    @if ($clientHist->count() > 2)
+                        <button class="btn btn-sm btn-outline-primary" id="toggleTimelineBtn" type="button">
+                            <i class="fas fa-eye me-1"></i>
+                            <span id="toggleTimelineText">Xem thêm</span>
+                        </button>
+                    @endif
+                </div>
+                <ul class="list-unstyled" id="timelineList">
+                    @foreach ($clientHist as $i => $history)
+                        <li class="mb-3 d-flex timeline-item {{ $i >= 2 ? 'timeline-hidden' : '' }}">
+                             <div class="me-3">
+                                 @if ($history->new_status === $statusValue)
+                                     <i class="fas fa-check-circle text-success"></i>
+                                 @else
+                                     <i class="far fa-circle text-muted"></i>
+                                 @endif
+                             </div>
+                             <div>
+                                 <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
+                                 <div class="text-muted small">
                                     <i class="fas fa-clock me-1"></i>{{ $history->created_at->format('H:i d/m/Y') }}
                                     @if ($history->user)
                                         <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>{{ $history->user->name ?? 'N/A' }}</strong>
@@ -674,6 +694,23 @@ function showConfirmCompleteModal(message, onConfirm) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleTimelineBtn');
+    const toggleText = document.getElementById('toggleTimelineText');
+    const extra = Array.from(document.querySelectorAll('#timelineList .timeline-item')).slice(2);
+    if (toggleBtn && extra.length) {
+        toggleBtn.dataset.expanded = 'false';
+        extra.forEach(el => el.classList.add('timeline-hidden'));
+        toggleBtn.addEventListener('click', function() {
+            const isExp = this.dataset.expanded === 'true';
+            extra.forEach(el => el.classList.toggle('timeline-hidden'));
+            if (isExp) {
+                toggleText.textContent = 'Xem thêm'; this.querySelector('i').className = 'fas fa-eye me-1'; this.dataset.expanded = 'false';
+            } else {
+                toggleText.textContent = 'Thu gọn'; this.querySelector('i').className = 'fas fa-eye-slash me-1'; this.dataset.expanded = 'true';
+            }
+        });
+    }
+    
     // CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     

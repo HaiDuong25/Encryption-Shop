@@ -122,6 +122,19 @@
             background: #dee2e6;
             z-index: 0;
         }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-item .me-3 {
+            margin-right: 1rem;
+        }
+
+        .timeline-hidden {
+            display: none !important;
+        }
     </style>
 
     {{-- Progress bar tiến trình giao hàng --}}
@@ -180,10 +193,22 @@
     @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
-                <ul class="list-unstyled">
-                    @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
-                        <li class="mb-3 d-flex">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+                    @if ($order->statusHistories->count() > 2)
+                        <button class="btn btn-sm btn-outline-primary" id="toggleTimelineBtn" type="button">
+                            <i class="fas fa-eye me-1"></i>
+                            <span id="toggleTimelineText">Xem thêm</span>
+                        </button>
+                    @endif
+                </div>
+                <ul class="list-unstyled" id="timelineList">
+                    @php
+                        $sortedHistories = $order->statusHistories->sortByDesc('created_at')->values();
+                    @endphp
+                    @foreach ($sortedHistories as $index => $history)
+                        @php $shouldHide = $index >= 2; @endphp
+                        <li class="mb-3 d-flex timeline-item {{ $shouldHide ? 'timeline-hidden' : '' }}">
                             <div class="me-3">
                                 @if ($history->new_status === $statusValue)
                                     <i class="fas fa-check-circle text-success"></i>
@@ -801,6 +826,31 @@
 
             // Initialize cancel fields visibility
             statusSelect.dispatchEvent(new Event('change'));
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('toggleTimelineBtn');
+            const toggleText = document.getElementById('toggleTimelineText');
+            const extraItems = Array.from(document.querySelectorAll('#timelineList .timeline-item')).slice(2);
+            if (toggleBtn && extraItems.length) {
+                // set initial state as collapsed
+                toggleBtn.dataset.expanded = 'false';
+                // hide extra items
+                extraItems.forEach(el => el.classList.add('timeline-hidden'));
+                toggleBtn.addEventListener('click', function() {
+                    const isExpanded = this.dataset.expanded === 'true';
+                    extraItems.forEach(el => el.classList.toggle('timeline-hidden'));
+                    if (isExpanded) {
+                        toggleText.textContent = 'Xem thêm';
+                        this.querySelector('i').className = 'fas fa-eye me-1';
+                        this.dataset.expanded = 'false';
+                    } else {
+                        toggleText.textContent = 'Thu gọn';
+                        this.querySelector('i').className = 'fas fa-eye-slash me-1';
+                        this.dataset.expanded = 'true';
+                    }
+                });
+            }
         });
     </script>
 
