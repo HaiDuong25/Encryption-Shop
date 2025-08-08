@@ -139,13 +139,14 @@ class MoMoController extends Controller
                     // Thanh toán thành công - tạo đơn hàng
                     $order = $this->createOrder($transId, $request);
                     if ($order) {
-                        // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
                         Log::info("MoMo payment successful, created order {$order->id}, redirecting to success page");
+                        $orderId = $order->id;
+                        // Clear session sau khi lưu orderId
                         $this->clearCheckoutSession();
-                        return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán MoMo thành công!');
+                        return redirect()->route('cart.success', $orderId)->with('success', 'Thanh toán MoMo thành công!');
                     } else {
                         Log::error('MoMo payment successful but failed to create order');
-                        return redirect()->route('cart.checkout')->with('error', 'Có lỗi xảy ra khi tạo đơn hàng');
+                        return redirect()->route('cart.index')->with('error', 'Có lỗi xảy ra khi tạo đơn hàng');
                     }
                 } else {
                     // Thanh toán thất bại
@@ -289,15 +290,20 @@ class MoMoController extends Controller
                 }
             }
 
-            // Xóa chỉ những sản phẩm đã thanh toán khỏi giỏ hàng (giống như COD)
-            $selectedCartItems = Session::get('selected_cart_items', []);
-            if (!empty($selectedCartItems)) {
-                Cart::where('user_id', $user->id)->whereIn('id', $selectedCartItems)->delete();
-                Log::info("Deleted selected cart items for MoMo order {$order->id}: " . implode(',', $selectedCartItems));
-            } else {
-                // Fallback: xóa tất cả nếu không có selected_items
-                Cart::where('user_id', $user->id)->delete();
-                Log::info("Deleted all cart items for MoMo order {$order->id} (no selection found)");
+            // Chỉ xóa các sản phẩm đã chọn khỏi giỏ hàng sau khi đã tạo đơn hàng thành công
+            try {
+                $selectedCartItems = Session::get('selected_cart_items', []);
+                if (!empty($selectedCartItems)) {
+                    // Xóa chỉ những sản phẩm đã chọn
+                    Cart::where('user_id', $user->id)
+                        ->whereIn('id', $selectedCartItems)
+                        ->delete();
+                    Log::info("Deleted selected cart items for MoMo order {$order->id}: " . implode(',', $selectedCartItems));
+                }
+                // Không xóa tất cả cart items nữa, chỉ xóa những item đã chọn
+            } catch (\Exception $e) {
+                Log::error("Error deleting cart items: " . $e->getMessage());
+                // Không throw exception để không ảnh hưởng đến việc tạo đơn hàng
             }
 
             // Tạo bản ghi payment cho đơn hàng (hiển thị ở quản lý thanh toán)

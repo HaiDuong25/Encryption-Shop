@@ -11,7 +11,11 @@
     }
 
     .rating-stars input[type="radio"] {
-        display: none;
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
     }
 
     .rating-stars label {
@@ -145,38 +149,43 @@
                 </div>
             @endif
         </div>
-        {{-- Timeline chi tiết lịch sử trạng thái --}}
-        @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
-
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
-                    <ul class="list-unstyled">
-                        @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
-                            <li class="mb-3 d-flex">
-                                <div class="me-3">
-                                    @if ($history->new_status === $statusValue)
-                                        <i class="fas fa-check-circle text-success"></i>
+    {{-- Timeline chi tiết lịch sử trạng thái --}}
+    @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+                <ul class="list-unstyled">
+                    @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
+                        <li class="mb-3 d-flex">
+                            <div class="me-3">
+                                @if ($history->new_status === $statusValue)
+                                    <i class="fas fa-check-circle text-success"></i>
+                                @else
+                                    <i class="far fa-circle text-muted"></i>
+                                @endif
+                            </div>
+                            <div>
+                                <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
+                                <div class="text-muted small">
+                                    <i class="fas fa-clock me-1"></i>{{ $history->created_at->format('H:i d/m/Y') }}
+                                    @if ($history->user)
+                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>{{ $history->user->name ?? 'N/A' }}</strong>
+                                    @elseif($history->changed_by)
+                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>User ID {{ $history->changed_by }}</strong>
                                     @else
-                                        <i class="far fa-circle text-muted"></i>
+                                        <br><i class="fas fa-robot me-1"></i>Thực hiện bởi: <strong>Hệ thống</strong>
+                                    @endif
+                                    @if ($history->description)
+                                        <br><i class="fas fa-comment me-1"></i>Ghi chú: {{ $history->description }}
                                     @endif
                                 </div>
-                                <div>
-                                    <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
-                                    <div class="text-muted small">
-                                        {{ $history->created_at->format('H:i d/m/Y') }}
-                                        @if ($history->description)
-                                            <br><span>{{ $history->description }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
-
-        @endif
+        </div>
+    @endif
         <div class="row g-4">
             <div class="col-lg-5 col-12">
                 <div class="card shadow-sm mb-4">
@@ -503,7 +512,7 @@
                                                     @if (!$hasRated)
                                                         <form
                                                             action="{{ route('client.rates.store', [$product->id, $item->id]) }}"
-                                                            method="POST" class="mt-2">
+                                                            method="POST" class="mt-2 rating-form">
                                                             @csrf
                                                             <div class="mb-2">
                                                                 <label class="small">Đánh giá của bạn:</label>
@@ -511,11 +520,14 @@
                                                                     @for ($i = 5; $i >= 1; $i--)
                                                                         <input type="radio" name="score"
                                                                             id="star{{ $i }}-{{ $item->id }}"
-                                                                            value="{{ $i }}" required>
+                                                                            value="{{ $i }}">
                                                                         <label
                                                                             for="star{{ $i }}-{{ $item->id }}"
                                                                             title="{{ $i }} sao">★</label>
                                                                     @endfor
+                                                                </div>
+                                                                <div class="rating-error text-danger small" style="display: none;">
+                                                                    Vui lòng chọn số sao đánh giá
                                                                 </div>
                                                                 @error('score')
                                                                     <small class="text-danger">{{ $message }}</small>
@@ -664,6 +676,40 @@ function showConfirmCompleteModal(message, onConfirm) {
 document.addEventListener('DOMContentLoaded', function() {
     // CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    // Xử lý validation cho form đánh giá
+    document.querySelectorAll('.rating-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const ratingInputs = this.querySelectorAll('input[name="score"]');
+            const ratingError = this.querySelector('.rating-error');
+            let isRatingSelected = false;
+            
+            // Kiểm tra xem có rating nào được chọn không
+            ratingInputs.forEach(input => {
+                if (input.checked) {
+                    isRatingSelected = true;
+                }
+            });
+            
+            // Nếu không có rating nào được chọn, hiển thị lỗi và ngăn submit
+            if (!isRatingSelected) {
+                e.preventDefault();
+                ratingError.style.display = 'block';
+                return false;
+            } else {
+                ratingError.style.display = 'none';
+            }
+        });
+        
+        // Ẩn thông báo lỗi khi người dùng chọn rating
+        const ratingInputs = form.querySelectorAll('input[name="score"]');
+        const ratingError = form.querySelector('.rating-error');
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                ratingError.style.display = 'none';
+            });
+        });
+    });
     
     // Xử lý nút xác nhận hoàn thành
     document.querySelectorAll('.confirm-complete-btn').forEach(button => {

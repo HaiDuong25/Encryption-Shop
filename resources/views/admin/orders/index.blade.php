@@ -243,13 +243,8 @@
                                     <td>
                                         <ul class="action-buttons">
                                             <li>
-                                                <a href="{{ route('orders.show', $order->id) }}" title="Xem chi tiết">
+                                                <a href="{{ route('orders.show', $order->id) }}" title="Xem chi tiết & Cập nhật trạng thái">
                                                     <i class="ri-eye-line" style="font-size: 1.1rem;"></i>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="{{ route('orders.edit', $order->id) }}" title="Chỉnh sửa">
-                                                    <i class="ri-pencil-line" style="font-size: 1.1rem;"></i>
                                                 </a>
                                             </li>
                                             @php

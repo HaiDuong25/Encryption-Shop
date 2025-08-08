@@ -566,16 +566,12 @@
         const searchResults = document.getElementById('search-results');
         let searchTimeout;
 
-        console.log('Initializing search...', {searchInput, searchDropdown, searchResults});
-
         if (!searchInput || !searchDropdown || !searchResults) {
-            console.error('Search elements not found!');
             return;
         }
 
         searchInput.addEventListener('input', function() {
             const query = this.value.trim();
-            console.log('Search query:', query);
             
             clearTimeout(searchTimeout);
             
@@ -590,19 +586,15 @@
 
             searchTimeout = setTimeout(() => {
                 const url = `{{ route('client.products.search') }}?query=${encodeURIComponent(query)}`;
-                console.log('Fetching:', url);
                 
                 fetch(url)
                     .then(response => {
-                        console.log('Response status:', response.status);
                         return response.json();
                     })
                     .then(products => {
-                        console.log('Products found:', products);
                         displaySearchResults(products);
                     })
                     .catch(error => {
-                        console.error('Search error:', error);
                         searchResults.innerHTML = '<div class="p-3 text-danger text-center"><i class="fa fa-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tìm kiếm</div>';
                     });
             }, 300);

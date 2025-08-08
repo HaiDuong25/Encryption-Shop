@@ -194,9 +194,16 @@
                             <div>
                                 <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
                                 <div class="text-muted small">
-                                    {{ $history->created_at->format('H:i d/m/Y') }}
+                                    <i class="fas fa-clock me-1"></i>{{ $history->created_at->format('H:i d/m/Y') }}
+                                    @if ($history->user)
+                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>{{ $history->user->name ?? 'N/A' }}</strong>
+                                    @elseif($history->changed_by)
+                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>User ID {{ $history->changed_by }}</strong>
+                                    @else
+                                        <br><i class="fas fa-robot me-1"></i>Thực hiện bởi: <strong>Hệ thống</strong>
+                                    @endif
                                     @if ($history->description)
-                                        <br><span>{{ $history->description }}</span>
+                                        <br><i class="fas fa-comment me-1"></i>Ghi chú: {{ $history->description }}
                                     @endif
                                 </div>
                             </div>
@@ -205,7 +212,6 @@
                 </ul>
             </div>
         </div>
-
     @endif
     {{-- Phần còn lại giữ nguyên --}}
     <div class="order-header-bar">
@@ -443,6 +449,125 @@
                 <i class="fas fa-truck"></i> Theo dõi đơn hàng
             </a> --}}
 
+            {{-- Cập nhật trạng thái đơn hàng --}}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-edit me-2"></i>Cập nhật trạng thái đơn hàng
+                    </h5>
+                    
+                    @php
+                        // Define finalized statuses and check if order is finalized
+                        $finalStatuses = ['completed', 'cancelled', 'approved', 'rejected'];
+                        $isOrderFinalized = in_array($statusValue, $finalStatuses);
+                    @endphp
+                    
+                    @if($isOrderFinalized)
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Đơn hàng đã ở trạng thái cuối và không thể chỉnh sửa.
+                        </div>
+                    @else
+                        {{-- Alert container for AJAX responses --}}
+                        <div id="alert-container"></div>
+
+                        <form id="orderStatusForm" action="{{ route('orders.update', $order->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="alert alert-light border mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <strong>Quy tắc cập nhật trạng thái:</strong><br>
+                                    • <strong>Tiến:</strong> Chuyển sang trạng thái tiếp theo<br>
+                                    • <strong>Lùi:</strong> Quay lại 1 trạng thái trước (xử lý sự cố như giao nhầm đơn)<br>
+                                    • <strong>Hủy:</strong> Chỉ được hủy khi người dùng có yêu cầu hủy trước khi đang giao hàng  (trước trạng thái "Đang giao")
+                                </small>
+                            </div>
+                            
+                            <div class="row align-items-end">
+                                <div class="col-md-8">
+                                    <label for="status" class="form-label">Chọn trạng thái mới</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        @php
+                                            $statusesEdit = [
+                                                'pending' => 'Chờ xử lý',
+                                                'confirmed' => 'Đã xác nhận',
+                                                'shipping' => 'Đã giao cho ĐVVC',
+                                                'delivering' => 'Đang giao',
+                                                'received' => 'Đã nhận',
+                                                'completed' => 'Hoàn thành',
+                                                'cancelled' => 'Đã hủy',
+                                                'returning' => 'Đang trả hàng',
+                                                'approved' => 'Đã trả hàng',
+                                                'rejected' => 'Từ chối trả',
+                                            ];
+
+                                            $statusKeysEdit = array_keys($statusesEdit);
+                                            $currentIndex = array_search($statusValue, $statusKeysEdit);
+                                        @endphp
+
+                                        {{-- Chỉ cho phép chọn trạng thái tiếp theo, hiện tại hoặc quay lại 1 trạng thái --}}
+                                        @foreach ($statusesEdit as $value => $label)
+                                            @php
+                                                $optionIndex = array_search($value, $statusKeysEdit);
+                                                $canSelect = false;
+                                                
+                                                // Chỉ cho phép chọn:
+                                                // 1. Trạng thái hiện tại
+                                                // 2. Trạng thái tiếp theo (currentIndex + 1)
+                                                // 3. Trạng thái trước đó (currentIndex - 1) - để xử lý lỗi/sự cố
+                                                // 4. Trạng thái hủy (nếu chưa completed)
+                                                
+                                                if ($optionIndex == $currentIndex) {
+                                                    $canSelect = true; // Trạng thái hiện tại
+                                                } elseif ($optionIndex == $currentIndex + 1 && !in_array($value, $finalStatuses)) {
+                                                    $canSelect = true; // Trạng thái tiếp theo
+                                                } elseif ($optionIndex == $currentIndex - 1 && $currentIndex > 0 && !in_array($statusValue, ['pending', 'completed', 'cancelled'])) {
+                                                    $canSelect = true; // Cho phép quay lại 1 trạng thái (trừ pending và final statuses)
+                                                } elseif ($value === 'cancelled' && !in_array($statusValue, ['delivering', 'received', 'completed', 'cancelled', 'approved', 'rejected'])) {
+                                                    $canSelect = true; // Cho phép hủy nếu chưa đang giao
+                                                }
+                                            @endphp
+
+                                            @if($canSelect)
+                                                <option value="{{ $value }}" {{ $statusValue == $value ? 'selected' : '' }}>
+                                                    @if($optionIndex == $currentIndex - 1 && $optionIndex >= 0)
+                                                        {{ $label }} (Quay lại)
+                                                    @else
+                                                        {{ $label }}
+                                                    @endif
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary" id="updateStatusBtn">
+                                        <i class="fas fa-save me-1"></i>Cập nhật trạng thái
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {{-- Trường hủy đơn (ẩn mặc định) --}}
+                            <div id="cancelFields" style="display: none;" class="mt-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="cancel_reason" class="form-label">Lý do hủy</label>
+                                        <input type="text" class="form-control" id="cancel_reason" name="cancel_reason" 
+                                               maxlength="255" value="{{ old('cancel_reason', $order->cancel_reason) }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="cancel_note" class="form-label">Ghi chú hủy đơn</label>
+                                        <textarea class="form-control" id="cancel_note" name="cancel_note" rows="2">{{ old('cancel_note', $order->cancel_note) }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+            </div>
+
             <a href="{{ route('orders.index') }}" class="btn btn-secondary mb-3">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
@@ -572,5 +697,141 @@
     </div>
 
     {{-- Tiến trình vận chuyển (timeline trạng thái) --}}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('orderStatusForm');
+            const statusSelect = document.getElementById('status');
+            const cancelFields = document.getElementById('cancelFields');
+            const alertContainer = document.getElementById('alert-container');
+            const updateBtn = document.getElementById('updateStatusBtn');
+            
+            if (!form || !statusSelect || !cancelFields || !alertContainer || !updateBtn) {
+                return; // Exit if elements don't exist (order is finalized)
+            }
+
+            // Show/hide cancel fields based on status selection
+            statusSelect.addEventListener('change', function() {
+                const showCancelFields = this.value === 'cancelled';
+                cancelFields.style.display = showCancelFields ? 'block' : 'none';
+                
+                // Make cancel fields required/optional based on visibility
+                const cancelInputs = cancelFields.querySelectorAll('input, textarea');
+                cancelInputs.forEach(input => {
+                    input.required = showCancelFields;
+                });
+            });
+
+            // AJAX form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Show loading state
+                const originalContent = updateBtn.innerHTML;
+                updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang cập nhật...';
+                updateBtn.disabled = true;
+
+                // Clear previous alerts
+                alertContainer.innerHTML = '';
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alertContainer.innerHTML = `
+                            <div class="alert alert-success alert-dismissible fade show">
+                                <i class="fas fa-check-circle me-1"></i>
+                                ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
+
+                        // Reload page after success to show updated status
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        // Show error messages
+                        if (data.errors) {
+                            let errorHtml = '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
+                            Object.values(data.errors).flat().forEach(error => {
+                                errorHtml += `<li>${error}</li>`;
+                            });
+                            errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                            alertContainer.innerHTML = errorHtml;
+                        } else {
+                            alertContainer.innerHTML = `
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    ${data.message || 'Có lỗi xảy ra khi cập nhật đơn hàng!'}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `;
+                        }
+
+                        // Restore button state
+                        updateBtn.innerHTML = originalContent;
+                        updateBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            Có lỗi xảy ra khi cập nhật đơn hàng!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+
+                    // Restore button state
+                    updateBtn.innerHTML = originalContent;
+                    updateBtn.disabled = false;
+                });
+            });
+
+            // Initialize cancel fields visibility
+            statusSelect.dispatchEvent(new Event('change'));
+        });
+    </script>
+
+    <style>
+        .rotating {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        #cancelFields {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .bg-purple {
+            background-color: #8b5cf6 !important;
+        }
+        
+        .bg-cyan {
+            background-color: #06b6d4 !important;
+        }
+    </style>
 
 @endsection
