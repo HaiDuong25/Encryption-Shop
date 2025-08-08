@@ -1,6 +1,24 @@
 @extends('admin.layouts.main')
 @section('content')
 
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <label class="me-3 mb-0">Lọc theo:</label>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary filter-btn active" data-type="day">Ngày</button>
+                        <button type="button" class="btn btn-outline-primary filter-btn" data-type="week">Tuần</button>
+                        <button type="button" class="btn btn-outline-primary filter-btn" data-type="month">Tháng</button>
+                        <button type="button" class="btn btn-outline-primary filter-btn" data-type="year">Năm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-3">
     <!-- Tổng quan thống kê -->
     <div class="col-sm-6 col-lg-3">
@@ -145,7 +163,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="best-selling-table table border-0">
+                    <table class="best-selling-table table border-0 recent-orders-table">
                         <tbody>
                             @forelse($recentOrders as $order)
                             <tr>
@@ -268,8 +286,94 @@
 @push('scripts')
 <script src="{{ asset('js/apexcharts.min.js') }}"></script>
 <script>
+    let chart;
+    
     document.addEventListener('DOMContentLoaded', function () {
-        var options = {
+        initializeChart(@json($revenues ?? [0]), @json($months ?? ['']));
+        
+        // Filter button click handler
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Get filter type
+                const filterType = this.dataset.type;
+                
+                // Show loading state
+                document.body.style.cursor = 'wait';
+                const buttons = document.querySelectorAll('.filter-btn');
+                buttons.forEach(b => b.disabled = true);
+                
+                // Make AJAX request
+                fetch(`/admin/dashboard/filter`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ type: filterType })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update statistics
+                    document.querySelectorAll('.counter').forEach((counter, index) => {
+                        switch(index) {
+                            case 0:
+                                counter.textContent = data.totalRevenue;
+                                break;
+                            case 1:
+                                counter.textContent = data.totalOrders;
+                                break;
+                            case 2:
+                                counter.textContent = data.totalProducts;
+                                break;
+                            case 3:
+                                counter.textContent = data.totalCustomers;
+                                break;
+                        }
+                    });
+                    
+                    // Update chart with animation
+                    chart.updateOptions({
+                        xaxis: {
+                            categories: data.labels
+                        }
+                    }, false, true);
+                    
+                    // Clear existing series and add new one
+                    chart.updateSeries([{
+                        name: 'Doanh thu',
+                        data: data.revenues.map(value => parseInt(value))
+                    }], true);
+                    
+                    // Update tables
+                    const tables = {
+                        bestSelling: document.querySelector('.best-selling-table:not(.recent-orders-table) tbody'),
+                        recentOrders: document.querySelector('.recent-orders-table tbody'),
+                        transactions: document.querySelector('.transactions-table tbody')
+                    };
+
+                    if (tables.bestSelling) tables.bestSelling.innerHTML = data.bestSellingHtml;
+                    if (tables.recentOrders) tables.recentOrders.innerHTML = data.recentOrdersHtml;
+                    if (tables.transactions) tables.transactions.innerHTML = data.transactionsHtml;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lọc dữ liệu:', error);
+                })
+                .finally(() => {
+                    // Reset loading state
+                    document.body.style.cursor = 'default';
+                    buttons.forEach(b => b.disabled = false);
+                });
+            });
+        });
+    });
+    
+    function initializeChart(initialData, initialLabels) {
+        const options = {
             chart: {
                 type: 'line',
                 height: 400,
@@ -288,10 +392,10 @@
             },
             series: [{
                 name: 'Doanh thu',
-                data: @json($revenues ?? [0]),
+                data: initialData,
             }],
             xaxis: {
-                categories: @json($months ?? ['']),
+                categories: initialLabels,
                 labels: {
                     style: {
                         fontSize: '12px',
@@ -299,7 +403,7 @@
                     },
                 },
                 title: {
-                    text: 'Tháng',
+                    text: 'Thời gian',
                     style: {
                         fontSize: '14px',
                         fontWeight: 600,
@@ -364,17 +468,25 @@
         };
 
         try {
-            var chart = new ApexCharts(document.querySelector("#report-chart"), options);
+            chart = new ApexCharts(document.querySelector("#report-chart"), options);
             chart.render();
         } catch (error) {
             console.error('Lỗi khi hiển thị biểu đồ:', error);
         }
-    });
+    }
 </script>
 @endpush
 
 @push('styles')
 <style>
+    .filter-btn {
+        min-width: 80px;
+    }
+    .filter-btn.active {
+        background-color: #4e73df !important;
+        border-color: #4e73df !important;
+        color: white !important;
+    }
     .badge {
         font-size: 11px;
         padding: 6px 10px;

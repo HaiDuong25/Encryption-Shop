@@ -121,6 +121,7 @@ Route::get('/admin', function() {
 });
 Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::post('/dashboard/filter', [DashboardController::class, 'filter'])->name('admin.dashboard.filter');
 
     // Product
     Route::resource('products', ProductController::class);
