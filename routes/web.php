@@ -19,7 +19,6 @@ use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentMethodController;
-use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\RoleMiddleware;
@@ -154,15 +153,6 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
 
     // Payment methods
     Route::resource('payment-methods', PaymentMethodController::class);
-
-    // Payments
-    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
-    Route::post('payments/{id}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
-    Route::post('payments/{id}/complete', [PaymentController::class, 'complete'])->name('payments.complete');
-    Route::get('payments/invoice/{id}', [PaymentController::class, 'invoice'])->name('admin.payments.invoice');
-    Route::get('payments/download-invoice/{id}', [PaymentController::class, 'downloadInvoice'])->name('admin.payments.download-invoice');
-    Route::get('payments/export-pdf/{id}', [PaymentController::class, 'exportPdf'])->name('admin.payments.export-pdf');
-    Route::post('admin/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
 
     // Rates & replies
     Route::resource('rates', RateController::class)->except(['create', 'store']);

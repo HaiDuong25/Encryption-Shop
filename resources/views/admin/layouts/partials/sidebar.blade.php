@@ -175,12 +175,6 @@
                             <span>Quản lý phương thức thanh toán</span>
                         </a>
                     </li>
-                    <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('payments.index') }}">
-                            <i class="ri-store-3-line"></i>
-                            <span>Quản lý thanh toán</span>
-                        </a>
-                    </li>
                     <li>
     <a href="{{ route('admin.returns.index') }}">
         <i class="fas fa-undo"></i> <span> Yêu cầu trả hàng </span>
