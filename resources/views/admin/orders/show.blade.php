@@ -408,7 +408,8 @@
                             }
                         }
                         $total = $order->total_price;
-                        $isPaid = $order->payments->where('status', 'completed')->count() > 0;
+                        // Thanh toán thành công nếu có payment completed hoặc COD & đơn completed
+                        $isPaid = ($order->payments->where('status', 'completed')->count() > 0) || (optional($order->paymentMethod)->payment_type === 'COD' && ($order->status === 'completed' || (is_numeric($order->status) && (string)$order->status === '5')));
                     @endphp
 
                     @if ($actualDiscountAmount > 0)
@@ -434,12 +435,13 @@
                         Tổng tiền thanh toán:
                         <span class="text-success fw-bold">{{ format_vnd($total) }} đ</span>
                         @php
-                            $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                            $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                             $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
                             $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
                             $statusValue = is_numeric($order->status)
-                                ? $statusMap[$order->status] ?? 'pending'
+                                ? ($statusMap[$order->status] ?? 'pending')
                                 : $order->status;
+                            $isPaid = $rawPaid || ($isCOD && $statusValue === 'completed');
                         @endphp
                         @switch($statusValue)
                             @case('refunded')
