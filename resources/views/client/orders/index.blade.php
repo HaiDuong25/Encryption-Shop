@@ -88,6 +88,20 @@
             background-color: #6c757d;
             color: #fff;
         }
+    /* Buy again modal & button tweaks */
+    /* Center layout for products inside buy-again modal */
+    .buy-again-item { position: relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.6rem; padding:1rem .85rem; text-align:center; }
+    .buy-again-item + .buy-again-item { border-top:1px solid #f1f5f9; }
+    /* Force thumbnail size inside buy-again modal */
+    #buyAgainModal .buy-again-item img { width:80px !important; height:80px !important; max-height:80px !important; object-fit:cover; border-radius:8px; background:#f3f4f6; aspect-ratio:1/1; margin:0 auto; }
+    .buy-again-item .product-name { width:100%; font-weight:600; font-size:1rem; line-height:1.3; }
+    .buy-again-item .product-name small { display:block; font-weight:400; color:#64748b; }
+    .buy-again-item .buy-btn { position:static; width:auto; margin:0; display:flex; justify-content:center; }
+    .buy-again-item .buy-btn a { width:auto; display:inline-block; }
+    .buy-again-trigger-wrapper { display:flex; flex-direction:column; align-items:center; }
+    /* Larger action buttons */
+    .btn-action-md { padding: .65rem 1.05rem; font-size: .95rem; line-height:1.25; }
+    .btn-action-xs { padding: .4rem .7rem; font-size:.75rem; }
     </style>
 
     <div class="container-fluid-lg py-4">
@@ -214,9 +228,11 @@
 
                                         <td>
                                             @php
-                                                $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                                // Thanh toán thành công nếu có bản ghi payment completed HOẶC (COD và đơn đã hoàn thành)
+                                                $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                                 $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
                                                 $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
+                                                $isPaid = $rawPaid || ($isCOD && $statusValue === 'completed');
                                             @endphp
 
                                             @switch($statusValue)
@@ -239,18 +255,68 @@
                                                 class="btn btn-sm btn-outline-primary">Xem</a>
 
                                             @if ($order->canCompleteInIndex())
-                                                <form action="{{ route('orders.confirm', $order->id) }}" method="POST"
-                                                    style="display:inline;" class="mt-1">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-success btn-sm">Xác nhận hoàn thành</button>
-                                                </form>
+                                                <button type="button"
+                                                    class="btn btn-success btn-action-md mt-1 confirm-complete-btn"
+                                                    data-order-id="{{ $order->id }}"
+                                                    data-message="Bạn có chắc chắn muốn xác nhận hoàn thành đơn hàng #{{ $order->id }}?">
+                                                    <i class="fas fa-check-circle me-1"></i> Xác nhận hoàn thành
+                                                </button>
                                             @endif
 
                                             @if (in_array($statusValue, ['completed', 'cancelled']))
-                                                <a href="{{ route('client.products.index') }}"
-                                                    class="btn btn-outline-primary btn-sm mt-1">
-                                                    🔁 Mua lại
-                                                </a>
+                                                @php
+                                                    $details = $order->orderDetails;
+                                                    $detailsCount = $details->count();
+                                                    $firstDetail = $details->first();
+                                                    $firstProduct = $firstDetail?->product;
+                                                @endphp
+                                                <div class="buy-again-trigger-wrapper">
+                                                    @if ($detailsCount <= 1)
+                                                        @if ($firstProduct)
+                                                            <a href="{{ route('client.products.show', $firstProduct->id) }}"
+                                                                class="btn btn-outline-primary btn-action-md mt-1 px-3"
+                                                                title="Mua lại sản phẩm: {{ $firstProduct->name }}">
+                                                                🔁 Mua lại
+                                                            </a>
+                                                        @else
+                                                            <a href="{{ route('client.products.index') }}"
+                                                                class="btn btn-outline-secondary btn-action-md mt-1 px-3"
+                                                                title="Không tìm thấy sản phẩm trong đơn, quay lại danh sách sản phẩm">
+                                                                🔁 Mua lại
+                                                            </a>
+                                                        @endif
+                                                    @else
+                                                        <button type="button"
+                                                            class="btn btn-outline-primary btn-action-md mt-1 px-3 buy-again-multi-btn"
+                                                            data-order-id="{{ $order->id }}"
+                                                            title="Chọn sản phẩm để mua lại">
+                                                            🔁 Mua lại
+                                                        </button>
+                                                        <div class="d-none buy-again-products" id="buy-again-products-{{ $order->id }}">
+                                                            @foreach($details as $d)
+                                                                @php
+                                                                    $p = $d->product;
+                                                                    $img = $d->image ? asset('storage/'.$d->image) : ($p? ( $p->image ? asset('storage/'.$p->image) : asset('images/placeholder.png')): asset('images/placeholder.png'));
+                                                                @endphp
+                                                                @if($p)
+                                                                    <div class="buy-again-item" data-product-id="{{ $p->id }}" data-has-variants="{{ $p->variants->count() > 0 ? '1':'0' }}">
+                                                                        <img class="img-thumbnail" style="width: 300px; object:fit;" src="{{ $img }}" alt="{{ $p->name }}">
+                                                                        <div class="product-name" title="{{ $p->name }}">{{ Str::limit($p->name, 45) }}
+                                                                            @if($p->variants->count() > 0)
+                                                                                <small>(Có phân loại)</small>
+                                                                            @endif
+                                                                        </div>
+                                                                        <div class="d-flex flex-column align-items-end gap-1 buy-btn">
+                                                                            <a class="btn btn-outline-primary btn-action-md" href="{{ route('client.products.show', $p->id) }}" title="Xem">Xem sản phẩm</a>
+                                                                        </div>
+                                                                    </div>
+                                                                @else
+                                                                    <div class="buy-again-item text-muted">(Sản phẩm đã bị xóa)</div>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </td>
                                     </tr>
@@ -267,45 +333,152 @@
 @endsection
 
 @push('scripts')
-    <script>
-        function cancelOrder(orderId) {
-            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được trả lại kho.')) {
-                return;
-            }
+<script>
+function cancelOrder(orderId) {
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Số lượng sản phẩm sẽ được trả lại kho.')) {
+        return;
+    }
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang hủy...';
+    fetch(`/orders/${orderId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            cancel_reason: 'Khách hàng hủy đơn',
+            note: null
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { alert(data.message); location.reload(); }
+        else { alert('Lỗi: ' + data.message); button.disabled = false; button.innerHTML = originalContent; }
+    })
+    .catch(err => { console.error(err); alert('Có lỗi xảy ra khi hủy đơn hàng'); button.disabled = false; button.innerHTML = originalContent; });
+}
 
-            const button = event.target.closest('button');
-            const originalContent = button.innerHTML;
-            button.disabled = true;
-            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang hủy...';
+// ===== Modal xác nhận hoàn thành (dùng chung với show) =====
+function showConfirmCompleteModal(message, onConfirm) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmCompleteModal'));
+    const confirmMessage = document.getElementById('confirmCompleteMessage');
+    const confirmButton = document.getElementById('confirmCompleteButton');
+    confirmMessage.textContent = message;
+    const newBtn = confirmButton.cloneNode(true);
+    confirmButton.parentNode.replaceChild(newBtn, confirmButton);
+    newBtn.addEventListener('click', function() {
+        modal.hide();
+        onConfirm();
+    });
+    modal.show();
+}
 
-            fetch(`/orders/${orderId}/cancel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    cancel_reason: 'Khách hàng hủy đơn',
-                    note: null
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Lỗi: ' + data.message);
-                    button.disabled = false;
-                    button.innerHTML = originalContent;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi hủy đơn hàng');
-                button.disabled = false;
-                button.innerHTML = originalContent;
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    document.querySelectorAll('.confirm-complete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            const message = this.dataset.message || `Bạn có chắc chắn muốn xác nhận hoàn thành đơn hàng #${orderId}?`;
+            showConfirmCompleteModal(message, () => {
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
+                this.disabled = true;
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/lich-su-don-hang/${orderId}/confirm`;
+                form.style.display = 'none';
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden'; tokenInput.name = '_token'; tokenInput.value = csrfToken; form.appendChild(tokenInput);
+                document.body.appendChild(form); form.submit();
             });
-        }
-    </script>
+        });
+    });
+});
+</script>
+@endpush
+
+<!-- Modal xác nhận hoàn thành (giống show) -->
+<div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmCompleteModalLabel">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Xác nhận hoàn thành đơn hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="confirmCompleteIcon" class="mb-3">
+                    <i class="fas fa-check-circle" style="font-size: 48px; color: #28a745;"></i>
+                </div>
+                <p id="confirmCompleteMessage" class="mb-0"></p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-success" id="confirmCompleteButton">
+                    <i class="fas fa-check-circle me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chọn sản phẩm mua lại -->
+<div class="modal fade" id="buyAgainModal" tabindex="-1" aria-labelledby="buyAgainModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buyAgainModalLabel"><i class="fas fa-redo me-2 text-primary"></i>Chọn sản phẩm để mua lại</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="buyAgainProductsContainer" class="list-group small"></div>
+                <div id="buyAgainEmpty" class="text-center text-muted d-none">Không tìm thấy sản phẩm hợp lệ.</div>
+            </div>
+                <!-- Đã loại bỏ tính năng thêm nhanh vào giỏ -->
+                            <div class="modal-footer justify-content-end">
+                                <button type="button" class="btn btn-secondary btn-action-md" data-bs-dismiss="modal">Đóng</button>
+                            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+        // Mua lại nhiều sản phẩm
+        const buyAgainModalEl = document.getElementById('buyAgainModal');
+        const buyAgainModal = buyAgainModalEl ? new bootstrap.Modal(buyAgainModalEl) : null;
+        const productsContainer = document.getElementById('buyAgainProductsContainer');
+        const emptyEl = document.getElementById('buyAgainEmpty');
+
+        document.querySelectorAll('.buy-again-multi-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                        const orderId = this.dataset.orderId;
+                        const source = document.getElementById(`buy-again-products-${orderId}`);
+                        if (!source) return;
+                        productsContainer.innerHTML = '';
+                        emptyEl.classList.add('d-none');
+                        const items = Array.from(source.children);
+                        if (items.length === 0) {
+                                emptyEl.classList.remove('d-none');
+                        } else {
+                                items.forEach(node => {
+                                        const wrapper = document.createElement('div');
+                                        wrapper.className = 'list-group-item buy-again-item';
+                                        wrapper.innerHTML = node.innerHTML; // copy inner
+                                        productsContainer.appendChild(wrapper);
+                                });
+                        }
+                        buyAgainModal && buyAgainModal.show();
+                });
+        });
+});
+</script>
 @endpush

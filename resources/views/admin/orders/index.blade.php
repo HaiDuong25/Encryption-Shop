@@ -142,7 +142,31 @@
                                         {{ $order->recipient_address ?? 'N/A' }}</td> <!-- Sửa: dùng recipient_address -->
                                     <td>{{ $order->created_at->format('d/m/Y') }}</td>
                                     <td>
-                                        {{ $order->paymentMethod->payment_type ?? 'N/A' }}
+                                        @php
+                                            $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                            $paymentType = optional($order->paymentMethod)->payment_type;
+                                            // Chuẩn hóa statusValue nếu chưa có (dùng lại biến bên dưới nếu cần)
+                                            $tmpStatus = $order->status;
+                                            if (is_numeric($tmpStatus)) {
+                                                $tmpMap = [
+                                                    '0' => 'pending',
+                                                    '1' => 'confirmed',
+                                                    '2' => 'shipping',
+                                                    '3' => 'delivering',
+                                                    '4' => 'received',
+                                                    '5' => 'completed',
+                                                    '9' => 'cancelled',
+                                                ];
+                                                $tmpStatus = $tmpMap[$tmpStatus] ?? 'pending';
+                                            }
+                                            $isPaidCol = $rawPaid || ($paymentType === 'COD' && $tmpStatus === 'completed');
+                                        @endphp
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="small text-muted mb-1">{{ $paymentType ?? 'N/A' }}</span>
+                                            <span class="badge {{ $isPaidCol ? 'bg-success' : 'bg-secondary' }} status-badge">
+                                                {{ $isPaidCol ? 'Đã thanh toán' : 'Chưa' }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td>
                                         @php

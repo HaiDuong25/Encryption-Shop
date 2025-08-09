@@ -121,7 +121,9 @@
             $statusKeys = array_keys($statuses);
             $currentStatusIndex = array_search($statusValue, $statusKeys);
             $isCancelled = $statusValue === 'cancelled';
-            $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+            // Đơn COD được coi là đã thanh toán khi trạng thái đơn = completed
+            $isCODHead = optional($order->paymentMethod)->payment_type === 'COD';
+            $isPaid = ($order->payments && $order->payments->where('status', 'completed')->count() > 0) || ($isCODHead && $statusValue === 'completed');
         @endphp
         <div class="mb-4">
             @php
@@ -265,9 +267,10 @@
 
                         <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
                             @php
-                                $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                 $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
                                 $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
+                                $isPaid = $rawPaid || ($isCOD && $statusValue === 'completed');
                             @endphp
                             @switch($statusValue)
                                 @case('refunded')
@@ -468,13 +471,25 @@
                                                 ->exists();
                                         @endphp
                                         <tr>
-                                            <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
+                                            <td class="text-center align-middle" style="width:110px;">
+                                                @if($product)
+                                                    <a href="{{ route('client.products.show', $product->id) }}" class="d-inline-block product-link" title="Xem sản phẩm" style="line-height:0;">
+                                                        <img src="{{ $imageUrl }}" width="80" class="rounded d-block mx-auto" style="display:block;margin:0 auto;">
+                                                    </a>
+                                                @else
+                                                    <img src="{{ $imageUrl }}" width="80" class="rounded d-block mx-auto" style="display:block;margin:0 auto;">
+                                                @endif
+                                            </td>
 
                                             <td class="align-top">
-                                                {{-- Tên và danh mục sản phẩm --}}
-                                                <div class="fw-bold text-dark fs-6">
-                                                    {{ $product->name ?? 'Sản phẩm đã xóa' }}
-                                                </div>
+                                                {{-- Tên và danh mục sản phẩm (clickable) --}}
+                                                @if($product)
+                                                    <a href="{{ route('client.products.show', $product->id) }}" class="text-decoration-none product-link">
+                                                        <div class="fw-bold text-dark fs-6">{{ $product->name }}</div>
+                                                    </a>
+                                                @else
+                                                    <div class="fw-bold text-dark fs-6">Sản phẩm đã xóa</div>
+                                                @endif
                                                 <div class="text-muted small mb-1">
                                                     {{ optional($product->category)->name ?? 'Danh mục đã xóa' }}
                                                 </div>
