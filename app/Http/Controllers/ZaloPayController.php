@@ -55,7 +55,7 @@ class ZaloPayController extends Controller
         ];
 
         // Tạo chữ ký MAC
-        $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" . 
+        $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" .
                 $order["amount"] . "|" . $order["app_time"] . "|" . $order["embed_data"] . "|" . $order["item"];
         $order["mac"] = hash_hmac("sha256", $data, $this->key1);
 
@@ -75,17 +75,17 @@ class ZaloPayController extends Controller
         if (isset($result['order_url']) && !empty($result['order_url'])) {
             Session::put('zalopay_order_data', $orderData);
             Log::info('Redirecting to ZaloPay URL: ' . $result['order_url']);
-            
+
             // Redirect trực tiếp đến ZaloPay
             return redirect($result['order_url']);
         } else {
             // Log chi tiết lỗi từ ZaloPay
             $errorMessage = $result['return_message'] ?? $result['sub_return_message'] ?? 'Không thể tạo thanh toán ZaloPay';
             $returnCode = $result['return_code'] ?? 'unknown';
-            
+
             Log::error('ZaloPay Error: ' . $errorMessage . ' (Code: ' . $returnCode . ')');
             Log::error('Full ZaloPay Response: ', $result);
-            
+
             return redirect()->route('cart.checkout')->with('error', 'Lỗi ZaloPay: ' . $errorMessage);
         }
     }
@@ -94,7 +94,7 @@ class ZaloPayController extends Controller
     public function returnPayment(Request $request)
     {
         Log::info('ZaloPay Return Request: ', $request->all());
-        
+
         $orderData = Session::get('zalopay_order_data');
         if (!$orderData) {
             Log::error('ZaloPay Return: No order data in session');
@@ -105,13 +105,13 @@ class ZaloPayController extends Controller
         $status = $request->input('status');
         $apptransid = $request->input('apptransid');
         $checksum = $request->input('checksum');
-        
+
         Log::info('ZaloPay Return Status: ' . $status . ', TransID: ' . $apptransid);
-        
+
         if ($status == 1) {
             // Thanh toán thành công
             $order = $this->createOrder($apptransid, $request);
-            
+
             if ($order) {
                 // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
                 Log::info("ZaloPay payment successful, created order {$order->id}, redirecting to success page");
@@ -144,11 +144,11 @@ class ZaloPayController extends Controller
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        
+
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
-        
+
         if ($curlError) {
             Log::error('CURL Error connecting to ZaloPay: ' . $curlError);
             curl_close($ch);
@@ -156,12 +156,12 @@ class ZaloPayController extends Controller
         }
 
         curl_close($ch);
-        
+
         Log::info('ZaloPay CURL Response', [
             'http_code' => $httpCode,
             'response' => $result
         ]);
-        
+
         return $result;
     }
 
@@ -173,7 +173,7 @@ class ZaloPayController extends Controller
             if (!$orderData) return false;
 
             $user = Auth::user();
-            
+
             // Lấy only selected cart items
             $selectedCartItems = Session::get('selected_cart_items', []);
             if (empty($selectedCartItems)) {
@@ -209,7 +209,7 @@ class ZaloPayController extends Controller
                 'notes' => $orderData['notes'] ?? null,
                 'coupon_code' => $orderData['coupon_code'] ?? null,
                 'coupon_discount' => $orderData['discount'],
-                'status' => 'confirmed',
+                'status' => 'pending',
                 'payment_status' => 'paid',
                 'transaction_id' => $transactionId,
                 'orderer_name' => $user->name,
