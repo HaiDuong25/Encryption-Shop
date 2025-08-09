@@ -222,7 +222,7 @@ class MoMoController extends Controller
                 'notes' => $orderData['notes'] ?? null,
                 'coupon_code' => $orderData['coupon_code'] ?? null,
                 'coupon_discount' => $orderData['discount'],
-                'status' => 'confirmed', // Đã thanh toán
+                'status' => 'pending', // Đã thanh toán
                 'payment_status' => 'paid',
                 'transaction_id' => $transactionId,
                 // Thông tin người đặt
