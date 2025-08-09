@@ -183,7 +183,7 @@ class MoMoController extends Controller
             }
 
             $user = Auth::user();
-            
+
             // Lấy only selected cart items
             $selectedCartItems = Session::get('selected_cart_items', []);
             if (empty($selectedCartItems)) {
@@ -317,9 +317,9 @@ class MoMoController extends Controller
 
                 // Tự động tạo hóa đơn cho đơn MoMo ngay sau khi thanh toán thành công
                 $payment->generateInvoice();
-                
+
                 Log::info("MoMo payment confirmed and invoice generated automatically for order {$order->id}");
-                
+
             } catch (\Exception $e) {
                 Log::error('Create Payment Exception (MoMo): ' . $e->getMessage());
             }
