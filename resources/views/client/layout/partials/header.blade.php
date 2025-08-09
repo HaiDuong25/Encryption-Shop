@@ -5,18 +5,16 @@
             <div class="row">
                 <div class="col-12">
                     <div class="navbar-top">
-                        <button class="navbar-toggler d-xl-none d-block p-0 me-3" type="button"
-                            data-bs-toggle="offcanvas" data-bs-target="#primaryMenu">
+                        <button class="navbar-toggler d-xl-none d-block p-0 me-3" type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#primaryMenu">
                             <span class="navbar-toggler-icon">
                                 <i class="iconly-Category icli"></i>
                             </span>
                         </button>
-                       <a href="{{ route('home') }}" class="web-logo nav-logo">
-    <img src="{{ asset('assets-front/images/logo/anhlogo2.png') }}"
-         class="img-fluid blur-up lazyload"
-         alt=""
-         style="width: 300px; height: auto;">
-</a>
+                        <a href="{{ route('home') }}" class="web-logo nav-logo">
+                            <img src="{{ asset('assets-front/images/logo/anhlogo2.png') }}"
+                                class="img-fluid blur-up lazyload" alt="" style="width: 300px; height: auto;">
+                        </a>
 
 
                         <div class="search-full">
@@ -34,11 +32,11 @@
 
                         <form action="{{ route('client.products.index') }}" method="GET" class="mb-4 search-form">
 
-                            @foreach(request('categories', []) as $categoryId)
+                            @foreach (request('categories', []) as $categoryId)
                                 <input type="hidden" name="categories[]" value="{{ $categoryId }}">
                             @endforeach
 
-                            @foreach(request('brands', []) as $brandId)
+                            @foreach (request('brands', []) as $brandId)
                                 <input type="hidden" name="brands[]" value="{{ $brandId }}">
                             @endforeach
 
@@ -52,9 +50,11 @@
                                 <button type="submit" class="btn btn-primary search-button">
                                     <i class="fa fa-search me-1"></i> Tìm kiếm
                                 </button>
-                                
+
                                 <!-- Dropdown hiển thị kết quả tìm kiếm real-time -->
-                                <div id="search-dropdown" class="search-dropdown position-absolute w-100 bg-white border rounded-bottom shadow-lg" style="top: 100%; left: 0; z-index: 9999 !important; max-height: 400px; overflow-y: auto; display: none;">
+                                <div id="search-dropdown"
+                                    class="search-dropdown position-absolute w-100 bg-white border rounded-bottom shadow-lg"
+                                    style="top: 100%; left: 0; z-index: 9999 !important; max-height: 400px; overflow-y: auto; display: none;">
                                     <div id="search-results"></div>
                                 </div>
                             </div>
@@ -101,28 +101,33 @@
                                         $categories = Category::whereNull('parent_id')->with('children')->get();
                                     @endphp
                                     <li class="nav-item dropdown">
-                                        <span class="nav-link dropdown-toggle" role="button" id="dropdownDanhMuc" data-bs-toggle="dropdown" aria-expanded="false" data-href="{{ route('categories.index') }}">
+                                        <span class="nav-link dropdown-toggle" role="button" id="dropdownDanhMuc"
+                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                            data-href="{{ route('categories.index') }}">
                                             Danh mục
                                         </span>
                                         <div class="dropdown-menu p-3" style="min-width: 600px;">
                                             <div class="d-flex flex-wrap category-columns">
-                                        @foreach ($categories as $parent)
-                                            <div class="category-group px-3">
-                                                <div class="category-parent text-center mb-2 fw-bold">
-                                                    <a class="text-dark" href="{{ route('categories.show', $parent->id) }}">
-                                                        {{ $parent->name }}
-                                                    </a>
-                                                </div>
-                                                <div class="category-children d-flex flex-column align-items-center">
-                                                    @foreach ($parent->children as $child)
-                                                        <a class="dropdown-item py-1" href="{{ route('categories.show', $child->id) }}">
-                                                            {{ $child->name }}
-                                                        </a>
-                                                    @endforeach
-                                                </div>
+                                                @foreach ($categories as $parent)
+                                                    <div class="category-group px-3">
+                                                        <div class="category-parent text-center mb-2 fw-bold">
+                                                            <a class="text-dark"
+                                                                href="{{ route('categories.show', $parent->id) }}">
+                                                                {{ $parent->name }}
+                                                            </a>
+                                                        </div>
+                                                        <div
+                                                            class="category-children d-flex flex-column align-items-center">
+                                                            @foreach ($parent->children as $child)
+                                                                <a class="dropdown-item py-1"
+                                                                    href="{{ route('categories.show', $child->id) }}">
+                                                                    {{ $child->name }}
+                                                                </a>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @endforeach
                                             </div>
-                                        @endforeach
-                                        </div>
                                         </div>
                                     </li>
 
@@ -146,6 +151,27 @@
 
                     <div class="rightside-menu">
                         <ul class="option-list-2">
+                            @php
+                                $cartItems = collect([]);
+                                $totalQuantity = 0;
+                                $totalOrders = 0;
+                                $savedCouponsCount = 0;
+                                $wishlistCount = 0;
+
+                                if (Auth::check()) {
+                                    $cartItems = \App\Models\Cart::where('user_id', Auth::id())
+                                        ->with(['product', 'variant'])
+                                        ->get();
+                                    $totalQuantity = $cartItems->sum('quantity');
+                                    $totalOrders = \App\Models\Order::where('user_id', Auth::id())->count();
+                                    $savedCouponsCount = \App\Models\UserSavedCoupon::where(
+                                        'user_id',
+                                        Auth::id(),
+                                    )->count();
+                                    $wishlistCount = \App\Models\Wishlist::where('user_id', Auth::id())->count(); // Thêm dòng này
+                                }
+                            @endphp
+
                             <li>
                                 <a href="javascript:void(0)" class="header-icon search-box search-icon">
                                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -154,27 +180,33 @@
                             <li>
                                 <a href="{{ route('wishlist.index') }}" class="header-icon">
                                     <i class="fa-solid fa-heart"></i>
+                                    @if (Auth::check() && $wishlistCount > 0)
+                                        <small class="badge-number badge-light">{{ $wishlistCount }}</small>
+                                    @endif
                                 </a>
                             </li>
-
-
                             @php
                                 $cartItems = collect([]);
                                 $totalQuantity = 0;
                                 $totalOrders = 0;
                                 $savedCouponsCount = 0;
                                 if (Auth::check()) {
-                                    $cartItems = \App\Models\Cart::where('user_id', Auth::id())->with(['product', 'variant'])->get();
+                                    $cartItems = \App\Models\Cart::where('user_id', Auth::id())
+                                        ->with(['product', 'variant'])
+                                        ->get();
                                     $totalQuantity = $cartItems->sum('quantity');
                                     $totalOrders = \App\Models\Order::where('user_id', Auth::id())->count();
-                                    $savedCouponsCount = \App\Models\UserSavedCoupon::where('user_id', Auth::id())->count();
+                                    $savedCouponsCount = \App\Models\UserSavedCoupon::where(
+                                        'user_id',
+                                        Auth::id(),
+                                    )->count();
                                 }
                             @endphp
 
                             <li>
                                 <a href="{{ route('cart.index') }}" class="header-icon swap-icon">
                                     <i class="fa-solid fa-cart-shopping"></i>
-                                    @if($totalQuantity > 0)
+                                    @if ($totalQuantity > 0)
                                         <small class="badge-number badge-light">{{ $totalQuantity }}</small>
                                     @endif
                                 </a>
@@ -183,7 +215,7 @@
                             <li>
                                 <a href="{{ route('my-coupons') }}" class="header-icon" title="Mã giảm giá đã lưu">
                                     <i class="fa-solid fa-ticket"></i>
-                                    @if(Auth::check() && $savedCouponsCount > 0)
+                                    @if (Auth::check() && $savedCouponsCount > 0)
                                         <small class="badge-number badge-light">{{ $savedCouponsCount }}</small>
                                     @endif
                                 </a>
@@ -191,7 +223,7 @@
 
                             <li>
                                 <a href="{{ route('client.orders.index') }}" class="header-icon bag-icon">
-                                    @if(Auth::check() && $totalOrders > 0)
+                                    @if (Auth::check() && $totalOrders > 0)
                                         <small class="badge-number badge-light">{{ $totalOrders }}</small>
                                     @endif
                                     <i class="fa-solid fa-bag-shopping"></i>
@@ -200,19 +232,17 @@
                             </li>
                         </ul>
 
-                        @if(Auth::check())
+                        @if (Auth::check())
                             <a href="{{ route('account.index') }}" class="user-box">
                                 <span class="header-icon">
-                                    @if(auth()->user()->avatar)
-                                    <img id="header-user-avatar" 
-                                         class="user-profile rounded-circle"
-                                         data-user-avatar
-                                         src="{{ asset('storage/' . auth()->user()->avatar) }}"
-                                         alt="{{ auth()->user()->name }}"
-                                         style="width: 35px; height: 35px; object-fit: cover;"
-                                         title="Quản lý tài khoản">
+                                    @if (auth()->user()->avatar)
+                                        <img id="header-user-avatar" class="user-profile rounded-circle"
+                                            data-user-avatar src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                                            alt="{{ auth()->user()->name }}"
+                                            style="width: 35px; height: 35px; object-fit: cover;"
+                                            title="Quản lý tài khoản">
                                     @else
-                                    <i class="fa-solid fa-user" title="{{ auth()->user()->name }}"></i>
+                                        <i class="fa-solid fa-user" title="{{ auth()->user()->name }}"></i>
                                     @endif
                                 </span>
                             </a>
@@ -312,15 +342,15 @@
     /* Style cho avatar user */
     .user-profile {
         border: 2px solid #fff;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
     }
 
     .user-profile:hover {
         transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-    
+
     /* Avatar transition mượt khi cập nhật */
     .user-profile.updating {
         opacity: 0.7;
@@ -329,201 +359,206 @@
 </style>
 
 <style>
-/* Real-time Search Dropdown Styles */
-.search-dropdown {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.search-result-item {
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
-}
-
-.search-result-item:hover {
-    background-color: #f8f9fa !important;
-    transform: translateX(5px);
-}
-
-.search-result-item.selected {
-    background-color: #e3f2fd !important;
-    transform: translateX(5px);
-}
-
-.search-result-image {
-    border: 1px solid #e0e0e0;
-    transition: transform 0.2s ease;
-}
-
-.search-result-item:hover .search-result-image {
-    transform: scale(1.05);
-}
-
-.search-result-name {
-    color: #333;
-    line-height: 1.3;
-}
-
-.search-result-price {
-    color: #dc3545 !important;
-    font-weight: 600;
-}
-
-.search-result-category {
-    color: #6c757d;
-    font-style: italic;
-}
-
-.search-view-all {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.search-view-all .btn-link {
-    color: #007bff !important;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.search-view-all .btn-link:hover {
-    background: rgba(0, 123, 255, 0.1);
-    transform: translateY(-1px);
-}
-
-.search-input-group {
-    position: relative;
-    z-index: 1050;
-}
-
-.search-dropdown {
-    z-index: 1060 !important;
-}
-
-/* Loading animation */
-.search-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: #6c757d;
-}
-
-.search-loading::after {
-    content: '';
-    width: 20px;
-    height: 20px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-left: 10px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
+    /* Real-time Search Dropdown Styles */
     .search-dropdown {
-        max-height: 300px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
-    
+
     .search-result-item {
-        padding: 0.75rem !important;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
     }
-    
+
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+
+    .search-result-item:hover {
+        background-color: #f8f9fa !important;
+        transform: translateX(5px);
+    }
+
+    .search-result-item.selected {
+        background-color: #e3f2fd !important;
+        transform: translateX(5px);
+    }
+
     .search-result-image {
-        width: 40px !important;
-        height: 40px !important;
+        border: 1px solid #e0e0e0;
+        transition: transform 0.2s ease;
     }
-    
+
+    .search-result-item:hover .search-result-image {
+        transform: scale(1.05);
+    }
+
     .search-result-name {
-        font-size: 13px !important;
+        color: #333;
+        line-height: 1.3;
     }
-    
+
     .search-result-price {
-        font-size: 12px !important;
+        color: #dc3545 !important;
+        font-weight: 600;
     }
-}
+
+    .search-result-category {
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .search-view-all {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .search-view-all .btn-link {
+        color: #007bff !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .search-view-all .btn-link:hover {
+        background: rgba(0, 123, 255, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .search-input-group {
+        position: relative;
+        z-index: 1050;
+    }
+
+    .search-dropdown {
+        z-index: 1060 !important;
+    }
+
+    /* Loading animation */
+    .search-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: #6c757d;
+    }
+
+    .search-loading::after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .search-dropdown {
+            max-height: 300px;
+        }
+
+        .search-result-item {
+            padding: 0.75rem !important;
+        }
+
+        .search-result-image {
+            width: 40px !important;
+            height: 40px !important;
+        }
+
+        .search-result-name {
+            font-size: 13px !important;
+        }
+
+        .search-result-price {
+            font-size: 12px !important;
+        }
+    }
 </style>
 
 <style>
-/* Dropdown toàn bộ */
-.dropdown-menu {
-    width: 100%;
-    max-width: 1000px;
-    background-color: #fff;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0;
-    padding: 1rem 1.5rem;
-}
+    /* Dropdown toàn bộ */
+    .dropdown-menu {
+        width: 100%;
+        max-width: 1000px;
+        background-color: #fff;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        padding: 1rem 1.5rem;
+    }
 
-/* Flex nhóm danh mục */
-.category-columns {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: start;
-    gap: 20px;
-}
+    /* Flex nhóm danh mục */
+    .category-columns {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: start;
+        gap: 20px;
+    }
 
-/* Nhóm cha + con */
-.category-group {
-    min-width: 150px;
-    border-right: 1px solid #ddd;
-    padding-right: 15px;
-}
+    /* Nhóm cha + con */
+    .category-group {
+        min-width: 150px;
+        border-right: 1px solid #ddd;
+        padding-right: 15px;
+    }
 
-/* Bỏ border phải cột cuối */
-.category-group:last-child {
-    border-right: none;
-}
+    /* Bỏ border phải cột cuối */
+    .category-group:last-child {
+        border-right: none;
+    }
 
-.category-parent {
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 6px;
-    margin-bottom: 8px;
-    width: 100%;
-    text-align: center;
-}
+    .category-parent {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 6px;
+        margin-bottom: 8px;
+        width: 100%;
+        text-align: center;
+    }
 
-/* Tên danh mục cha */
-.category-parent a {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-}
+    /* Tên danh mục cha */
+    .category-parent a {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+    }
 
-/* Danh mục con */
-.category-children a {
-    font-size: 14px;
-    color: #555;
-    text-align: center;
-}
+    /* Danh mục con */
+    .category-children a {
+        font-size: 14px;
+        color: #555;
+        text-align: center;
+    }
 
-/* Hover hiệu ứng */
-.category-children a:hover {
-    color: #007bff;
-    background-color: #f0f0f0;
-    border-radius: 4px;
-}
+    /* Hover hiệu ứng */
+    .category-children a:hover {
+        color: #007bff;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+    }
 </style>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
         const danhMucToggle = document.getElementById('dropdownDanhMuc');
 
         let isOpen = false;
 
-        danhMucToggle.addEventListener('click', function (e) {
+        danhMucToggle.addEventListener('click', function(e) {
             if (!isOpen) {
                 e.preventDefault(); // mở dropdown lần đầu
                 isOpen = true;
@@ -534,7 +569,7 @@
         });
 
         // Reset khi click ngoài menu
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             if (!danhMucToggle.contains(e.target)) {
                 isOpen = false;
             }
@@ -572,21 +607,22 @@
 
         searchInput.addEventListener('input', function() {
             const query = this.value.trim();
-            
+
             clearTimeout(searchTimeout);
-            
+
             if (query.length < 2) {
                 searchDropdown.style.display = 'none';
                 return;
             }
 
             // Show loading
-            searchResults.innerHTML = '<div class="search-loading p-3 text-center text-muted">Đang tìm kiếm...</div>';
+            searchResults.innerHTML =
+                '<div class="search-loading p-3 text-center text-muted">Đang tìm kiếm...</div>';
             searchDropdown.style.display = 'block';
 
             searchTimeout = setTimeout(() => {
                 const url = `{{ route('client.products.search') }}?query=${encodeURIComponent(query)}`;
-                
+
                 fetch(url)
                     .then(response => {
                         return response.json();
@@ -595,22 +631,24 @@
                         displaySearchResults(products);
                     })
                     .catch(error => {
-                        searchResults.innerHTML = '<div class="p-3 text-danger text-center"><i class="fa fa-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tìm kiếm</div>';
+                        searchResults.innerHTML =
+                            '<div class="p-3 text-danger text-center"><i class="fa fa-exclamation-triangle me-2"></i>Có lỗi xảy ra khi tìm kiếm</div>';
                     });
             }, 300);
         });
 
         function displaySearchResults(products) {
             if (products.length === 0) {
-                searchResults.innerHTML = '<div class="p-3 text-muted text-center"><i class="fa fa-search me-2"></i>Không tìm thấy sản phẩm nào</div>';
+                searchResults.innerHTML =
+                    '<div class="p-3 text-muted text-center"><i class="fa fa-search me-2"></i>Không tìm thấy sản phẩm nào</div>';
                 searchDropdown.style.display = 'block';
                 return;
             }
 
             const html = products.map(product => `
                 <a href="${product.url}" class="search-result-item d-flex align-items-center p-3 text-decoration-none border-bottom hover-bg-light">
-                    <img src="${product.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23f8f9fa\'/%3E%3Ctext x=\'50%\' y=\'50%\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236c757d\' font-family=\'Arial\' font-size=\'20\'%3E📦%3C/text%3E%3C/svg%3E'}" 
-                         alt="${product.name}" 
+                    <img src="${product.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23f8f9fa\'/%3E%3Ctext x=\'50%\' y=\'50%\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236c757d\' font-family=\'Arial\' font-size=\'20\'%3E📦%3C/text%3E%3C/svg%3E'}"
+                         alt="${product.name}"
                          class="search-result-image me-3 rounded"
                          style="width: 50px; height: 50px; object-fit: cover;"
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23f8f9fa\'/%3E%3Ctext x=\'50%\' y=\'50%\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236c757d\' font-family=\'Arial\' font-size=\'20\'%3E📦%3C/text%3E%3C/svg%3E'">
@@ -655,7 +693,7 @@
         let selectedIndex = -1;
         searchInput.addEventListener('keydown', function(e) {
             const items = searchDropdown.querySelectorAll('.search-result-item');
-            
+
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
@@ -687,4 +725,3 @@
     // Make it globally available
     window.updateHeaderCouponBadge = updateHeaderCouponBadge;
 </script>
-
