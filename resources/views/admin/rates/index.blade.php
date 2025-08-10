@@ -13,7 +13,7 @@
                         <div class="right-options d-flex gap-2 align-items-center">
                             {{-- Form tìm kiếm theo tên người dùng hoặc nội dung đánh giá --}}
                             <form method="GET" action="{{ route('rates.index') }}" class="d-flex">
-                                <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên người dùng hoặc nội dung..." 
+                                <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên người dùng hoặc nội dung..."
                                        value="{{ request('search') }}" style="width: 300px;">
                                 <button type="submit" class="btn btn-primary me-2">
                                     <i class="ri-search-line"></i> Tìm
@@ -133,11 +133,11 @@ function showAlert(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     const container = document.querySelector('.container-fluid');
     const card = document.querySelector('.card');
     container.insertBefore(alertDiv, card);
-    
+
     // Auto hide after 5 seconds
     setTimeout(() => {
         if (alertDiv.parentNode) {
@@ -152,10 +152,10 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmButton = document.getElementById('confirmButton');
     const confirmIcon = document.getElementById('confirmIcon');
-    
+
     // Cập nhật nội dung modal
     confirmMessage.textContent = message;
-    
+
     // Cập nhật icon và màu sắc dựa trên type
     if (type === 'danger') {
         confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
@@ -170,17 +170,17 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
         confirmButton.className = 'btn btn-primary';
         confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
     }
-    
+
     // Xóa event listener cũ và thêm mới
     const newConfirmButton = confirmButton.cloneNode(true);
     confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-    
+
     // Thêm event listener cho nút xác nhận
     newConfirmButton.addEventListener('click', function() {
         modal.hide();
         onConfirm();
     });
-    
+
     // Hiển thị modal
     modal.show();
 }
@@ -191,14 +191,14 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const rateId = this.dataset.id;
             const rateName = this.dataset.name;
-            
+
             showConfirmModal(
                 `Bạn có chắc chắn muốn xóa ${rateName} không?`,
                 () => {
                     // Show loading state
                     this.innerHTML = '<i class="ri-loader-4-line"></i>';
                     this.disabled = true;
-                    
+
                     fetch(`/admin/rates/${rateId}`, {
                         method: 'DELETE',
                         headers: {
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Remove the row from table
                             const row = this.closest('tr');
                             row.remove();
-                            
+
                             // Show success message
                             showAlert(data.message, 'success');
                         } else {

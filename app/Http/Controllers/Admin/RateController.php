@@ -13,7 +13,7 @@ class RateController extends Controller
     public function index(Request $request)
     {
         $query = Rate::with('user');
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -25,10 +25,10 @@ class RateController extends Controller
                   });
             });
         }
-        
+
         $rates = $query->orderBy('created_at', 'desc')->paginate(15);
         $rates->appends($request->query());
-        
+
         return view('admin.rates.index', compact('rates'));
     }
 
@@ -71,18 +71,24 @@ class RateController extends Controller
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Rate $rate)
-    {
-        try {
-            $rate->delete();
-            return redirect()->route('rates.index')
-                             ->with('success', 'Đánh giá (ID: ' . $rate->id . ') đã được xóa thành công!');
-    }catch (\Exception $e) {
-        return redirect()->route('rates.index')
-                             ->with('error', 'Có lỗi xảy ra khi xóa đánh giá. Vui lòng thử lại.');
-        }
+  public function destroy(Rate $rate)
+{
+    try {
+        $rate->delete();
+
+        // Trả về phản hồi JSON cho AJAX
+        return response()->json([
+            'success' => true,
+            'message' => 'Đánh giá (ID: ' . $rate->id . ') đã được xóa thành công!'
+        ]);
+    } catch (\Exception $e) {
+        // Ghi lại lỗi nếu cần: \Log::error($e->getMessage());
+
+        // Trả về phản hồi JSON khi có lỗi
+        return response()->json([
+            'success' => false,
+            'message' => 'Có lỗi xảy ra khi xóa đánh giá. Vui lòng thử lại.'
+        ], 500); // 500 là mã lỗi Internal Server Error
     }
+}
 }

@@ -149,7 +149,7 @@
                     </li>
                     <li class="sidebar-list">
 
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('contacts.index') }}">
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
                             <i class="ri-phone-line"></i>
                             <span>Quản lý liên hệ</span>
 
