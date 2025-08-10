@@ -434,41 +434,46 @@
             <h4>Đánh giá sản phẩm</h4>
 
             {{-- Hiển thị các đánh giá đã có --}}
-            @if ($product->rates->where('status', 1)->count())
-                @foreach ($product->rates->where('status', 1) as $rate)
-                    <div class="mb-3 border-bottom pb-2">
-                        <div class="d-flex align-items-center mb-1">
-                            <strong>{{ $rate->user->name }}</strong>
+ @foreach ($product->rates->where('status', 1) as $rate)
+    <div class="mb-3 border-bottom pb-2">
+        <div class="d-flex align-items-center mb-1">
+            <strong>{{ $rate->user->name }}</strong>
 
-                            <div class="ms-2 existing-stars">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    @if ($rate->score >= $i)
-                                        <i class="fas fa-star"></i>
-                                    @else
-                                        <i class="far fa-star"></i>
-                                    @endif
-                                @endfor
-                            </div>
-                        </div>
+            <div class="ms-2 existing-stars">
+                @for ($i = 1; $i <= 5; $i++)
+                    @if ($rate->score >= $i)
+                        <i class="fas fa-star text-warning"></i>
+                    @else
+                        <i class="far fa-star text-warning"></i>
+                    @endif
+                @endfor
+            </div>
+        </div>
 
-                        {{-- Hiển thị biến thể nếu có --}}
-                        @if ($rate->orderDetail && $rate->orderDetail->variant)
-                            <div class="text-muted small">
-                                Biến thể:
-                                @foreach ($rate->orderDetail->variant->attributeValues as $attributeValue)
-                                    {{ $attributeValue->value }}@if (!$loop->last)
-                                        ,
-                                    @endif
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <p class="mb-0">{{ $rate->content }}</p>
-                    </div>
+        {{-- Hiển thị biến thể nếu có --}}
+        @if ($rate->orderDetail && $rate->orderDetail->variant)
+            <div class="text-muted small">
+                Biến thể:
+                @foreach ($rate->orderDetail->variant->attributeValues as $attributeValue)
+                    {{ $attributeValue->value }}@if (!$loop->last), @endif
                 @endforeach
-            @else
-                <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-            @endif
+            </div>
+        @endif
+
+        <p class="mb-0">{{ $rate->content }}</p>
+
+        {{-- ✅ Hiển thị phản hồi admin --}}
+        @if ($rate->replies->count())
+            @foreach ($rate->replies as $reply)
+                <div class="mt-2 ms-4 p-2 bg-light border rounded">
+                    <strong class="text-primary">{{ $reply->admin->name ?? 'Admin' }}:</strong>
+                    <span>{{ $reply->reply_content }}</span>
+                </div>
+            @endforeach
+        @endif
+    </div>
+@endforeach
+
 
 
 

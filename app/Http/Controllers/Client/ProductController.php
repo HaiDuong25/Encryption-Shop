@@ -113,9 +113,14 @@ public function show($id)
         'category',
         'brand',
         'variants.attributeValues.attribute',
-        // Load rates có status = 1 và kèm user
+        // Load rates kèm user, orderDetail, variant, attributeValues, và replies của admin
         'rates' => function ($q) {
-            $q->where('status', 1)->with('user');
+            $q->where('status', 1)
+              ->with([
+                  'user',
+                  'orderDetail.variant.attributeValues',
+                  'replies.admin'
+              ]);
         }
     ])->findOrFail($id);
 
@@ -127,6 +132,7 @@ public function show($id)
 
     return view('client.products.show', compact('product', 'relatedProducts'));
 }
+
 
 public function getStock(Request $request)
 {
@@ -154,7 +160,7 @@ public function getStock(Request $request)
 public function searchProducts(Request $request)
 {
     $query = $request->get('query', '');
-    
+
     if (strlen($query) < 2) {
         return response()->json([]);
     }
@@ -174,7 +180,7 @@ public function searchProducts(Request $request)
         ->map(function ($product) {
             $images = json_decode($product->image, true);
             $mainImage = is_array($images) && !empty($images) ? $images[0] : $product->image;
-            
+
             return [
                 'id' => $product->id,
                 'name' => $product->name,
