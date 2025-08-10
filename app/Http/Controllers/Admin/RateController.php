@@ -47,9 +47,9 @@ class RateController extends Controller
     {
 
         $statuses = [
-            0 => 'Pending',   // Chờ duyệt
-            1 => 'Approved',  // Đã duyệt
-            2 => 'Rejected',  // Bị từ chối
+            0 => 'Chờ duyệt',   // Chờ duyệt
+            1 => 'Hiện',  // Đã duyệt
+            2 => 'Ẩn',  // Bị từ chối
         ];
 
         return view('admin.rates.edit', compact('rate', 'statuses'));
@@ -60,7 +60,7 @@ class RateController extends Controller
      */
     public function update(Request $request, Rate $rate)
     {
-        $validStatuses = [0, 1, 2]; // pending, approved, rejected
+        $validStatuses = [0, 1, 2];
         $validatedData = $request->validate([
             'status' => ['required', Rule::in($validStatuses)],
         ]);

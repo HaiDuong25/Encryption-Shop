@@ -15,7 +15,7 @@ class Rate extends Model
         'order_detail_id',
         'score',
         'content',
-        'status', // Giả sử status là TINYINT: 0 = pending, 1 = approved, 2 = rejected
+        'status', // Giả sử status là TINYINT: 0 = Chờ duyệt, 1 = Hiện, 2 = Ẩn
     ];
 
     // --- THÊM CÁC PHƯƠNG THỨC ACCESSOR DƯỚI ĐÂY ---
@@ -28,11 +28,11 @@ class Rate extends Model
     {
         switch ($this->attributes['status']) { // Truy cập giá trị gốc của status
             case 0:
-                return 'pending';
+                return 'Chờ duyệt';
             case 1:
-                return 'approved';
+                return 'Hiện';
             case 2:
-                return 'rejected';
+                return 'Ẩn';
             default:
                 return 'unknown';
         }
@@ -45,11 +45,11 @@ class Rate extends Model
     public function getStatusClassAttribute(): string
     {
         switch ($this->attributes['status']) { // Truy cập giá trị gốc của status
-            case 0: // pending
+            case 0: // Chờ duyệt
                 return 'bg-warning text-dark';
-            case 1: // approved
+            case 1: // Hiện
                 return 'bg-success';
-            case 2: // rejected
+            case 2: // Ẩn
                 return 'bg-danger';
             default:
                 return 'bg-secondary';
