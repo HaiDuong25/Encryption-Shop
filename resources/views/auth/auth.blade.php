@@ -53,7 +53,7 @@
                 <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required />
                 <input type="password" name="password" placeholder="Password" required />
                 @error('email')<small style="color:red">{{ $message }}</small>@enderror
-                <a href="#">Forgot your password?</a>
+                <a href="{{ route('password.request') }}">Forgot your password?</a>
                 <button type="submit">Sign In</button>
             </form>
         </div>
