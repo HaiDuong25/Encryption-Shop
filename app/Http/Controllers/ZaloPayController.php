@@ -20,6 +20,66 @@ use App\Models\ProductVariant;
 class ZaloPayController extends Controller
 {
     use ClearsCheckoutSession;
+        // Xử lý callback từ ZaloPay (chuẩn tài liệu ZLP)
+        public function callback(Request $request)
+        {
+            Log::info('ZaloPay Callback Request', $request->all());
+
+            $dataStr = $request->input('data');
+            $reqMac = $request->input('mac');
+            $result = [
+                'return_code' => 1,
+                'return_message' => 'success'
+            ];
+
+            try {
+                // Xác thực MAC
+                $mac = hash_hmac('sha256', $dataStr, $this->key2);
+                if ($reqMac !== $mac) {
+                    Log::error('ZaloPay Callback: MAC not equal', ['reqMac' => $reqMac, 'mac' => $mac]);
+                    $result['return_code'] = -1;
+                    $result['return_message'] = 'mac not equal';
+                    return response()->json($result);
+                }
+
+                // Parse data JSON
+                $dataJson = json_decode($dataStr, true);
+                Log::info('ZaloPay Callback Data', $dataJson);
+
+                // Cập nhật trạng thái đơn hàng
+                $appTransId = $dataJson['app_trans_id'] ?? null;
+                $orderId = $dataJson['order_id'] ?? null;
+                $status = $dataJson['status'] ?? null;
+
+                // Tìm đơn hàng theo transaction_id hoặc order_id
+                $order = null;
+                if ($appTransId) {
+                    $order = Order::where('transaction_id', $appTransId)->first();
+                } elseif ($orderId) {
+                    $order = Order::find($orderId);
+                }
+
+                if ($order) {
+                    // Nếu trạng thái là thành công (status == 1), cập nhật trạng thái đơn hàng
+                    if ($status == 1) {
+                        $order->status = 'completed';
+                        $order->payment_status = 'paid';
+                        $order->save();
+                        Log::info('ZaloPay Callback: Order updated to completed', ['order_id' => $order->id]);
+                    } else {
+                        Log::info('ZaloPay Callback: Payment failed or cancelled', ['order_id' => $order->id, 'status' => $status]);
+                    }
+                } else {
+                    Log::error('ZaloPay Callback: Order not found', ['app_trans_id' => $appTransId, 'order_id' => $orderId]);
+                }
+            } catch (\Exception $ex) {
+                Log::error('ZaloPay Callback Exception', ['message' => $ex->getMessage()]);
+                $result['return_code'] = 0;
+                $result['return_message'] = $ex->getMessage();
+            }
+
+            return response()->json($result);
+        }
     // Thông tin cấu hình ZaloPay Sandbox - sử dụng credentials từ script test thành công
     private $appid = "2553"; // ID ứng dụng do ZaloPay cấp (từ script test thành công)
     private $key1 = "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL"; // Key1 dùng để ký dữ liệu gửi đi
