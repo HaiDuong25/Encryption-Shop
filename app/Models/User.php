@@ -93,6 +93,36 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the user's wallet
+     */
+    public function wallet()
+    {
+        return $this->hasOne(UserWallet::class);
+    }
+
+    /**
+     * Get wallet transactions
+     */
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    /**
+     * Get or create user wallet
+     */
+    public function getOrCreateWallet()
+    {
+        if (!$this->wallet) {
+            UserWallet::create([
+                'user_id' => $this->id,
+                'balance' => 0
+            ]);
+        }
+        return $this->wallet;
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

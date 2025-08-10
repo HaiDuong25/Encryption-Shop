@@ -130,6 +130,21 @@ public function cancel(Request $request, Order $order)
         }
 
         $oldStatus = $order->getOriginal('status');
+        // Hoàn tiền nếu cần (online / ví)
+        try {
+            $order->load(['paymentMethod', 'user']);
+            $pm = $order->paymentMethod;
+            if ($pm && strtoupper($pm->payment_type) !== 'COD') {
+                $amountToRefund = $order->refundableRemaining();
+                if ($amountToRefund > 0) {
+                    $order->refundToWallet($amountToRefund, 'Hoàn tiền do khách hủy đơn');
+                    Log::info("Client order cancel refund {$amountToRefund} for order {$order->id}");
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Refund error (client cancel) order ' . $order->id . ': ' . $e->getMessage());
+        }
+
         $order->update([
             'status' => 'cancelled',
             'cancel_reason' => $request->cancel_reason ?? 'Khách hàng hủy đơn',

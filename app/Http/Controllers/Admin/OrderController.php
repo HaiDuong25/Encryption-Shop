@@ -188,8 +188,25 @@ class OrderController extends \App\Http\Controllers\Controller
 
             DB::beginTransaction();
 
+            // Load quan hệ cần thiết
+            $order->load(['paymentMethod', 'user']);
+
             // Trả lại số lượng sản phẩm
             $this->restoreStock($order);
+
+            // Hoàn tiền (online / ví, trừ COD) trước khi cập nhật trạng thái
+            try {
+                $paymentMethod = $order->paymentMethod;
+                if ($paymentMethod && strtoupper($paymentMethod->payment_type) !== 'COD') {
+                    $amountToRefund = $order->refundableRemaining();
+                    if ($amountToRefund > 0) {
+                        $order->refundToWallet($amountToRefund, 'Hoàn tiền do khách hủy đơn');
+                        \Log::info("Client cancel refund {$amountToRefund} for order {$order->id}");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Refund error (client cancel) order ' . $order->id . ': ' . $e->getMessage());
+            }
 
             // Cập nhật trạng thái đơn hàng
             $order->update(['status' => 'cancelled']);
@@ -317,6 +334,23 @@ class OrderController extends \App\Http\Controllers\Controller
             }
         }
 
+        // Nếu chuyển sang cancelled: hoàn tiền nếu cần
+        if ($newStatus === 'cancelled') {
+            try {
+                $order->load(['paymentMethod', 'user']);
+                $pm = $order->paymentMethod;
+                if ($pm && strtoupper($pm->payment_type) !== 'COD') {
+                    $amountToRefund = $order->refundableRemaining();
+                    if ($amountToRefund > 0) {
+                        $order->refundToWallet($amountToRefund, 'Hoàn tiền do hủy đơn (admin update)');
+                        \Log::info("Admin status->cancelled refund {$amountToRefund} for order {$order->id}");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Refund error (admin updateStatus cancel) order ' . $order->id . ': ' . $e->getMessage());
+            }
+        }
+
         $order->status = $newStatus;
         $order->save();
 
@@ -365,6 +399,21 @@ class OrderController extends \App\Http\Controllers\Controller
                     \Log::error('Error returning coupon for admin cancelled order: ' . $e->getMessage());
                     // Không throw exception để không ảnh hưởng đến việc hủy đơn hàng
                 }
+            }
+
+            // Thực hiện hoàn tiền vào ví nếu là phương thức online / ví và chưa hoàn đủ
+            try {
+                $order->refresh(); // đảm bảo quan hệ
+                $paymentMethod = $order->paymentMethod;
+                if ($paymentMethod && $paymentMethod->payment_type !== 'COD') {
+                    $amountToRefund = $order->refundableRemaining();
+                    if ($amountToRefund > 0) {
+                        $order->refundToWallet($amountToRefund, 'Hoàn tiền do admin hủy đơn');
+                        \Log::info("Refunded {$amountToRefund} to wallet for cancelled order {$order->id}");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Refund error on admin cancel order ' . $order->id . ': ' . $e->getMessage());
             }
 
             // Cập nhật trạng thái đơn hàng

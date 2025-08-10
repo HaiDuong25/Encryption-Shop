@@ -85,6 +85,16 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Đã thêm người dùng');
     }
 
+    public function show(User $user)
+    {
+        // Load wallet và transaction data
+        $user->load(['wallet', 'walletTransactions' => function($query) {
+            $query->latest()->take(10);
+        }]);
+        
+        return view('admin.users.show', compact('user'));
+    }
+
     public function edit(User $user)
     {
         return view('admin.users.edit', compact('user'));

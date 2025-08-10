@@ -722,16 +722,30 @@
                                         alt="ZaloPay" class="me-2" style="width: 20px; height: 20px;"
                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
                                     <span class="zalopay-logo" style="display: none;">Z</span>
+                                    @elseif($method->payment_type == 'Số dư ví')
+                                    <i class="fa-solid fa-wallet me-2 text-primary"></i>
                                     @endif
-                                    <div>
+                                    <div class="flex-grow-1">
                                         <div class="fw-semibold">{{ $method->payment_type }}</div>
                                         <small class="text-muted">
                                             @if($method->payment_type == 'COD')
-                                            Thanh toán khi nhận hàng
+                                                Thanh toán khi nhận hàng
                                             @elseif($method->payment_type == 'Ví Điện Tử MOMO')
-                                            Thanh toán online tiện lợi bằng ví MOMO
+                                                Thanh toán online tiện lợi bằng ví MOMO
                                             @elseif($method->payment_type == 'Ví Điện Tử ZALOPAY')
-                                            Thanh toán nhanh chóng qua ví ZaloPay
+                                                Thanh toán nhanh chóng qua ví ZaloPay
+                                            @elseif($method->payment_type == 'Số dư ví')
+                                                @php
+                                                    $wallet = auth()->user()->wallet ?? auth()->user()->getOrCreateWallet();
+                                                @endphp
+                                                Số dư hiện tại: <span class="fw-bold text-success">{{ number_format($wallet->balance ?? 0, 0, ',', '.') }} VND</span>
+                                                @if(($wallet->balance ?? 0) < $total)
+                                                    <div class="text-danger small mt-1">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        Số dư không đủ. Cần thêm: {{ number_format($total - ($wallet->balance ?? 0), 0, ',', '.') }} VND
+                                                        <a href="{{ route('wallet.topup') }}" target="_blank" class="text-primary">Nạp thêm</a>
+                                                    </div>
+                                                @endif
                                             @endif
                                         </small>
                                     </div>

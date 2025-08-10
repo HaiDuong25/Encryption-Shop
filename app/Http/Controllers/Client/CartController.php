@@ -357,6 +357,8 @@ class CartController extends Controller
 
     public function processCheckout(Request $request)
     {
+        $user = Auth::user();
+        
         $request->validate([
             // Địa chỉ giao hàng
             'shipping_address_id' => 'required|exists:shipping_addresses,id',
@@ -459,6 +461,119 @@ class CartController extends Controller
 
         // Kiểm tra phương thức thanh toán
         $paymentMethod = \App\Models\PaymentMethod::find($request->payment_method_id);
+
+        if ($paymentMethod && $paymentMethod->payment_type === 'Số dư ví') {
+            // Thanh toán bằng ví - kiểm tra số dư
+            $wallet = $user->getOrCreateWallet();
+            
+            if ($wallet->balance < $totalPrice) {
+                return redirect()->back()->with('error', 
+                    'Số dư trong ví không đủ để thanh toán. Số dư hiện tại: ' . 
+                    number_format($wallet->balance, 0, ',', '.') . ' VND. ' .
+                    'Cần thêm: ' . number_format($totalPrice - $wallet->balance, 0, ',', '.') . ' VND.'
+                );
+            }
+
+            // Tạo đơn hàng ngay lập tức
+            try {
+                $order = new \App\Models\Order();
+                $order->user_id = Auth::id();
+
+                // Thông tin người đặt hàng
+                $order->orderer_name = $user->name;
+                $order->orderer_email = $user->email;
+                $order->orderer_phone = $user->phone;
+                $order->orderer_address = $user->address ?? '';
+
+                // Thông tin người nhận hàng (FIX: dùng address_detail thay vì address để tránh lỗi thuộc tính không tồn tại)
+                $order->recipient_name = $shippingAddress->name;
+                $order->recipient_phone = $shippingAddress->phone;
+                $order->recipient_address = $shippingAddress->address_detail . ', ' . $shippingAddress->ward . ', ' . $shippingAddress->district . ', ' . $shippingAddress->province;
+
+                $order->shipping_address_id = $request->shipping_address_id;
+                $order->payment_method_id = $request->payment_method_id;
+                // Các trường giá trị (giữ cả total_price cũ để tương thích)
+                $order->subtotal = $subtotal;
+                $order->discount = $discountAmount; // tổng số tiền giảm
+                $order->total = $totalPrice; // dùng tạm nếu còn view/code cũ đọc
+                $order->total_price = $totalPrice; // giá trị chuẩn
+                $order->notes = $request->notes;
+                $order->coupon_code = $couponCode;
+                $order->coupon_discount = $discountAmount;
+                $order->status = 'confirmed';
+                $order->payment_status = 'paid';
+                $order->transaction_id = 'WALLET_' . time() . '_' . $user->id;
+                $order->save();
+
+                // Lưu chi tiết đơn hàng
+                foreach ($carts as $cart) {
+                    $orderDetail = new \App\Models\OrderDetail();
+                    $orderDetail->order_id = $order->id;
+                    $orderDetail->product_id = $cart->product_id;
+                    $orderDetail->variant_id = $cart->variant_id;
+                    $orderDetail->quantity = $cart->quantity;
+                    $orderDetail->price = $cart->variant ? $cart->variant->price : $cart->product->price;
+                    // Sử dụng cột total_price (migration không có 'total')
+                    $orderDetail->total_price = $orderDetail->price * $cart->quantity;
+                    $orderDetail->save();
+                }
+
+                // Trừ tiền từ ví
+                $wallet->subtractBalance(
+                    $totalPrice, 
+                    'Thanh toán đơn hàng #' . $order->id,
+                    'ORDER_' . $order->id . '_' . time()
+                );
+
+                // Tạo payment record
+                \App\Models\Payment::create([
+                    'order_id' => $order->id,
+                    'payment_method_id' => $request->payment_method_id,
+                    'status' => 'completed',
+                    'transaction_code' => $order->transaction_id,
+                    'payer_name' => $user->name,
+                    'payment_method_type' => 'WALLET'
+                ]);
+
+                // Xử lý coupon nếu có
+                if ($couponCode && $coupon) {
+                    \App\Models\CouponUse::create([
+                        'user_id' => $user->id,
+                        'coupon_id' => $coupon->id,
+                        'order_id' => $order->id,
+                        'discount_amount' => $discountAmount
+                    ]);
+
+                    if ($coupon->usage_count !== null) {
+                        $coupon->increment('usage_count');
+                    }
+
+                    \App\Models\UserSavedCoupon::where('user_id', $user->id)
+                        ->where('coupon_id', $coupon->id)
+                        ->delete();
+                }
+
+                // Xóa giỏ hàng
+                if ($request->selected_items) {
+                    Cart::where('user_id', $user->id)
+                        ->whereIn('id', $selectedItems)
+                        ->delete();
+                } else {
+                    Cart::where('user_id', $user->id)->delete();
+                }
+
+                return redirect()->route('cart.success', $order->id)
+                    ->with('success', 'Đặt hàng và thanh toán bằng ví thành công!');
+
+            } catch (\Exception $e) {
+                \Log::error('Wallet payment error', [
+                    'message' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                ]);
+                return redirect()->back()->with('error', 'Có lỗi xảy ra khi thanh toán bằng ví. Vui lòng thử lại.');
+            }
+        }
 
         if ($paymentMethod && $paymentMethod->payment_type === 'Ví Điện Tử MOMO') {
             // Thanh toán MoMo - lưu thông tin vào session trước khi chuyển hướng

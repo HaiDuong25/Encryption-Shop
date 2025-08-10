@@ -69,6 +69,31 @@ public function updateStatus(Request $request, $id)
                 $variant->stock += $orderDetail->quantity;
                 $variant->save();
             }
+            // Hoàn tiền phần giá trị của item nếu thanh toán online / ví (không COD)
+            try {
+                $order = $orderDetail->order;
+                $paymentMethod = $order?->paymentMethod;
+                if ($order && $paymentMethod && $paymentMethod->payment_type !== 'COD') {
+                    $lineAmount = (float) ($orderDetail->total_price ?? ($orderDetail->price * $orderDetail->quantity));
+                    // Trừ tỷ lệ giảm giá đơn hàng nếu có discount (phân bổ theo tỷ lệ)
+                    $orderSubtotal = (float) ($order->subtotal ?? 0);
+                    $orderDiscount = (float) ($order->discount ?? $order->coupon_discount ?? 0);
+                    if ($orderSubtotal > 0 && $orderDiscount > 0) {
+                        $discountRatio = $orderDiscount / $orderSubtotal;
+                        $lineAmountAfterDiscount = $lineAmount * (1 - $discountRatio);
+                    } else {
+                        $lineAmountAfterDiscount = $lineAmount;
+                    }
+                    // Không vượt quá còn lại
+                    $refundAmount = min($lineAmountAfterDiscount, $order->refundableRemaining());
+                    if ($refundAmount > 0) {
+                        $order->refundToWallet($refundAmount, 'Hoàn tiền sản phẩm trả hàng (#' . $orderDetail->id . ')');
+                        \Log::info("Refund line {$orderDetail->id} amount {$refundAmount} for order {$order->id}");
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Refund error for return request ' . $return->id . ': ' . $e->getMessage());
+            }
         } elseif ($request->status === 'rejected') {
             $orderDetail->return_status = 'rejected';
         }
