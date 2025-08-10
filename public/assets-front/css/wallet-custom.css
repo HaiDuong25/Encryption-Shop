@@ -1,0 +1,112 @@
+/* Custom CSS for wallet pages - Fix breadcrumb issues */
+
+/* Force hide any pixelstrap content */
+*[href*="pixelstrap"],
+*[src*="pixelstrap"],
+*:contains("pixelstrap.com"),
+*:contains("themes.pixelstrap") {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Breadcrumb fixes */
+.breadcrumb {
+    background-color: transparent !important;
+    padding: 0.5rem 0 !important;
+    margin-bottom: 1rem !important;
+    font-family: inherit !important;
+}
+
+.breadcrumb::before,
+.breadcrumb::after {
+    content: "" !important;
+    display: none !important;
+}
+
+.breadcrumb .breadcrumb-item {
+    display: inline !important;
+}
+
+.breadcrumb .breadcrumb-item a {
+    text-decoration: none !important;
+    color: #0969da !important;
+    font-weight: normal !important;
+}
+
+.breadcrumb .breadcrumb-item a:hover {
+    color: #0860ca !important;
+}
+
+.breadcrumb .breadcrumb-item::before {
+    content: "/" !important;
+    color: #6c757d !important;
+    margin: 0 0.25rem !important;
+    display: inline !important;
+}
+
+.breadcrumb .breadcrumb-item:first-child::before {
+    content: "" !important;
+    display: none !important;
+}
+
+.breadcrumb .breadcrumb-item.active {
+    color: #6c757d !important;
+    font-weight: normal !important;
+}
+
+/* Hide any unwanted text content */
+.breadcrumb-item:not(:first-child)::before {
+    content: "/" !important;
+    padding-right: 0.25rem !important;
+    padding-left: 0.25rem !important;
+    color: #6c757d !important;
+}
+
+/* Wallet specific styles */
+.wallet-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.wallet-balance {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.transaction-item {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.amount-credit {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.amount-debit {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.payment-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.payment-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}

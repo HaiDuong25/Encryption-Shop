@@ -147,6 +147,14 @@
                             <span>Quản lý mã giảm giá</span>
                         </a>
                     </li>
+
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.wallet-transactions.index') }}">
+                            <i class="ri-wallet-line"></i>
+                            <span>Quản lý ví điện tử</span>
+                        </a>
+                    </li>
+
                     <li class="sidebar-list">
 
                         <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">

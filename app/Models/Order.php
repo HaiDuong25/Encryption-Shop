@@ -82,6 +82,7 @@ public function statusHistories()
         'phone',
         'address',
         'total_price',
+    'refunded_amount',
         'subtotal',
         'status',
         'cancel_reason',
@@ -167,6 +168,67 @@ public function statusHistories()
 
         // Có thể hoàn thành nếu tất cả sản phẩm đều không có yêu cầu trả hàng HOẶC bị từ chối trả hàng
         return ($nonReturnItems + $rejectedReturnItems) == $totalItems;
+    }
+
+    /**
+     * Số tiền còn lại có thể hoàn (đã thanh toán - đã hoàn trước đó)
+     */
+    public function refundableRemaining(): float
+    {
+        $paid = (float) ($this->total_price ?? $this->total ?? 0);
+        $refunded = (float) ($this->refunded_amount ?? 0);
+        return max($paid - $refunded, 0);
+    }
+
+    /**
+     * Hoàn tiền vào ví người dùng (chỉ dùng cho đơn thanh toán online / ví, không áp dụng COD)
+     */
+    public function refundToWallet(float $amount, string $reason = 'Hoàn tiền đơn hàng')
+    {
+        if ($amount <= 0) {
+            return false;
+        }
+        $remaining = $this->refundableRemaining();
+        if ($amount > $remaining) {
+            $amount = $remaining; // Không vượt quá phần còn lại
+        }
+        if ($amount <= 0) {
+            return false;
+        }
+
+        $paymentMethod = $this->paymentMethod; // ensure relation loaded
+        if (!$paymentMethod || $paymentMethod->payment_type === 'COD') {
+            return false; // Không hoàn qua ví cho COD
+        }
+
+        $wallet = $this->user?->getOrCreateWallet();
+        if (!$wallet) return false;
+
+        \Log::info('RefundToWallet start', [
+            'order_id' => $this->id,
+            'requested_amount' => $amount,
+            'remaining_before' => $remaining,
+            'refunded_amount_current' => $this->refunded_amount,
+            'payment_type' => $paymentMethod->payment_type,
+        ]);
+
+        $wallet->refundBalance(
+            $amount,
+            $reason . ' #' . $this->id,
+            'ORDER_REF_' . $this->id . '_' . time()
+        );
+
+        // Cập nhật tổng đã hoàn
+        $this->refunded_amount = ($this->refunded_amount ?? 0) + $amount;
+        $this->save();
+
+        \Log::info('RefundToWallet done', [
+            'order_id' => $this->id,
+            'refunded_amount_added' => $amount,
+            'refunded_amount_total' => $this->refunded_amount,
+            'remaining_after' => $this->refundableRemaining(),
+        ]);
+        return true;
     }
 
     // Cập nhật trạng thái trả hàng dựa trên các sản phẩm

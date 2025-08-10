@@ -3,7 +3,7 @@
         <div class="main-footer">
             <div class="row g-md-4 gy-sm-5">
                 <div class="col-xxl-3 col-xl-4 col-sm-6">
-                    <a href="index.html" class="foot-logo theme-logo">
+                    <a href="#" class="foot-logo theme-logo">
                         <img src="{{ asset('assets-front/images/logo/anhlogo2.png') }}" style="width:300px; height: auto" class="img-fluid blur-up lazyload"
                             alt="Shop Quần Áo">
                     </a>

@@ -49,6 +49,30 @@
                         <span class="menu-text">Hồ sơ cá nhân</span>
                     </a>
                 </li>
+                <!-- Wallet moved up from Shopping section -->
+                <li class="menu-item">
+                    <a href="{{ route('wallet.index') }}" class="menu-link {{ request()->routeIs('wallet.*') ? 'active' : '' }}">
+                        <div class="menu-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="menu-content">
+                            <span class="menu-text">Ví điện tử</span>
+                            <div class="wallet-balance">
+                                @php
+                                    $wallet = auth()->user()->wallet ?? auth()->user()->getOrCreateWallet();
+                                @endphp
+                                <small class="text-success fw-bold">
+                                    {{ number_format($wallet->balance ?? 0, 0, ',', '.') }} VND
+                                </small>
+                            </div>
+                        </div>
+                        @if(($wallet->balance ?? 0) > 0)
+                            <span class="menu-badge">
+                                <i class="fas fa-coins text-warning"></i>
+                            </span>
+                        @endif
+                    </a>
+                </li>
                 <li class="menu-item">
                     <a href="{{ route('account.editProfile') }}" class="menu-link {{ request()->routeIs('account.editProfile') ? 'active' : '' }}">
                         <div class="menu-icon">
@@ -65,6 +89,7 @@
                         <span class="menu-text">Đổi mật khẩu</span>
                     </a>
                 </li>
+                
             </ul>
         </div>
 
@@ -641,6 +666,25 @@ function showToast(message, type = 'success') {
     .menu-title {
         padding: 15px 20px 8px;
     }
+
+/* === WALLET MENU STYLES === */
+.menu-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.wallet-balance {
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.menu-badge {
+    margin-left: auto;
+    opacity: 0.8;
+}
     
     .menu-link {
         padding: 10px 20px;

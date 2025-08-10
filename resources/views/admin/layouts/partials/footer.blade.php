@@ -86,6 +86,10 @@
 
 <!-- Theme js -->
 <script src="{{ asset('assets/js/script.js') }}"></script>
+
+<!-- Custom admin fixes -->
+<script src="{{ asset('assets/js/admin-wallet-fix.js') }}"></script>
+
 </body>
 
 

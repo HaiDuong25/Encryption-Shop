@@ -1,0 +1,225 @@
+/* Admin CSS Fix - Hide pixelstrap content */
+
+/* Force hide any pixelstrap content */
+*[href*="pixelstrap"],
+*[src*="pixelstrap"],
+*:contains("pixelstrap.com"),
+*:contains("themes.pixelstrap") {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Breadcrumb fixes */
+.breadcrumb {
+    background-color: transparent !important;
+    padding: 0.5rem 0 !important;
+    margin-bottom: 1rem !important;
+    font-family: inherit !important;
+}
+
+.breadcrumb::before,
+.breadcrumb::after {
+    content: "" !important;
+    display: none !important;
+}
+
+.breadcrumb .breadcrumb-item {
+    display: inline !important;
+}
+
+.breadcrumb .breadcrumb-item a {
+    text-decoration: none !important;
+    color: #0969da !important;
+    font-weight: normal !important;
+}
+
+.breadcrumb .breadcrumb-item a:hover {
+    color: #0860ca !important;
+}
+
+.breadcrumb .breadcrumb-item::before {
+    content: "/" !important;
+    color: #6c757d !important;
+    margin: 0 0.25rem !important;
+    display: inline !important;
+}
+
+.breadcrumb .breadcrumb-item:first-child::before {
+    content: "" !important;
+    display: none !important;
+}
+
+.breadcrumb .breadcrumb-item.active {
+    color: #6c757d !important;
+    font-weight: normal !important;
+}
+
+/* Admin wallet transaction styles */
+.transaction-info-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 30px rgba(79, 70, 229, 0.2);
+}
+
+.transaction-info-card h2 {
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.transaction-info-card .badge {
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.2);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.transaction-info-card code {
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.2);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+
+.transaction-info-card .btn-light {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(255,255,255,0.3);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    font-weight: 500;
+}
+
+.transaction-info-card .btn-light:hover {
+    background: white;
+    transform: translateY(-2px);
+}
+
+.transaction-info-card .breadcrumb-item a {
+    color: rgba(255,255,255,0.7) !important;
+    text-decoration: none;
+}
+
+.transaction-info-card .breadcrumb-item a:hover {
+    color: white !important;
+}
+
+.transaction-info-card .breadcrumb-item.active {
+    color: white !important;
+}
+
+.transaction-status {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-completed {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-pending {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.status-failed {
+    background-color: #dc3545;
+    color: white;
+}
+
+.amount-display {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+.amount-positive {
+    color: #28a745;
+}
+
+.amount-negative {
+    color: #dc3545;
+}
+
+.user-info-card {
+    text-align: center;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.action-buttons .btn {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.data-table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.data-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    padding: 1rem;
+    border: none;
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.payment-data-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.payment-data-section pre {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Pink background for MoMo badge */
+.bg-pink {
+    background-color: #e91e63 !important;
+    color: white !important;
+}
+
+/* Additional styling for payment method badges */
+.badge.bg-pink {
+    background: linear-gradient(45deg, #e91e63, #f06292) !important;
+    box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3);
+}

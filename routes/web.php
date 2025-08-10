@@ -179,6 +179,14 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     Route::get('/returns/{id}', [\App\Http\Controllers\Admin\ReturnController::class, 'show'])->name('admin.returns.show');
     Route::post('/returns/{id}/update-status', [\App\Http\Controllers\Admin\ReturnController::class, 'updateStatus'])->name('admin.returns.updateStatus');
 
+    // Wallet Transactions (Admin)
+    Route::prefix('wallet-transactions')->name('admin.wallet-transactions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'show'])->name('show');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/update-status', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'updateStatus'])->name('update-status');
+    });
+
 });
 
 
@@ -232,6 +240,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/zalopay', [ZaloPayController::class, 'createPayment'])->name('zalopay.pay');
     Route::get('/zalopay/return', [ZaloPayController::class, 'returnPayment'])->name('zalopay.return');
     Route::post('/zalopay/callback', [ZaloPayController::class, 'callback'])->name('zalopay.callback');
+
+    // Wallet routes (Ví điện tử)
+    Route::prefix('wallet')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Client\WalletController::class, 'index'])->name('wallet.index');
+        Route::get('/topup', [\App\Http\Controllers\Client\WalletController::class, 'topup'])->name('wallet.topup');
+        Route::post('/topup', [\App\Http\Controllers\Client\WalletController::class, 'processTopup'])->name('wallet.process-topup');
+        Route::get('/topup/success', [\App\Http\Controllers\Client\WalletController::class, 'topupSuccess'])->name('wallet.topup.success');
+        Route::get('/topup/cancel', [\App\Http\Controllers\Client\WalletController::class, 'topupCancel'])->name('wallet.topup.cancel');
+        Route::get('/history', [\App\Http\Controllers\Client\WalletController::class, 'history'])->name('wallet.history');
+        
+        // MoMo wallet topup
+        Route::get('/momo/create', [\App\Http\Controllers\Client\WalletMomoController::class, 'createPayment'])->name('wallet.momo.create');
+        Route::get('/momo/return', [\App\Http\Controllers\Client\WalletMomoController::class, 'returnPayment'])->name('wallet.momo.return');
+        Route::post('/momo/notify', [\App\Http\Controllers\Client\WalletMomoController::class, 'notifyPayment'])->name('wallet.momo.notify');
+        
+        // ZaloPay wallet topup
+        Route::get('/zalopay/create', [\App\Http\Controllers\Client\WalletZalopayController::class, 'createPayment'])->name('wallet.zalopay.create');
+        Route::get('/zalopay/return', [\App\Http\Controllers\Client\WalletZalopayController::class, 'returnPayment'])->name('wallet.zalopay.return');
+        Route::post('/zalopay/callback', [\App\Http\Controllers\Client\WalletZalopayController::class, 'notifyPayment'])->name('wallet.zalopay.notify');
+        Route::post('/zalopay/process-manual-return', [\App\Http\Controllers\Client\WalletZalopayController::class, 'processManualReturn'])->name('wallet.zalopay.process-manual-return');
+    });
 
     // Đơn hàng (client)
     Route::get('/orders', [ClientOrderController::class, 'index'])->name('client.orders.index');
