@@ -3,255 +3,231 @@
 @section('title', $article->title)
 
 @section('content')
-    <!-- Simple Header Section -->
-    <section class="article-header bg-white border-bottom py-4">
-        <div class="container">
+    <!-- Breadcrumb Section Start -->
+    <section class="breadcrumb-section pt-0">
+        <div class="container-fluid-lg">
             <div class="row">
                 <div class="col-12">
-                    <!-- Article Title -->
-                    <h1 class="fw-bold mb-3 text-dark"
-                        style="font-size: clamp(24px, 3vw, 32px); line-height: 1.4; font-family: 'Inter', sans-serif;">
-                        {{ $article->title }}
-                    </h1>
-
-                    <!-- Article Meta -->
-                    <div class="d-flex align-items-center gap-4 text-muted mb-4" style="font-size: 14px;">
-                        <div class="d-flex align-items-center">
-                            <i class="far fa-calendar-alt me-2" style="color: #6c757d;"></i>
-                            <span>{{ $article->created_at->format('d/m/Y') }}</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="far fa-eye me-2" style="color: #6c757d;"></i>
-                            <span>{{ rand(150, 500) }} lượt xem</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="far fa-clock me-2" style="color: #6c757d;"></i>
-                            <span>{{ rand(2, 5) }} phút đọc</span>
-                        </div>
-                    </div>
-
-                    <!-- Category Tag -->
-                    @php
-                        $categories = ['Xu hướng thời trang', 'Mẹo phối đồ', 'Bộ sưu tập mới', 'Thời trang công sở', 'Streetwear'];
-                        $categoryColors = ['#2563eb', '#059669', '#dc2626', '#7c3aed', '#ea580c'];
-                        $randomCat = array_rand($categories);
-                    @endphp
-                    <div class="mb-4">
-                        <span class="badge rounded-pill text-white px-3 py-2"
-                            style="background-color: {{ $categoryColors[$randomCat] }}; font-size: 12px; font-weight: 500;">
-                            {{ $categories[$randomCat] }}
-                        </span>
+                    <div class="breadcrumb-contain">
+                        <h2>{{ $article->title }}</h2>
+                        <nav>
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item">
+                                    <a href="{{ route('home') }}">
+                                        <i class="fa-solid fa-house"></i>
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item"><a href="{{ route('client.news.index') }}">Tin tức</a></li>
+                                <li class="breadcrumb-item active">Chi tiết</li>
+                            </ol>
+                        </nav>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    <!-- Breadcrumb Section End -->
 
-    <!-- Clean Article Content -->
-    <section class="article-content py-5 bg-white">
-        <div class="container">
-            <div class="row justify-content-center">
-                <!-- Main Article -->
-                <div class="col-lg-8 col-xl-7">
-                    <article class="article-main">
-                        <!-- Featured Image -->
+    <!-- Blog Details Section Start -->
+    <section class="blog-section section-b-space">
+        <div class="container-fluid-lg">
+            <div class="row g-sm-4 g-3">
+                <div class="col-xxl-3 col-xl-4 col-lg-5 d-lg-block d-none">
+                    <div class="left-sidebar-box">
+                        <div class="left-search-box">
+                            <div class="search-box">
+                                <form action="{{ route('client.news.index') }}" method="GET">
+                                    <input type="search" class="form-control" name="search" value="{{ request('search') }}"
+                                        placeholder="Search....">
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Recent News -->
+                        @if($relatedNews->count() > 0)
+                                        <div class="accordion left-accordion-box" id="accordionPanelsStayOpenExample">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                        data-bs-target="#panelsStayOpen-collapseOne">
+                                                        Bài viết liên quan
+                                                    </button>
+                                                </h2>
+                                                <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                                                    <div class="accordion-body pt-0">
+                                                        <div class="recent-post-box">
+                                                            @foreach($relatedNews as $related)
+                                                                                                <div class="recent-box mb-3">
+                                                                                                    <a href="{{ route('client.news.show', $related->id) }}"
+                                                                                                        class="recent-image">
+                                                                                                        @php
+                                                                                                            $relatedImages = json_decode($related->image, true);
+                                                                                                            $relatedMainImage = is_array($relatedImages) && !empty($relatedImages) ? $relatedImages[0] : $related->image;
+                                                                                                            $relatedImageUrl = $relatedMainImage ? asset('storage/' . $relatedMainImage) : asset('assets/images/inner-page/blog/1.jpg');
+                                                                                                        @endphp
+                                                                                                        <img src="{{ $relatedImageUrl }}" class="img-fluid blur-up lazyloaded"
+                                                                                                            alt="{{ $related->title }}">
+                                                                                                    </a>
+                                                                                                    <div class="recent-detail">
+                                                                                                        <a href="{{ route('client.news.show', $related->id) }}">
+                                                                                                            <h5 class="recent-name">{{ Str::limit($related->title, 50) }}</h5>
+                                                                                                        </a>
+                                                                                                        <h6>
+                                                                                                            {{ $related->created_at->format('d/m/Y') }} <i
+                                                                                                                class="fa-regular fa-thumbs-up ms-2"></i>
+                                                                                                        </h6>
+                                                                                                    </div>
+                                                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                        @endif
+                        <!-- Chủ đề phổ biến đã bị xóa theo yêu cầu -->
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-8 col-lg-7 ratio_50">
+                    <div class="blog-detail-image rounded-3 mb-4">
                         @php
                             $newsImages = json_decode($article->image, true);
                             $mainNewsImage = is_array($newsImages) && !empty($newsImages) ? $newsImages[0] : $article->image;
                             $fallbackImages = [
-                                'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
-                                'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1200&q=80',
-                                'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1200&q=80'
+                                asset('assets/images/inner-page/blog/1.jpg'),
+                                asset('assets/images/inner-page/blog/2.jpg'),
+                                asset('assets/images/inner-page/blog/3.jpg'),
+                                asset('assets/images/inner-page/blog/4.jpg'),
+                                asset('assets/images/inner-page/blog/5.jpg'),
                             ];
                             $imageUrl = $mainNewsImage ? asset('storage/' . $mainNewsImage) : $fallbackImages[array_rand($fallbackImages)];
                         @endphp
-
-                        <div class="featured-image mb-5">
-                            <img src="{{ $imageUrl }}" alt="{{ $article->title }}" class="img-fluid w-100 rounded-3"
-                                style="height: 400px; object-fit: cover;">
-                        </div>
-
-                        <!-- Article Content -->
-                        <div class="article-text">
-                            {!! $article->content !!}
-                        </div>
-
-                        <!-- Share Section -->
-                        <div class="share-section mt-5 pt-4 border-top">
-                            <div class="row align-items-center">
-                                <div class="col-12">
-                                    <h6 class="fw-semibold mb-4 text-dark d-flex align-items-center">
-                                        <i class="fas fa-share-alt me-2 text-primary"></i>
-                                        Chia sẻ bài viết
-                                    </h6>
-
-                                    <!-- Enhanced Share Buttons -->
-                                    <div class="share-buttons-container d-flex flex-wrap gap-3 mb-4">
-                                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->fullUrl()) }}"
-                                            target="_blank"
-                                            class="share-btn facebook-btn d-flex align-items-center text-decoration-none">
-                                            <div class="share-icon">
-                                                <i class="fab fa-facebook-f"></i>
-                                            </div>
-                                            <span class="share-text">Facebook</span>
-                                        </a>
-
-                                        <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->fullUrl()) }}&text={{ urlencode($article->title) }}"
-                                            target="_blank"
-                                            class="share-btn twitter-btn d-flex align-items-center text-decoration-none">
-                                            <div class="share-icon">
-                                                <i class="fab fa-twitter"></i>
-                                            </div>
-                                            <span class="share-text">Twitter</span>
-                                        </a>
-
-                                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(request()->fullUrl()) }}"
-                                            target="_blank"
-                                            class="share-btn linkedin-btn d-flex align-items-center text-decoration-none">
-                                            <div class="share-icon">
-                                                <i class="fab fa-linkedin-in"></i>
-                                            </div>
-                                            <span class="share-text">LinkedIn</span>
-                                        </a>
-
-                                        <button onclick="copyToClipboard('{{ request()->fullUrl() }}')"
-                                            class="share-btn copy-btn d-flex align-items-center border-0 bg-transparent">
-                                            <div class="share-icon">
-                                                <i class="fas fa-link"></i>
-                                            </div>
-                                            <span class="share-text">Sao chép</span>
-                                        </button>
-
-                                        <button onclick="printArticle()"
-                                            class="share-btn print-btn d-flex align-items-center border-0 bg-transparent">
-                                            <div class="share-icon">
-                                                <i class="fas fa-print"></i>
-                                            </div>
-                                            <span class="share-text">In bài</span>
-                                        </button>
+                        <img src="{{ $imageUrl }}" class="bg-img blur-up lazyload" alt="{{ $article->title }}" />
+                        <div class="blog-image-contain">
+                            <ul class="contain-list">
+                                @php
+                                    $tags = ['backpack', 'life style', 'organic'];
+                                @endphp
+                                @foreach($tags as $tag)
+                                    <li>{{ $tag }}</li>
+                                @endforeach
+                            </ul>
+                            <h2>{{ $article->title }}</h2>
+                            <ul class="contain-comment-list">
+                                <li>
+                                    <div class="user-list">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span>{{ $article->author_name ?? 'Admin' }}</span>
                                     </div>
-                                </div>
-                            </div>
+                                </li>
+                                <li>
+                                    <div class="user-list">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <span>{{ $article->created_at->format('d/m/Y') }}</span>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="user-list">
+                                        <i class="fa-regular fa-message"></i>
+                                        <span>{{ $article->comments_count ?? 0 }} Bình luận</span>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
-                    </article>
-                </div>
-
-                <!-- Sidebar -->
-                <div class="col-lg-4 col-xl-3">
-                    <div class="sidebar mt-5 mt-lg-0">
-                        <!-- Back to News Button - Always Visible -->
-                        <div class="back-to-news-section mb-4">
-                            <a href="{{ route('client.news.index') }}"
-                                class="back-to-news-btn d-flex align-items-center text-decoration-none w-100">
-                                <div class="back-icon">
-                                    <i class="fas fa-arrow-left"></i>
-                                </div>
-                                <div class="back-text ms-3">
-                                    <div class="fw-bold">Quay lại tin tức</div>
-                                    <small class="text-muted">Xem thêm bài viết khác</small>
-                                </div>
-                            </a>
+                    </div>
+                    <div class="blog-detail-contain">
+                        {!! $article->content !!}
+                    </div>
+                    <!-- Comment Section -->
+                    <div class="comment-box overflow-hidden">
+                        <div class="leave-title">
+                            <h3>Bình luận</h3>
                         </div>
-                        <!-- Related Articles -->
-                        @if($relatedNews->count() > 0)
-                                        <div class="related-section mb-5">
-                                            <h5 class="fw-bold mb-4 text-dark" style="font-size: 18px;">Bài viết liên quan</h5>
-
-                                            @foreach($relatedNews as $related)
-                                                                <div class="related-item mb-4">
-                                                                    <div class="row g-3">
-                                                                        <div class="col-4">
-                                                                            @php
-                                                                                $relatedImages = json_decode($related->image, true);
-                                                                                $relatedMainImage = is_array($relatedImages) && !empty($relatedImages) ? $relatedImages[0] : $related->image;
-                                                                                $relatedImageUrl = $relatedMainImage ? asset('storage/' . $relatedMainImage) : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=200&q=80';
-                                                                            @endphp
-                                                                            <img src="{{ $relatedImageUrl }}" alt="{{ $related->title }}"
-                                                                                class="img-fluid w-100 rounded-2" style="height: 80px; object-fit: cover;">
-                                                                        </div>
-                                                                        <div class="col-8">
-                                                                            <h6 class="fw-semibold mb-2" style="font-size: 14px; line-height: 1.4;">
-                                                                                <a href="{{ route('client.news.show', $related->id) }}"
-                                                                                    class="text-decoration-none text-dark">
-                                                                                    {{ Str::limit($related->title, 60) }}
-                                                                                </a>
-                                                                            </h6>
-                                                                            <div class="text-muted" style="font-size: 12px;">
-                                                                                {{ $related->created_at->format('d/m/Y') }}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                            @endforeach
+                        <div class="user-comment-box">
+                            <ul>
+                                @foreach($comments as $comment)
+                                    <li>
+                                        <div class="user-box border-color">
+                                            <div class="reply-button">
+                                                <i class="fa-solid fa-reply"></i>
+                                                <span class="theme-color">Trả lời</span>
+                                            </div>
+                                            <div class="user-image">
+                                                <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->name) }}&background=0D8ABC&color=fff&size=64"
+                                                    alt="{{ $comment->name ?? 'User' }}" />
+                                                <div class="user-name">{{ $comment->name ?? 'User' }}</div>
+                                            </div>
+                                            <div class="user-contain">
+                                                <p>{{ $comment->content ?? '' }}</p>
+                                            </div>
                                         </div>
-                        @endif
-
-                        <!-- Newsletter Icon Button -->
-                        <div class="newsletter-icon-btn position-fixed d-flex align-items-center justify-content-center bg-primary text-white rounded-circle shadow-lg"
-                            style="bottom: 30px; right: 30px; width: 60px; height: 60px; z-index: 1000; cursor: pointer;"
-                            data-bs-toggle="modal" data-bs-target="#newsletterModal">
-                            <i class="fas fa-envelope" style="font-size: 24px;"></i>
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
-
-                        <!-- Newsletter Modal -->
-                        <div class="modal fade" id="newsletterModal" tabindex="-1" aria-labelledby="newsletterModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content border-0 shadow-lg">
-                                    <div class="modal-header border-0 pb-0">
-                                        <h5 class="modal-title fw-bold text-dark" id="newsletterModalLabel">
-                                            <i class="fas fa-envelope text-primary me-2"></i>
-                                            Đăng ký nhận tin tức
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
+                    </div>
+                    <!-- Leave Comment Section -->
+                    <div class="leave-box">
+                        <div class="leave-title mt-0">
+                            <h3>Để lại bình luận</h3>
+                        </div>
+                        <div class="leave-comment">
+                            @if(session('success'))
+                                <div class="alert alert-success mt-3">{{ session('success') }}</div>
+                            @endif
+                            @if($errors->any())
+                                <div class="alert alert-danger mt-3">
+                                    <ul class="mb-0">
+                                        @foreach($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            <form action="{{ route('client.news.comment', $article->id) }}" method="POST">
+                                @csrf
+                                <div class="row g-3">
+                                    <div class="col-xxl-4 col-lg-12 col-sm-6">
+                                        <div class="blog-input">
+                                            <input type="text" class="form-control" name="name" placeholder="Họ và tên"
+                                                required value="{{ old('name') }}" />
+                                        </div>
                                     </div>
-                                    <div class="modal-body pt-2">
-                                        <p class="text-muted mb-4">
-                                            Nhận những xu hướng thời trang mới nhất và ưu đãi độc quyền từ chúng tôi
-                                        </p>
-
-                                        <form class="newsletter-modal-form">
-                                            <div class="mb-3">
-                                                <label for="newsletterName" class="form-label fw-semibold">Họ và tên</label>
-                                                <input type="text" class="form-control" id="newsletterName"
-                                                    placeholder="Nhập họ và tên của bạn" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="newsletterEmail" class="form-label fw-semibold">Email</label>
-                                                <input type="email" class="form-control" id="newsletterEmail"
-                                                    placeholder="Nhập email của bạn" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="newsletterPhone" class="form-label fw-semibold">Số điện thoại
-                                                    (tùy chọn)</label>
-                                                <input type="tel" class="form-control" id="newsletterPhone"
-                                                    placeholder="Nhập số điện thoại">
-                                            </div>
-                                            <div class="form-check mb-4">
-                                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
-                                                <label class="form-check-label text-muted" for="agreeTerms"
-                                                    style="font-size: 14px;">
-                                                    Tôi đồng ý nhận tin tức và ưu đãi từ cửa hàng
-                                                </label>
-                                            </div>
-                                        </form>
+                                    <div class="col-xxl-4 col-lg-12 col-sm-6">
+                                        <div class="blog-input">
+                                            <input type="email" class="form-control" name="email" placeholder="Email"
+                                                required value="{{ old('email') }}" />
+                                        </div>
                                     </div>
-                                    <div class="modal-footer border-0 pt-0">
-                                        <button type="button" class="btn btn-outline-secondary"
-                                            data-bs-dismiss="modal">Hủy</button>
-                                        <button type="submit" form="newsletter-modal-form" class="btn btn-primary px-4">
-                                            <i class="fas fa-paper-plane me-2"></i>Đăng ký ngay
-                                        </button>
+                                    <div class="col-xxl-4 col-lg-12 col-sm-6">
+                                        <div class="blog-input">
+                                            <input type="url" class="form-control" name="phone" placeholder="Phone"
+                                                value="{{ old('phone') }}" />
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="blog-input">
+                                            <textarea class="form-control" name="content" rows="4" placeholder="Bình luận"
+                                                required>{{ old('content') }}</textarea>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                                <div class="form-check d-flex mt-4 p-0">
+                                    <input class="checkbox_animated" type="checkbox" value="1" name="save_info"
+                                        id="flexCheckDefault" {{ old('save_info') ? 'checked' : '' }} />
+                                    <label class="form-check-label text-content" for="flexCheckDefault">
+                                        <span class="color color-1">Lưu thông tin cho lần sau</span>
+                                    </label>
+                                </div>
+                                <button class="btn btn-animation ms-xxl-auto mt-xxl-0 mt-3 btn-md fw-bold" type="submit">Gửi
+                                    bình luận</button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    <!-- Blog Details Section End -->
 
     <style>
         /* Enhanced Share Buttons */
@@ -879,13 +855,13 @@
                     const ripple = document.createElement('span');
                     ripple.className = 'ripple';
                     ripple.style.cssText = `
-                            position: absolute;
-                            border-radius: 50%;
-                            background: rgba(255, 255, 255, 0.6);
-                            transform: scale(0);
-                            animation: ripple-animation 0.6s linear;
-                            pointer-events: none;
-                        `;
+                                            position: absolute;
+                                            border-radius: 50%;
+                                            background: rgba(255, 255, 255, 0.6);
+                                            transform: scale(0);
+                                            animation: ripple-animation 0.6s linear;
+                                            pointer-events: none;
+                                        `;
 
                     const rect = this.getBoundingClientRect();
                     const size = Math.max(rect.width, rect.height);
@@ -905,13 +881,13 @@
         // Add ripple animation keyframes
         const rippleStyle = document.createElement('style');
         rippleStyle.textContent = `
-                @keyframes ripple-animation {
-                    to {
-                        transform: scale(4);
-                        opacity: 0;
-                    }
-                }
-            `;
+                                @keyframes ripple-animation {
+                                    to {
+                                        transform: scale(4);
+                                        opacity: 0;
+                                    }
+                                }
+                            `;
         document.head.appendChild(rippleStyle);
 
         // Newsletter modal form submission
@@ -984,14 +960,14 @@
                             toast.className = 'position-fixed bg-success text-white p-3 rounded shadow';
                             toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
                             toast.innerHTML = `
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-check-circle me-2"></i>
-                                            <div>
-                                                <div class="fw-bold">Đăng ký thành công!</div>
-                                                <small>Cảm ơn bạn đã đăng ký nhận tin</small>
-                                            </div>
-                                        </div>
-                                    `;
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-check-circle me-2"></i>
+                                                            <div>
+                                                                <div class="fw-bold">Đăng ký thành công!</div>
+                                                                <small>Cảm ơn bạn đã đăng ký nhận tin</small>
+                                                            </div>
+                                                        </div>
+                                                    `;
                             document.body.appendChild(toast);
 
                             setTimeout(() => {
@@ -1049,10 +1025,10 @@
                         const successMsg = document.createElement('div');
                         successMsg.className = 'alert alert-light alert-dismissible fade show mt-2';
                         successMsg.innerHTML = `
-                                            <i class="fa-solid fa-check-circle text-success me-2"></i>
-                                            Cảm ơn bạn đã đăng ký! 🎉
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                        `;
+                                                            <i class="fa-solid fa-check-circle text-success me-2"></i>
+                                                            Cảm ơn bạn đã đăng ký! 🎉
+                                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                        `;
                         btn.parentNode.parentNode.appendChild(successMsg);
 
                         setTimeout(() => {
