@@ -44,6 +44,9 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 // --- Auth ---
 Route::view('/auth', 'auth.auth')->name('auth');
 Route::get('/login', [AuthController::class, 'index'])->name('login.form');
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register.form');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
