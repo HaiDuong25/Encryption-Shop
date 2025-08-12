@@ -85,7 +85,7 @@
                                                             @if($coupon->usage_limit > 0)
                                                                 <span class="badge bg-info">{{ $coupon->usage_limit }}</span>
                                                             @else
-                                                                <span class="badge bg-secondary">Không giới hạn</span>
+                                                                <span class="badge bg-primary">Không giới hạn</span>
                                                             @endif
                                                         </td>
                                                         <td>
@@ -245,11 +245,16 @@
                                 'Accept': 'application/json'
                             }
                         })
-                        .then(response => {
+                        .then(async (response) => {
+                            // Đọc JSON kể cả khi !ok để lấy message từ server
+                            let data = null;
+                            try { data = await response.json(); } catch (e) {}
                             if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
+                                const err = new Error((data && data.message) ? data.message : `HTTP error! status: ${response.status}`);
+                                err.status = response.status;
+                                throw err;
                             }
-                            return response.json();
+                            return data || {};
                         })
                         .then(data => {
                             if (data.success) {
@@ -272,8 +277,8 @@
                                     }
                                 }, 300);
 
-                                // Show success message
-                                showAlert('success', data.message);
+                                // Show success toast
+                                showToast('success', data.message || 'Xóa mã giảm giá thành công');
                             } else {
                                 throw new Error(data.message || 'Có lỗi xảy ra khi xóa mã giảm giá!');
                             }
@@ -282,11 +287,14 @@
                             console.error('Error:', error);
 
                             let errorMessage = 'Có lỗi xảy ra khi xóa mã giảm giá!';
-                            if (error.message && error.message !== 'Failed to fetch') {
+                            if (error && error.status === 422) {
+                                errorMessage = 'Mã giảm giá đã được sử dụng, không thể xóa!';
+                            } else if (error.message && error.message !== 'Failed to fetch') {
                                 errorMessage = error.message;
                             }
 
-                            showAlert('danger', errorMessage);
+                            // Show error toast
+                            showToast('danger', errorMessage);
 
                             // Restore button state
                             this.innerHTML = originalContent;
@@ -299,29 +307,39 @@
             });
         });
 
-        // Function to show alert messages
-        function showAlert(type, message) {
-            // Remove existing alerts
-            const existingAlerts = document.querySelectorAll('.alert');
-            existingAlerts.forEach(alert => alert.remove());
+        // Toast helpers
+        function getToastContainer() {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container position-fixed p-3';
+                container.style.top = '1rem';
+                container.style.right = '1rem';
+                container.style.zIndex = '11000';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
 
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-
-            const container = document.querySelector('.container-fluid');
-            const card = document.querySelector('.card');
-            container.insertBefore(alertDiv, card);
-
-            // Auto hide after 5 seconds
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
-            }, 5000);
+        function showToast(type, message) {
+            const container = getToastContainer();
+            const toast = document.createElement('div');
+            const bgClass = (type === 'success') ? 'bg-primary' : (type === 'warning') ? 'bg-warning' : 'bg-danger';
+            toast.className = `toast align-items-center ${bgClass} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            container.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { delay: 3500 });
+            bsToast.show();
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
         }
     </script>
     <style>
