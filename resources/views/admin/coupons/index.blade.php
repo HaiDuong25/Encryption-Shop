@@ -288,7 +288,7 @@
 
                             let errorMessage = 'Có lỗi xảy ra khi xóa mã giảm giá!';
                             if (error && error.status === 422) {
-                                errorMessage = 'Mã giảm giá đã được sử dụng, không thể xóa!';
+                                errorMessage = 'Mã giảm giá đang được sử dụng, không thể xóa!';
                             } else if (error.message && error.message !== 'Failed to fetch') {
                                 errorMessage = error.message;
                             }
