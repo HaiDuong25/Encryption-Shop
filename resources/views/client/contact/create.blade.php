@@ -36,7 +36,7 @@
                         <div class="row">
                             <div class="col-xl-12">
                                 <div class="contact-image mb-4">
-                                    <img src="{{ asset('assets/images/inner-page/contact-us.png') }}"
+                                    <img src="{{ asset('assets/anhmoi/contact-us.png') }}"
                                         class="img-fluid blur-up lazyloaded" alt="">
                                 </div>
                             </div>
