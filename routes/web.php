@@ -71,6 +71,7 @@ Route::get('/news/{id}', [ClientNewsController::class, 'show'])->name('client.ne
 // --- Liên hệ ---
 Route::get('/lien-he', [ClientContactController::class, 'create'])->name('client.contact.create');
 Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client.contact.store');
+Route::post('news/{id}/comment', [App\Http\Controllers\Client\NewsCommentController::class, 'store'])->name('client.news.comment');
 
 // --- Các chức năng cần đăng nhập ---
 Route::middleware(['auth'])->group(function () {
@@ -124,7 +125,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // --- Admin ---
-Route::get('/admin', function() {
+Route::get('/admin', function () {
     return redirect()->route('admin.dashboard');
 });
 Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(function () {
@@ -218,9 +219,9 @@ Route::get('/news/{id}', [ClientNewsController::class, 'show'])->name('client.ne
 
 Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 
-    //danh mục client
-    Route::get('categories', [CategoryClientController::class, 'index'])->name('categories.index');
-    Route::get('category/{id}', [CategoryClientController::class, 'show'])->name('categories.show');
+//danh mục client
+Route::get('categories', [CategoryClientController::class, 'index'])->name('categories.index');
+Route::get('category/{id}', [CategoryClientController::class, 'show'])->name('categories.show');
 
 // --- Routes cần auth ---
 Route::middleware(['auth'])->group(function () {
@@ -258,12 +259,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/topup/success', [\App\Http\Controllers\Client\WalletController::class, 'topupSuccess'])->name('wallet.topup.success');
         Route::get('/topup/cancel', [\App\Http\Controllers\Client\WalletController::class, 'topupCancel'])->name('wallet.topup.cancel');
         Route::get('/history', [\App\Http\Controllers\Client\WalletController::class, 'history'])->name('wallet.history');
-        
+
         // MoMo wallet topup
         Route::get('/momo/create', [\App\Http\Controllers\Client\WalletMomoController::class, 'createPayment'])->name('wallet.momo.create');
         Route::get('/momo/return', [\App\Http\Controllers\Client\WalletMomoController::class, 'returnPayment'])->name('wallet.momo.return');
         Route::post('/momo/notify', [\App\Http\Controllers\Client\WalletMomoController::class, 'notifyPayment'])->name('wallet.momo.notify');
-        
+
         // ZaloPay wallet topup
         Route::get('/zalopay/create', [\App\Http\Controllers\Client\WalletZalopayController::class, 'createPayment'])->name('wallet.zalopay.create');
         Route::get('/zalopay/return', [\App\Http\Controllers\Client\WalletZalopayController::class, 'returnPayment'])->name('wallet.zalopay.return');

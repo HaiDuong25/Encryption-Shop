@@ -41,21 +41,17 @@ class NewsController extends Controller
     public function show($id)
     {
         $article = News::where('is_published', 1)->findOrFail($id);
-
-        // Get related news (same category or recent)
+        $comments = \App\Models\NewsComment::where('news_id', $id)->orderBy('created_at', 'desc')->get();
         $relatedNews = News::where('is_published', 1)
             ->where('id', '!=', $id)
             ->orderBy('created_at', 'desc')
             ->take(3)
             ->get();
-
-        // Get recent news for sidebar
         $recentNews = News::where('is_published', 1)
             ->where('id', '!=', $id)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-
-        return view('client.news.show', compact('article', 'relatedNews', 'recentNews'));
+        return view('client.news.show', compact('article', 'relatedNews', 'recentNews', 'comments'));
     }
 }
