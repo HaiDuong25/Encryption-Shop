@@ -200,7 +200,7 @@
                                     </div>
                                     <div class="col-xxl-4 col-lg-12 col-sm-6">
                                         <div class="blog-input">
-                                            <input type="url" class="form-control" name="phone" placeholder="Phone"
+                                            <input type="tel" class="form-control" name="phone" placeholder="Phone"
                                                 value="{{ old('phone') }}" />
                                         </div>
                                     </div>
@@ -855,13 +855,13 @@
                     const ripple = document.createElement('span');
                     ripple.className = 'ripple';
                     ripple.style.cssText = `
-                                            position: absolute;
-                                            border-radius: 50%;
-                                            background: rgba(255, 255, 255, 0.6);
-                                            transform: scale(0);
-                                            animation: ripple-animation 0.6s linear;
-                                            pointer-events: none;
-                                        `;
+                                                position: absolute;
+                                                border-radius: 50%;
+                                                background: rgba(255, 255, 255, 0.6);
+                                                transform: scale(0);
+                                                animation: ripple-animation 0.6s linear;
+                                                pointer-events: none;
+                                            `;
 
                     const rect = this.getBoundingClientRect();
                     const size = Math.max(rect.width, rect.height);
@@ -881,13 +881,13 @@
         // Add ripple animation keyframes
         const rippleStyle = document.createElement('style');
         rippleStyle.textContent = `
-                                @keyframes ripple-animation {
-                                    to {
-                                        transform: scale(4);
-                                        opacity: 0;
+                                    @keyframes ripple-animation {
+                                        to {
+                                            transform: scale(4);
+                                            opacity: 0;
+                                        }
                                     }
-                                }
-                            `;
+                                `;
         document.head.appendChild(rippleStyle);
 
         // Newsletter modal form submission
@@ -960,14 +960,14 @@
                             toast.className = 'position-fixed bg-success text-white p-3 rounded shadow';
                             toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
                             toast.innerHTML = `
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-check-circle me-2"></i>
-                                                            <div>
-                                                                <div class="fw-bold">Đăng ký thành công!</div>
-                                                                <small>Cảm ơn bạn đã đăng ký nhận tin</small>
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-check-circle me-2"></i>
+                                                                <div>
+                                                                    <div class="fw-bold">Đăng ký thành công!</div>
+                                                                    <small>Cảm ơn bạn đã đăng ký nhận tin</small>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    `;
+                                                        `;
                             document.body.appendChild(toast);
 
                             setTimeout(() => {
@@ -1025,10 +1025,10 @@
                         const successMsg = document.createElement('div');
                         successMsg.className = 'alert alert-light alert-dismissible fade show mt-2';
                         successMsg.innerHTML = `
-                                                            <i class="fa-solid fa-check-circle text-success me-2"></i>
-                                                            Cảm ơn bạn đã đăng ký! 🎉
-                                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                        `;
+                                                                <i class="fa-solid fa-check-circle text-success me-2"></i>
+                                                                Cảm ơn bạn đã đăng ký! 🎉
+                                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                            `;
                         btn.parentNode.parentNode.appendChild(successMsg);
 
                         setTimeout(() => {
