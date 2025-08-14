@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -17,9 +18,11 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            // Thêm xác nhận password_confirmation
+            'password' => ['required', 'confirmed', Password::min(6)],
+            'agree_terms' => 'accepted' // Đảm bảo người dùng đã đồng ý điều khoản
         ]);
 
         $user = User::create([
@@ -30,15 +33,20 @@ class AuthController extends Controller
             'status' => 'active',
         ]);
 
+        // Luôn trả về JSON cho AJAX, vì frontend sẽ xử lý chuyển hướng
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Đăng ký thành công. Hãy đăng nhập!',
-                'user' => $user
+                'message' => 'Đăng ký thành công! Bạn sẽ được chuyển đến trang đăng nhập.',
+                // Gửi kèm URL đăng nhập để JS có thể chuyển hướng
+                'redirect' => route('login.form')
             ]);
         }
-        return redirect('/auth')->with('success', 'Đăng ký thành công. Hãy đăng nhập!');
+
+        // Đối với trường hợp không dùng JS, chuyển hướng tới trang đăng nhập với thông báo
+        return redirect()->route('login.form')->with('success', 'Đăng ký thành công. Hãy đăng nhập!');
     }
+
 
     public function login(Request $request)
     {
