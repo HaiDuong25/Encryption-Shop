@@ -179,7 +179,7 @@
                                     </div>
 
 
-                                    <h6 class="unit">{{ $product->material ?? 'Đang cập nhật' }}</h6>
+                                    <h6 class="unit">{{ $product->brand->name ?? 'Thương hiệu' }}</h6>
 
                                     <h5 class="price">
                                         <span class="theme-color">{{ format_vnd($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }} đ</span>
