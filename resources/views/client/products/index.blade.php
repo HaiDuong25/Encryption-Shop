@@ -1,19 +1,89 @@
 @extends('client.layout.main')
 @section('content')
 <style>
-    .list-group-item {
-        padding-left: 0;
-        padding-right: 0;
-        border: none;
+    /* Card sản phẩm */
+    .product-box-3 {
+        border-radius: 12px;
+        overflow: hidden; /* Quan trọng: giữ bo góc cho cả ảnh & nội dung */
+        border: 1px solid #e0e0e0;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        background: #fff;
+    }
+    .product-box-3:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        border-color: #ccc;
     }
 
-    .list-group-item:hover {
-        background-color: #f8f9fa;
+    /* Ảnh sản phẩm */
+    .product-image img {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        display: block;
+    }
+    .product-box-3:hover .product-image img {
+        transform: scale(1.05);
     }
 
-    h5 {
+    /* Nút trái tim */
+.add-to-wishlist-form .btn {
+    background-color: #dc3545 !important; /* đỏ mặc định */
+    color: #fff !important; /* icon hoặc chữ màu trắng */
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.add-to-wishlist-form .btn:hover {
+    background-color: #c82333 !important; /* đỏ đậm hơn khi hover */
+    color: #fff !important;
+    transform: scale(1.15);
+}
+
+
+    /* Nhịp tim */
+    .add-to-wishlist-form i {
+        animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+    }
+
+    /* Tiêu đề sản phẩm */
+    .product-detail .name {
+        font-weight: 600;
+        font-size: 1rem;
+        transition: color 0.2s ease;
+    }
+    .product-detail .name:hover {
+        color: #dc3545;
+    }
+
+    /* Giá sản phẩm */
+    .price {
+        font-size: 1.1rem;
         font-weight: 600;
     }
+    .btn-add-cart {
+    background: linear-gradient(135deg, #13a899ff, #1ab5a3ff);
+    color: #fff;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 150, 136, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-add-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 150, 136, 0.4);
+    transform: scale(1.05);
+}
 </style>
 
 @if(session('success'))
@@ -190,9 +260,11 @@
 
 
                                     <div class="add-to-cart-box bg-white">
-                                            <a href="{{ route('client.products.show', $product->id) }}" class="btn btn-add-cart w-100">
-                                                Xem chi tiết
+                                            <a href="{{ route('client.products.show', $product->id) }}"
+                                            class="btn btn-add-cart w-100 d-flex align-items-center justify-content-center gap-2">
+                                                <i class="fa-solid fa-eye"></i> Xem chi tiết
                                             </a>
+
                                         </div>
                                 </div>
                             </div>
