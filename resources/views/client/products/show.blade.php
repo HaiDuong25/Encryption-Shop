@@ -2,213 +2,475 @@
 
 @section('content')
     <style>
-        .product-detail-page {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-        }
+/* ===========================
+   THEME TOKENS
+   =========================== */
+:root {
+  --c-primary: #ee4d2d;
+  --c-primary-600: #d94426;
+  --c-primary-700: #c53a21;
+  --c-danger: #dc3545;
+  --c-muted: #6c757d;
+  --c-border: #e9ecef;
+  --c-bg-soft: #fafafa;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, .06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, .08);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, .10);
+  --ring: 0 0 0 3px rgba(238, 77, 45, .15);
+}
 
-        .main-image {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            object-fit: contain;
-        }
+/* ===========================
+   PRODUCT DETAIL WRAPPER
+   =========================== */
+.product-detail-page {
+  background-color: #fff;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-sm);
+}
 
-        .thumbnail-list {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+/* Title */
+.product-detail-page h4.fw-bold {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  margin-bottom: .25rem;
+}
 
-        .thumbnail-list img {
-            width: 60px;
-            height: 60px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            border-radius: 5px;
-            flex-shrink: 0;
-        }
+/* ===========================
+   MAIN IMAGE + NAV BUTTONS
+   =========================== */
+.main-image {
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  object-fit: contain;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
 
-        .existing-stars {
-            color: #f5c518;
-            font-size: 18px;
-        }
+#imageViewerWrapper .btn.btn-light {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,.9);
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+#imageViewerWrapper .btn.btn-light:hover {
+  transform: scale(1.06);
+  box-shadow: var(--shadow-md);
+  background: #fff;
+}
 
-        .thumbnail-list img.active {
-            border: 2px solid #ee4d2d;
-        }
+/* ===========================
+   THUMBNAILS
+   =========================== */
+.thumbnail-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-        .variant-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
+.thumbnail-list img {
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--c-border);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  object-fit: cover;
+  background: #fff;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease;
+}
+.thumbnail-list img:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: #ddd;
+}
+.thumbnail-list img.active {
+  border: 2px solid var(--c-primary);
+  box-shadow: var(--ring);
+}
 
-        .variant-row .option-label {
-            margin-right: 10px;
-            font-weight: bold;
-            width: 80px;
-        }
+.more-thumbs {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+}
+.more-thumbs .thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-        .variant-row .variant-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+/* ===========================
+   RATING
+   =========================== */
+.existing-stars,
+.rating .fill,
+.rating .text-warning {
+  color: #f5c518 !important;
+}
+.rating .text-muted {
+  color: #c9c9c9 !important;
+}
 
-        .variant-options input[type="radio"] {
-            display: none;
-        }
+/* ===========================
+   PRICE AREA
+   =========================== */
+.price-area .price {
+  font-size: 1.875rem !important; /* ~30px */
+  font-weight: 800;
+  color: var(--c-primary) !important;
+  letter-spacing: .2px;
+}
+.price-area del.old-price {
+  font-size: .95rem;
+  color: #9aa0a6 !important;
+}
 
-        .variant-options label {
-            border: 1px solid #ccc;
-            padding: 6px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #f8f8f8;
-        }
+/* ===========================
+   STOCK
+   =========================== */
+#stock-info {
+  font-size: .95rem;
+}
+#stock-info strong {
+  color: var(--c-primary);
+}
 
-        .variant-options input[type="radio"]:checked+label {
-            background-color: #ee4d2d;
-            color: white;
-            border-color: #ee4d2d;
-        }
+/* ===========================
+   VARIANT OPTIONS (chips)
+   =========================== */
+.variant-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.variant-row .option-label {
+  margin-right: 6px;
+  font-weight: 700;
+  width: auto;
+  min-width: 60px;
+  color: #222;
+}
 
-        .btn-buy {
-            background-color: #ee4d2d;
-            color: white;
-            border: none;
-            margin-right: 10px;
-        }
+.variant-row .variant-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-        .related-products .card {
-            border: none;
-            transition: 0.3s;
-        }
+.variant-options input[type="radio"] {
+  display: none;
+}
 
-        .related-products .card:hover {
-            transform: translateY(-5px);
-        }
+.variant-options label {
+  border: 1px solid #ddd;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  background-color: #fff;
+  font-weight: 600;
+  font-size: .95rem;
+  color: #333;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease, transform .12s ease;
+}
+.variant-options label:hover {
+  border-color: var(--c-primary);
+  box-shadow: var(--ring);
+  transform: translateY(-1px);
+}
 
-        #quantity::-webkit-inner-spin-button,
-        #quantity::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+.variant-options input[type="radio"]:checked + label {
+  background-color: var(--c-primary);
+  color: #fff;
+  border-color: var(--c-primary);
+  box-shadow: 0 8px 20px rgba(238, 77, 45, .25);
+}
 
-        .product-info-block {
-            background-color: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+/* ===========================
+   QUANTITY CONTROL
+   =========================== */
+#quantity::-webkit-inner-spin-button,
+#quantity::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
-        .product-info-block h4,
-        .product-info-block h5 {
-            font-size: 18px;
-            font-weight: 600;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
+.mb-3 .border.rounded.px-2 {
+  border-color: var(--c-border) !important;
+  border-radius: 999px !important;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
 
-        .product-description {
-            background-color: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 20px;
-            font-size: 15px;
-            line-height: 1.7;
-            white-space: pre-line;
-            word-break: break-word;
-        }
+.mb-3 .btn.p-1.px-2.border-0.bg-white {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  line-height: 1;
+  transition: background-color .15s ease, transform .12s ease;
+}
+.mb-3 .btn.p-1.px-2.border-0.bg-white:hover {
+  background-color: var(--c-bg-soft);
+}
+.mb-3 .btn.p-1.px-2.border-0.bg-white:active {
+  transform: scale(.96);
+}
 
-        .table.table-bordered {
-            font-size: 15px;
-            width: 100%;
-            margin-bottom: 0;
-        }
+#quantity.form-control {
+  width: 56px !important;
+  height: 40px;
+  font-weight: 700;
+  font-size: 1rem;
+  background: transparent;
+}
 
-        .table.table-bordered th,
-        .table.table-bordered td {
-            padding: 6px 12px;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
+/* ===========================
+   CTA BUTTONS
+   =========================== */
+.btn-buy {
+  background: linear-gradient(180deg, var(--c-primary) 0%, var(--c-primary-600) 100%);
+  color: #fff !important;
+  border: 0;
+  margin-right: 10px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  box-shadow: 0 10px 22px rgba(238, 77, 45, .28);
+  transform: translateZ(0);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, opacity .18s ease;
+}
+.btn-buy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(238, 77, 45, .32);
+  filter: brightness(1.03);
+}
+.btn-buy:active {
+  transform: translateY(0);
+}
 
-        .table.table-bordered th {
-            background-color: #f9f9f9;
-            font-weight: 600;
-            width: 180px;
-        }
+/* ===========================
+   WISHLIST (DETAIL PAGE)
+   =========================== */
+.add-to-wishlist-form .wishlist-btn {
+  position: relative;
+  border: 1px solid var(--c-primary);
+  color: var(--c-primary);
+  background: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, transform .12s ease, border-color .18s ease;
+}
 
-        del {
-            font-size: 14px;
-            color: #999;
-        }
+/* Heart beat just for the first character (the 💖 at the start) */
+.add-to-wishlist-form .wishlist-btn::first-letter {
+  display: inline-block;
+  animation: heartbeat 1.2s infinite;
+  transform-origin: center;
+}
 
-        .theme-color {
-            color: #ee4d2d !important;
-        }
+/* Hover → fill button */
+.add-to-wishlist-form .wishlist-btn:hover {
+  background: var(--c-primary);
+  color: #fff;
+  border-color: var(--c-primary);
+  box-shadow: 0 10px 22px rgba(238, 77, 45, .25);
+  transform: translateY(-1px);
+}
+.add-to-wishlist-form .wishlist-btn:active {
+  transform: translateY(0);
+}
 
-        @media (max-width: 767.98px) {
-            .product-detail-page {
-                padding: 15px;
-            }
+/* Keyframes for heart beat */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); filter: none; }
+  25% { transform: scale(1.18); filter: drop-shadow(0 2px 6px rgba(238, 77, 45, .35)); }
+  50% { transform: scale(0.98); }
+  75% { transform: scale(1.12); }
+}
 
-            .main-image {
-                max-height: 350px;
-            }
+/* ===========================
+   INFO BLOCKS & TABLE
+   =========================== */
+.product-info-block {
+  background-color: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
 
-            .thumbnail-list {
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                padding-bottom: 5px;
-            }
+.product-info-block h4,
+.product-info-block h5 {
+  font-size: 1.125rem;
+  font-weight: 800;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px dashed var(--c-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.product-info-block h4::before,
+.product-info-block h5::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  box-shadow: 0 0 0 4px rgba(238, 77, 45, .15);
+}
 
-            .thumbnail-list img {
-                width: 50px;
-                height: 50px;
-            }
+.product-description {
+  background-color: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-line;
+  word-break: break-word;
+}
 
-            .variant-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+.table.table-bordered {
+  font-size: 15px;
+  width: 100%;
+  margin-bottom: 0;
+  border-color: var(--c-border);
+}
+.table.table-bordered th,
+.table.table-bordered td {
+  padding: 10px 14px;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-color: var(--c-border);
+}
+.table.table-bordered th {
+  background-color: #fbfbfb;
+  font-weight: 700;
+  width: 200px;
+}
 
-            .variant-row .option-label {
-                margin-bottom: 5px;
-                width: auto;
-            }
+/* ===========================
+   RELATED PRODUCTS
+   =========================== */
+.related-products .card {
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow: var(--shadow-sm);
+}
+.related-products .card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: #ddd;
+}
+.related-products .card img {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
 
-            .price-area .price,
-            .price-area .old-price {
-                font-size: 20px !important;
-            }
+/* ===========================
+   MISC
+   =========================== */
+del { font-size: 14px; color: #999; }
+.theme-color { color: var(--c-primary) !important; }
 
-            .product-description {
-                font-size: 14px;
-            }
+/* Alerts nicer spacing */
+.alert { border-radius: 10px; }
 
-            .btn-buy {
-                flex: 1;
-                text-align: center;
-            }
+/* ===========================
+   RESPONSIVE
+   =========================== */
+@media (max-width: 991.98px) {
+  .product-detail-page { padding: 20px; }
+}
 
-            .mb-4.d-flex {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
+@media (max-width: 767.98px) {
+  .product-detail-page { padding: 16px; }
 
-        .wishlist-btn:hover {
-            background-color: #ee4d2d;
-            color: #fff;
-            border-color: #ee4d2d;
-        }
+  .main-image { max-height: 360px; }
+
+  .thumbnail-list {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .thumbnail-list img,
+  .more-thumbs { width: 56px; height: 56px; }
+
+  .variant-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .variant-row .option-label { margin-bottom: 0; }
+
+  .price-area .price,
+  .price-area .old-price { font-size: 1.25rem !important; }
+
+  .product-description { font-size: 14px; }
+
+  .btn-buy { width: 100%; text-align: center; }
+  .mb-4.d-flex { flex-direction: column; gap: 10px; }
+}
+/* ==== IMAGE HOVER-ZOOM (DESKTOP) ==== */
+#imageViewerWrapper {
+    border-radius: 12px;
+    overflow: hidden;           /* Giữ ảnh không tràn khi zoom */
+    background: #fafafa;
+    position: relative;
+}
+#imageViewerWrapper .main-image {
+    transition: transform 0.15s ease-out;
+    transform-origin: center center;
+    cursor: zoom-in;
+    will-change: transform;
+}
+#imageViewerWrapper.is-zooming .main-image {
+    cursor: zoom-out;
+}
+
+/* ==== LIGHTBOX/MODAL ZOOM ==== */
+#imageZoomModal .modal-content {
+    background: #000;           /* nền tối cho ảnh nổi bật */
+}
+#zoomModalImage {
+    max-height: 85vh;           /* vừa viewport */
+    user-select: none;
+    -webkit-user-drag: none;
+    cursor: zoom-in;
+    transition: transform .2s ease-out;
+    will-change: transform;
+}
+#zoomModalImage.is-zoomed {
+    cursor: grab;               /* kéo để pan */
+}
+
+/* Nút chuyển ảnh vẫn ở trên khi zoom */
+#imageViewerWrapper .btn {
+    z-index: 10;
+}
+
+
     </style>
 
     <div class="container mt-4 mb-5">
@@ -510,6 +772,22 @@
                 </div>
             @endif
         </div>
+                <!-- Modal Zoom Ảnh -->
+        <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-md-down modal-lg modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-body p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <div class="d-flex justify-content-center align-items-center" style="min-height:60vh; overflow:hidden;">
+                <img id="zoomModalImage" src="" alt="Zoom image" class="img-fluid">
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+
     @endsection
 
     @push('scripts')
@@ -801,4 +1079,135 @@
                 });
             });
         </script>
+        <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const wrapper = document.getElementById('imageViewerWrapper');
+  const mainImg = document.getElementById('mainImage');
+  const prefersHover = window.matchMedia('(hover: hover)').matches;
+  const zoomScale = 2.2; // độ phóng khi hover
+
+  /* ===== Hover-zoom (desktop) ===== */
+  if (prefersHover && wrapper && mainImg) {
+    wrapper.addEventListener('mouseenter', () => {
+      wrapper.classList.add('is-zooming');
+      mainImg.style.transform = `scale(${zoomScale})`;
+    });
+    wrapper.addEventListener('mouseleave', () => {
+      wrapper.classList.remove('is-zooming');
+      mainImg.style.transform = 'scale(1)';
+      mainImg.style.transformOrigin = 'center center';
+    });
+    wrapper.addEventListener('mousemove', (e) => {
+      const rect = mainImg.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      mainImg.style.transformOrigin = `${x}% ${y}%`; // pan theo chuột
+    });
+  }
+
+  /* ===== Lightbox/Modal zoom (desktop + mobile) ===== */
+  const modalEl  = document.getElementById('imageZoomModal');
+  const modalImg = document.getElementById('zoomModalImage');
+
+  function openZoomModal() {
+    if (!modalEl || !modalImg) return;
+    modalImg.src = mainImg.src;   // dùng ảnh đang hiển thị
+    const bsModal = new bootstrap.Modal(modalEl);
+    bsModal.show();
+    resetModalZoom();
+  }
+
+  // Cho phép click mở modal trên mọi thiết bị
+  if (mainImg) mainImg.addEventListener('click', openZoomModal);
+
+  // Trạng thái/pan trong modal
+  let modalZoom = 1, isPanning = false, startX = 0, startY = 0, offsetX = 0, offsetY = 0;
+
+  function resetModalZoom() {
+    modalZoom = 1; offsetX = 0; offsetY = 0;
+    modalImg.classList.remove('is-zoomed');
+    applyModalTransform();
+  }
+  function applyModalTransform() {
+    modalImg.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${modalZoom})`;
+  }
+  function toggleModalZoom() {
+    if (modalZoom === 1) {
+      modalZoom = 2.5;            // mức zoom khi double click
+      modalImg.classList.add('is-zoomed');
+    } else {
+      modalZoom = 1;
+      offsetX = offsetY = 0;
+      modalImg.classList.remove('is-zoomed');
+    }
+    applyModalTransform();
+  }
+  function onPanStart(e) {
+    if (modalZoom === 1) return;
+    isPanning = true;
+    startX = e.clientX; startY = e.clientY;
+    modalImg.style.cursor = 'grabbing';
+  }
+  function onPanMove(e) {
+    if (!isPanning) return;
+    offsetX += (e.clientX - startX);
+    offsetY += (e.clientY - startY);
+    startX = e.clientX; startY = e.clientY;
+    applyModalTransform();
+  }
+  function onPanEnd() {
+    isPanning = false;
+    modalImg.style.cursor = 'grab';
+  }
+
+  modalEl?.addEventListener('shown.bs.modal', () => {
+    // Double-click / double-tap để zoom
+    modalImg.addEventListener('dblclick', toggleModalZoom);
+
+    // Cuộn để zoom (desktop)
+    modalImg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = -Math.sign(e.deltaY) * 0.2;
+      const nextZoom = Math.min(3.5, Math.max(1, modalZoom + delta));
+      if (nextZoom !== modalZoom) {
+        modalZoom = nextZoom;
+        if (modalZoom === 1) { offsetX = 0; offsetY = 0; }
+        modalImg.classList.toggle('is-zoomed', modalZoom > 1);
+        applyModalTransform();
+      }
+    }, { passive: false });
+
+    // Drag to pan (desktop)
+    modalImg.addEventListener('mousedown', onPanStart);
+    window.addEventListener('mousemove', onPanMove);
+    window.addEventListener('mouseup', onPanEnd);
+
+    // Touch pan (mobile)
+    modalImg.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1 || modalZoom === 1) return;
+      isPanning = true;
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+      modalImg.style.cursor = 'grabbing';
+    }, { passive: true });
+
+    modalImg.addEventListener('touchmove', (e) => {
+      if (!isPanning) return;
+      const x = e.touches[0].clientX, y = e.touches[0].clientY;
+      offsetX += (x - startX);
+      offsetY += (y - startY);
+      startX = x; startY = y;
+      applyModalTransform();
+    }, { passive: true });
+
+    modalImg.addEventListener('touchend', () => { isPanning = false; modalImg.style.cursor = 'grab'; });
+  });
+
+  // Cleanup listeners khi đóng modal để tránh nhân đôi
+  modalEl?.addEventListener('hide.bs.modal', () => {
+    const clone = modalImg.cloneNode(true);
+    modalImg.parentNode.replaceChild(clone, modalImg);
+  });
+});
+</script>
+
     @endpush
