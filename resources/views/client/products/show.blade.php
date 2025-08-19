@@ -506,310 +506,303 @@ del { font-size: 14px; color: #999; }
         color: #ee4d2d !important; /* ép đổi sang cam Shopee */
     }
 </style>
+<div class="container mt-4 mb-5">
+    <div class="row product-detail-page">
 
-
-
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="product-detail-page">
-             <div class="row">
-                <div class="col-md-5">
-                <div class="position-relative" id="imageViewerWrapper">
-                    <button class="btn btn-light position-absolute top-50 start-0 translate-middle-y" style="z-index: 10;"
+        <!-- Vùng ảnh sản phẩm -->
+        <div class="col-md-5">
+            <div class="position-relative" id="imageViewerWrapper">
+                <button class="btn btn-light position-absolute top-50 start-0 translate-middle-y"
+                        style="z-index: 10;"
                         onclick="prevImage()">&#10094;</button>
 
-                    <img id="mainImage" src="{{ asset('storage/' . $product->image) }}" class="main-image img-fluid"
-                        alt="{{ $product->name }}">
+                <img id="mainImage"
+                     src="{{ asset('storage/' . $product->image) }}"
+                     class="main-image img-fluid"
+                     alt="{{ $product->name }}">
 
-                    <button class="btn btn-light position-absolute top-50 end-0 translate-middle-y" style="z-index: 10;"
+                <button class="btn btn-light position-absolute top-50 end-0 translate-middle-y"
+                        style="z-index: 10;"
                         onclick="nextImage()">&#10095;</button>
-                </div>
-                <div class="thumbnail-list">
-                    <img src="{{ asset('storage/' . $product->image) }}" class="thumb active" onclick="changeImage(this)">
-                    @if ($product->gallery)
-                        @php
-                            $galleryImages = json_decode($product->gallery, true); // thêm `true` để trả về mảng
-                        @endphp
-                        @if (is_array($galleryImages) && count($galleryImages))
-                            @php
-                                $totalImages = count($galleryImages);
-                            @endphp
-                            @foreach ($galleryImages as $index => $img)
-                                <img src="{{ asset('storage/' . $img) }}" class="thumb {{ $index > 4 ? 'd-none' : '' }}"
-                                    onclick="changeImage(this)" data-index="{{ $index + 1 }}">
-                            @endforeach
+            </div>
 
-                            @if ($totalImages > 4)
-                                <div class="position-relative more-thumbs" onclick="changeImageByIndex(5)">
-                                    <img src="{{ asset('storage/' . $galleryImages[4]) }}" class="thumb"
-                                        style="opacity: 0.6;">
-                                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold"
-                                        style="background-color: rgba(0,0,0,0.5); font-size: 14px;">
-                                        +{{ $totalImages - 4 }}
-                                    </div>
+            <!-- Thumbnails -->
+            <div class="thumbnail-list">
+                <img src="{{ asset('storage/' . $product->image) }}"
+                     class="thumb active"
+                     onclick="changeImage(this)">
+
+                @if ($product->gallery)
+                    @php
+                        $galleryImages = json_decode($product->gallery, true);
+                    @endphp
+
+                    @if (is_array($galleryImages) && count($galleryImages))
+                        @php $totalImages = count($galleryImages); @endphp
+
+                        @foreach ($galleryImages as $index => $img)
+                            <img src="{{ asset('storage/' . $img) }}"
+                                 class="thumb {{ $index > 4 ? 'd-none' : '' }}"
+                                 onclick="changeImage(this)"
+                                 data-index="{{ $index + 1 }}">
+                        @endforeach
+
+                        @if ($totalImages > 4)
+                            <div class="position-relative more-thumbs" onclick="changeImageByIndex(5)">
+                                <img src="{{ asset('storage/' . $galleryImages[4]) }}"
+                                     class="thumb"
+                                     style="opacity: 0.6;">
+                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold"
+                                     style="background-color: rgba(0,0,0,0.5); font-size: 14px;">
+                                    +{{ $totalImages - 4 }}
                                 </div>
-                            @endif
+                            </div>
                         @endif
                     @endif
-                </div>
+                @endif
             </div>
+        </div>
 
-            <div class="col-md-7">
-                <h4 class="fw-bold">{{ $product->name }}</h4>
-                <div class="d-flex align-items-center mb-2">
-                    @php
-                        $avgRate = round($product->rates->where('status', 1)->avg('score') * 2) / 2;
+        <!-- Thông tin sản phẩm -->
+        <div class="col-md-7">
+            <h4 class="fw-bold">{{ $product->name }}</h4>
 
-                        $sizes = $product->variants
-                            ->flatMap(function ($variant) {
-                                return $variant->attributeValues->filter(fn($val) => $val->attribute->name === 'Size');
-                            })
-                            ->unique('id');
-
-                        $colors = $product->variants
-                            ->flatMap(function ($variant) {
-                                return $variant->attributeValues->filter(fn($val) => $val->attribute->name === 'Màu');
-                            })
-                            ->unique('id');
-                    @endphp
-                    <ul class="rating list-inline me-2 mb-0">
-                        @for ($i = 1; $i <= 5; $i++)
-                            <li class="list-inline-item">
-                                @if ($avgRate >= $i)
-                                    <i data-feather="star" class="fill text-warning"></i>
-                                @elseif ($avgRate == $i - 0.5)
-                                    <i data-feather="star-half" class="text-warning"></i>
-                                @else
-                                    <i data-feather="star" class="text-muted"></i>
-                                @endif
-                            </li>
-                        @endfor
-                    </ul>
-                    <span class="text-muted">({{ number_format($avgRate, 1) }}/5)</span>
-                </div>
-
-                <p>Danh mục: <strong>{{ $product->category->name ?? 'Chưa phân loại' }}</strong></p>
-                <p>Thương hiệu: <strong> {{ $product->brand->name ?? 'Chưa rõ' }}
-                    </strong></p>
-
-                <div class="price-area mb-3" id="price-display">
-                    @if ($product->sale_price && $product->sale_price < $product->price)
-                        <span class="price fs-3 text-danger fw-bold"
-                            id="current-price">{{ format_vnd($product->sale_price) }} đ</span>
-                        <del class="old-price text-muted ms-2" id="original-price">{{ format_vnd($product->price) }}
-                            đ</del>
-                    @else
-                        <span class="price fs-3 text-danger fw-bold"
-                            id="current-price">{{ format_vnd($product->price) }} đ</span>
-                        <del class="old-price text-muted ms-2 d-none"
-                            id="original-price">{{ format_vnd($product->price) }} đ</del>
-                    @endif
-                </div>
-
+            <!-- Đánh giá -->
+            <div class="d-flex align-items-center mb-2">
                 @php
-                    $totalStock = $product->variants->sum('stock');
+                    $avgRate = round($product->rates->where('status', 1)->avg('score') * 2) / 2;
+                    $sizes = $product->variants
+                        ->flatMap(fn($variant) => $variant->attributeValues->filter(fn($val) => $val->attribute->name === 'Size'))
+                        ->unique('id');
+                    $colors = $product->variants
+                        ->flatMap(fn($variant) => $variant->attributeValues->filter(fn($val) => $val->attribute->name === 'Màu'))
+                        ->unique('id');
                 @endphp
-                <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
-                    Số lượng còn lại: <strong>{{ $totalStock }}</strong>
-                </p>
 
-                @if ($sizes->count())
-                    <div class="variant-row mb-3 d-flex align-items-center">
-                        <span class="option-label">Size:</span>
-                        <div class="variant-options">
-                            @foreach ($sizes as $size)
-                                <div>
-                                    <input type="radio" name="size" id="size-{{ $size->id }}">
-                                    <label for="size-{{ $size->id }}">{{ $size->value }}</label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                <ul class="rating list-inline me-2 mb-0">
+                    @for ($i = 1; $i <= 5; $i++)
+                        <li class="list-inline-item">
+                            @if ($avgRate >= $i)
+                                <i data-feather="star" class="fill text-warning"></i>
+                            @elseif ($avgRate == $i - 0.5)
+                                <i data-feather="star-half" class="text-warning"></i>
+                            @else
+                                <i data-feather="star" class="text-muted"></i>
+                            @endif
+                        </li>
+                    @endfor
+                </ul>
+                <span class="text-muted">({{ number_format($avgRate, 1) }}/5)</span>
+            </div>
+
+            <p>Danh mục: <strong>{{ $product->category->name ?? 'Chưa phân loại' }}</strong></p>
+            <p>Thương hiệu: <strong>{{ $product->brand->name ?? 'Chưa rõ' }}</strong></p>
+
+            <!-- Giá -->
+            <div class="price-area mb-3" id="price-display">
+                @if ($product->sale_price && $product->sale_price < $product->price)
+                    <span class="price fs-3 text-danger fw-bold" id="current-price">
+                        {{ format_vnd($product->sale_price) }} đ
+                    </span>
+                    <del class="old-price text-muted ms-2" id="original-price">
+                        {{ format_vnd($product->price) }} đ
+                    </del>
+                @else
+                    <span class="price fs-3 text-danger fw-bold" id="current-price">
+                        {{ format_vnd($product->price) }} đ
+                    </span>
+                    <del class="old-price text-muted ms-2 d-none" id="original-price">
+                        {{ format_vnd($product->price) }} đ
+                    </del>
                 @endif
+            </div>
 
-                @if ($colors->count())
-                    <div class="variant-row mb-3 d-flex align-items-center">
-                        <span class="option-label">Màu sắc:</span>
-                        <div class="variant-options">
-                            @foreach ($colors as $color)
-                                <div>
-                                    <input type="radio" name="color" id="color-{{ $color->id }}">
-                                    <label for="color-{{ $color->id }}">{{ $color->value }}</label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+            <!-- Tồn kho -->
+            @php $totalStock = $product->variants->sum('stock'); @endphp
+            <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
+                Số lượng còn lại: <strong>{{ $totalStock }}</strong>
+            </p>
 
-                <div class="mb-3 d-flex align-items-center">
-                    <label class="me-2 fw-bold">Số lượng:</label>
-                    <div class="d-flex align-items-center border rounded px-2" style="width: fit-content;">
-                        <button type="button" class="btn p-1 px-2 border-0 bg-white"
-                            onclick="changeQty(-1)">&#8722;</button>
-                        <input type="number" id="quantity" class="form-control text-center border-0" value="1"
-                            min="1" style="width: 50px;">
-                        <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(1)">&#43;</button>
+            <!-- Variants -->
+            @if ($sizes->count())
+                <div class="variant-row mb-3 d-flex align-items-center">
+                    <span class="option-label">Size:</span>
+                    <div class="variant-options">
+                        @foreach ($sizes as $size)
+                            <div>
+                                <input type="radio" name="size" id="size-{{ $size->id }}">
+                                <label for="size-{{ $size->id }}">{{ $size->value }}</label>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
-                <div class="mb-2" id="expected-price-block">
-                    <span class="fw-bold">Giá dự kiến:</span> <span id="expected-price"
-                        class="text-danger fw-bold">{{ format_vnd($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}</span>
-                    đ
-                </div>
+            @endif
 
-                @if (session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-                @if (session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                @endif
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+            @if ($colors->count())
+                <div class="variant-row mb-3 d-flex align-items-center">
+                    <span class="option-label">Màu sắc:</span>
+                    <div class="variant-options">
+                        @foreach ($colors as $color)
+                            <div>
+                                <input type="radio" name="color" id="color-{{ $color->id }}">
+                                <label for="color-{{ $color->id }}">{{ $color->value }}</label>
+                            </div>
+                        @endforeach
                     </div>
-                @endif
-                <div class="mb-4 d-flex flex-column align-items-start" style="gap:10px;">
-                    <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST"
-                        class="d-inline">
-                        @csrf
-                        <input type="hidden" name="quantity" id="form-quantity" value="1">
-                        <input type="hidden" name="variant_id" id="form-variant-id" value="">
-                        <button type="submit" class="btn btn-buy px-4 py-2">
-                            <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('wishlist.add', $product->id) }}"
-                        class="mt-2 add-to-wishlist-form">
-                        @csrf
-                        <button class="btn btn-outline-danger btn-sm wishlist-btn">💖 Thêm vào danh sách yêu thích</button>
-                    </form>
-
                 </div>
-                <div id="add-to-cart-success" class="alert d-none mt-2"></div>
-            </div>
-            </div>
-            </div>
-            </div>
-            </div>
-        </div>
+            @endif
 
-
-        <div class="row justify-content-center">
-        <div class="col-lg-10">
-        <div class="product-info-block mt-5">
-            <h4>Chi tiết sản phẩm</h4>
-            <div class="table-responsive mb-3">
-                <table class="table table-bordered">
-                    <tbody>
-                        <tr>
-                            <th>Danh mục</th>
-                            <td>{{ $product->category->name ?? 'Chưa phân loại' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Thương hiệu</th>
-                            <td>{{ $product->brand->name ?? 'Chưa rõ' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Xuất xứ</th>
-                            <td>Việt Nam</td>
-                        </tr>
-                        <tr>
-                            <th>Chất liệu</th>
-                            <td>{{ $product->material ?? 'Đang cập nhật' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Mã sản phẩm</th>
-                            <td>{{ explode('-', $product->variants->first()->sku)[0] ?? 'Không rõ' }}</td>
-                        </tr>
-
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        </div>
-        </div>
-
-        <div class="row justify-content-center">
-        <div class="col-lg-10">
-        <div class="product-info-block">
-            <h5>Mô tả sản phẩm</h5>
-            <div class="product-description">
-                {!! nl2br(e($product->description)) !!}
-            </div>
-        </div>
-        </div>
-        </div>
-
-        <div class="row justify-content-center">
-        <div class="col-lg-10">
-        <div class="product-info-block mt-5">
-            <h4>Đánh giá sản phẩm</h4>
-
-            {{-- Hiển thị các đánh giá đã có --}}
- @foreach ($product->rates->where('status', 1) as $rate)
-    <div class="mb-3 border-bottom pb-2">
-        <div class="d-flex align-items-center mb-1">
-            <strong>{{ $rate->user->name }}</strong>
-
-            <div class="ms-2 existing-stars">
-                @for ($i = 1; $i <= 5; $i++)
-                    @if ($rate->score >= $i)
-                        <i class="fas fa-star text-warning"></i>
-                    @else
-                        <i class="far fa-star text-warning"></i>
-                    @endif
-                @endfor
-            </div>
-        </div>
-        </div>
-        </div>
-
-        {{-- Hiển thị biến thể nếu có --}}
-        @if ($rate->orderDetail && $rate->orderDetail->variant)
-            <div class="text-muted small">
-                Biến thể:
-                @foreach ($rate->orderDetail->variant->attributeValues as $attributeValue)
-                    {{ $attributeValue->value }}@if (!$loop->last), @endif
-                @endforeach
-            </div>
-        @endif
-
-        <p class="mb-0">{{ $rate->content }}</p>
-
-        {{-- ✅ Hiển thị phản hồi admin --}}
-        @if ($rate->replies->count())
-            @foreach ($rate->replies as $reply)
-                <div class="mt-2 ms-4 p-2 bg-light border rounded">
-                    <strong class="text-primary">{{ $reply->admin->name ?? 'Admin' }}:</strong>
-                    <span>{{ $reply->reply_content }}</span>
+            <!-- Số lượng -->
+            <div class="mb-3 d-flex align-items-center">
+                <label class="me-2 fw-bold">Số lượng:</label>
+                <div class="d-flex align-items-center border rounded px-2" style="width: fit-content;">
+                    <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(-1)">&#8722;</button>
+                    <input type="number" id="quantity" class="form-control text-center border-0" value="1" min="1" style="width: 50px;">
+                    <button type="button" class="btn p-1 px-2 border-0 bg-white" onclick="changeQty(1)">&#43;</button>
                 </div>
-            @endforeach
-        @endif
+            </div>
+
+            <!-- Giá dự kiến -->
+            <div class="mb-2" id="expected-price-block">
+                <span class="fw-bold">Giá dự kiến:</span>
+                <span id="expected-price" class="text-danger fw-bold">
+                    {{ format_vnd($product->sale_price && $product->sale_price < $product->price ? $product->sale_price : $product->price) }}
+                </span> đ
+            </div>
+
+            <!-- Alerts -->
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Nút hành động -->
+            <div class="mb-4 d-flex flex-column align-items-start" style="gap:10px;">
+                <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <input type="hidden" name="quantity" id="form-quantity" value="1">
+                    <input type="hidden" name="variant_id" id="form-variant-id" value="">
+                    <button type="submit" class="btn btn-buy px-4 py-2">
+                        <i data-feather="shopping-cart" class="me-1"></i> Thêm vào giỏ hàng
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('wishlist.add', $product->id) }}" class="mt-2 add-to-wishlist-form">
+                    @csrf
+                    <button class="btn btn-outline-danger btn-sm wishlist-btn">
+                        💖 Thêm vào danh sách yêu thích
+                    </button>
+                </form>
+            </div>
+
+            <div id="add-to-cart-success" class="alert d-none mt-2"></div>
+        </div>
     </div>
-@endforeach
 
-            @if (isset($relatedProducts) && $relatedProducts->count())
+    <!-- Chi tiết sản phẩm -->
+    <div class="product-info-block mt-5">
+        <h4>Chi tiết sản phẩm</h4>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Danh mục</th>
+                        <td>{{ $product->category->name ?? 'Chưa phân loại' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Thương hiệu</th>
+                        <td>{{ $product->brand->name ?? 'Chưa rõ' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Xuất xứ</th>
+                        <td>Việt Nam</td>
+                    </tr>
+                    <tr>
+                        <th>Chất liệu</th>
+                        <td>{{ $product->material ?? 'Đang cập nhật' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Mã sản phẩm</th>
+                        <td>{{ explode('-', $product->variants->first()->sku)[0] ?? 'Không rõ' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mô tả -->
+    <div class="product-info-block">
+        <h5>Mô tả sản phẩm</h5>
+        <div class="product-description">
+            {!! nl2br(e($product->description)) !!}
+        </div>
+    </div>
+
+    <!-- Đánh giá -->
+    <div class="product-info-block mt-5">
+        <h4>Đánh giá sản phẩm</h4>
+
+        @foreach ($product->rates->where('status', 1) as $rate)
+            <div class="mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center mb-1">
+                    <strong>{{ $rate->user->name }}</strong>
+                    <div class="ms-2 existing-stars">
+                        @for ($i = 1; $i <= 5; $i++)
+                            @if ($rate->score >= $i)
+                                <i class="fas fa-star text-warning"></i>
+                            @else
+                                <i class="far fa-star text-warning"></i>
+                            @endif
+                        @endfor
+                    </div>
+                </div>
+
+                <!-- Biến thể -->
+                @if ($rate->orderDetail && $rate->orderDetail->variant)
+                    <div class="text-muted small">
+                        Biến thể:
+                        @foreach ($rate->orderDetail->variant->attributeValues as $attributeValue)
+                            {{ $attributeValue->value }}@if (!$loop->last), @endif
+                        @endforeach
+                    </div>
+                @endif
+
+                <p class="mb-0">{{ $rate->content }}</p>
+
+                <!-- Phản hồi admin -->
+                @if ($rate->replies->count())
+                    @foreach ($rate->replies as $reply)
+                        <div class="mt-2 ms-4 p-2 bg-light border rounded">
+                            <strong class="text-primary">{{ $reply->admin->name ?? 'Admin' }}:</strong>
+                            <span>{{ $reply->reply_content }}</span>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        @endforeach
+
+        <!-- Sản phẩm liên quan -->
+        @if (isset($relatedProducts) && $relatedProducts->count())
             <div class="related-products mt-5">
                 <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
                 <div class="row">
                     @foreach ($relatedProducts as $item)
                         <div class="col-md-3">
-                            <div class="card product-card h-100">
-                                <a href="{{ route('client.products.show', $item->id) }}" class="product-img-link">
-                                    <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top"
-                                        alt="{{ $item->name }}">
-                                </a>
+                            <div class="card">
+                                <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
                                 <div class="card-body text-center">
-                                    <h6 class="card-title mb-2">
-                                        <a href="{{ route('client.products.show', $item->id) }}"
-                                        class="product-name text-decoration-none text-dark">
-                                            {{ $item->name }}
-                                        </a>
-                                    </h6>
+                                    <h6 class="card-title">{{ $item->name }}</h6>
 
                                     @if ($item->sale_price && $item->sale_price < $item->price)
                                         <p class="text-center mb-2">
@@ -820,8 +813,7 @@ del { font-size: 14px; color: #999; }
                                         <p class="text-danger fw-bold">{{ format_vnd($item->price) }} đ</p>
                                     @endif
 
-                                    <a href="{{ route('client.products.show', $item->id) }}"
-                                    class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+                                    <a href="{{ route('client.products.show', $item->id) }}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
@@ -829,23 +821,9 @@ del { font-size: 14px; color: #999; }
                 </div>
             </div>
         @endif
+    </div>
+</div>
 
-        </div>
-                <!-- Modal Zoom Ảnh -->
-        <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen-md-down modal-lg modal-dialog-centered">
-            <div class="modal-content">
-            <div class="modal-body p-0 position-relative">
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
-                        data-bs-dismiss="modal" aria-label="Close"></button>
-
-                <div class="d-flex justify-content-center align-items-center" style="min-height:60vh; overflow:hidden;">
-                <img id="zoomModalImage" src="" alt="Zoom image" class="img-fluid">
-                </div>
-            </div>
-            </div>
-        </div>
-        </div>
 
     @endsection
 
