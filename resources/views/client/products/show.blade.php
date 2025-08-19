@@ -33,6 +33,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Tạo khoảng cách giữa ảnh và phần thông tin */
+.product-detail-page .col-md-7 {
+    padding-left: 50px; /* hoặc margin-left cũng được */
+}
+
 /* Title */
 .product-detail-page h4.fw-bold {
   font-size: 1.5rem;
@@ -497,9 +502,11 @@ del { font-size: 14px; color: #999; }
 
 
 
-    <div class="container mt-4 mb-5">
-        <div class="row product-detail-page">
-            <div class="col-md-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="product-detail-page">
+             <div class="row">
+                <div class="col-md-5">
                 <div class="position-relative" id="imageViewerWrapper">
                     <button class="btn btn-light position-absolute top-50 start-0 translate-middle-y" style="z-index: 10;"
                         onclick="prevImage()">&#10094;</button>
@@ -677,8 +684,15 @@ del { font-size: 14px; color: #999; }
                 </div>
                 <div id="add-to-cart-success" class="alert d-none mt-2"></div>
             </div>
+            </div>
+            </div>
+            </div>
+            </div>
         </div>
 
+
+        <div class="row justify-content-center">
+        <div class="col-lg-10">
         <div class="product-info-block mt-5">
             <h4>Chi tiết sản phẩm</h4>
             <div class="table-responsive mb-3">
@@ -709,13 +723,22 @@ del { font-size: 14px; color: #999; }
                 </table>
             </div>
         </div>
+        </div>
+        </div>
 
+        <div class="row justify-content-center">
+        <div class="col-lg-10">
         <div class="product-info-block">
             <h5>Mô tả sản phẩm</h5>
             <div class="product-description">
                 {!! nl2br(e($product->description)) !!}
             </div>
         </div>
+        </div>
+        </div>
+
+        <div class="row justify-content-center">
+        <div class="col-lg-10">
         <div class="product-info-block mt-5">
             <h4>Đánh giá sản phẩm</h4>
 
@@ -734,6 +757,8 @@ del { font-size: 14px; color: #999; }
                     @endif
                 @endfor
             </div>
+        </div>
+        </div>
         </div>
 
         {{-- Hiển thị biến thể nếu có --}}
