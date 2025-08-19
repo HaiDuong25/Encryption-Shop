@@ -25,19 +25,19 @@
                 </div>
 
                 <div class="mb-3">
-    <label for="image" class="form-label">Ảnh danh mục</label>
-    <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
-    @error('image')
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-    {{-- Error container for AJAX validation --}}
-    <div class="invalid-feedback ajax-error" style="display: none;"></div>
+                    <label for="image" class="form-label">Ảnh danh mục</label>
+                    <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    {{-- Error container for AJAX validation --}}
+                    <div class="invalid-feedback ajax-error" style="display: none;"></div>
 
-    {{-- Preview ảnh --}}
-    <div class="mt-2">
-        <img id="previewImage" src="#" alt="Preview" style="max-height: 120px; display: none; border: 1px solid #ddd; padding: 4px; border-radius: 6px;">
-    </div>
-</div>
+                    {{-- Preview ảnh --}}
+                    <div class="mt-2">
+                        <img id="previewImage" src="#" alt="Preview" style="max-height: 120px; display: none; border: 1px solid #ddd; padding: 4px; border-radius: 6px;">
+                    </div>
+                </div>
 
                 <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>

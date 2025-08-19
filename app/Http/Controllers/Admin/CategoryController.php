@@ -139,17 +139,11 @@ class CategoryController extends \App\Http\Controllers\Controller
     return redirect()->route('admin.categories.index')->with('success', 'Danh mục được xóa thành công.');
 }
 
-    /**
-     * Show form to create parent category
-     */
     public function createParent()
     {
         return view('admin.categories.create-parent');
     }
 
-    /**
-     * Store parent category
-     */
     public function storeParent(Request $request)
     {
         $validated = $request->validate([

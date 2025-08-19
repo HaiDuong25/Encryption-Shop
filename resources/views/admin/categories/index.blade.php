@@ -11,8 +11,8 @@
                     <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                         <h5>Danh sách danh mục</h5>
                         <div class="right-options d-flex gap-2 align-items-center">
-                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create') }}">Thêm danh mục</a>
-                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create-parent') }}">Thêm danh mục cha mới</a>
+                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create-parent') }}">Thêm danh mục cha</a>
+                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create') }}">Thêm danh mục con</a>
                         </div>
                     </div>
 
