@@ -792,68 +792,49 @@ del { font-size: 14px; color: #999; }
             </div>
         @endforeach
 
-<!-- Sản phẩm liên quan -->
-@if (isset($relatedProducts) && $relatedProducts->count())
-    <div class="related-products mt-5">
-        <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
-        <div class="row">
-            @foreach ($relatedProducts as $item)
-                <div class="col-md-3">
-                    <div class="card h-100">
-                        {{-- Ảnh bọc link --}}
-                        <a href="{{ route('client.products.show', $item->id) }}">
-                            <img src="{{ asset('storage/' . $item->image) }}"
-                                 class="card-img-top"
-                                 alt="{{ $item->name }}">
-                        </a>
+    <!-- Sản phẩm liên quan -->
+    @if (isset($relatedProducts) && $relatedProducts->count())
+        <div class="related-products mt-5">
+            <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
+            <div class="row">
+                @foreach ($relatedProducts as $item)
+                    <div class="col-md-3">
+                        <div class="card product-card h-100">
+                            <a href="{{ route('client.products.show', $item->id) }}" class="product-img-link">
+                                <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top"
+                                    alt="{{ $item->name }}">
+                            </a>
+                            <div class="card-body text-center">
+                                <h6 class="card-title mb-2">
+                                    <a href="{{ route('client.products.show', $item->id) }}"
+                                    class="product-name text-decoration-none text-dark">
+                                        {{ $item->name }}
+                                    </a>
+                                </h6>
 
-                        <div class="card-body text-center d-flex flex-column">
-                            <h6 class="card-title">{{ $item->name }}</h6>
+                                @if ($item->sale_price && $item->sale_price < $item->price)
+                                    <p class="text-center mb-2">
+                                        <span class="text-danger fw-bold">{{ format_vnd($item->sale_price) }} đ</span>
+                                        <del class="text-muted ms-1">{{ format_vnd($item->price) }} đ</del>
+                                    </p>
+                                @else
+                                    <p class="text-danger fw-bold">{{ format_vnd($item->price) }} đ</p>
+                                @endif
 
-                            {{-- Sao đánh giá trung bình --}}
-                            @php
-                                $avgScore = $item->rates->where('status', 1)->avg('score');
-                            @endphp
-                            <div class="mb-2">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    @if ($avgScore >= $i)
-                                        <i class="fas fa-star text-warning"></i>
-                                    @elseif ($avgScore > $i - 1)
-                                        <i class="fas fa-star-half-alt text-warning"></i>
-                                    @else
-                                        <i class="far fa-star text-warning"></i>
-                                    @endif
-                                @endfor
+                                <a href="{{ route('client.products.show', $item->id) }}"
+                                class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
                             </div>
-
-                            {{-- Giá --}}
-                            @if ($item->sale_price && $item->sale_price < $item->price)
-                                <p class="text-center mb-2">
-                                    <span class="text-danger fw-bold">{{ format_vnd($item->sale_price) }} đ</span>
-                                    <del class="text-muted ms-1">{{ format_vnd($item->price) }} đ</del>
-                                </p>
-                            @else
-                                <p class="text-danger fw-bold">{{ format_vnd($item->price) }} đ</p>
-                            @endif
-
-                            <a href="{{ route('client.products.show', $item->id) }}"
-                               class="btn btn-sm btn-outline-primary mt-auto">Xem chi tiết</a>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
-    </div>
-@endif
-
-
-    </div>
+    @endif
+</div>
 </div>
 
-
-    @endsection
-
-    @push('scripts')
+@endsection
+@push('scripts')
         <script>
             let imageList = [];
             let currentIndex = 0;
