@@ -25,10 +25,23 @@
     </div>
 
     <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử giao dịch</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử giao dịch ví</h5>
+            <div class="btn-group" role="group" aria-label="Navigation">
+                <a href="{{ route('wallet.history') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-wallet me-1"></i>Chỉ ví
+                </a>
+                <a href="{{ route('wallet.payment-history') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-receipt me-1"></i>Tổng hợp
+                </a>
+            </div>
         </div>
         <div class="card-body">
+            <div class="alert alert-primary">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Lịch sử ví</strong> chỉ hiển thị các giao dịch liên quan đến ví điện tử (nạp tiền, thanh toán bằng ví, hoàn tiền).
+                <a href="{{ route('wallet.payment-history') }}" class="alert-link">Xem tất cả giao dịch thanh toán</a>
+            </div>
             <!-- Filter Form -->
             <form method="GET" action="{{ route('wallet.history') }}" class="mb-4">
                 <div class="row g-3">

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\UserWallet;
 use App\Models\WalletTransaction;
 
@@ -40,6 +41,15 @@ class WalletController extends Controller
         $user = Auth::user();
         $amount = $request->amount;
         $paymentMethod = $request->payment_method;
+
+        // Kiểm tra và hủy các giao dịch pending cũ của user này (quá 10 phút)
+        WalletTransaction::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->where('created_at', '<', now()->subMinutes(10))
+            ->update([
+                'status' => 'failed',
+                'description' => DB::raw("CONCAT(description, ' (Hết hạn sau 10 phút)')")
+            ]);
 
         // Tạo pending transaction
         $transactionCode = 'TOP_' . time() . '_' . $user->id;
@@ -131,5 +141,98 @@ class WalletController extends Controller
         $transactions = $query->paginate(15)->withQueryString();
 
         return view('client.wallet.history', compact('transactions'));
+    }
+
+    public function paymentHistory(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Lấy wallet transactions
+        $walletTransactions = $user->walletTransactions()
+            ->select('id', 'type', 'amount', 'description', 'status', 'payment_method_type', 'created_at')
+            ->selectRaw("'wallet' as source_type")
+            ->get()
+            ->map(function ($transaction) {
+                return [
+                    'id' => $transaction->id,
+                    'type' => $transaction->type,
+                    'amount' => $transaction->amount,
+                    'description' => $transaction->description,
+                    'status' => $transaction->status,
+                    'payment_method_type' => $transaction->payment_method_type,
+                    'created_at' => $transaction->created_at,
+                    'source_type' => 'wallet',
+                    'order_id' => $this->extractOrderIdFromDescription($transaction->description),
+                ];
+            });
+
+        // Lấy payments của user (từ orders) - chỉ lấy payments KHÔNG PHẢI từ ví để tránh duplicate
+        $payments = \App\Models\Payment::whereHas('order', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['order', 'paymentMethod'])
+            ->where(function($query) {
+                // Chỉ lấy payments không phải từ wallet và có amount > 0
+                $query->where('payment_method_type', '!=', 'WALLET')
+                      ->whereNotNull('payment_method_type')
+                      ->where('amount', '>', 0);
+            })
+            ->orWhere(function($query) use ($user) {
+                // Hoặc payments không có payment_method_type nhưng có amount > 0 và không phải payment method 4 (ví)
+                $query->whereHas('order', function($subQuery) use ($user) {
+                    $subQuery->where('user_id', $user->id)
+                             ->where('payment_method_id', '!=', 4); // 4 là ID của "Số dư ví"
+                })
+                ->whereNull('payment_method_type')
+                ->where('amount', '>', 0);
+            })
+            ->get()
+            ->map(function ($payment) {
+                $amount = $payment->amount && $payment->amount > 0 ? $payment->amount : $payment->order->total;
+                
+                return [
+                    'id' => $payment->id,
+                    'type' => 'payment',
+                    'amount' => $amount,
+                    'description' => 'Thanh toán đơn hàng #' . $payment->order->id . ' qua ' . ($payment->paymentMethod->payment_type ?? 'N/A'),
+                    'status' => $payment->status,
+                    'payment_method_type' => $payment->payment_method_type ?? $payment->paymentMethod->payment_type ?? 'N/A',
+                    'created_at' => $payment->created_at,
+                    'source_type' => 'payment',
+                    'order_id' => $payment->order->id,
+                ];
+            });
+
+        // Kết hợp và sắp xếp theo thời gian
+        $allTransactions = $walletTransactions->merge($payments)
+            ->sortByDesc('created_at')
+            ->values();
+
+        // Phân trang thủ công
+        $perPage = 15;
+        $currentPage = $request->get('page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        
+        $paginatedTransactions = $allTransactions->slice($offset, $perPage)->values();
+        
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedTransactions,
+            $allTransactions->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'pageName' => 'page']
+        );
+        
+        $paginator->withQueryString();
+
+        return view('client.wallet.payment-history', compact('paginator'));
+    }
+
+    private function extractOrderIdFromDescription($description)
+    {
+        if (preg_match('/đơn hàng #(\d+)/', $description, $matches)) {
+            return $matches[1];
+        }
+        return null;
     }
 }
