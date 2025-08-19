@@ -11,7 +11,7 @@
                     <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                         <h5>Danh sách thương hiệu</h5>
                         <div class="right-options d-flex gap-2 align-items-center">
-                            <a class="btn btn-solid btn-sm" href="{{ route('brands.create') }}">Thêm mới</a>
+                            <a class="btn btn-solid btn-sm" href="{{ route('brands.create') }}">Thêm thương hiệu</a>
                         </div>
                     </div>
 

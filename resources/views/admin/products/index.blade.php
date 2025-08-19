@@ -16,9 +16,7 @@
         <div class="card-body">
             <div class="title-header option-title">
                 <h5>Danh sách sản phẩm</h5>
-                <a href="{{ route('products.create') }}" class="btn btn-theme">
-                    <i data-feather="plus"></i> Thêm sản phẩm
-                </a>
+                <a href="{{ route('products.create') }}" class="btn btn-solid btn-sm">Thêm sản phẩm</a>
             </div>
             <form action="{{ route('products.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
                 <div class="search-box" style="width:250px;">
