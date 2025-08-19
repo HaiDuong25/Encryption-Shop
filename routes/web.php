@@ -262,6 +262,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/topup/success', [\App\Http\Controllers\Client\WalletController::class, 'topupSuccess'])->name('wallet.topup.success');
         Route::get('/topup/cancel', [\App\Http\Controllers\Client\WalletController::class, 'topupCancel'])->name('wallet.topup.cancel');
         Route::get('/history', [\App\Http\Controllers\Client\WalletController::class, 'history'])->name('wallet.history');
+        Route::get('/payment-history', [\App\Http\Controllers\Client\WalletController::class, 'paymentHistory'])->name('wallet.payment-history');
 
         // MoMo wallet topup
         Route::get('/momo/create', [\App\Http\Controllers\Client\WalletMomoController::class, 'createPayment'])->name('wallet.momo.create');
