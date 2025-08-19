@@ -16,6 +16,7 @@
                 <h2 class="mb-4">
                     Danh mục: <span style="color: #007bff;">{{ $category->name }}</span>
                 </h2>
+
                 <div class="row g-sm-4 g-3">
                     @forelse($products as $product)
                         <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
@@ -100,6 +101,7 @@
         </div>
     </div>
 </section>
+
 @endsection
 @push('scripts')
 <script>

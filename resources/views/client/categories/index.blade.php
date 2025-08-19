@@ -56,16 +56,11 @@
             </div>
         </div>
     </section>
+
 @endsection
 <style>
     .category-card-3 {
         transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .category-card-3:hover {
-        transform: translateY(-8px) scale(1.03);
-        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
-        z-index: 2;
     }
 
     .category-header img {
@@ -75,14 +70,20 @@
         object-fit: cover;
     }
 
+    .child-categories a.badge {
+        transition: background 0.2s, color 0.2s;
+        cursor: pointer;
+    }
+    
     .category-footer {
         border-bottom-left-radius: 1.5rem;
         border-bottom-right-radius: 1.5rem;
     }
 
-    .child-categories a.badge {
-        transition: background 0.2s, color 0.2s;
-        cursor: pointer;
+    .category-card-3:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+        z-index: 2;
     }
 
     .child-categories a.badge:hover {
