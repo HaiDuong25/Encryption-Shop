@@ -33,6 +33,18 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Tạo khoảng cách giữa ảnh và phần thông tin */
+.product-detail-page .col-md-7 {
+    padding-left: 50px; /* hoặc margin-left cũng được */
+}
+
+@media (max-width: 991.98px) {
+    .product-detail-page .col-md-7 {
+        padding-left: 0; /* mobile để sát, tránh tràn */
+        margin-top: 16px; /* cho xuống dưới ảnh */
+    }
+}
+
 /* Title */
 .product-detail-page h4.fw-bold {
   font-size: 1.5rem;
@@ -469,13 +481,39 @@ del { font-size: 14px; color: #999; }
 #imageViewerWrapper .btn {
     z-index: 10;
 }
+</style>
+<style>
+    .product-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+    .product-img-link img {
+        transition: transform 0.3s ease;
+    }
+    .product-img-link:hover img {
+        transform: scale(1.05);
+    }
+    .card .card-title .product-name {
+        color: #212529; /* màu chữ mặc định */
+        transition: color 0.3s ease;
+    }
+    .card .card-title .product-name:hover {
+        color: #ee4d2d !important; /* ép đổi sang cam Shopee */
+    }
+</style>
 
 
-    </style>
 
-    <div class="container mt-4 mb-5">
-        <div class="row product-detail-page">
-            <div class="col-md-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="product-detail-page">
+             <div class="row">
+                <div class="col-md-5">
                 <div class="position-relative" id="imageViewerWrapper">
                     <button class="btn btn-light position-absolute top-50 start-0 translate-middle-y" style="z-index: 10;"
                         onclick="prevImage()">&#10094;</button>
@@ -653,8 +691,15 @@ del { font-size: 14px; color: #999; }
                 </div>
                 <div id="add-to-cart-success" class="alert d-none mt-2"></div>
             </div>
+            </div>
+            </div>
+            </div>
+            </div>
         </div>
 
+
+        <div class="row justify-content-center">
+        <div class="col-lg-10">
         <div class="product-info-block mt-5">
             <h4>Chi tiết sản phẩm</h4>
             <div class="table-responsive mb-3">
@@ -685,13 +730,22 @@ del { font-size: 14px; color: #999; }
                 </table>
             </div>
         </div>
+        </div>
+        </div>
 
+        <div class="row justify-content-center">
+        <div class="col-lg-10">
         <div class="product-info-block">
             <h5>Mô tả sản phẩm</h5>
             <div class="product-description">
                 {!! nl2br(e($product->description)) !!}
             </div>
         </div>
+        </div>
+        </div>
+
+        <div class="row justify-content-center">
+        <div class="col-lg-10">
         <div class="product-info-block mt-5">
             <h4>Đánh giá sản phẩm</h4>
 
@@ -710,6 +764,8 @@ del { font-size: 14px; color: #999; }
                     @endif
                 @endfor
             </div>
+        </div>
+        </div>
         </div>
 
         {{-- Hiển thị biến thể nếu có --}}
@@ -736,41 +792,44 @@ del { font-size: 14px; color: #999; }
     </div>
 @endforeach
 
-
-
-
-
-
             @if (isset($relatedProducts) && $relatedProducts->count())
-                <div class="related-products mt-5">
-                    <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
-                    <div class="row">
-                        @foreach ($relatedProducts as $item)
-                            <div class="col-md-3">
-                                <div class="card">
+            <div class="related-products mt-5">
+                <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
+                <div class="row">
+                    @foreach ($relatedProducts as $item)
+                        <div class="col-md-3">
+                            <div class="card product-card h-100">
+                                <a href="{{ route('client.products.show', $item->id) }}" class="product-img-link">
                                     <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top"
                                         alt="{{ $item->name }}">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">{{ $item->name }}</h6>
-                                        @if ($item->sale_price && $item->sale_price < $item->price)
-                                            <p class="text-center mb-2">
-                                                <span class="text-danger fw-bold">{{ format_vnd($item->sale_price) }}
-                                                    đ</span>
-                                                <del class="text-muted ms-1">{{ format_vnd($item->price) }} đ</del>
-                                            </p>
-                                        @else
-                                            <p class="text-danger fw-bold">{{ format_vnd($item->price) }} đ</p>
-                                        @endif
-
+                                </a>
+                                <div class="card-body text-center">
+                                    <h6 class="card-title mb-2">
                                         <a href="{{ route('client.products.show', $item->id) }}"
-                                            class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
-                                    </div>
+                                        class="product-name text-decoration-none text-dark">
+                                            {{ $item->name }}
+                                        </a>
+                                    </h6>
+
+                                    @if ($item->sale_price && $item->sale_price < $item->price)
+                                        <p class="text-center mb-2">
+                                            <span class="text-danger fw-bold">{{ format_vnd($item->sale_price) }} đ</span>
+                                            <del class="text-muted ms-1">{{ format_vnd($item->price) }} đ</del>
+                                        </p>
+                                    @else
+                                        <p class="text-danger fw-bold">{{ format_vnd($item->price) }} đ</p>
+                                    @endif
+
+                                    <a href="{{ route('client.products.show', $item->id) }}"
+                                    class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
-            @endif
+            </div>
+        @endif
+
         </div>
                 <!-- Modal Zoom Ảnh -->
         <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
