@@ -737,9 +737,7 @@ del { font-size: 14px; color: #999; }
 
     <div class="product-info-block">
         <h5>Mô tả sản phẩm</h5>
-        <div class="product-description">
-            {!! nl2br(e($product->description)) !!}
-        </div>
+        <div class="product-description">{!! nl2br(e($product->description)) !!}</div>
     </div>
 
     <div class="product-info-block">
