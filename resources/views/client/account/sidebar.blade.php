@@ -51,7 +51,7 @@
                 </li>
                 <!-- Wallet moved up from Shopping section -->
                 <li class="menu-item">
-                    <a href="#" class="menu-link {{ request()->routeIs('wallet.*') ? 'active' : '' }}" data-bs-toggle="collapse" data-bs-target="#walletSubMenu" aria-expanded="{{ request()->routeIs('wallet.*') ? 'true' : 'false' }}">
+                    <a href="{{ route('wallet.index') }}" class="menu-link {{ request()->routeIs('wallet.*') ? 'active' : '' }}">
                         <div class="menu-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
@@ -71,21 +71,7 @@
                                 <i class="fas fa-coins text-warning"></i>
                             </span>
                         @endif
-                        <i class="fas fa-chevron-right menu-arrow"></i>
                     </a>
-                    <div class="collapse {{ request()->routeIs('wallet.*') ? 'show' : '' }}" id="walletSubMenu">
-                        <ul class="submenu">
-                            <li><a href="{{ route('wallet.index') }}" class="submenu-link {{ request()->routeIs('wallet.index') ? 'active' : '' }}">
-                                <i class="fas fa-home me-2"></i>Tổng quan
-                            </a></li>
-                            <li><a href="{{ route('wallet.history') }}" class="submenu-link {{ request()->routeIs('wallet.history') ? 'active' : '' }}">
-                                <i class="fas fa-wallet me-2"></i>Lịch sử ví
-                            </a></li>
-                            <li><a href="{{ route('wallet.payment-history') }}" class="submenu-link {{ request()->routeIs('wallet.payment-history') ? 'active' : '' }}">
-                                <i class="fas fa-receipt me-2"></i>Tất cả giao dịch
-                            </a></li>
-                        </ul>
-                    </div>
                 </li>
                 <li class="menu-item">
                     <a href="{{ route('account.editProfile') }}" class="menu-link {{ request()->routeIs('account.editProfile') ? 'active' : '' }}">
