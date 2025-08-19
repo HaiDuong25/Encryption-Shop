@@ -30,51 +30,22 @@
                         </a>
                     </li>
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('users.index') }}">
                             <i class="ri-store-3-line"></i>
                             <span>Quản lý người dùng</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('users.index') }}">Danh sách người dùng</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('users.create') }}">Thêm người dùng</a>
-                            </li>
-                        </ul>
                     </li>
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('products.index') }}">
                             <i class="ri-store-3-line"></i>
                             <span>Quản lý sản phẩm</span>
                         </a>
-
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('products.index') }}">Danh sách sản phẩm</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('products.create') }}">Thêm sản phẩm mới</a>
-                            </li>
-                        </ul>
                     </li>
                     <li class="sidebar-list">
-
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.categories.index') }}">
                             <i class="ri-list-check-2"></i>
                             <span>Quản lý danh mục</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('admin.categories.index') }}">Danh sách danh mục</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.categories.create') }}">Thêm danh mục mới</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.categories.create-parent') }}">Thêm danh mục cha mới</a>
-                            </li>
-                        </ul>
                     </li>
 
                     <li class="sidebar-list">
