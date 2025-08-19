@@ -78,34 +78,11 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('brands.index') }}">
                             <i class="ri-list-check-2"></i>
                             <span>Quản lý thương hiệu</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('brands.index') }}">Danh sách thương hiệu</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('brands.create') }}">Thêm thương hiệu</a>
-                            </li>
-                        </ul>
                     </li>
-
-                    <!-- <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-user-3-line"></i>
-                            <span>Roles</span>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="role.html">All roles</a>
-                            </li>
-                            <li>
-                                <a href="create-role.html">Create Role</a>
-                            </li>
-                        </ul>
-                    </li> -->
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('orders.index') }}">
