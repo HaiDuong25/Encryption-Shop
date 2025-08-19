@@ -57,7 +57,6 @@
         </div>
     </section>
 @endsection
-
 <style>
     .category-card-3 {
         transition: transform 0.3s, box-shadow 0.3s;
