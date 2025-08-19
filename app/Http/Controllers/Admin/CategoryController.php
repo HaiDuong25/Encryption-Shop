@@ -155,10 +155,15 @@ class CategoryController extends \App\Http\Controllers\Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'status' => 'required|boolean',
+            'image'  => 'nullable|image|max:2048',
         ]);
 
         // Parent category has no parent_id
         $validated['parent_id'] = null;
+
+        if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('categories', 'public');
+        }
 
         $category = Category::create($validated);
 
