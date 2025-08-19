@@ -38,6 +38,13 @@
     padding-left: 50px; /* hoặc margin-left cũng được */
 }
 
+@media (max-width: 991.98px) {
+    .product-detail-page .col-md-7 {
+        padding-left: 0; /* mobile để sát, tránh tràn */
+        margin-top: 16px; /* cho xuống dưới ảnh */
+    }
+}
+
 /* Title */
 .product-detail-page h4.fw-bold {
   font-size: 1.5rem;
