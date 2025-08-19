@@ -27,9 +27,7 @@
 
             <div class="mb-3">
                 <label class="fw-semibold mb-1"><strong>Mô tả sản phẩm:</strong></label>
-                <div class="fw-bold text-secondary" style="margin-top: 0 !important; padding-top: 0 !important; word-break: break-word; white-space: pre-wrap;">
-                    {!! nl2br(e(preg_replace('/^\s*(\r?\n)+/', '', $product->description))) !!}
-                </div>
+                <div class="fw-bold text-secondary" style="margin-top: 0 !important; padding-top: 0 !important; word-break: break-word; white-space: pre-wrap;">{!! nl2br(e(preg_replace('/^\s*(\r?\n)+/', '', $product->description))) !!}</div>
             </div>
 
             <hr>
