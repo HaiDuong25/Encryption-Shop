@@ -506,10 +506,12 @@ del { font-size: 14px; color: #999; }
         color: #ee4d2d !important; /* ép đổi sang cam Shopee */
     }
 </style>
+
+
 <div class="container mt-4 mb-5">
     <div class="row product-detail-page">
 
-        <!-- Vùng ảnh sản phẩm -->
+        <!-- Ảnh sản phẩm -->
         <div class="col-md-5">
             <div class="position-relative" id="imageViewerWrapper">
                 <button class="btn btn-light position-absolute top-50 start-0 translate-middle-y"
@@ -526,7 +528,6 @@ del { font-size: 14px; color: #999; }
                         onclick="nextImage()">&#10095;</button>
             </div>
 
-            <!-- Thumbnails -->
             <div class="thumbnail-list">
                 <img src="{{ asset('storage/' . $product->image) }}"
                      class="thumb active"
@@ -617,13 +618,11 @@ del { font-size: 14px; color: #999; }
                 @endif
             </div>
 
-            <!-- Tồn kho -->
             @php $totalStock = $product->variants->sum('stock'); @endphp
             <p class="mb-2 text-muted" id="stock-info" data-stock="{{ $totalStock }}">
                 Số lượng còn lại: <strong>{{ $totalStock }}</strong>
             </p>
 
-            <!-- Variants -->
             @if ($sizes->count())
                 <div class="variant-row mb-3 d-flex align-items-center">
                     <span class="option-label">Size:</span>
@@ -652,7 +651,6 @@ del { font-size: 14px; color: #999; }
                 </div>
             @endif
 
-            <!-- Số lượng -->
             <div class="mb-3 d-flex align-items-center">
                 <label class="me-2 fw-bold">Số lượng:</label>
                 <div class="d-flex align-items-center border rounded px-2" style="width: fit-content;">
@@ -662,7 +660,6 @@ del { font-size: 14px; color: #999; }
                 </div>
             </div>
 
-            <!-- Giá dự kiến -->
             <div class="mb-2" id="expected-price-block">
                 <span class="fw-bold">Giá dự kiến:</span>
                 <span id="expected-price" class="text-danger fw-bold">
@@ -670,7 +667,6 @@ del { font-size: 14px; color: #999; }
                 </span> đ
             </div>
 
-            <!-- Alerts -->
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -687,7 +683,6 @@ del { font-size: 14px; color: #999; }
                 </div>
             @endif
 
-            <!-- Nút hành động -->
             <div class="mb-4 d-flex flex-column align-items-start" style="gap:10px;">
                 <form id="buy-now-form" action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
                     @csrf
@@ -710,7 +705,6 @@ del { font-size: 14px; color: #999; }
         </div>
     </div>
 
-    <!-- Chi tiết sản phẩm -->
     <div class="product-info-block mt-5">
         <h4>Chi tiết sản phẩm</h4>
         <div class="table-responsive mb-3">
@@ -741,7 +735,6 @@ del { font-size: 14px; color: #999; }
         </div>
     </div>
 
-    <!-- Mô tả -->
     <div class="product-info-block">
         <h5>Mô tả sản phẩm</h5>
         <div class="product-description">
@@ -749,10 +742,8 @@ del { font-size: 14px; color: #999; }
         </div>
     </div>
 
-    <!-- Đánh giá -->
-    <div class="product-info-block mt-5">
+    <div class="product-info-block">
         <h4>Đánh giá sản phẩm</h4>
-
         @foreach ($product->rates->where('status', 1) as $rate)
             <div class="mb-3 border-bottom pb-2">
                 <div class="d-flex align-items-center mb-1">
@@ -768,7 +759,6 @@ del { font-size: 14px; color: #999; }
                     </div>
                 </div>
 
-                <!-- Biến thể -->
                 @if ($rate->orderDetail && $rate->orderDetail->variant)
                     <div class="text-muted small">
                         Biến thể:
@@ -780,7 +770,6 @@ del { font-size: 14px; color: #999; }
 
                 <p class="mb-0">{{ $rate->content }}</p>
 
-                <!-- Phản hồi admin -->
                 @if ($rate->replies->count())
                     @foreach ($rate->replies as $reply)
                         <div class="mt-2 ms-4 p-2 bg-light border rounded">
@@ -792,7 +781,6 @@ del { font-size: 14px; color: #999; }
             </div>
         @endforeach
 
-    <!-- Sản phẩm liên quan -->
     @if (isset($relatedProducts) && $relatedProducts->count())
         <div class="related-products mt-5">
             <h4 class="fw-bold mb-3">Sản phẩm liên quan</h4>
