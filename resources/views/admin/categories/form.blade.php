@@ -61,10 +61,14 @@
                     @endif
                     <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
                     @error('image')
-                    <div class="invalid-feedback">{{ $errors->first('image') }}</div>
+                        <div class="invalid-feedback">{{ $errors->first('image') }}</div>
                     @enderror
-                    {{-- Error container for AJAX validation --}}
                     <div class="invalid-feedback ajax-error" style="display: none;"></div>
+
+                    {{-- Preview ảnh trước khi upload --}}
+                    <div class="mt-2">
+                        <img id="previewImage" src="#" alt="Preview" style="max-height: 120px; display: none; border: 1px solid #ddd; padding: 4px; border-radius: 6px;">
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -197,6 +201,21 @@ document.addEventListener('DOMContentLoaded', function() {
             spinner.classList.add('d-none');
         });
     });
+});
+</script>
+<script>
+// Preview ảnh khi chọn file
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const preview = document.getElementById('previewImage');
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
 });
 </script>
 @endsection

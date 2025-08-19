@@ -18,7 +18,7 @@
                 <div class="right-options d-flex gap-2 align-items-center">
                     {{-- Form tìm kiếm theo tên, email hoặc điện thoại --}}
                     <form method="GET" action="{{ route('users.index') }}" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên, email hoặc SĐT..." 
+                        <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên, email hoặc SĐT..."
                                value="{{ request('search') }}" style="width: 280px;">
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="ri-search-line"></i> Tìm
@@ -77,8 +77,8 @@
 
                                     <li>
                                         @if($user->role !== 'admin')
-                                        <button type="button" class="btn btn-link p-0 toggle-btn" 
-                                            data-id="{{ $user->id }}" 
+                                        <button type="button" class="btn btn-link p-0 toggle-btn"
+                                            data-id="{{ $user->id }}"
                                             data-name="{{ $user->name }}"
                                             data-current-status="{{ $user->status }}">
                                             {{ $user->status == 'active' ? 'Khóa' : 'Mở khóa' }}
@@ -90,8 +90,8 @@
 
                                     <li>
                                         @if($user->role !== 'admin')
-                                        <button type="button" class="btn btn-link p-0 text-danger delete-btn" 
-                                            data-id="{{ $user->id }}" 
+                                        <button type="button" class="btn btn-link p-0 text-danger delete-btn"
+                                            data-id="{{ $user->id }}"
                                             data-name="{{ $user->name }}">
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
@@ -154,11 +154,11 @@ function showAlert(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     const container = document.querySelector('.container-fluid');
     const card = document.querySelector('.card');
     container.insertBefore(alertDiv, card);
-    
+
     // Auto hide after 5 seconds
     setTimeout(() => {
         if (alertDiv.parentNode) {
@@ -173,10 +173,10 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmButton = document.getElementById('confirmButton');
     const confirmIcon = document.getElementById('confirmIcon');
-    
+
     // Cập nhật nội dung modal
     confirmMessage.textContent = message;
-    
+
     // Cập nhật icon và màu sắc dựa trên type
     if (type === 'danger') {
         confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
@@ -191,17 +191,17 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
         confirmButton.className = 'btn btn-primary';
         confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
     }
-    
+
     // Xóa event listener cũ và thêm mới
     const newConfirmButton = confirmButton.cloneNode(true);
     confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-    
+
     // Thêm event listener cho nút xác nhận
     newConfirmButton.addEventListener('click', function() {
         modal.hide();
         onConfirm();
     });
-    
+
     // Hiển thị modal
     modal.show();
 }
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const userName = this.dataset.name;
             const currentStatus = this.dataset.currentStatus;
             const action = currentStatus === 'active' ? 'khóa' : 'mở khóa';
-            
+
             // Sử dụng modal xác nhận thay vì confirm()
             showConfirmModal(
                 `Bạn chắc chắn muốn ${action} người dùng "${userName}"?`,
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const originalText = this.textContent;
                     this.textContent = 'Đang xử lý...';
                     this.disabled = true;
-                    
+
                     // Get CSRF token
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                     if (!csrfToken) {
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.disabled = false;
                         return;
                     }
-                    
+
                     fetch(`/admin/users/${userId}/toggle`, {
                         method: 'POST',
                         headers: {
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const newStatus = data.status;
                             this.dataset.currentStatus = newStatus;
                             this.textContent = newStatus === 'active' ? 'Khóa' : 'Mở khóa';
-                            
+
                             // Update status badge
                             const row = this.closest('tr');
                             const statusBadge = row.querySelector('.badge');
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     statusBadge.textContent = 'Khóa';
                                 }
                             }
-                            
+
                             // Show success message
                             showAlert(data.message, 'success');
                         } else {
@@ -287,13 +287,13 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         });
     });
-    
+
     // AJAX Delete functionality
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.dataset.id;
             const userName = this.dataset.name;
-            
+
             // Sử dụng modal xác nhận thay vì confirm()
             showConfirmModal(
                 `Bạn có chắc muốn xóa người dùng "${userName}"? Hành động này không thể hoàn tác!`,
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Show loading state
                     this.innerHTML = '<i class="ri-loader-4-line"></i>';
                     this.disabled = true;
-                    
+
                     // Get CSRF token
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                     if (!csrfToken) {
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.disabled = false;
                         return;
                     }
-                    
+
                     fetch(`/admin/users/${userId}`, {
                         method: 'DELETE',
                         headers: {
@@ -332,11 +332,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             row.style.transition = 'all 0.3s ease';
                             row.style.opacity = '0';
                             row.style.transform = 'translateX(-100%)';
-                            
+
                             setTimeout(() => {
                                 row.remove();
                             }, 300);
-                            
+
                             // Show success message
                             showAlert(data.message, 'success');
                         } else {

@@ -29,83 +29,34 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
+
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-store-3-line"></i>
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('users.index') }}">
+                            <i class="ri-user-line"></i>
                             <span>Quản lý người dùng</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('users.index') }}">Danh sách người dùng</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('users.create') }}">Thêm người dùng</a>
-                            </li>
-                        </ul>
                     </li>
+
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-store-3-line"></i>
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('products.index') }}">
+                            <i class="ri-shopping-bag-line"></i>
                             <span>Quản lý sản phẩm</span>
                         </a>
-
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('products.index') }}">Danh sách sản phẩm</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('products.create') }}">Thêm sản phẩm mới</a>
-                            </li>
-                        </ul>
                     </li>
-                    <li class="sidebar-list">
 
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-list-check-2"></i>
+                    <li class="sidebar-list">
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.categories.index') }}">
+                            <i class="ri-list-unordered"></i>
                             <span>Quản lý danh mục</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('admin.categories.index') }}">Danh sách danh mục</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.categories.create') }}">Thêm danh mục mới</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.categories.create-parent') }}">Thêm danh mục cha mới</a>
-                            </li>
-                        </ul>
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-list-check-2"></i>
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('brands.index') }}">
+                            <i class="ri-price-tag-3-line"></i>
                             <span>Quản lý thương hiệu</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="{{ route('brands.index') }}">Danh sách thương hiệu</a>
-                            </li>
-                            <li>
-                                <a href="{{ route('brands.create') }}">Thêm thương hiệu</a>
-                            </li>
-                        </ul>
                     </li>
-
-                    <!-- <li class="sidebar-list">
-                        <a class="sidebar-link sidebar-title" href="javascript:void(0)">
-                            <i class="ri-user-3-line"></i>
-                            <span>Roles</span>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="role.html">All roles</a>
-                            </li>
-                            <li>
-                                <a href="create-role.html">Create Role</a>
-                            </li>
-                        </ul>
-                    </li> -->
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('orders.index') }}">
@@ -119,21 +70,6 @@
                         </a>
                     </li>
 
-                    <!-- <ul class="sidebar-submenu">
-                        <li>
-                            <a href="{{ route('coupons.store') }}">Coupon List</a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('coupons.create') }}">Create Coupon</a>
-                        </li>
-                    </ul> -->
-                    <!-- <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-title" href="{{ route('news.index') }}">
-                            <i class="ri-newspaper-line"></i>
-                            <span>News</span>
-                        </a>
-                    </li> -->
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('banners.index') }}">
                             <i class="ri-image-line"></i>
@@ -143,7 +79,7 @@
 
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('coupons.index') }}">
-                            <i class="ri-store-3-line"></i>
+                            <i class="ri-coupon-line"></i>
                             <span>Quản lý mã giảm giá</span>
                         </a>
                     </li>
@@ -156,39 +92,36 @@
                     </li>
 
                     <li class="sidebar-list">
-
                         <a class="sidebar-link sidebar-title link-nav" href="{{ route('contacts.index') }}">
                             <i class="ri-phone-line"></i>
                             <span>Quản lý liên hệ</span>
-
-
-                            <a class="sidebar-link sidebar-title link-nav" href="{{ route('rates.index') }}">
-                                <i class="ri-star-line"></i>
-                                <span>Đánh giá sản phẩm</span>
-                            </a>
+                        </a>
+                        <a class="sidebar-link sidebar-title link-nav" href="{{ route('rates.index') }}">
+                            <i class="ri-star-line"></i>
+                            <span>Đánh giá sản phẩm</span>
+                        </a>
                     </li>
+
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('news.index') }}">
-                            <i class="ri-store-3-line"></i>
+                            <i class="ri-newspaper-line"></i>
                             <span>Quản lý tin tức</span>
-
                         </a>
-
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav"
-                            href="{{ route('payment-methods.index') }}">
-                            <i class="ri-store-3-line"></i>
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('payment-methods.index') }}">
+                            <i class="ri-money-dollar-circle-line"></i>
                             <span>Quản lý phương thức thanh toán</span>
                         </a>
                     </li>
-                    <li>
-    <a href="{{ route('admin.returns.index') }}">
-        <i class="fas fa-undo"></i> <span> Yêu cầu trả hàng </span>
-    </a>
-</li>
 
+                    <li>
+                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.returns.index') }}">
+                            <i class="fas fa-undo"></i>
+                            <span> Yêu cầu trả hàng </span>
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div class="right-arrow" id="right-arrow">

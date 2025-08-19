@@ -11,7 +11,6 @@
                 @csrf
                 @method('PUT')
 
-                {{-- Thông báo lỗi --}}
                 @if ($errors->any())
                 <div class="alert alert-danger">
                     <strong>Đã có lỗi xảy ra:</strong>
@@ -23,10 +22,8 @@
                 </div>
                 @endif
 
-                {{-- Alert container for AJAX responses --}}
                 <div id="alert-container"></div>
 
-                {{-- Thông tin sản phẩm --}}
                 <div class="row">
                     <div class="col-md-8 mb-3">
                         <label class="form-label fw-semibold">Tên sản phẩm *</label>
@@ -111,17 +108,17 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Thư viện ảnh (gallery)</label>
                         <div class="row mb-2">
-    @if($product->gallery && is_array($product->gallery))
-        @foreach($product->gallery as $imgIdx => $img)
-        <div class="col-auto position-relative mb-2">
-            <img src="{{ asset('storage/'.$img) }}" class="border rounded" width="100" style="height: 100px; object-fit: cover;">
-            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 delete-gallery-btn"
-                data-img="{{ $img }}" style="padding:2px 6px; font-size:12px;">&times;</button>
-            <input type="hidden" name="old_gallery[]" value="{{ $img }}">
-        </div>
-        @endforeach
-    @endif
-</div>
+                    @if($product->gallery && is_array($product->gallery))
+                        @foreach($product->gallery as $imgIdx => $img)
+                        <div class="col-auto position-relative mb-2">
+                            <img src="{{ asset('storage/'.$img) }}" class="border rounded" width="100" style="height: 100px; object-fit: cover;">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 delete-gallery-btn"
+                                data-img="{{ $img }}" style="padding:2px 6px; font-size:12px;">&times;</button>
+                            <input type="hidden" name="old_gallery[]" value="{{ $img }}">
+                        </div>
+                        @endforeach
+                    @endif
+                </div>
 
                         <input type="file" class="form-control @error('gallery.*') is-invalid @enderror" name="gallery[]" accept="image/*" multiple>
                         @error('gallery.*')
@@ -132,7 +129,6 @@
                 </div>
 
                 <hr>
-                <!-- BIẾN THỂ SẢN PHẨM -->
                 <h5 class="mt-4 mb-2 text-primary">Thuộc tính & Biến thể</h5>
                 <div class="alert alert-info small">
                     Nếu bạn <b>thay đổi thuộc tính size/màu và bấm "Tạo lại biến thể"</b> thì các biến thể cũ sẽ bị ghi đè.<br>
@@ -188,7 +184,6 @@
                     <button type="button" class="btn btn-secondary mt-2" onclick="renderVariants()">Tạo lại biến thể</button>
                 </div>
 
-                {{-- BẢNG BIẾN THỂ HIỆN CÓ --}}
                 <div id="variant-area">
                     @if($product->variants && count($product->variants))
                     <table class="table table-bordered mt-3">

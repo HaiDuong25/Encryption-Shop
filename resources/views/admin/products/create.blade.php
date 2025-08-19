@@ -16,7 +16,6 @@
             <form id="productForm" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
-                {{-- Thông báo lỗi --}}
                 @if ($errors->any())
                     <div class="alert alert-danger">
                         <strong>Đã có lỗi xảy ra:</strong>
@@ -28,10 +27,8 @@
                     </div>
                 @endif
 
-                {{-- Alert container for AJAX responses --}}
                 <div id="alert-container"></div>
 
-                {{-- THÔNG TIN SẢN PHẨM --}}
                 <div class="row g-3 mb-2">
                     <div class="col-lg-8">
                         <label class="form-label fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
@@ -262,25 +259,25 @@ function addNewColor() {
 function renderVariants() {
     let sizes = Array.from(document.getElementById('size-select').selectedOptions).map(o => ({id:o.value, text:o.text}));
     let colors = Array.from(document.getElementById('color-select').selectedOptions).map(o => ({id:o.value, text:o.text}));
-    
+
     console.log('Sizes selected:', sizes);
     console.log('Colors selected:', colors);
-    
+
     if (sizes.length == 0 || colors.length == 0) {
-        document.getElementById('variant-area').innerHTML = '<p class="text-danger">Hãy chọn size và màu!</p>'; 
+        document.getElementById('variant-area').innerHTML = '<p class="text-danger">Hãy chọn size và màu!</p>';
         return;
     }
     let combos = [];
     sizes.forEach(s => { colors.forEach(c => combos.push([s, c])); });
-    
+
     console.log('Combos generated:', combos);
-    
+
     // Get product price values for placeholders
     let productPrice = document.querySelector('#price').value || '';
     let productSalePrice = document.querySelector('#sale_price').value || '';
     let pricePlaceholder = productPrice ? `Mặc định: ${productPrice}đ` : 'Giá';
     let salePricePlaceholder = productSalePrice ? `Mặc định: ${productSalePrice}đ` : 'Giá KM';
-    
+
     let html = `<div class="table-responsive"><table class="table theme-table table-bordered mt-2"><tr class="table-primary">
         <th>STT</th><th>Size</th><th>Màu</th><th>SKU</th><th>Giá</th><th>Giá KM</th><th>Tồn kho</th><th>Ảnh</th></tr>`;
     combos.forEach((arr, idx) => {
@@ -298,7 +295,7 @@ function renderVariants() {
     html += `</table>
     <p class="text-muted"><i>Giá để trống sẽ lấy giá mặc định của sản phẩm.</i></p></div>`;
     document.getElementById('variant-area').innerHTML = html;
-    
+
     console.log('Variant table rendered successfully');
 }
 

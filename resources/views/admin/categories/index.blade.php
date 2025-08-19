@@ -11,7 +11,8 @@
                     <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                         <h5>Danh sách danh mục</h5>
                         <div class="right-options d-flex gap-2 align-items-center">
-                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create') }}">Thêm danh mục</a>
+                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create-parent') }}">Thêm danh mục cha</a>
+                            <a class="btn btn-solid btn-sm" href="{{ route('admin.categories.create') }}">Thêm danh mục con</a>
                         </div>
                     </div>
 
@@ -186,11 +187,11 @@ function showAlert(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     const container = document.querySelector('.container-fluid');
     const card = document.querySelector('.card');
     container.insertBefore(alertDiv, card);
-    
+
     // Auto hide after 5 seconds
     setTimeout(() => {
         if (alertDiv.parentNode) {
@@ -205,10 +206,10 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmButton = document.getElementById('confirmButton');
     const confirmIcon = document.getElementById('confirmIcon');
-    
+
     // Cập nhật nội dung modal
     confirmMessage.textContent = message;
-    
+
     // Cập nhật icon và màu sắc dựa trên type
     if (type === 'danger') {
         confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
@@ -223,17 +224,17 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
         confirmButton.className = 'btn btn-primary';
         confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
     }
-    
+
     // Xóa event listener cũ và thêm mới
     const newConfirmButton = confirmButton.cloneNode(true);
     confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-    
+
     // Thêm event listener cho nút xác nhận
     newConfirmButton.addEventListener('click', function() {
         modal.hide();
         onConfirm();
     });
-    
+
     // Hiển thị modal
     modal.show();
 }

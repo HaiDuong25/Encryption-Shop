@@ -3,21 +3,20 @@
 @section('title', 'Quản lý sản phẩm')
 
 @section('content')
-@if(session('success'))
-<div class="alert alert-success">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-<div class="alert alert-danger">{{ session('error') }}</div>
-@endif
+
+    @if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
 <div class="container-fluid">
     <div class="card card-table">
         <div class="card-body">
             <div class="title-header option-title">
                 <h5>Danh sách sản phẩm</h5>
-                <a href="{{ route('products.create') }}" class="btn btn-theme">
-                    <i data-feather="plus"></i> Thêm sản phẩm
-                </a>
+                <a href="{{ route('products.create') }}" class="btn btn-solid btn-sm">Thêm sản phẩm</a>
             </div>
             <form action="{{ route('products.index') }}" method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
                 <div class="search-box" style="width:250px;">
@@ -51,7 +50,6 @@
                     </a>
                 @endif
             </form>
-
 
             <div class="table-responsive table-product">
                 <table class="table theme-table">
@@ -134,8 +132,8 @@
         </div>
     </div>
 </div>
-@endsection
 
+@endsection
 @push('scripts')
 <script>
 // Function để hiển thị alert
@@ -146,11 +144,11 @@ function showAlert(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     const container = document.querySelector('.container-fluid');
     const card = document.querySelector('.card');
     container.insertBefore(alertDiv, card);
-    
+
     // Auto hide after 5 seconds
     setTimeout(() => {
         if (alertDiv.parentNode) {
@@ -165,10 +163,10 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmButton = document.getElementById('confirmButton');
     const confirmIcon = document.getElementById('confirmIcon');
-    
+
     // Cập nhật nội dung modal
     confirmMessage.textContent = message;
-    
+
     // Cập nhật icon và màu sắc dựa trên type
     if (type === 'danger') {
         confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
@@ -183,17 +181,17 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
         confirmButton.className = 'btn btn-primary';
         confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
     }
-    
+
     // Xóa event listener cũ và thêm mới
     const newConfirmButton = confirmButton.cloneNode(true);
     confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-    
+
     // Thêm event listener cho nút xác nhận
     newConfirmButton.addEventListener('click', function() {
         modal.hide();
         onConfirm();
     });
-    
+
     // Hiển thị modal
     modal.show();
 }

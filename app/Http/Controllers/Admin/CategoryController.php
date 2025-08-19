@@ -139,26 +139,25 @@ class CategoryController extends \App\Http\Controllers\Controller
     return redirect()->route('admin.categories.index')->with('success', 'Danh mục được xóa thành công.');
 }
 
-    /**
-     * Show form to create parent category
-     */
     public function createParent()
     {
         return view('admin.categories.create-parent');
     }
 
-    /**
-     * Store parent category
-     */
     public function storeParent(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'status' => 'required|boolean',
+            'image'  => 'nullable|image|max:2048',
         ]);
 
         // Parent category has no parent_id
         $validated['parent_id'] = null;
+
+        if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('categories', 'public');
+        }
 
         $category = Category::create($validated);
 
