@@ -75,20 +75,10 @@
                                 </a>
                             </div>
                             <div class="col-6">
-                                <div class="dropdown w-100">
-                                    <button class="btn btn-outline-primary btn-action w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-history mb-1"></i>
-                                        <div class="action-text">Lịch sử</div>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ route('wallet.history') }}">
-                                            <i class="fas fa-wallet me-2"></i>Lịch sử ví
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="{{ route('wallet.payment-history') }}">
-                                            <i class="fas fa-receipt me-2"></i>Tất cả giao dịch
-                                        </a></li>
-                                    </ul>
-                                </div>
+                                <a href="{{ route('wallet.history') }}" class="btn btn-outline-primary btn-action w-100">
+                                    <i class="fas fa-history mb-1"></i>
+                                    <div class="action-text">Lịch sử</div>
+                                </a>
                             </div>
                         </div>
                     </div>
