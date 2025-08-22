@@ -296,9 +296,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [ReturnRequestController::class, 'create'])->name('create');
         Route::post('/', [ReturnRequestController::class, 'store'])->name('store');
         Route::get('/{id}', [ReturnRequestController::class, 'show'])->name('show');
+
     });
 
 
+});
+use App\Http\Controllers\Client\BankAccountController;
+
+Route::prefix('client')->name('client.')->group(function () {
+    // ...
+    Route::resource('bank-accounts', BankAccountController::class);
 });
 
 // --- Coupon Routes ---
