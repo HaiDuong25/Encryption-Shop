@@ -1,8 +1,6 @@
 @extends('client.layout.main')
 
 @section('title', 'Chi tiết đơn hàng')
-
-@section('content')
 <style>
     .rating-stars {
         display: flex;
@@ -11,11 +9,7 @@
     }
 
     .rating-stars input[type="radio"] {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-        pointer-events: none;
+        display: none;
     }
 
     .rating-stars label {
@@ -55,20 +49,17 @@
         color: #fff;
     }
 
-        .badge-return-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
+    .badge-returning {
+        background-color: #ffc107;
+        color: #000;
+    }
 
-        .badge-return-approved {
-            background-color: #28a745;
-            color: #fff;
-        }
+    .badge-refunded-approved {
+        background-color: #fd7e14;
+        color: #fff;
+    }
 
-        .badge-return-rejected {
-            background-color: #dc3545;
-            color: #fff;
-        }    .badge-paid {
+    .badge-paid {
         background-color: #28a745;
         color: #fff;
     }
@@ -85,16 +76,8 @@
     .bg-cyan {
         background-color: #06b6d4 !important;
     }
-
-    /* Timeline toggle styles */
-    .timeline-item {
-        display: flex;
-        margin-bottom: 1rem;
-    }
-    .timeline-hidden {
-        display: none !important;
-    }
 </style>
+@section('content')
 
     <div class="container py-4">
         @php
@@ -121,9 +104,7 @@
             $statusKeys = array_keys($statuses);
             $currentStatusIndex = array_search($statusValue, $statusKeys);
             $isCancelled = $statusValue === 'cancelled';
-            // Đơn COD được coi là đã thanh toán khi trạng thái đơn = completed
-            $isCODHead = optional($order->paymentMethod)->payment_type === 'COD';
-            $isPaid = ($order->payments && $order->payments->where('status', 'completed')->count() > 0) || ($isCODHead && $statusValue === 'completed');
+            $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
         @endphp
         <div class="mb-4">
             @php
@@ -134,7 +115,8 @@
                     'delivering' => 'Đang giao',
                     'received' => 'Đã nhận',
                     'completed' => 'Hoàn thành',
-
+                    'returning' => 'Đang trả hàng',
+                    'approved' => 'Đã trả hàng',
                 ];
                 $trackerKeys = array_keys($trackerSteps);
                 $currentStep = array_search($statusValue, $trackerKeys);
@@ -142,6 +124,14 @@
             @if ($statusValue === 'cancelled')
                 <div class="alert alert-danger text-center mb-2">
                     <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
+                </div>
+            @elseif ($statusValue === 'returning')
+                <div class="alert alert-warning text-center mb-2">
+                    <i class="fas fa-undo me-1"></i> Đơn hàng đang trong quá trình trả hàng
+                </div>
+            @elseif ($statusValue === 'approved')
+                <div class="alert alert-success text-center mb-2">
+                    <i class="fas fa-check-circle me-1"></i> Đơn hàng đã được trả hàng thành công
                 </div>
             @else
                 <div class="progress" style="height: 10px;">
@@ -160,54 +150,42 @@
                 </div>
             @endif
         </div>
-    {{-- Timeline chi tiết lịch sử trạng thái --}}
-    @if (!$isCancelled && $order->statusHistories && $order->statusHistories->count())
-        @php
-            $clientHist = $order->statusHistories->sortByDesc('created_at')->values();
-        @endphp
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
-                    @if ($clientHist->count() > 2)
-                        <button class="btn btn-sm btn-outline-primary" id="toggleTimelineBtn" type="button">
-                            <i class="fas fa-eye me-1"></i>
-                            <span id="toggleTimelineText">Xem thêm</span>
-                        </button>
-                    @endif
-                </div>
-                <ul class="list-unstyled" id="timelineList">
-                    @foreach ($clientHist as $i => $history)
-                        <li class="mb-3 d-flex timeline-item {{ $i >= 2 ? 'timeline-hidden' : '' }}">
-                             <div class="me-3">
-                                 @if ($history->new_status === $statusValue)
-                                     <i class="fas fa-check-circle text-success"></i>
-                                 @else
-                                     <i class="far fa-circle text-muted"></i>
-                                 @endif
-                             </div>
-                             <div>
-                                 <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
-                                 <div class="text-muted small">
-                                    <i class="fas fa-clock me-1"></i>{{ $history->created_at->format('H:i d/m/Y') }}
-                                    @if ($history->user)
-                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>{{ $history->user->name ?? 'N/A' }}</strong>
-                                    @elseif($history->changed_by)
-                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>User ID {{ $history->changed_by }}</strong>
+        {{-- Timeline chi tiết lịch sử trạng thái --}}
+        @if (
+            !$isCancelled &&
+                $order->statusHistories &&
+                $order->statusHistories->count() &&
+                !in_array($order->status, ['returning', 'approved']))
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-shipping-fast me-2"></i>Tiến trình vận chuyển</h5>
+                    <ul class="list-unstyled">
+                        @foreach ($order->statusHistories->sortByDesc('created_at') as $history)
+                            <li class="mb-3 d-flex">
+                                <div class="me-3">
+                                    @if ($history->new_status === $statusValue)
+                                        <i class="fas fa-check-circle text-success"></i>
                                     @else
-                                        <br><i class="fas fa-robot me-1"></i>Thực hiện bởi: <strong>Hệ thống</strong>
-                                    @endif
-                                    @if ($history->description)
-                                        <br><i class="fas fa-comment me-1"></i>Ghi chú: {{ $history->description }}
+                                        <i class="far fa-circle text-muted"></i>
                                     @endif
                                 </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
+                                <div>
+                                    <strong>{{ $statuses[$history->new_status] ?? ucfirst($history->new_status) }}</strong>
+                                    <div class="text-muted small">
+                                        {{ $history->created_at->format('H:i d/m/Y') }}
+                                        @if ($history->description)
+                                            <br><span>{{ $history->description }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
-        </div>
-    @endif
+
+        @endif
         <div class="row g-4">
             <div class="col-lg-5 col-12">
                 <div class="card shadow-sm mb-4">
@@ -228,6 +206,10 @@
                                 <span class="badge bg-cyan">Đã nhận</span>
                             @elseif($statusValue == 'completed')
                                 <span class="badge bg-success">Hoàn thành</span>
+                            @elseif($statusValue == 'returning')
+                                <span class="badge bg-warning text-dark">Đang trả hàng</span>
+                            @elseif($statusValue == 'approved')
+                                <span class="badge bg-success">Đã trả hàng</span>
                             @else
                                 <span class="badge bg-secondary">{{ $statusValue }}</span>
                             @endif
@@ -235,47 +217,34 @@
                         <div class="mb-2 text-muted small"><i class="fas fa-calendar-alt me-1"></i> Ngày đặt:
                             {{ $order->created_at->format('d/m/Y H:i') }}
                         </div>
-
-                        {{-- Hiển thị trạng thái trả hàng --}}
-                        @if ($order->returnStatus)
-                            <div class="mb-2">
-                                <strong>Trạng thái trả hàng:</strong>
-                                <span class="badge 
-                                    @switch($order->returnStatus->status)
-                                        @case('pending')
-                                            badge-return-pending
-                                            @break
-                                        @case('approved')
-                                            badge-return-approved
-                                            @break
-                                        @case('rejected')
-                                            badge-return-rejected
-                                            @break
-                                        @default
-                                            bg-secondary
-                                    @endswitch
-                                ">
-                                    {{ $order->returnStatus->statusText }}
-                                </span>
-                                @if ($order->returnStatus->admin_note)
-                                    <div class="mt-1">
-                                        <small class="text-muted">Ghi chú: {{ $order->returnStatus->admin_note }}</small>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
-
                         <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
                             @php
-                                $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                $isPaid =
+                                    $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                 $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
                                 $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
-                                $isPaid = $rawPaid || ($isCOD && $statusValue === 'completed');
+                                $statusValue = is_numeric($order->status)
+                                    ? $statusMap[$order->status] ?? 'pending'
+                                    : $order->status;
                             @endphp
                             @switch($statusValue)
                                 @case('refunded')
                                 @case('returned')
+                                    {{-- Đã trả hàng xong --}}
                                     <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
+
+                                @case('returning')
+                                    {{-- Đang trả hàng --}}
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
+
+                                @case('approved')
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
                                         {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
                                     </span>
                                 @break
@@ -285,9 +254,10 @@
                                         {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                                     </span>
                             @endswitch
+
                         </div>
                         <div class="mb-2"><strong>Phương thức thanh toán:</strong>
-                            {{ optional($order->paymentMethod)->payment_type ?? 'Chưa chọn' }}
+                            {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}
                         </div>
                         <div class="mb-2"><strong>Phương thức vận chuyển:</strong>
                             {{ $order->shipping_method ?? 'Giao hàng tận nơi' }}
@@ -295,26 +265,6 @@
                         <div class="mb-2"><strong>Ngày giao dự kiến:</strong>
                             {{ $order->created_at->addDays(3)->format('d/m/Y') }}
                         </div>
-                        @php
-                            $returnStatus = $order->returnStatus;
-                        @endphp
-                        @if($returnStatus && $returnStatus->overall_status !== 'none')
-                            <div class="mb-2"><strong>Trạng thái trả hàng:</strong>
-                                @switch($returnStatus->overall_status)
-                                    @case('partial')
-                                        <span class="badge bg-warning text-dark">Trả hàng một phần</span>
-                                        @break
-                                    @case('full')
-                                        <span class="badge bg-info">Trả hàng toàn bộ</span>
-                                        @break
-                                    @case('completed')
-                                        <span class="badge bg-success">Hoàn tất trả hàng</span>
-                                        @break
-                                    @default
-                                        <span class="badge bg-secondary">{{ $returnStatus->status_text }}</span>
-                                @endswitch
-                            </div>
-                        @endif
                         <hr>
                         <div class="mb-2"><strong>Người nhận:</strong>
                             {{ $order->recipient_name ?? $order->orderer_name }}
@@ -336,7 +286,7 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán</h5>
-                        <div class="mb-2">Tạm tính: <strong>{{ format_vnd($order->subtotal) }}₫</strong></div>
+                        <div class="mb-2">Tạm tính: <strong>{{ number_format($order->subtotal) }}₫</strong></div>
                         @if ($order->coupon || $order->coupon_code)
                             <div class="mb-2">
                                 Mã giảm giá:
@@ -350,23 +300,23 @@
                                     @if ($discountType === 'percentage')
                                         {{ rtrim(rtrim($discountValue, '0'), '.') }}%
                                     @else
-                                        {{ format_vnd($discountValue) }}₫
+                                        {{ number_format($discountValue, 0, ',', '.') }}₫
                                     @endif
                                 @endif
                             </div>
                             <div class="mb-2">Số tiền giảm:
-                                <strong>-{{ format_vnd($order->coupon_discount) }}₫</strong>
+                                <strong>-{{ number_format($order->coupon_discount, 0, ',', '.') }}₫</strong>
                             </div>
                         @endif
                         <div class="alert alert-warning fw-bold mt-3 mb-2">
-                            Tổng tiền: {{ format_vnd($order->total_price) }}₫
+                            Tổng tiền: {{ number_format($order->total_price) }}₫
                         </div>
                     </div>
 
                 </div>
 
                 <div class="d-flex gap-2 justify-content-between justify-content-lg-end mt-3 flex-wrap">
-                    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed', 'shipping']))
+                    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
                         <button class="btn btn-outline-danger flex-grow-1 flex-lg-grow-0" data-bs-toggle="modal"
                             data-bs-target="#cancelModal">
                             <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
@@ -423,16 +373,6 @@
                             </div>
                         </div>
                     @endif
-                    
-                    {{-- Nút xác nhận hoàn thành đơn hàng trong view show --}}
-                    @if ($order->canComplete())
-                        <button type="button" class="btn btn-success flex-grow-1 flex-lg-grow-0 me-2 confirm-complete-btn"
-                            data-order-id="{{ $order->id }}"
-                            data-message="Bạn có chắc chắn muốn xác nhận hoàn thành đơn hàng này không?">
-                            <i class="fas fa-check-circle me-1"></i> Xác nhận hoàn thành
-                        </button>
-                    @endif
-                    
                     <a href="{{ route('client.orders.index') }}"
                         class="btn btn-outline-secondary flex-grow-1 flex-lg-grow-0">
                         ← Quay lại danh sách đơn hàng
@@ -455,8 +395,7 @@
                                 <tbody>
                                     @foreach ($order->orderDetails as $item)
                                         @php
-                                            $product = $item->variant->product ?? $item->product;
-                                            $image = $product->image ?? null;
+                                            $image = $item->variant->product->image ?? null;
                                             $imageUrl = $image
                                                 ? (Str::startsWith($image, ['http://', 'https://'])
                                                     ? $image
@@ -464,34 +403,23 @@
                                                 : 'https://via.placeholder.com/80?text=No+Image';
 
                                             // Kiểm tra xem người dùng đã đánh giá cho order_detail_id này chưa
-                                            $hasRated = $product
+                                            $hasRated = $item->variant->product
                                                 ->rates()
                                                 ->where('user_id', auth()->id())
                                                 ->where('order_detail_id', $item->id)
                                                 ->exists();
                                         @endphp
                                         <tr>
-                                            <td class="text-center align-middle" style="width:110px;">
-                                                @if($product)
-                                                    <a href="{{ route('client.products.show', $product->id) }}" class="d-inline-block product-link" title="Xem sản phẩm" style="line-height:0;">
-                                                        <img src="{{ $imageUrl }}" width="80" class="rounded d-block mx-auto" style="display:block;margin:0 auto;">
-                                                    </a>
-                                                @else
-                                                    <img src="{{ $imageUrl }}" width="80" class="rounded d-block mx-auto" style="display:block;margin:0 auto;">
-                                                @endif
-                                            </td>
+                                            <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
+
 
                                             <td class="align-top">
-                                                {{-- Tên và danh mục sản phẩm (clickable) --}}
-                                                @if($product)
-                                                    <a href="{{ route('client.products.show', $product->id) }}" class="text-decoration-none product-link">
-                                                        <div class="fw-bold text-dark fs-6">{{ $product->name }}</div>
-                                                    </a>
-                                                @else
-                                                    <div class="fw-bold text-dark fs-6">Sản phẩm đã xóa</div>
-                                                @endif
+                                                {{-- Tên và danh mục sản phẩm --}}
+                                                <div class="fw-bold text-dark fs-6">
+                                                    {{ $item->product->name ?? 'Sản phẩm đã xóa' }}
+                                                </div>
                                                 <div class="text-muted small mb-1">
-                                                    {{ optional($product->category)->name ?? 'Danh mục đã xóa' }}
+                                                    {{ $item->product->category->name ?? 'Danh mục đã xóa' }}
                                                 </div>
 
                                                 {{-- Mã SKU --}}
@@ -501,7 +429,7 @@
                                                 @endif
 
                                                 {{-- Hiển thị các thuộc tính biến thể (Size, Màu, Khác) --}}
-                                                @if ($item->variant && $item->variant->attributeValues && $item->variant->attributeValues->count())
+                                                @if ($item->variant && $item->variant->attributeValues->count())
                                                     <div class="d-flex flex-wrap gap-2 mt-1">
                                                         @foreach ($item->variant->attributeValues as $attrValue)
                                                             @php
@@ -529,25 +457,17 @@
 
                                                 {{-- Giá và số lượng --}}
                                                 <div class="mt-2 small">
-                                                    Giá: <strong>{{ format_vnd($item->price) }}₫</strong> x
+                                                    Giá: <strong>{{ number_format($item->product->sale_price) }}₫</strong>
+                                                    x
                                                     {{ $item->quantity }}
                                                 </div>
 
                                                 {{-- Đánh giá nếu đơn đã hoàn thành --}}
-                                                @php
-                                                    // Chỉ hiển thị đánh giá khi:
-                                                    // 1. Đơn hàng đã hoàn thành
-                                                    // 2. Sản phẩm không được duyệt trả hàng (approved)
-                                                    // 3. Nếu bị từ chối trả hàng thì phải đợi đơn hoàn thành mới cho đánh giá
-                                                    $canRate = $statusValue === 'completed' && 
-                                                               $item->return_status !== 'approved' && 
-                                                               Auth::check();
-                                                @endphp
-                                                @if ($canRate)
+                                                @if ($statusValue === 'completed')
                                                     @if (!$hasRated)
                                                         <form
-                                                            action="{{ route('client.rates.store', [$product->id, $item->id]) }}"
-                                                            method="POST" class="mt-2 rating-form">
+                                                            action="{{ route('client.rates.store', [$item->variant->product->id, $item->id]) }}"
+                                                            method="POST">
                                                             @csrf
                                                             <div class="mb-2">
                                                                 <label class="small">Đánh giá của bạn:</label>
@@ -555,14 +475,11 @@
                                                                     @for ($i = 5; $i >= 1; $i--)
                                                                         <input type="radio" name="score"
                                                                             id="star{{ $i }}-{{ $item->id }}"
-                                                                            value="{{ $i }}">
+                                                                            value="{{ $i }}" required>
                                                                         <label
                                                                             for="star{{ $i }}-{{ $item->id }}"
                                                                             title="{{ $i }} sao">★</label>
                                                                     @endfor
-                                                                </div>
-                                                                <div class="rating-error text-danger small" style="display: none;">
-                                                                    Vui lòng chọn số sao đánh giá
                                                                 </div>
                                                                 @error('score')
                                                                     <small class="text-danger">{{ $message }}</small>
@@ -588,217 +505,29 @@
                                                     @endif
                                                 @endif
 
-                                                {{-- Trả hàng nếu đơn hàng đã được nhận và sản phẩm chưa có yêu cầu trả hàng --}}
-                                                @php
-                                                    // Kiểm tra xem đơn hàng có thể trả hàng chưa (dựa trên trạng thái giao hàng)
-                                                    // Không thể trả hàng nếu đơn hàng đã hoàn thành
-                                                    $canReturn = $order->canReturn() && $statusValue !== 'completed';
-                                                @endphp
-                                                @if ($canReturn && Auth::check() && $item->return_status === 'none')
+                                                {{-- Trả hàng nếu đã nhận --}}
+                                                @if ($statusValue === 'received' && !$item->returnRequest)
                                                     <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
-                                                        class="btn btn-sm bg-secondary text-white mt-1">Trả hàng</a>
-                                                @elseif($item->return_status === 'pending')
-                                                    <div class="mt-2 alert alert-warning p-2 small">
-                                                        <i class="fas fa-clock me-1"></i> Đang chờ duyệt trả hàng
-                                                    </div>
-                                                @elseif($item->return_status === 'approved')
-                                                    <div class="mt-2 alert alert-success p-2 small">
-                                                        <i class="fas fa-check-circle me-1"></i> Đã được duyệt trả hàng
-                                                    </div>
-                                                @elseif($item->return_status === 'rejected')
-                                                    {{-- Chỉ hiển thị thông báo từ chối nếu đơn hàng chưa hoàn thành --}}
-                                                    @if($statusValue !== 'completed')
-                                                        <div class="mt-2 alert alert-danger p-2 small">
-                                                            <i class="fas fa-times-circle me-1"></i> Yêu cầu trả hàng bị từ chối
-                                                        </div>
-                                                        {{-- Nút xác nhận hoàn thành cho sản phẩm bị từ chối trả hàng --}}
-                                                        @if($statusValue === 'received' && $order->canComplete())
-                                                            <button type="button" class="btn btn-success btn-sm mt-1 confirm-complete-btn"
-                                                                data-order-id="{{ $order->id }}"
-                                                                data-message="Xác nhận hoàn thành đơn hàng này? Sản phẩm bị từ chối trả hàng sẽ được coi là hoàn thành.">
-                                                                <i class="fas fa-check-circle me-1"></i> Xác nhận hoàn thành
-                                                            </button>
-                                                        @endif
-                                                    @endif
+                                                        class="btn btn-warning btn-sm mt-1">Trả hàng</a>
                                                 @endif
                                             </td>
 
-                                            <td class="text-end fw-bold">{{ format_vnd($item->total_price) }}₫</td>
+                                            <td class="text-end fw-bold">
+                                                {{ number_format($item->product->sale_price * $item->quantity) }}₫
+                                            </td>
                                         </tr>
+
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
+
+
     </div>
 
-<!-- Modal xác nhận hoàn thành -->
-<div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteModalLabel" aria-hidden="true" style="z-index: 9999;">
-    <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmCompleteModalLabel">
-                    <i class="fas fa-check-circle text-success me-2"></i>
-                    Xác nhận hoàn thành đơn hàng
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <div id="confirmCompleteIcon" class="mb-3">
-                    <i class="fas fa-check-circle" style="font-size: 48px; color: #28a745;"></i>
-                </div>
-                <p id="confirmCompleteMessage" class="mb-0"></p>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Hủy
-                </button>
-                <button type="button" class="btn btn-success" id="confirmCompleteButton">
-                    <i class="fas fa-check-circle me-1"></i>Xác nhận
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// Function để hiển thị alert
-function showAlert(message, type = 'success') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    const container = document.querySelector('.container');
-    container.insertBefore(alertDiv, container.firstChild);
-    
-    // Auto hide after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
-}
-
-// Function để hiển thị modal xác nhận hoàn thành
-function showConfirmCompleteModal(message, onConfirm) {
-    const modal = new bootstrap.Modal(document.getElementById('confirmCompleteModal'));
-    const confirmMessage = document.getElementById('confirmCompleteMessage');
-    const confirmButton = document.getElementById('confirmCompleteButton');
-    
-    // Cập nhật nội dung modal
-    confirmMessage.textContent = message;
-    
-    // Xóa event listener cũ và thêm mới
-    const newConfirmButton = confirmButton.cloneNode(true);
-    confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-    
-    // Thêm event listener cho nút xác nhận
-    newConfirmButton.addEventListener('click', function() {
-        modal.hide();
-        onConfirm();
-    });
-    
-    // Hiển thị modal
-    modal.show();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('toggleTimelineBtn');
-    const toggleText = document.getElementById('toggleTimelineText');
-    const extra = Array.from(document.querySelectorAll('#timelineList .timeline-item')).slice(2);
-    if (toggleBtn && extra.length) {
-        toggleBtn.dataset.expanded = 'false';
-        extra.forEach(el => el.classList.add('timeline-hidden'));
-        toggleBtn.addEventListener('click', function() {
-            const isExp = this.dataset.expanded === 'true';
-            extra.forEach(el => el.classList.toggle('timeline-hidden'));
-            if (isExp) {
-                toggleText.textContent = 'Xem thêm'; this.querySelector('i').className = 'fas fa-eye me-1'; this.dataset.expanded = 'false';
-            } else {
-                toggleText.textContent = 'Thu gọn'; this.querySelector('i').className = 'fas fa-eye-slash me-1'; this.dataset.expanded = 'true';
-            }
-        });
-    }
-    
-    // CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    
-    // Xử lý validation cho form đánh giá
-    document.querySelectorAll('.rating-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const ratingInputs = this.querySelectorAll('input[name="score"]');
-            const ratingError = this.querySelector('.rating-error');
-            let isRatingSelected = false;
-            
-            // Kiểm tra xem có rating nào được chọn không
-            ratingInputs.forEach(input => {
-                if (input.checked) {
-                    isRatingSelected = true;
-                }
-            });
-            
-            // Nếu không có rating nào được chọn, hiển thị lỗi và ngăn submit
-            if (!isRatingSelected) {
-                e.preventDefault();
-                ratingError.style.display = 'block';
-                return false;
-            } else {
-                ratingError.style.display = 'none';
-            }
-        });
-        
-        // Ẩn thông báo lỗi khi người dùng chọn rating
-        const ratingInputs = form.querySelectorAll('input[name="score"]');
-        const ratingError = form.querySelector('.rating-error');
-        ratingInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                ratingError.style.display = 'none';
-            });
-        });
-    });
-    
-    // Xử lý nút xác nhận hoàn thành
-    document.querySelectorAll('.confirm-complete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.dataset.orderId;
-            const message = this.dataset.message;
-            
-            showConfirmCompleteModal(message, () => {
-                // Show loading state
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
-                this.disabled = true;
-                
-                if (!csrfToken) {
-                    showAlert('Lỗi CSRF token không tìm thấy!', 'danger');
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                    return;
-                }
-                
-                // Tạo form ẩn để submit
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/lich-su-don-hang/${orderId}/confirm`;
-                form.style.display = 'none';
-                
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                form.appendChild(csrfInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-            });
-        });
-    });
-});
-</script>
 @endsection

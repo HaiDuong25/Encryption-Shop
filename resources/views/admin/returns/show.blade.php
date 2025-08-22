@@ -38,8 +38,8 @@
                     </td>
                 </tr>
                <tr>
-    <th>Phương thức thanh toán</th>
-    <td>{{ $return->paymentMethod->payment_type ?? 'N/A' }}</td>
+    <th>Ngân hàng</th>
+    <td>{{ $return->bank_name ?? 'N/A' }}</td>
 </tr>
 
 <tr>
