@@ -141,7 +141,7 @@
     @php
         $statuses = [
             'pending' => 'Chờ xử lý',
-            'confirmed' => 'Đã xác nhận', 
+            'confirmed' => 'Đã xác nhận',
             'shipping' => 'Giao cho ĐVVC',
             'delivering' => 'Đang giao',
             'received' => 'Đã nhận',
@@ -156,8 +156,8 @@
             '5' => 'completed',
             '6' => 'cancelled',
         ];
-        $statusValue = is_numeric($order->status) 
-            ? $statusMap[(string) $order->status] ?? 'pending' 
+        $statusValue = is_numeric($order->status)
+            ? $statusMap[(string) $order->status] ?? 'pending'
             : $order->status;
         $statusKeys = array_keys($statuses);
         $currentStatusIndex = array_search($statusValue, $statusKeys);
@@ -280,7 +280,7 @@
     @if ($order->returnStatus)
         <div class="alert alert-info mb-4">
             <h6 class="mb-2"><i class="fas fa-undo me-2"></i>Trạng thái trả hàng</h6>
-            <span class="badge 
+            <span class="badge
                 @switch($order->returnStatus->status)
                     @case('pending')
                         badge-return-pending
@@ -385,8 +385,8 @@
                                         @endif
                                     </td>
                                     <td>{{ $detail->quantity }}</td>
-                                    <td>{{ format_vnd($detail->price) }} đ</td>
-                                    <td>{{ format_vnd($detail->price * $detail->quantity) }} đ</td>
+                                    <td>{{ format_vnd($detail->product->sale_price) }} đ</td>
+                                    <td>{{ format_vnd($detail->product->sale_price * $detail->quantity) }} đ</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -482,13 +482,13 @@
                     <h5 class="card-title">
                         <i class="fas fa-edit me-2"></i>Cập nhật trạng thái đơn hàng
                     </h5>
-                    
+
                     @php
                         // Define finalized statuses and check if order is finalized
                         $finalStatuses = ['completed', 'cancelled', 'approved', 'rejected'];
                         $isOrderFinalized = in_array($statusValue, $finalStatuses);
                     @endphp
-                    
+
                     @if($isOrderFinalized)
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-1"></i>
@@ -501,7 +501,7 @@
                         <form id="orderStatusForm" action="{{ route('orders.update', $order->id) }}" method="POST">
                             @csrf
                             @method('PUT')
-                            
+
                             <div class="alert alert-light border mb-3">
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
@@ -511,7 +511,7 @@
                                     • <strong>Hủy:</strong> Chỉ được hủy khi người dùng có yêu cầu hủy trước khi đang giao hàng  (trước trạng thái "Đang giao")
                                 </small>
                             </div>
-                            
+
                             <div class="row align-items-end">
                                 <div class="col-md-8">
                                     <label for="status" class="form-label">Chọn trạng thái mới</label>
@@ -539,13 +539,13 @@
                                             @php
                                                 $optionIndex = array_search($value, $statusKeysEdit);
                                                 $canSelect = false;
-                                                
+
                                                 // Chỉ cho phép chọn:
                                                 // 1. Trạng thái hiện tại
                                                 // 2. Trạng thái tiếp theo (currentIndex + 1)
                                                 // 3. Trạng thái trước đó (currentIndex - 1) - để xử lý lỗi/sự cố
                                                 // 4. Trạng thái hủy (nếu chưa completed)
-                                                
+
                                                 if ($optionIndex == $currentIndex) {
                                                     $canSelect = true; // Trạng thái hiện tại
                                                 } elseif ($optionIndex == $currentIndex + 1 && !in_array($value, $finalStatuses)) {
@@ -575,13 +575,13 @@
                                     </button>
                                 </div>
                             </div>
-                            
+
                             {{-- Trường hủy đơn (ẩn mặc định) --}}
                             <div id="cancelFields" style="display: none;" class="mt-3">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label for="cancel_reason" class="form-label">Lý do hủy</label>
-                                        <input type="text" class="form-control" id="cancel_reason" name="cancel_reason" 
+                                        <input type="text" class="form-control" id="cancel_reason" name="cancel_reason"
                                                maxlength="255" value="{{ old('cancel_reason', $order->cancel_reason) }}">
                                     </div>
                                     <div class="col-md-6">
@@ -656,7 +656,7 @@
 
                 <hr>
                 <p><strong>Phương thức thanh toán:</strong><br>{{ $order->paymentMethod->payment_type ?? 'N/A' }}</p>
-                
+
                 @php
                     $latestPayment = $order->payments->where('status', 'completed')->first();
                 @endphp
@@ -690,7 +690,7 @@
                         <p class="mb-0 mt-2"><small class="text-muted">Khách hàng sẽ thanh toán trực tiếp cho shipper</small></p>
                     </div>
                 @endif
-                
+
                 @if($order->coupon_code)
                     <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>
@@ -732,7 +732,7 @@
             const cancelFields = document.getElementById('cancelFields');
             const alertContainer = document.getElementById('alert-container');
             const updateBtn = document.getElementById('updateStatusBtn');
-            
+
             if (!form || !statusSelect || !cancelFields || !alertContainer || !updateBtn) {
                 return; // Exit if elements don't exist (order is finalized)
             }
@@ -741,7 +741,7 @@
             statusSelect.addEventListener('change', function() {
                 const showCancelFields = this.value === 'cancelled';
                 cancelFields.style.display = showCancelFields ? 'block' : 'none';
-                
+
                 // Make cancel fields required/optional based on visibility
                 const cancelInputs = cancelFields.querySelectorAll('input, textarea');
                 cancelInputs.forEach(input => {
@@ -869,18 +869,18 @@
                 transform: rotate(360deg);
             }
         }
-        
+
         #cancelFields {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
             border-radius: 8px;
             padding: 15px;
         }
-        
+
         .bg-purple {
             background-color: #8b5cf6 !important;
         }
-        
+
         .bg-cyan {
             background-color: #06b6d4 !important;
         }
