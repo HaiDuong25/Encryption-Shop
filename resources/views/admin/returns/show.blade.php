@@ -37,19 +37,7 @@
                         @endif
                     </td>
                 </tr>
-               <tr>
-    <th>Ngân hàng</th>
-    <td>{{ $return->bank_name ?? 'N/A' }}</td>
-</tr>
 
-<tr>
-    <th>Tên người nhận</th>
-    <td>{{ $return->bank_account_name ?? 'N/A' }}</td>
-</tr>
-<tr>
-    <th>Số tài khoản</th>
-    <td>{{ $return->bank_account_number ?? 'N/A' }}</td>
-</tr>
 
                 <tr>
                     <th>Trạng thái</th>
