@@ -10,14 +10,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserWallet;
 use App\Models\WalletTransaction;
-
+use App\Models\WithdrawRequest;
+ // thêm model rút tiền
+use App\Models\BankAccount; // thêm model tài khoản ngân hàng
 class WalletController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
         $wallet = $user->getOrCreateWallet();
-        
+
         // Lấy lịch sử giao dịch gần nhất
         $recentTransactions = $user->walletTransactions()
             ->orderBy('created_at', 'desc')
@@ -89,12 +91,12 @@ class WalletController extends Controller
     public function topupSuccess(Request $request)
     {
         $transactionCode = $request->get('transaction_code');
-        
+
         if ($transactionCode) {
             $transaction = WalletTransaction::where('transaction_code', $transactionCode)
                 ->where('user_id', Auth::id())
                 ->first();
-            
+
             if ($transaction && $transaction->status === 'completed') {
                 Session::forget('wallet_topup_data');
                 return view('client.wallet.topup-success', compact('transaction'));
@@ -113,27 +115,27 @@ class WalletController extends Controller
     public function history(Request $request)
     {
         $user = Auth::user();
-        
+
         $query = $user->walletTransactions()->orderBy('created_at', 'desc');
-        
+
         // Filter by type (include refund)
         if ($request->filled('type')) {
-            $allowedTypes = ['deposit', 'payment', 'refund'];
+            $allowedTypes = ['deposit', 'withdraw', 'payment', 'refund'];
             if (in_array($request->type, $allowedTypes, true)) {
                 $query->where('type', $request->type);
             }
         }
-        
+
         // Filter by status
         if ($request->filled('status') && in_array($request->status, ['pending', 'completed', 'failed'])) {
             $query->where('status', $request->status);
         }
-        
+
         // Filter by date range
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
         }
-        
+
         if ($request->filled('to_date')) {
             $query->whereDate('created_at', '<=', $request->to_date);
         }
@@ -146,7 +148,7 @@ class WalletController extends Controller
     public function paymentHistory(Request $request)
     {
         $user = Auth::user();
-        
+
         // Lấy wallet transactions
         $walletTransactions = $user->walletTransactions()
             ->select('id', 'type', 'amount', 'description', 'status', 'payment_method_type', 'created_at')
@@ -189,7 +191,7 @@ class WalletController extends Controller
             ->get()
             ->map(function ($payment) {
                 $amount = $payment->amount && $payment->amount > 0 ? $payment->amount : $payment->order->total;
-                
+
                 return [
                     'id' => $payment->id,
                     'type' => 'payment',
@@ -212,9 +214,9 @@ class WalletController extends Controller
         $perPage = 15;
         $currentPage = $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
-        
+
         $paginatedTransactions = $allTransactions->slice($offset, $perPage)->values();
-        
+
         $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
             $paginatedTransactions,
             $allTransactions->count(),
@@ -222,7 +224,7 @@ class WalletController extends Controller
             $currentPage,
             ['path' => $request->url(), 'pageName' => 'page']
         );
-        
+
         $paginator->withQueryString();
 
         return view('client.wallet.payment-history', compact('paginator'));
@@ -235,4 +237,85 @@ class WalletController extends Controller
         }
         return null;
     }
+
+public function withdrawForm()
+    {
+        $bankAccounts = auth()->user()->bankAccounts ?? collect();
+        return view('client.wallet.withdraw', compact('bankAccounts'));
+    }
+
+    public function withdraw(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:10000',
+            'bank_account_id' => 'nullable|exists:bank_accounts,id',
+            'bank_name' => 'nullable|string|max:100',
+            'account_number' => 'nullable|string|max:50',
+            'account_holder' => 'nullable|string|max:100',
+            'note' => 'nullable|string|max:255',
+        ]);
+
+        $user = auth()->user();
+        $bankAccountId = $request->bank_account_id;
+
+        // Nếu user nhập tài khoản mới
+        if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
+            // Kiểm tra trùng số tài khoản với user hiện tại
+            $existing = BankAccount::where('user_id', $user->id)
+                ->where('account_number', $request->account_number)
+                ->first();
+
+            if ($existing) {
+                $bankAccountId = $existing->id;
+            } else {
+                $bankAccount = BankAccount::create([
+                    'user_id' => $user->id,
+                    'bank_name' => $request->bank_name,
+                    'account_number' => $request->account_number,
+                    'account_holder' => $request->account_holder,
+                ]);
+                $bankAccountId = $bankAccount->id;
+            }
+        }
+
+        if (!$bankAccountId) {
+            return back()->withErrors(['bank_account_id' => 'Vui lòng chọn hoặc nhập tài khoản ngân hàng']);
+        }
+
+        // Tạo yêu cầu rút tiền
+        WithdrawRequest::create([
+            'user_id' => $user->id,
+            'bank_account_id' => $bankAccountId,
+            'amount' => $request->amount,
+            'status' => 'pending', // admin duyệt
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('wallet.history')
+            ->with('success', 'Yêu cầu rút tiền đã được gửi, vui lòng chờ admin duyệt.');
+    }
+    public function reject($id, Request $request)
+{
+    $withdraw = WithdrawRequest::findOrFail($id);
+    $withdraw->status = 'rejected';
+    $withdraw->note = $request->note; // lý do admin nhập
+    $withdraw->save();
+
+    return redirect()->back()->with('success', 'Đã từ chối yêu cầu rút tiền');
+}
+public function destroy($id)
+{
+    $account = BankAccount::where('user_id', auth()->id())->findOrFail($id);
+    $account->delete();
+
+    // Nếu request là AJAX thì trả về JSON
+    if (request()->expectsJson()) {
+        return response()->json(['success' => true, 'message' => 'Xóa tài khoản ngân hàng thành công!']);
+    }
+
+    // Nếu request thường (submit form) thì redirect như cũ
+    return redirect()->back()->with('success', 'Xóa tài khoản ngân hàng thành công!');
+}
+
+
 }

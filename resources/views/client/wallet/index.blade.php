@@ -58,7 +58,7 @@
                             <small class="text-muted">Số dư hiện tại</small>
                         </div>
                     </div>
-                    
+
                     <div class="balance-display mb-4">
                         <h3 class="balance-amount mb-0">
                             {{ number_format($wallet->balance, 0, ',', '.') }}
@@ -75,10 +75,20 @@
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="{{ route('wallet.history') }}" class="btn btn-outline-primary btn-action w-100">
-                                    <i class="fas fa-history mb-1"></i>
-                                    <div class="action-text">Lịch sử</div>
-                                </a>
+                                <div class="dropdown w-100">
+                                    <button class="btn btn-outline-primary btn-action w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-history mb-1"></i>
+                                        <div class="action-text">Lịch sử</div>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ route('wallet.history') }}">
+                                            <i class="fas fa-wallet me-2"></i>Lịch sử ví
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('wallet.payment-history') }}">
+                                            <i class="fas fa-receipt me-2"></i>Tất cả giao dịch
+                                        </a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -107,7 +117,7 @@
                                 </form>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-4 mb-3">
                             <div class="quick-action-item text-center p-3">
                                 <i class="fab fa-zalando fa-2x text-info mb-2"></i>
@@ -167,6 +177,10 @@
                                                 @if($transaction->type === 'deposit')
                                                     <span class="badge bg-success">
                                                         <i class="fas fa-plus me-1"></i>Nạp tiền
+                                                    </span>
+                                                @elseif($transaction->type === 'withdraw')
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-arrow-up me-1"></i>Rút tiền
                                                     </span>
                                                 @elseif($transaction->type === 'refund')
                                                     <span class="badge bg-info text-dark">
