@@ -29,7 +29,7 @@
                 </a>
             </div>
         </div>
-        
+
         <!-- Transaction Overview -->
         <div class="row mt-4">
             <div class="col-md-3">
@@ -66,6 +66,10 @@
                     @if($transaction->type === 'deposit')
                         <span class="badge bg-light text-success px-3 py-2">
                             <i class="fas fa-plus me-1"></i>Nạp tiền
+                        </span>
+                    @elseif($transaction->type === 'withdraw')
+                        <span class="badge bg-light text-danger px-3 py-2">
+                            <i class="fas fa-arrow-up me-1"></i>Rút tiền
                         </span>
                     @elseif($transaction->type === 'refund')
                         <span class="badge bg-light text-info px-3 py-2 text-dark">
@@ -136,6 +140,10 @@
                                     @if($transaction->type === 'deposit')
                                         <span class="badge bg-success">
                                             <i class="fas fa-plus me-1"></i>Nạp tiền vào ví
+                                        </span>
+                                    @elseif($transaction->type === 'withdraw')
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-arrow-up me-1"></i>Rút tiền khỏi ví
                                         </span>
                                     @elseif($transaction->type === 'refund')
                                         <span class="badge bg-info text-dark">
@@ -265,14 +273,14 @@
             <div class="card user-info-card">
                 <div class="card-body">
                     <div class="mb-4">
-                        <img src="{{ $transaction->user->avatar ? asset('storage/' . $transaction->user->avatar) : asset('assets/images/users/default.png') }}" 
+                        <img src="{{ $transaction->user->avatar ? asset('storage/' . $transaction->user->avatar) : asset('assets/images/users/default.png') }}"
                              class="rounded-circle mb-3 shadow" width="100" height="100" alt="User Avatar">
-                        
+
                         <h4 class="card-title text-primary">{{ $transaction->user->name }}</h4>
                         <p class="text-muted mb-2">
                             <i class="fas fa-envelope me-2"></i>{{ $transaction->user->email }}
                         </p>
-                        
+
                         @if($transaction->user->phone)
                             <p class="text-muted mb-2">
                                 <i class="fas fa-phone me-2"></i>{{ $transaction->user->phone }}
@@ -345,7 +353,7 @@
                     <div class="card-body">
                         <p class="text-muted mb-3">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            Giao dịch thanh toán thất bại có thể được xóa khỏi hệ thống. 
+                            Giao dịch thanh toán thất bại có thể được xóa khỏi hệ thống.
                             Hành động này không thể hoàn tác.
                         </p>
                         <form action="{{ route('admin.wallet-transactions.destroy', $transaction->id) }}" method="POST">

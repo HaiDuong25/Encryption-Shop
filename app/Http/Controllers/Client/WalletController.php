@@ -260,22 +260,13 @@ public function withdrawForm()
 
         // Nếu user nhập tài khoản mới
         if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
-            // Kiểm tra trùng số tài khoản với user hiện tại
-            $existing = BankAccount::where('user_id', $user->id)
-                ->where('account_number', $request->account_number)
-                ->first();
-
-            if ($existing) {
-                $bankAccountId = $existing->id;
-            } else {
-                $bankAccount = BankAccount::create([
-                    'user_id' => $user->id,
-                    'bank_name' => $request->bank_name,
-                    'account_number' => $request->account_number,
-                    'account_holder' => $request->account_holder,
-                ]);
-                $bankAccountId = $bankAccount->id;
-            }
+            $bankAccount = BankAccount::create([
+                'user_id' => $user->id,
+                'bank_name' => $request->bank_name,
+                'account_number' => $request->account_number,
+                'account_holder' => $request->account_holder,
+            ]);
+            $bankAccountId = $bankAccount->id;
         }
 
         if (!$bankAccountId) {
