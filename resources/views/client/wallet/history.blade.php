@@ -39,7 +39,7 @@
         <div class="card-body">
             <div class="alert alert-primary">
                 <i class="fas fa-info-circle me-2"></i>
-                <strong>Lịch sử ví</strong> chỉ hiển thị các giao dịch liên quan đến ví điện tử (nạp tiền, thanh toán bằng ví, hoàn tiền).
+                <strong>Lịch sử ví</strong> chỉ hiển thị các giao dịch liên quan đến ví điện tử (nạp tiền, rút tiền, thanh toán bằng ví, hoàn tiền).
                 <a href="{{ route('wallet.payment-history') }}" class="alert-link">Xem tất cả giao dịch thanh toán</a>
             </div>
             <!-- Filter Form -->
@@ -50,6 +50,7 @@
                         <select name="type" class="form-select">
                             <option value="">Tất cả</option>
                             <option value="deposit" {{ request('type') === 'deposit' ? 'selected' : '' }}>Nạp tiền</option>
+                            <option value="withdraw" {{ request('type') === 'withdraw' ? 'selected' : '' }}>Rút tiền</option>
                             <option value="payment" {{ request('type') === 'payment' ? 'selected' : '' }}>Thanh toán</option>
                             <option value="refund" {{ request('type') === 'refund' ? 'selected' : '' }}>Hoàn tiền</option>
                         </select>
@@ -109,6 +110,10 @@
                                             <span class="badge bg-success">
                                                 <i class="fas fa-plus me-1"></i>Nạp tiền
                                             </span>
+                                        @elseif($transaction->type === 'withdraw')
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-arrow-up me-1"></i>Rút tiền
+                                            </span>
                                         @elseif($transaction->type === 'refund')
                                             <span class="badge bg-info text-dark">
                                                 <i class="fas fa-undo me-1"></i>Hoàn tiền
@@ -167,7 +172,7 @@
                 <!-- Pagination -->
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div class="text-muted">
-                        Hiển thị {{ $transactions->firstItem() }} - {{ $transactions->lastItem() }} 
+                        Hiển thị {{ $transactions->firstItem() }} - {{ $transactions->lastItem() }}
                         trong tổng số {{ $transactions->total() }} giao dịch
                     </div>
                     {{ $transactions->links() }}

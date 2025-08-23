@@ -151,6 +151,10 @@ class User extends Authenticatable
     })->where('product_id', $productId)->exists();
 }
 
+public function bankAccounts()
+{
+    return $this->hasMany(\App\Models\BankAccount::class, 'user_id');
+}
 
 
 }
