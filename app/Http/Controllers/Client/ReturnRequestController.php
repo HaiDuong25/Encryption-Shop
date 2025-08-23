@@ -28,18 +28,7 @@ class ReturnRequestController extends Controller
             'reason' => 'required|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
-            'payment_method_id' => 'required|exists:payment_methods,id',
         ]);
-
-        $paymentMethod = PaymentMethod::find($request->payment_method_id);
-
-        // Nếu không phải COD thì bắt buộc phải có thông tin ngân hàng
-if ($paymentMethod && !str_contains(strtolower($paymentMethod->payment_type), 'cod')) {
-            $request->validate([
-                'bank_account_name' => 'required|string|max:255',
-                'bank_account_number' => 'required|string|max:255',
-            ]);
-        }
 
         $orderDetail = OrderDetail::with('order')->findOrFail($request->order_detail_id);
 
@@ -55,9 +44,6 @@ if ($paymentMethod && !str_contains(strtolower($paymentMethod->payment_type), 'c
             'reason' => $request->reason,
             'description' => $request->description,
             'image' => $imagePath,
-            'payment_method_id' => $request->payment_method_id,
-            'bank_account_name' => $paymentMethod && $paymentMethod->code !== 'cod' ? $request->bank_account_name : null,
-            'bank_account_number' => $paymentMethod && $paymentMethod->code !== 'cod' ? $request->bank_account_number : null,
             'status' => 'pending',
         ]);
 

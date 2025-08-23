@@ -10,36 +10,8 @@
             @csrf
             <input type="hidden" name="order_detail_id" value="{{ $orderDetail->id }}">
 
-            {{-- Phương thức thanh toán --}}
-            <div class="mb-3">
-                <label for="payment_method" class="form-label">Phương thức thanh toán:</label>
-                <select name="payment_method_id" id="payment_method_id" class="form-control" required>
-                    <option value="">-- Chọn phương thức thanh toán --</option>
-                    @foreach ($paymentMethods as $method)
-                        <option value="{{ $method->id }}"
-                            {{ isset($selectedPaymentMethodId) && $selectedPaymentMethodId == $method->id ? 'selected' : '' }}>
-                            {{ $method->payment_type }}
-                        </option>
-                    @endforeach
-                </select>
 
 
-            </div>
-
-            {{-- Tên người nhận tiền hoàn --}}
-            {{-- Tên người nhận tiền hoàn --}}
-            <div class="mb-3 refund-info">
-                <label for="bank_account_name" class="form-label">Tên người nhận</label>
-                <input type="text" name="bank_account_name" id="bank_account_name" class="form-control"
-                    placeholder="VD: Nguyễn Văn A">
-            </div>
-
-            {{-- Số tài khoản hoặc số ví --}}
-            <div class="mb-3 refund-info">
-                <label for="bank_account_number" class="form-label">Số tài khoản của ví điện từ</label>
-                <input type="text" name="bank_account_number" id="bank_account_number" class="form-control"
-                    placeholder="VD: 1234567890">
-            </div>
 
             {{-- Lý do --}}
             <div class="mb-3">
