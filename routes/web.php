@@ -198,7 +198,14 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
         Route::get('/{id}', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'show'])->name('show');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/update-status', [\App\Http\Controllers\Admin\WalletTransactionController::class, 'updateStatus'])->name('update-status');
+
     });
+Route::prefix('withdraw-requests')->name('admin.withdraw.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\WithdrawRequestController::class, 'index'])->name('index');
+    Route::post('/{id}/approve', [App\Http\Controllers\Admin\WithdrawRequestController::class, 'approve'])->name('approve');
+    Route::post('/{id}/reject', [App\Http\Controllers\Admin\WithdrawRequestController::class, 'reject'])->name('reject');
+});
+
 
 });
 
@@ -263,6 +270,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/topup/cancel', [\App\Http\Controllers\Client\WalletController::class, 'topupCancel'])->name('wallet.topup.cancel');
         Route::get('/history', [\App\Http\Controllers\Client\WalletController::class, 'history'])->name('wallet.history');
         Route::get('/payment-history', [\App\Http\Controllers\Client\WalletController::class, 'paymentHistory'])->name('wallet.payment-history');
+  Route::get('/withdraw', [\App\Http\Controllers\Client\WalletController::class, 'withdrawForm'])->name('wallet.withdraw');
+    Route::post('/withdraw', [\App\Http\Controllers\Client\WalletController::class, 'withdraw'])->name('wallet.withdraw.store');
+Route::delete('/bank/{id}', [\App\Http\Controllers\Client\WalletController::class, 'destroy'])->name('wallet.bank.destroy');
 
         // MoMo wallet topup
         Route::get('/momo/create', [\App\Http\Controllers\Client\WalletMomoController::class, 'createPayment'])->name('wallet.momo.create');
@@ -301,12 +311,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 });
-use App\Http\Controllers\Client\BankAccountController;
 
-Route::prefix('client')->name('client.')->group(function () {
-    // ...
-    Route::resource('bank-accounts', BankAccountController::class);
-});
 
 // --- Coupon Routes ---
 Route::get('/coupons', [ClientCouponController::class, 'index'])->name('client.coupons.index');
@@ -321,6 +326,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/coupons/restore', [ClientCouponController::class, 'restoreSavedCoupon'])->name('client.coupons.restore');
     Route::get('/api/saved-coupons', [ClientCouponController::class, 'getSavedCoupons'])->name('client.coupons.api.saved');
 });
+
+// routes/web.php
 
 // Add this route for coupons page
 Route::get('/api/locations', [LocationController::class, 'index'])->name('api.locations');

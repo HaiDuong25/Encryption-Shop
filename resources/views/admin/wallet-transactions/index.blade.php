@@ -48,7 +48,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-xl-3 col-md-6">
             <div class="card bg-success text-white">
                 <div class="card-body">
@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-xl-3 col-md-6">
             <div class="card bg-warning text-white">
                 <div class="card-body">
@@ -80,7 +80,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-xl-3 col-md-6">
             <div class="card bg-info text-white">
                 <div class="card-body">
@@ -111,7 +111,7 @@
                             <option value="payment" {{ request('type') === 'payment' ? 'selected' : '' }}>Thanh toán</option>
                         </select>
                     </div>
-                    
+
                     <div class="col-md-2">
                         <label class="form-label">Trạng thái</label>
                         <select name="status" class="form-select">
@@ -121,7 +121,7 @@
                             <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Thất bại</option>
                         </select>
                     </div>
-                    
+
                     <div class="col-md-2">
                         <label class="form-label">Phương thức</label>
                         <select name="payment_method_type" class="form-select">
@@ -131,17 +131,17 @@
                             <option value="WALLET" {{ request('payment_method_type') === 'WALLET' ? 'selected' : '' }}>Ví</option>
                         </select>
                     </div>
-                    
+
                     <div class="col-md-2">
                         <label class="form-label">Từ ngày</label>
                         <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
                     </div>
-                    
+
                     <div class="col-md-2">
                         <label class="form-label">Đến ngày</label>
                         <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                     </div>
-                    
+
                     <div class="col-md-2 d-flex align-items-end">
                         <div class="w-100">
                             <button type="submit" class="btn btn-primary w-100 mb-2">
@@ -153,7 +153,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row mt-3">
                     <div class="col-md-4">
                         <input type="text" name="search" class="form-control" placeholder="Tìm theo tên, email, mã giao dịch..." value="{{ request('search') }}">
@@ -167,7 +167,7 @@
     <div class="card">
         <div class="card-header">
             <h5 class="card-title mb-0">
-                <i class="fas fa-list me-2"></i>Danh sách giao dịch 
+                <i class="fas fa-list me-2"></i>Danh sách giao dịch
                 <span class="badge bg-secondary ms-2">{{ $transactions->total() }}</span>
             </h5>
         </div>
@@ -195,7 +195,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="{{ $transaction->user->avatar ? asset('storage/' . $transaction->user->avatar) : asset('assets/images/users/default.png') }}" 
+                                            <img src="{{ $transaction->user->avatar ? asset('storage/' . $transaction->user->avatar) : asset('assets/images/users/default.png') }}"
                                                  class="rounded-circle me-2" width="32" height="32" alt="Avatar">
                                             <div>
                                                 <div class="fw-bold">{{ $transaction->user->name }}</div>
@@ -203,21 +203,26 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        @if($transaction->type === 'deposit')
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-plus me-1"></i>Nạp tiền
-                                            </span>
-                                        @elseif($transaction->type === 'refund')
-                                            <span class="badge bg-info text-dark">
-                                                <i class="fas fa-undo me-1"></i>Hoàn tiền
-                                            </span>
-                                        @else
-                                            <span class="badge bg-warning">
-                                                <i class="fas fa-minus me-1"></i>Thanh toán
-                                            </span>
-                                        @endif
-                                    </td>
+                                  <td>
+    @if($transaction->type === 'deposit')
+        <span class="badge bg-success">
+            <i class="fas fa-plus me-1"></i>Nạp tiền
+        </span>
+    @elseif($transaction->type === 'refund')
+        <span class="badge bg-info text-dark">
+            <i class="fas fa-undo me-1"></i>Hoàn tiền
+        </span>
+    @elseif($transaction->type === 'withdraw')
+        <span class="badge bg-danger">
+            <i class="fas fa-arrow-up me-1"></i>Rút tiền
+        </span>
+    @else
+        <span class="badge bg-warning">
+            <i class="fas fa-minus me-1"></i>Thanh toán
+        </span>
+    @endif
+</td>
+
                                     <td>
                                         @if($transaction->type === 'deposit' || $transaction->type === 'refund')
                                             <span class="text-success fw-bold">
@@ -320,7 +325,7 @@
                 <!-- Pagination -->
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div class="text-muted">
-                        Hiển thị {{ $transactions->firstItem() }} - {{ $transactions->lastItem() }} 
+                        Hiển thị {{ $transactions->firstItem() }} - {{ $transactions->lastItem() }}
                         trong tổng số {{ $transactions->total() }} giao dịch
                     </div>
                     {{ $transactions->links() }}
