@@ -64,7 +64,7 @@ class CartController extends Controller
         if ($product->variants()->count() > 0 && !$variantId) {
             $success = false;
             $message = 'Vui lòng chọn phân loại sản phẩm (size, màu) trước khi thêm vào giỏ hàng!';
-            
+
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'message' => $message], 400);
             }
@@ -358,7 +358,7 @@ class CartController extends Controller
     public function processCheckout(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             // Địa chỉ giao hàng
             'shipping_address_id' => 'required|exists:shipping_addresses,id',
@@ -399,9 +399,9 @@ class CartController extends Controller
         // VALIDATION: Kiểm tra tất cả cart items phải có variant nếu product yêu cầu
         foreach ($carts as $cart) {
             $productHasVariants = $cart->product->variants->count() > 0;
-            
+
             if ($productHasVariants && !$cart->variant_id) {
-                return redirect()->route('cart.index')->with('error', 
+                return redirect()->route('cart.index')->with('error',
                     "Sản phẩm '{$cart->product->name}' yêu cầu chọn phân loại. Vui lòng cập nhật giỏ hàng!");
             }
         }
@@ -465,10 +465,10 @@ class CartController extends Controller
         if ($paymentMethod && $paymentMethod->payment_type === 'Số dư ví') {
             // Thanh toán bằng ví - kiểm tra số dư
             $wallet = $user->getOrCreateWallet();
-            
+
             if ($wallet->balance < $totalPrice) {
-                return redirect()->back()->with('error', 
-                    'Số dư trong ví không đủ để thanh toán. Số dư hiện tại: ' . 
+                return redirect()->back()->with('error',
+                    'Số dư trong ví không đủ để thanh toán. Số dư hiện tại: ' .
                     number_format($wallet->balance, 0, ',', '.') . ' VND. ' .
                     'Cần thêm: ' . number_format($totalPrice - $wallet->balance, 0, ',', '.') . ' VND.'
                 );
@@ -500,7 +500,7 @@ class CartController extends Controller
                 $order->notes = $request->notes;
                 $order->coupon_code = $couponCode;
                 $order->coupon_discount = $discountAmount;
-                $order->status = 'confirmed';
+                $order->status = 'pending';
                 $order->payment_status = 'paid';
                 $order->transaction_id = 'WALLET_' . time() . '_' . $user->id;
                 $order->save();
@@ -520,7 +520,7 @@ class CartController extends Controller
 
                 // Trừ tiền từ ví
                 $wallet->subtractBalance(
-                    $totalPrice, 
+                    $totalPrice,
                     'Thanh toán đơn hàng #' . $order->id,
                     'ORDER_' . $order->id . '_' . time()
                 );
@@ -658,9 +658,9 @@ class CartController extends Controller
                 'transaction_code' => null, // Sẽ được tạo khi confirm
                 // Không có 'confirmed_at' - sẽ được set khi đơn hàng completed
             ]);
-            
+
             Log::info("COD payment record created for order {$order->id} - pending confirmation until order completion");
-            
+
         } catch (\Exception $e) {
             Log::error('Lỗi tạo bản ghi thanh toán (COD): ' . $e->getMessage());
         }
@@ -729,7 +729,7 @@ class CartController extends Controller
                     \App\Models\UserSavedCoupon::where('user_id', Auth::id())
                         ->where('coupon_id', $coupon->id)
                         ->delete();
-                    
+
                     Log::info("Removed used coupon {$couponCode} from user's saved list after successful order {$order->id}");
                 }
             } catch (\Exception $e) {
@@ -924,9 +924,9 @@ class CartController extends Controller
     {
         // Log để debug
         Log::info("Accessing success page for order: {$order_id}");
-        
+
         $order = \App\Models\Order::with([
-            'paymentMethod', 
+            'paymentMethod',
             'shippingAddress',
             'payments' => function($query) {
                 $query->orderBy('created_at', 'desc');
@@ -1221,7 +1221,7 @@ class CartController extends Controller
     private function generateCouponDescription($coupon)
     {
         $description = '';
-        
+
         if ($coupon->discount_type === 'percentage') {
             $description = "Giảm {$coupon->discount}%";
             if ($coupon->max_discount_amount) {
@@ -1247,7 +1247,7 @@ class CartController extends Controller
         // Clear voucher session khi người dùng abandon checkout
         $hadCoupon = session('applied_coupon');
         $restoreCoupon = $request->input('restore_coupon');
-        
+
         session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
 
         // Log để tracking

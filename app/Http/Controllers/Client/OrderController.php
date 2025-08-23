@@ -7,10 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\Product;
-use App\Models\UserSavedCoupon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -83,68 +81,7 @@ public function cancel(Request $request, Order $order)
             }
         }
 
-        // TRẢ LẠI MÃ GIẢM GIÁ CHO KHÁCH HÀNG KHI HỦY ĐỚN
-        if ($order->coupon_code) {
-            try {
-                // Tìm bản ghi sử dụng coupon của đơn hàng này
-                $couponUse = \App\Models\CouponUse::where('order_id', $order->id)
-                    ->where('user_id', Auth::id())
-                    ->first();
-
-                if ($couponUse) {
-                    // Tìm coupon để trả lại số lần sử dụng
-                    $coupon = \App\Models\Coupon::find($couponUse->coupon_id);
-                    if ($coupon) {
-                        // Giảm số lần sử dụng của coupon
-                        $coupon->decrementUsage();
-                        
-                        // TRẢ MÃ VỀ DANH SÁCH ĐÃ LƯU CỦA USER
-                        // Kiểm tra xem user đã lưu mã này chưa (để tránh trùng lặp)
-                        $existingSaved = UserSavedCoupon::where('user_id', Auth::id())
-                            ->where('coupon_id', $coupon->id)
-                            ->first();
-                        
-                        if (!$existingSaved) {
-                            // Thêm mã vào danh sách đã lưu của user
-                            UserSavedCoupon::create([
-                                'user_id' => Auth::id(),
-                                'coupon_id' => $coupon->id,
-                                'saved_at' => now(),
-                            ]);
-                            
-                            Log::info("Restored coupon {$order->coupon_code} to user's saved list for cancelled order {$order->id}");
-                        }
-                        
-                        Log::info("Returned coupon {$order->coupon_code} usage for cancelled order {$order->id}. Current usage: {$coupon->used_count}");
-                    }
-                    
-                    // Xóa bản ghi sử dụng coupon
-                    $couponUse->delete();
-                    
-                    Log::info("Deleted coupon usage record for order {$order->id} and user " . Auth::id());
-                }
-            } catch (\Exception $e) {
-                Log::error('Error returning coupon for cancelled order: ' . $e->getMessage());
-                // Không throw exception để không ảnh hưởng đến việc hủy đơn hàng
-            }
-        }
-
         $oldStatus = $order->getOriginal('status');
-        // Hoàn tiền nếu cần (online / ví)
-        try {
-            $order->load(['paymentMethod', 'user']);
-            $pm = $order->paymentMethod;
-            if ($pm && strtoupper($pm->payment_type) !== 'COD') {
-                $amountToRefund = $order->refundableRemaining();
-                if ($amountToRefund > 0) {
-                    $order->refundToWallet($amountToRefund, 'Hoàn tiền do khách hủy đơn');
-                    Log::info("Client order cancel refund {$amountToRefund} for order {$order->id}");
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Refund error (client cancel) order ' . $order->id . ': ' . $e->getMessage());
-        }
-
         $order->update([
             'status' => 'cancelled',
             'cancel_reason' => $request->cancel_reason ?? 'Khách hàng hủy đơn',
@@ -165,12 +102,12 @@ public function cancel(Request $request, Order $order)
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Đơn hàng đã được hủy thành công. Số lượng sản phẩm và mã giảm giá đã được trả lại.'
+                'message' => 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.'
             ]);
         }
         // Redirect về trang chi tiết đơn hàng với flash message
         return redirect()->route('client.orders.show', $order->id)
-            ->with('success', 'Đơn hàng đã được hủy thành công. Số lượng sản phẩm và mã giảm giá đã được trả lại.');
+            ->with('success', 'Đơn hàng đã được hủy thành công và số lượng sản phẩm đã được trả lại kho.');
 
     } catch (\Exception $e) {
         DB::rollBack();
@@ -193,51 +130,62 @@ public function cancel(Request $request, Order $order)
     {
         $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-        // Kiểm tra xem đơn hàng có thể hoàn thành không
-        if (!$order->canComplete()) {
-            return back()->with('error', 'Đơn hàng này không thể hoàn thành lúc này.');
+        // Chuyển đổi trạng thái sang chuẩn để xử lý
+        $statusValue = $order->status;
+        if (is_numeric($statusValue)) {
+            $statusMap = [
+                '0' => 'pending',
+                '1' => 'confirmed',
+                '2' => 'shipping',
+                '3' => 'delivering',
+                '4' => 'received',
+                '5' => 'completed',
+                '6' => 'cancelled',
+            ];
+            $statusValue = $statusMap[(string)$statusValue] ?? 'pending';
         }
 
-        DB::beginTransaction();
-        try {
-            $oldStatus = $order->getOriginal('status');
-            $order->update(['status' => 'completed']);
+        // Chỉ cho phép xác nhận khi đơn hàng ở trạng thái "Đã nhận"
+        if ($statusValue === 'received') {
+            DB::beginTransaction();
+            try {
+                $oldStatus = $order->getOriginal('status');
+                $order->update(['status' => 'completed']);
 
-            // Lưu lịch sử thay đổi trạng thái
-            $order->statusHistories()->create([
-                'old_status' => $oldStatus,
-                'new_status' => 'completed',
-                'description' => 'Khách xác nhận đã nhận hàng',
-                'changed_by' => Auth::id(),
-            ]);
+                // Lưu lịch sử thay đổi trạng thái
+                $order->statusHistories()->create([
+                    'old_status' => $oldStatus,
+                    'new_status' => 'completed',
+                    'description' => 'Khách xác nhận đã nhận hàng',
+                    'changed_by' => Auth::id(),
+                ]);
 
-            // Nếu là COD thì cập nhật trạng thái thanh toán
-            if ($order->paymentMethod && strtolower($order->paymentMethod->payment_type) === 'cod') {
-                // Tìm payment chưa xác nhận hoặc tạo mới nếu chưa có
-                $payment = $order->payments()->where('status', 'pending')->first();
-                if (!$payment) {
-                    $payment = $order->payments()->create([
-                        'amount' => $order->total_price,
-                        'payment_method_id' => $order->payment_method_id,
-                        'status' => 'completed',
-                        'confirmed_at' => now(),
-                    ]);
-                } else {
-                    $payment->update([
-                        'status' => 'completed',
-                        'confirmed_at' => now(),
-                    ]);
+                // Nếu là COD thì cập nhật trạng thái thanh toán
+                if ($order->paymentMethod && strtolower($order->paymentMethod->payment_type) === 'cod') {
+                    // Tìm payment chưa xác nhận hoặc tạo mới nếu chưa có
+                    $payment = $order->payments()->where('status', 'pending')->first();
+                    if (!$payment) {
+                        $payment = $order->payments()->create([
+                            'amount' => $order->total_price,
+                            'payment_method_id' => $order->payment_method_id,
+                            'status' => 'completed', // Sửa lại từ 'confirmed' thành 'completed'
+                            'confirmed_at' => now(),
+                        ]);
+                    } else {
+                        $payment->update([
+                            'status' => 'completed', // Sửa lại từ 'confirmed' thành 'completed'
+                            'confirmed_at' => now(),
+                        ]);
+                    }
                 }
+                DB::commit();
+                return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành và đã cập nhật trạng thái thanh toán.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->with('error', 'Có lỗi khi xác nhận hoàn thành: ' . $e->getMessage());
             }
-
-            // Cập nhật trạng thái trả hàng nếu cần
-            $order->updateReturnStatus();
-
-            DB::commit();
-            return back()->with('success', 'Đơn hàng đã được xác nhận hoàn thành.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Có lỗi khi xác nhận hoàn thành: ' . $e->getMessage());
         }
+
+        return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái "Đã nhận".');
     }
 }
