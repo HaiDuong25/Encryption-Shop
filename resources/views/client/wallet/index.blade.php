@@ -59,54 +59,44 @@
                             </div>
                         </div>
 
-                    <div class="balance-display mb-4">
-                        <h3 class="balance-amount mb-0">
-                            {{ number_format($wallet->balance, 0, ',', '.') }}
-                        </h3>
-                        <span class="currency">VND</span>
+                        <div class="balance-display mb-4">
+                            <h3 class="balance-amount mb-0">
+                                {{ number_format($wallet->balance, 0, ',', '.') }}
+                            </h3>
+                            <span class="currency">VND</span>
+                        </div>
+
+                        <div class="wallet-actions">
+                            <div class="row g-2">
+                                {{-- Nạp tiền --}}
+                                <div class="col-4">
+                                    <a href="{{ route('wallet.topup') }}" class="btn btn-primary btn-action w-100">
+                                        <i class="fas fa-plus mb-1"></i>
+                                        <div class="action-text">Nạp tiền</div>
+                                    </a>
+                                </div>
+
+                                {{-- Rút tiền --}}
+                                <div class="col-4">
+                                    <a href="{{ route('wallet.withdraw') }}" class="btn btn-outline-primary btn-danger btn-action w-100">
+                                        <i class="fas fa-arrow-down mb-1"></i>
+                                        <div class="action-text">Rút tiền</div>
+                                    </a>
+                                </div>
+
+                                {{-- Lịch sử --}}
+                                <div class="col-4">
+                                    <a href="{{ route('wallet.history') }}"
+                                        class="btn btn-outline-primary btn-action w-100">
+                                        <i class="fas fa-history mb-1"></i>
+                                        <div class="action-text">Lịch sử</div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                 <div class="wallet-actions">
-    <div class="row g-2">
-        {{-- Nạp tiền --}}
-        <div class="col-4">
-            <a href="{{ route('wallet.topup') }}" class="btn btn-primary btn-action w-100">
-                <i class="fas fa-plus mb-1"></i>
-                <div class="action-text">Nạp tiền</div>
-            </a>
-        </div>
-
-        {{-- Rút tiền --}}
-        <div class="col-4">
-            <a href="{{ route('wallet.withdraw') }}" class="btn btn-danger btn-action w-100">
-                <i class="fas fa-arrow-down mb-1"></i>
-                <div class="action-text">Rút tiền</div>
-            </a>
-        </div>
-
-        {{-- Lịch sử --}}
-        <div class="col-4">
-            <div class="dropdown w-100">
-                <button class="btn btn-outline-primary btn-action w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-history mb-1"></i>
-                    <div class="action-text">Lịch sử</div>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{{ route('wallet.history') }}">
-                        <i class="fas fa-wallet me-2"></i>Lịch sử ví
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ route('wallet.payment-history') }}">
-                        <i class="fas fa-receipt me-2"></i>Tất cả giao dịch
-                    </a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
                 </div>
             </div>
-        </div>
 
             <!-- Quick Actions -->
             <div class="col-lg-8 col-md-6 mb-4">
