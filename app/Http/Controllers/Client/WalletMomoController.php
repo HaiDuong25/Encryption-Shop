@@ -25,12 +25,23 @@ class WalletMomoController extends Controller
                 return redirect()->route('wallet.topup')->with('error', 'Không tìm thấy thông tin nạp tiền');
             }
 
+            // Đảm bảo orderId luôn duy nhất, nếu đã tồn tại thì tạo mới
             $orderId = $topupData['transaction_code'];
             $amount = (int) $topupData['amount'];
             $orderInfo = 'Nạp tiền vào ví Encryption Shop - ' . number_format($amount) . ' VND';
             $redirectUrl = route('wallet.momo.return');
             $ipnUrl = route('wallet.momo.notify');
             $extraData = "";
+
+            // Kiểm tra nếu orderId đã tồn tại ở trạng thái pending hoặc completed thì tạo mới
+            $exists = \App\Models\WalletTransaction::where('transaction_code', $orderId)
+                ->whereIn('status', ['pending', 'completed'])
+                ->exists();
+            if ($exists) {
+                $orderId = 'WALLET_' . time() . '_' . rand(1000,9999);
+                $topupData['transaction_code'] = $orderId;
+                Session::put('wallet_topup_data', $topupData);
+            }
 
             $requestId = time() . "";
             $requestType = "captureWallet";
