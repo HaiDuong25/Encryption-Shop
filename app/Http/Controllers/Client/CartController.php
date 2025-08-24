@@ -528,7 +528,8 @@ class CartController extends Controller
                 $wallet->subtractBalance(
                     $totalPrice,
                     'Thanh toán đơn hàng #' . $order->id,
-                    'ORDER_' . $order->id . '_' . time()
+                    'ORDER_' . $order->id . '_' . time(),
+                    'WALLET'
                 );
 
                 // Tạo payment record

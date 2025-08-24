@@ -57,7 +57,7 @@ class UserWallet extends Model
     /**
      * Trừ tiền từ ví
      */
-    public function subtractBalance($amount, $description = null, $transactionCode = null)
+    public function subtractBalance($amount, $description = null, $transactionCode = null, $paymentMethodType = 'WALLET')
     {
         if ($this->balance < $amount) {
             throw new \Exception('Số dư không đủ');
@@ -86,7 +86,8 @@ class UserWallet extends Model
             'balance_after' => $this->balance,
             'transaction_code' => $transactionCode ?? 'PAY_' . time() . '_' . $this->user_id,
             'description' => $description ?? 'Thanh toán bằng ví',
-            'status' => 'completed'
+            'status' => 'completed',
+            'payment_method_type' => $paymentMethodType
         ]);
 
         return $this;
