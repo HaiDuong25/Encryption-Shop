@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\UserWallet;
 use App\Models\WalletTransaction;
 use App\Models\WithdrawRequest;
- // thêm model rút tiền
+// thêm model rút tiền
 use App\Models\BankAccount; // thêm model tài khoản ngân hàng
 class WalletController extends Controller
 {
@@ -21,9 +21,7 @@ class WalletController extends Controller
         $wallet = $user->getOrCreateWallet();
 
         // Lấy lịch sử giao dịch gần nhất
-        $recentTransactions = $user->walletTransactions()
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $recentTransactions = $user->walletTransactions()->orderBy('created_at', 'desc')->paginate(10);
 
         return view('client.wallet.index', compact('wallet', 'recentTransactions'));
     }
@@ -37,7 +35,7 @@ class WalletController extends Controller
     {
         $request->validate([
             'amount' => 'required|numeric|min:10000|max:50000000', // Tối thiểu 10k, tối đa 50tr
-            'payment_method' => 'required|in:momo,zalopay'
+            'payment_method' => 'required|in:momo,zalopay',
         ]);
 
         $user = Auth::user();
@@ -50,7 +48,7 @@ class WalletController extends Controller
             ->where('created_at', '<', now()->subMinutes(10))
             ->update([
                 'status' => 'failed',
-                'description' => DB::raw("CONCAT(description, ' (Hết hạn sau 10 phút)')")
+                'description' => DB::raw("CONCAT(description, ' (Hết hạn sau 10 phút)')"),
             ]);
 
         // Tạo pending transaction
@@ -64,7 +62,7 @@ class WalletController extends Controller
             'transaction_code' => $transactionCode,
             'description' => 'Nạp tiền vào ví qua ' . strtoupper($paymentMethod),
             'status' => 'pending',
-            'payment_method_type' => strtoupper($paymentMethod)
+            'payment_method_type' => strtoupper($paymentMethod),
         ]);
 
         // Lưu thông tin nạp tiền vào session
@@ -75,7 +73,7 @@ class WalletController extends Controller
             'transaction_id' => $transaction->id,
             'description' => 'Nạp tiền vào ví Encryption Shop',
             'redirect_url' => route('wallet.topup.success'),
-            'cancel_url' => route('wallet.topup.cancel')
+            'cancel_url' => route('wallet.topup.cancel'),
         ];
 
         Session::put('wallet_topup_data', $topupData);
@@ -93,9 +91,7 @@ class WalletController extends Controller
         $transactionCode = $request->get('transaction_code');
 
         if ($transactionCode) {
-            $transaction = WalletTransaction::where('transaction_code', $transactionCode)
-                ->where('user_id', Auth::id())
-                ->first();
+            $transaction = WalletTransaction::where('transaction_code', $transactionCode)->where('user_id', Auth::id())->first();
 
             if ($transaction && $transaction->status === 'completed') {
                 Session::forget('wallet_topup_data');
@@ -150,7 +146,8 @@ class WalletController extends Controller
         $user = Auth::user();
 
         // Lấy wallet transactions
-        $walletTransactions = $user->walletTransactions()
+        $walletTransactions = $user
+            ->walletTransactions()
             ->select('id', 'type', 'amount', 'description', 'status', 'payment_method_type', 'created_at')
             ->selectRaw("'wallet' as source_type")
             ->get()
@@ -169,24 +166,22 @@ class WalletController extends Controller
             });
 
         // Lấy payments của user (từ orders) - chỉ lấy payments KHÔNG PHẢI từ ví để tránh duplicate
-        $payments = \App\Models\Payment::whereHas('order', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
+        $payments = \App\Models\Payment::whereHas('order', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
             ->with(['order', 'paymentMethod'])
-            ->where(function($query) {
+            ->where(function ($query) {
                 // Chỉ lấy payments không phải từ wallet và có amount > 0
-                $query->where('payment_method_type', '!=', 'WALLET')
-                      ->whereNotNull('payment_method_type')
-                      ->where('amount', '>', 0);
+                $query->where('payment_method_type', '!=', 'WALLET')->whereNotNull('payment_method_type')->where('amount', '>', 0);
             })
-            ->orWhere(function($query) use ($user) {
+            ->orWhere(function ($query) use ($user) {
                 // Hoặc payments không có payment_method_type nhưng có amount > 0 và không phải payment method 4 (ví)
-                $query->whereHas('order', function($subQuery) use ($user) {
-                    $subQuery->where('user_id', $user->id)
-                             ->where('payment_method_id', '!=', 4); // 4 là ID của "Số dư ví"
-                })
-                ->whereNull('payment_method_type')
-                ->where('amount', '>', 0);
+                $query
+                    ->whereHas('order', function ($subQuery) use ($user) {
+                        $subQuery->where('user_id', $user->id)->where('payment_method_id', '!=', 4); // 4 là ID của "Số dư ví"
+                    })
+                    ->whereNull('payment_method_type')
+                    ->where('amount', '>', 0);
             })
             ->get()
             ->map(function ($payment) {
@@ -198,7 +193,7 @@ class WalletController extends Controller
                     'amount' => $amount,
                     'description' => 'Thanh toán đơn hàng #' . $payment->order->id . ' qua ' . ($payment->paymentMethod->payment_type ?? 'N/A'),
                     'status' => $payment->status,
-                    'payment_method_type' => $payment->payment_method_type ?? $payment->paymentMethod->payment_type ?? 'N/A',
+                    'payment_method_type' => $payment->payment_method_type ?? ($payment->paymentMethod->payment_type ?? 'N/A'),
                     'created_at' => $payment->created_at,
                     'source_type' => 'payment',
                     'order_id' => $payment->order->id,
@@ -206,9 +201,7 @@ class WalletController extends Controller
             });
 
         // Kết hợp và sắp xếp theo thời gian
-        $allTransactions = $walletTransactions->merge($payments)
-            ->sortByDesc('created_at')
-            ->values();
+        $allTransactions = $walletTransactions->merge($payments)->sortByDesc('created_at')->values();
 
         // Phân trang thủ công
         $perPage = 15;
@@ -217,13 +210,7 @@ class WalletController extends Controller
 
         $paginatedTransactions = $allTransactions->slice($offset, $perPage)->values();
 
-        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
-            $paginatedTransactions,
-            $allTransactions->count(),
-            $perPage,
-            $currentPage,
-            ['path' => $request->url(), 'pageName' => 'page']
-        );
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($paginatedTransactions, $allTransactions->count(), $perPage, $currentPage, ['path' => $request->url(), 'pageName' => 'page']);
 
         $paginator->withQueryString();
 
@@ -238,7 +225,7 @@ class WalletController extends Controller
         return null;
     }
 
-public function withdrawForm()
+    public function withdrawForm()
     {
         $bankAccounts = auth()->user()->bankAccounts ?? collect();
         return view('client.wallet.withdraw', compact('bankAccounts'));
@@ -256,14 +243,23 @@ public function withdrawForm()
         ]);
 
         $user = auth()->user();
+        $wallet = $user->wallet; // quan hệ 1-1 User -> Wallet
+
+        // ✅ Check số dư ví
+        if ($request->amount > $wallet->balance) {
+            return back()
+                ->withErrors([
+                    'amount' => 'Số dư ví không đủ để rút tiền! Số dư hiện tại: ' . number_format($wallet->balance) . 'đ',
+                ])
+                ->withInput();
+        }
+
         $bankAccountId = $request->bank_account_id;
 
         // Nếu user nhập tài khoản mới
         if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
             // Kiểm tra trùng số tài khoản với user hiện tại
-            $existing = BankAccount::where('user_id', $user->id)
-                ->where('account_number', $request->account_number)
-                ->first();
+            $existing = BankAccount::where('user_id', $user->id)->where('account_number', $request->account_number)->first();
 
             if ($existing) {
                 $bankAccountId = $existing->id;
@@ -281,7 +277,8 @@ public function withdrawForm()
         if (!$bankAccountId) {
             return back()->withErrors(['bank_account_id' => 'Vui lòng chọn hoặc nhập tài khoản ngân hàng']);
         }
-
+        $wallet->balance -= $request->amount;
+        $wallet->save();
         // Tạo yêu cầu rút tiền
         WithdrawRequest::create([
             'user_id' => $user->id,
@@ -291,31 +288,29 @@ public function withdrawForm()
             'note' => $request->note,
         ]);
 
-        return redirect()->route('wallet.history')
-            ->with('success', 'Yêu cầu rút tiền đã được gửi, vui lòng chờ admin duyệt.');
+        return redirect()->route('wallet.history')->with('success', 'Yêu cầu rút tiền đã được gửi, vui lòng chờ admin duyệt.');
     }
+
     public function reject($id, Request $request)
-{
-    $withdraw = WithdrawRequest::findOrFail($id);
-    $withdraw->status = 'rejected';
-    $withdraw->note = $request->note; // lý do admin nhập
-    $withdraw->save();
+    {
+        $withdraw = WithdrawRequest::findOrFail($id);
+        $withdraw->status = 'rejected';
+        $withdraw->note = $request->note; // lý do admin nhập
+        $withdraw->save();
 
-    return redirect()->back()->with('success', 'Đã từ chối yêu cầu rút tiền');
-}
-public function destroy($id)
-{
-    $account = BankAccount::where('user_id', auth()->id())->findOrFail($id);
-    $account->delete();
-
-    // Nếu request là AJAX thì trả về JSON
-    if (request()->expectsJson()) {
-        return response()->json(['success' => true, 'message' => 'Xóa tài khoản ngân hàng thành công!']);
+        return redirect()->back()->with('success', 'Đã từ chối yêu cầu rút tiền');
     }
+    public function destroy($id)
+    {
+        $account = BankAccount::where('user_id', auth()->id())->findOrFail($id);
+        $account->delete();
 
-    // Nếu request thường (submit form) thì redirect như cũ
-    return redirect()->back()->with('success', 'Xóa tài khoản ngân hàng thành công!');
-}
+        // Nếu request là AJAX thì trả về JSON
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Xóa tài khoản ngân hàng thành công!']);
+        }
 
-
+        // Nếu request thường (submit form) thì redirect như cũ
+        return redirect()->back()->with('success', 'Xóa tài khoản ngân hàng thành công!');
+    }
 }
