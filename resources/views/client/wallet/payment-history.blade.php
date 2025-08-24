@@ -117,43 +117,37 @@
                     </a>
                 @endif
             </td>
-            <td>
-                @if($transaction['type'] === 'refund')
-                    <span class="badge bg-primary">
-                        <i class="fas fa-wallet me-1"></i>Số dư ví
-                    </span>
-                @elseif($transaction['payment_method_type'])
-                    @switch($transaction['payment_method_type'])
-                        @case('WALLET')
-                        @case('Số dư ví')
-                            <span class="badge bg-primary">
-                                <i class="fas fa-wallet me-1"></i>Số dư ví
-                            </span>
-                            @break
-                        @case('MOMO')
-                        @case('Ví Điện Tử MOMO')
-                            <span class="badge bg-success">
-                                <i class="fas fa-mobile-alt me-1"></i>MoMo
-                            </span>
-                            @break
-                        @case('ZALOPAY')
-                        @case('Ví Điện Tử ZALOPAY')
-                            <span class="badge bg-info">
-                                <i class="fas fa-credit-card me-1"></i>ZaloPay
-                            </span>
-                            @break
-                        @case('COD')
-                            <span class="badge bg-warning">
-                                <i class="fas fa-money-bill me-1"></i>COD
-                            </span>
-                            @break
-                        @default
-                            <span class="badge bg-secondary">{{ $transaction['payment_method_type'] }}</span>
-                    @endswitch
-                @else
-                    <span class="text-muted">-</span>
-                @endif
-            </td>
+           <td>
+    @if(in_array($transaction['type'], ['withdraw', 'refund', 'payment']))
+        <span class="badge bg-primary">
+            <i class="fas fa-wallet me-1"></i>Số dư ví
+        </span>
+    @elseif($transaction['type'] === 'deposit' && $transaction['payment_method_type'])
+        @switch($transaction['payment_method_type'])
+            @case('MOMO')
+            @case('Ví Điện Tử MOMO')
+                <span class="badge bg-success">
+                    <i class="fas fa-mobile-alt me-1"></i>MoMo
+                </span>
+                @break
+            @case('ZALOPAY')
+            @case('Ví Điện Tử ZALOPAY')
+                <span class="badge bg-info">
+                    <i class="fas fa-credit-card me-1"></i>ZaloPay
+                </span>
+                @break
+            @case('COD')
+                <span class="badge bg-warning">
+                    <i class="fas fa-money-bill me-1"></i>COD
+                </span>
+                @break
+            @default
+                <span class="badge bg-secondary">{{ $transaction['payment_method_type'] }}</span>
+        @endswitch
+    @else
+        <span class="text-muted">-</span>
+    @endif
+</td>
             <td>
                 @switch($transaction['status'])
                     @case('completed')
@@ -176,11 +170,11 @@
             <td>
                 @if($transaction['source_type'] === 'wallet')
                     <span class="badge bg-primary source-badge">
-                        <i class="fas fa-wallet me-1"></i>Wallet
+                        <i class="fas fa-wallet me-1"></i>Ví
                     </span>
                 @else
                     <span class="badge bg-success source-badge">
-                        <i class="fas fa-credit-card me-1"></i>Payment
+                        <i class="fas fa-credit-card me-1"></i>Thanh toán
                     </span>
                 @endif
             </td>
