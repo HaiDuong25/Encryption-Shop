@@ -81,12 +81,17 @@ public function cancel(Request $request, Order $order)
             }
         }
 
+
         $oldStatus = $order->getOriginal('status');
         $order->update([
             'status' => 'cancelled',
             'cancel_reason' => $request->cancel_reason ?? 'Khách hàng hủy đơn',
             'cancel_note' => $request->note ?? null,
         ]);
+
+        // Hoàn tiền về ví nếu là đơn thanh toán ví/online
+        $order->refresh();
+        $order->refundToWallet($order->total_price, 'Hoàn tiền do hủy đơn hàng');
 
         // Lưu lịch sử thay đổi trạng thái
         $order->statusHistories()->create([

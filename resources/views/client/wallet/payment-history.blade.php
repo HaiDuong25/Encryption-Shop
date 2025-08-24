@@ -54,9 +54,7 @@
         <div class="card-body">
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
-                <strong>Lịch sử tổng hợp</strong> hiển thị tất cả các giao dịch thanh toán của bạn, bao gồm:
-                <ul class="mb-0 mt-2">
-                    <li><span class="badge bg-primary">Wallet</span> Giao dịch ví (nạp tiền, rút tiền, thanh toán bằng ví, hoàn tiền)</li>
+                <strong>Lịch sử tổng hợp</strong> hiển thị tất cả các giao dịch thanh toán c                    <li><span class="badge bg-primary">Wallet</span> Giao dịch ví (nạp tiền, rút tiền, thanh toán bằng ví, hoàn tiền)</li>
                     <li><span class="badge bg-success">Payment</span> Thanh toán trực tiếp (MoMo, ZaloPay, COD)</li>
                 </ul>
             </div>
@@ -120,7 +118,11 @@
                 @endif
             </td>
             <td>
-                @if($transaction['payment_method_type'])
+                @if($transaction['type'] === 'refund')
+                    <span class="badge bg-primary">
+                        <i class="fas fa-wallet me-1"></i>Số dư ví
+                    </span>
+                @elseif($transaction['payment_method_type'])
                     @switch($transaction['payment_method_type'])
                         @case('WALLET')
                         @case('Số dư ví')

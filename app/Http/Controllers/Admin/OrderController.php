@@ -86,18 +86,25 @@ class OrderController extends \App\Http\Controllers\Controller
                 'status' => $newStatus,
             ];
 
-            // Nếu trạng thái là cancelled, thêm thông tin hủy đơn
+
+            // Nếu trạng thái là cancelled, thêm thông tin hủy đơn và hoàn tiền ví nếu cần
             if ($newStatus === 'cancelled') {
                 $updateData['cancel_reason'] = $validated['cancel_reason'];
                 $updateData['cancel_note'] = $validated['cancel_note'];
             }
 
-            $order->update($updateData);
 
+            $order->update($updateData);
 
             // Xử lý logic thanh toán và hóa đơn khi chuyển trạng thái
             if ($oldStatus !== $newStatus) {
                 $this->handlePaymentAndInvoiceLogic($order, $oldStatus, $newStatus);
+
+                // Nếu chuyển sang cancelled và là đơn thanh toán ví/online thì hoàn tiền
+                if ($newStatus === 'cancelled') {
+                    $order->refresh(); // Đảm bảo dữ liệu mới nhất
+                    $order->refundToWallet($order->total_price, 'Hoàn tiền do hủy đơn hàng');
+                }
 
                 $order->statusHistories()->create([
                     'old_status' => $oldStatus,
