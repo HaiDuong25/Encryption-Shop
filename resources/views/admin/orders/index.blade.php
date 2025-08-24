@@ -98,11 +98,11 @@
     <div class="card card-table">
         <div class="card-body">
             <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
-                <h5>Order List</h5>
+                <h5>Danh sách đơn hàng</h5>
                 <div class="right-options d-flex gap-2 align-items-center">
                     {{-- Form tìm kiếm theo ID đơn hàng hoặc tên người nhận --}}
                     <form method="GET" action="{{ route('orders.index') }}" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo ID, tên người nhận hoặc tên user..." 
+                        <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo ID, tên người nhận hoặc tên user..."
                                value="{{ request('search') }}" style="width: 320px;">
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="ri-search-line"></i> Tìm
@@ -278,7 +278,7 @@
                                                 if (is_numeric($cancelStatusValue)) {
                                                     $cancelStatusMap = [
                                                         '0' => 'pending',
-                                                        '1' => 'confirmed', 
+                                                        '1' => 'confirmed',
                                                         '2' => 'shipping',
                                                         '3' => 'delivering',
                                                         '4' => 'received',
@@ -305,7 +305,7 @@
                                                 if (is_numeric($deleteStatusValue)) {
                                                     $deleteStatusMap = [
                                                         '0' => 'pending',
-                                                        '1' => 'confirmed', 
+                                                        '1' => 'confirmed',
                                                         '2' => 'shipping',
                                                         '3' => 'delivering',
                                                         '4' => 'received',
@@ -346,10 +346,10 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.card');
             container.parentNode.insertBefore(alertDiv, container);
-            
+
             // Auto hide after 5 seconds
             setTimeout(() => {
                 if (alertDiv.parentNode) {
@@ -364,10 +364,10 @@
             const confirmMessage = document.getElementById('confirmMessage');
             const confirmButton = document.getElementById('confirmButton');
             const confirmIcon = document.getElementById('confirmIcon');
-            
+
             // Cập nhật nội dung modal
             confirmMessage.textContent = message;
-            
+
             // Cập nhật icon và màu sắc dựa trên type
             if (type === 'danger') {
                 confirmIcon.innerHTML = '<i class="ri-delete-bin-line" style="font-size: 48px; color: #dc3545;"></i>';
@@ -382,17 +382,17 @@
                 confirmButton.className = 'btn btn-primary';
                 confirmButton.innerHTML = '<i class="ri-check-line me-1"></i>Xác nhận';
             }
-            
+
             // Xóa event listener cũ và thêm mới
             const newConfirmButton = confirmButton.cloneNode(true);
             confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-            
+
             // Thêm event listener cho nút xác nhận
             newConfirmButton.addEventListener('click', function() {
                 modal.hide();
                 onConfirm();
             });
-            
+
             // Hiển thị modal
             modal.show();
         }
