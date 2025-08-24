@@ -150,7 +150,7 @@ class WalletMomoController extends Controller
     public function notifyPayment(Request $request)
     {
         Log::info('MoMo Wallet Topup IPN:', $request->all());
-        
+
         $partnerCode = $request->partnerCode;
         $orderId = $request->orderId;
         $requestId = $request->requestId;
@@ -175,7 +175,7 @@ class WalletMomoController extends Controller
                 return response()->json(['status' => 'success']);
             }
         }
-        
+
         return response()->json(['status' => 'error']);
     }
 
