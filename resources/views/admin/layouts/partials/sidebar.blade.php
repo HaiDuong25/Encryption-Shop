@@ -131,9 +131,7 @@
                     <li class="sidebar-list">
                         <a class="linear-icon-link sidebar-link sidebar-nav"
                             href="{{ route('admin.withdraw.index') }}">
-
                             <i class="ri-bank-card-line ms-1"></i>
-
                             <span> Yêu cầu rút tiền </span>
                         </a>
                     </li>

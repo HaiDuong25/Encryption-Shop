@@ -263,7 +263,7 @@
                                         class="btn btn-primary btn-lg me-3 px-4">
                                         <i class="fas fa-eye me-2"></i>Chi tiết đơn hàng
                                     </a>
-                                    <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                    <a href="{{ route('client.products.index') }}" class="btn btn-outline-secondary btn-lg px-4">
                                         <i class="fas fa-home me-2"></i>Tiếp tục mua sắm
                                     </a>
                                 </div>
