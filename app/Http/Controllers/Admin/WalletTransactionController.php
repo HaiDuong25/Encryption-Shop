@@ -64,6 +64,7 @@ class WalletTransactionController extends Controller
     'pending_deposits' => WalletTransaction::where('type', 'deposit')->where('status', 'pending')->count(),
     'pending_withdraws' => WalletTransaction::where('type', 'withdraw')->where('status', 'pending')->count(),
     'total_transactions_today' => WalletTransaction::whereDate('created_at', today())->count(),
+    'withdraw_completed_amount' => WalletTransaction::where('type', 'withdraw')->where('status', 'completed')->sum('amount'),
 ];
 
         return view('admin.wallet-transactions.index', compact('transactions', 'stats'));
