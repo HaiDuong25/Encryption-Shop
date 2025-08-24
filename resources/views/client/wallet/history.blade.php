@@ -162,64 +162,64 @@
                                         <td class="fw-bold">{{ number_format($transaction->balance_after, 0, ',', '.') }}
                                             VND</td>
                                         <td>{{ $transaction->description }}</td>
-                                        <td>
-                                            @if ($transaction->type === 'refund')
+                                        <<td>
+                                            @if (in_array($transaction->type, ['withdraw', 'refund', 'payment']))
                                                 <span class="badge bg-primary">
                                                     <i class="fas fa-wallet me-1"></i>Số dư ví
                                                 </span>
-                                            @elseif ($transaction->payment_method_type)
+                                            @elseif($transaction->type === 'deposit' && $transaction->payment_method_type)
                                                 @switch($transaction->payment_method_type)
-                                                    @case('WALLET')
-                                                    @case('Số dư ví')
-                                                        <span class="badge bg-primary">
-                                                            <i class="fas fa-wallet me-1"></i>Số dư ví
-                                                        </span>
-                                                        @break
                                                     @case('MOMO')
                                                     @case('Ví Điện Tử MOMO')
                                                         <span class="badge bg-success">
                                                             <i class="fas fa-mobile-alt me-1"></i>MoMo
                                                         </span>
-                                                        @break
+                                                    @break
+
                                                     @case('ZALOPAY')
                                                     @case('Ví Điện Tử ZALOPAY')
                                                         <span class="badge bg-info">
                                                             <i class="fas fa-credit-card me-1"></i>ZaloPay
                                                         </span>
-                                                        @break
+                                                    @break
+
                                                     @case('COD')
                                                         <span class="badge bg-warning">
                                                             <i class="fas fa-money-bill me-1"></i>COD
                                                         </span>
-                                                        @break
+                                                    @break
+
                                                     @default
-                                                        <span class="badge bg-secondary">{{ $transaction->payment_method_type }}</span>
+                                                        <span
+                                                            class="badge bg-secondary">{{ $transaction->payment_method_type }}</span>
                                                 @endswitch
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
-                                        </td>
-                                        <td>
-                                            @switch($transaction->status)
-                                                @case('completed')
-                                                    <span class="badge bg-success">
-                                                        <i class="fas fa-check me-1"></i>Hoàn thành
-                                                    </span>
-                                                @break
+                                            </td>
 
-                                                @case('pending')
-                                                    <span class="badge bg-warning">
-                                                        <i class="fas fa-clock me-1"></i>Đang xử lý
-                                                    </span>
-                                                @break
 
-                                                @case('failed')
-                                                    <span class="badge bg-danger">
-                                                        <i class="fas fa-times me-1"></i>Thất bại
-                                                    </span>
-                                                @break
-                                            @endswitch
-                                        </td>
+                                            <td>
+                                                @switch($transaction->status)
+                                                    @case('completed')
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check me-1"></i>Hoàn thành
+                                                        </span>
+                                                    @break
+
+                                                    @case('pending')
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-clock me-1"></i>Đang xử lý
+                                                        </span>
+                                                    @break
+
+                                                    @case('failed')
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times me-1"></i>Thất bại
+                                                        </span>
+                                                    @break
+                                                @endswitch
+                                            </td>
                                     </tr>
                                 @endforeach
                             </tbody>

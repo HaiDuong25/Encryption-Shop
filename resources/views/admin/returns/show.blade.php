@@ -11,14 +11,44 @@
         </div>
         <div class="card-body">
             <table class="table table-sm table-bordered mb-0">
+                <!-- Thông tin khách hàng -->
                 <tr>
                     <th width="25%">Khách hàng</th>
-                    <td>{{ $return->user->name }}</td>
+                    <td>{{ $return->user->name }} ({{ $return->user->email }})</td>
+                </tr>
+
+                <!-- Thông tin người nhận -->
+                <tr>
+                    <th>Người nhận</th>
+                    <td>{{ $return->order->receiver_name ?? 'Admin' }}</td>
                 </tr>
                 <tr>
-                    <th>Sản phẩm</th>
-                    <td>{{ $return->orderDetail->product->name ?? 'Ẩn' }}</td>
+                    <th>SĐT</th>
+                    <td>{{ $return->order->receiver_phone ?? '0766304377' }}</td>
                 </tr>
+                <tr>
+                    <th>Địa chỉ</th>
+                    <td>{{ $return->order->receiver_address ?? '1aaz, Phường Phương Canh, Quận Nam Từ Liêm, Hà Nội' }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ $return->order->receiver_email ?? 'admin@gmail.com' }}</td>
+                </tr>
+
+                <!-- Thông tin sản phẩm -->
+                <tr>
+                    <th>Sản phẩm</th>
+                    <td>
+                        {{ $return->orderDetail->product->name ?? 'Ẩn' }}
+                        @if($return->orderDetail->variant)
+                            <br>
+                            <small>Biến thể: {{ $return->orderDetail->variant->name }}</small>
+                        @endif
+                        <br>
+                        <small>Giá: {{ number_format($return->orderDetail->price, 0, ',', '.') }} ₫</small>
+                    </td>
+                </tr>
+
                 <tr>
                     <th>Lý do</th>
                     <td>{{ $return->reason }}</td>
@@ -37,7 +67,6 @@
                         @endif
                     </td>
                 </tr>
-
 
                 <tr>
                     <th>Trạng thái</th>
@@ -81,7 +110,11 @@
                                 <option value="returning">Chờ duyệt</option>
                                 <option value="approved">Đã trả hàng</option>
                                 <option value="rejected">Từ chối</option>
-                              </select>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="note">Lý do/ghi chú</label>
+                            <input type="text" name="note" id="note" class="form-control" placeholder="Nhập lý do từ chối nếu có">
                         </div>
                         <div class="col-auto">
                             <button type="submit" class="btn btn-success">Cập nhật</button>

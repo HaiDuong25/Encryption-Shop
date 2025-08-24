@@ -268,20 +268,33 @@
                                             @endswitch
                                         </td>
                                         <td>
-                                            @if ($transaction->type === 'refund')
+                                            @if (in_array($transaction->type, ['withdraw', 'refund', 'payment']))
                                                 <span class="badge bg-primary"><i class="fas fa-wallet me-1"></i>Ví</span>
-                                            @elseif (strtolower($transaction->payment_method_type) === 'wallet')
-                                                <span class="badge bg-primary"><i class="fas fa-wallet me-1"></i>Ví</span>
-                                            @elseif(strtolower($transaction->payment_method_type) === 'momo')
-                                                <span class="badge bg-pink"><i class="fab fa-mdb me-1"></i>MoMo</span>
-                                            @elseif(strtolower($transaction->payment_method_type) === 'zalopay')
-                                                <span class="badge bg-info text-dark"><i class="fas fa-bolt me-1"></i>ZaloPay</span>
-                                            @elseif($transaction->payment_method_type)
-                                                <span class="badge bg-secondary">{{ $transaction->payment_method_type }}</span>
+                                            @elseif($transaction->type === 'deposit' && $transaction->payment_method_type)
+                                                @switch(strtolower($transaction->payment_method_type))
+                                                    @case('momo')
+                                                        <span class="badge bg-pink"><i class="fab fa-mdb me-1"></i>MoMo</span>
+                                                    @break
+
+                                                    @case('zalopay')
+                                                        <span class="badge bg-info text-dark"><i
+                                                                class="fas fa-bolt me-1"></i>ZaloPay</span>
+                                                    @break
+
+                                                    @case('cod')
+                                                        <span class="badge bg-warning"><i
+                                                                class="fas fa-money-bill me-1"></i>COD</span>
+                                                    @break
+
+                                                    @default
+                                                        <span
+                                                            class="badge bg-secondary">{{ $transaction->payment_method_type }}</span>
+                                                @endswitch
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
+
                                         <td>{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="dropdown">
