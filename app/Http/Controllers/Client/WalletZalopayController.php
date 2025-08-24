@@ -50,17 +50,18 @@ class WalletZalopayController extends Controller
         $response = $this->execPostRequest($this->endpoint, http_build_query($order));
         $result = json_decode($response, true);
 
-        Log::info('ZaloPay Wallet Topup Request', $order);
-        Log::info('ZaloPay Wallet Topup Response', $result);
+    Log::info('ZaloPay Wallet Topup Request', is_array($order) ? $order : []);
+    Log::info('ZaloPay Wallet Topup Response', is_array($result) ? $result : []);
 
         if (!$result) {
             Log::error('ZaloPay Wallet Topup Response is null or invalid JSON');
+            Session::forget('wallet_topup_data');
             return redirect()->route('wallet.topup')->with('error', 'Lỗi kết nối với ZaloPay');
         }
 
         if (isset($result['order_url']) && !empty($result['order_url'])) {
             Session::put('wallet_zalopay_order_data', $topupData);
-            Log::info('Redirecting to ZaloPay Wallet URL: ' . $result['order_url']);
+            Log::info('Redirecting to ZaloPay Wallet URL: ' . $result['order_url'], []);
 
             return redirect($result['order_url']);
         } else {
@@ -69,14 +70,14 @@ class WalletZalopayController extends Controller
 
             Log::error('ZaloPay Wallet Topup Error: ' . $errorMessage . ' (Code: ' . $returnCode . ')');
             Log::error('Full ZaloPay Wallet Response: ', $result);
-
+            Session::forget('wallet_topup_data');
             return redirect()->route('wallet.topup')->with('error', 'Lỗi ZaloPay: ' . $errorMessage);
         }
     }
 
     public function returnPayment(Request $request)
     {
-        Log::info('ZaloPay Wallet Return Request: ', $request->all());
+    Log::info('ZaloPay Wallet Return Request: ', (array) $request->all());
 
         $topupData = Session::get('wallet_zalopay_order_data');
         if (!$topupData) {
@@ -88,7 +89,7 @@ class WalletZalopayController extends Controller
         $apptransid = $request->input('apptransid');
         $checksum = $request->input('checksum');
 
-        Log::info('ZaloPay Wallet Return Status: ' . $status . ', TransID: ' . $apptransid);
+    Log::info('ZaloPay Wallet Return Status: ' . $status . ', TransID: ' . $apptransid, []);
 
         if ($status == 1) {
             // Thanh toán thành công
@@ -96,7 +97,7 @@ class WalletZalopayController extends Controller
 
             if ($success) {
                 Session::forget(['wallet_topup_data', 'wallet_zalopay_order_data']);
-                Log::info("ZaloPay wallet topup successful, transaction: {$topupData['transaction_code']}");
+                Log::info("ZaloPay wallet topup successful, transaction: {$topupData['transaction_code']}", []);
                 return redirect()->route('wallet.topup.success', ['transaction_code' => $topupData['transaction_code']])
                     ->with('success', 'Nạp tiền ZaloPay thành công!');
             } else {
@@ -104,7 +105,8 @@ class WalletZalopayController extends Controller
                 return redirect()->route('wallet.topup')->with('error', 'Có lỗi khi nạp tiền vào ví sau thanh toán');
             }
         } else {
-            Log::info('ZaloPay wallet topup failed or cancelled, status: ' . $status);
+            Log::info('ZaloPay wallet topup failed or cancelled, status: ' . $status, []);
+            Session::forget('wallet_topup_data');
             return redirect()->route('wallet.topup.cancel')->with('error', 'Thanh toán ZaloPay thất bại hoặc đã bị hủy');
         }
     }
@@ -124,7 +126,7 @@ class WalletZalopayController extends Controller
 
         parse_str($parsedUrl['query'], $params);
 
-        Log::info('ZaloPay Wallet Manual Return Params: ', $params);
+    Log::info('ZaloPay Wallet Manual Return Params: ', is_array($params) ? $params : []);
 
         if (!isset($params['status']) || !isset($params['apptransid'])) {
             return back()->with('error', 'URL thiếu thông tin cần thiết');
@@ -137,7 +139,7 @@ class WalletZalopayController extends Controller
 
     public function notifyPayment(Request $request)
     {
-        Log::info('ZaloPay Wallet Topup IPN:', $request->all());
+    Log::info('ZaloPay Wallet Topup IPN:', (array) $request->all());
 
         $key2 = $this->key2;
         $postdata = $request->getContent();
@@ -149,7 +151,7 @@ class WalletZalopayController extends Controller
             $dataJson = json_decode($postdatajson["data"], true);
             $apptransid = $dataJson["app_trans_id"];
             
-            Log::info("ZaloPay wallet topup IPN valid for: " . $apptransid);
+            Log::info("ZaloPay wallet topup IPN valid for: " . $apptransid, []);
             
             // Process topup logic here if needed
             
@@ -188,7 +190,7 @@ class WalletZalopayController extends Controller
             $wallet->balance += $topupData['amount'];
             $wallet->save();
 
-            Log::info("Wallet topup completed for user {$user->id}, amount: {$topupData['amount']}");
+            Log::info("Wallet topup completed for user {$user->id}, amount: {$topupData['amount']}", []);
             return true;
 
         } catch (\Exception $e) {

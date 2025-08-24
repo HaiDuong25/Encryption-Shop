@@ -23,7 +23,7 @@ class ZaloPayController extends Controller
         // Xử lý callback từ ZaloPay (chuẩn tài liệu ZLP)
         public function callback(Request $request)
         {
-            Log::info('ZaloPay Callback Request', $request->all());
+            Log::info('ZaloPay Callback Request', (array) $request->all());
 
             $dataStr = $request->input('data');
             $reqMac = $request->input('mac');
@@ -44,7 +44,7 @@ class ZaloPayController extends Controller
 
                 // Parse data JSON
                 $dataJson = json_decode($dataStr, true);
-                Log::info('ZaloPay Callback Data', $dataJson);
+                Log::info('ZaloPay Callback Data', is_array($dataJson) ? $dataJson : []);
 
                 // Cập nhật trạng thái đơn hàng
                 $appTransId = $dataJson['app_trans_id'] ?? null;
@@ -123,8 +123,8 @@ class ZaloPayController extends Controller
         $response = $this->execPostRequest($this->endpoint, http_build_query($order));
         $result = json_decode($response, true);
 
-        Log::info('ZaloPay Payment Request', $order);
-        Log::info('ZaloPay Payment Response', $result);
+    Log::info('ZaloPay Payment Request', is_array($order) ? $order : []);
+    Log::info('ZaloPay Payment Response', is_array($result) ? $result : []);
 
         // Debug: Kiểm tra response từ ZaloPay
         if (!$result) {
@@ -134,7 +134,7 @@ class ZaloPayController extends Controller
 
         if (isset($result['order_url']) && !empty($result['order_url'])) {
             Session::put('zalopay_order_data', $orderData);
-            Log::info('Redirecting to ZaloPay URL: ' . $result['order_url']);
+            Log::info('Redirecting to ZaloPay URL: ' . $result['order_url'], []);
 
             // Redirect trực tiếp đến ZaloPay
             return redirect($result['order_url']);
@@ -153,7 +153,7 @@ class ZaloPayController extends Controller
     // Hàm xử lý khi người dùng thanh toán xong
     public function returnPayment(Request $request)
     {
-        Log::info('ZaloPay Return Request: ', $request->all());
+    Log::info('ZaloPay Return Request: ', (array) $request->all());
 
         $orderData = Session::get('zalopay_order_data');
         if (!$orderData) {
@@ -166,7 +166,7 @@ class ZaloPayController extends Controller
         $apptransid = $request->input('apptransid');
         $checksum = $request->input('checksum');
 
-        Log::info('ZaloPay Return Status: ' . $status . ', TransID: ' . $apptransid);
+    Log::info('ZaloPay Return Status: ' . $status . ', TransID: ' . $apptransid, []);
 
         if ($status == 1) {
             // Thanh toán thành công
@@ -174,7 +174,7 @@ class ZaloPayController extends Controller
 
             if ($order) {
                 // Clear tất cả session liên quan sau khi tạo đơn hàng thành công
-                Log::info("ZaloPay payment successful, created order {$order->id}, redirecting to success page");
+                Log::info("ZaloPay payment successful, created order {$order->id}, redirecting to success page", []);
                 $this->clearCheckoutSession();
                 return redirect()->route('cart.success', $order->id)->with('success', 'Thanh toán ZaloPay thành công!');
             } else {
@@ -183,7 +183,7 @@ class ZaloPayController extends Controller
             }
         } else {
             // Thanh toán thất bại hoặc bị hủy
-            Log::info('ZaloPay payment failed or cancelled, status: ' . $status);
+            Log::info('ZaloPay payment failed or cancelled, status: ' . $status, []);
             return redirect()->route('cart.checkout')->with('error', 'Thanh toán ZaloPay thất bại hoặc đã bị hủy');
         }
     }
@@ -319,7 +319,7 @@ class ZaloPayController extends Controller
                             ->where('coupon_id', $coupon->id)
                             ->delete();
 
-                        Log::info("Coupon {$orderData['coupon_code']} used by user {$user->id} for order {$order->id} (ZaloPay payment) and removed from saved list");
+                        Log::info("Coupon {$orderData['coupon_code']} used by user {$user->id} for order {$order->id} (ZaloPay payment) and removed from saved list", []);
                     }
                 } catch (\Exception $e) {
                     Log::error('Error recording coupon usage in ZaloPay payment: ' . $e->getMessage());
@@ -330,11 +330,11 @@ class ZaloPayController extends Controller
             $selectedCartItems = Session::get('selected_cart_items', []);
             if (!empty($selectedCartItems)) {
                 Cart::where('user_id', $user->id)->whereIn('id', $selectedCartItems)->delete();
-                Log::info("Deleted selected cart items for ZaloPay order {$order->id}: " . implode(',', $selectedCartItems));
+                Log::info("Deleted selected cart items for ZaloPay order {$order->id}: " . implode(',', $selectedCartItems), []);
             } else {
                 // Fallback: xóa tất cả nếu không có selected_items
                 Cart::where('user_id', $user->id)->delete();
-                Log::info("Deleted all cart items for ZaloPay order {$order->id} (no selection found)");
+                Log::info("Deleted all cart items for ZaloPay order {$order->id} (no selection found)", []);
             }
 
             // Lưu thanh toán
