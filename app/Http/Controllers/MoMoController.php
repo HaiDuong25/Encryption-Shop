@@ -31,14 +31,16 @@ class MoMoController extends Controller
                 return redirect()->route('cart.checkout')->with('error', 'Không tìm thấy thông tin đơn hàng');
             }
 
-            $orderId = time() . '_' . $orderData['user_id']; // Tạo orderId unique với format đúng
+
+            // Sử dụng uniqid để đảm bảo orderId và requestId luôn unique
+            $orderId = 'ORDER_' . uniqid() . '_' . $orderData['user_id'];
             $amount = (int) $orderData['total']; // Đảm bảo amount là integer
             $orderInfo = 'Thanh toán đơn hàng Encryption Shop #' . $orderId;
             $redirectUrl = route('momo.return');
             $ipnUrl = route('momo.notify');
             $extraData = ""; // Để trống theo hướng dẫn
 
-            $requestId = time() . "";
+            $requestId = 'REQ_' . uniqid();
             $requestType = "captureWallet"; // Đúng theo tài liệu MoMo
 
             // Tạo signature theo đúng format MoMo yêu cầu
@@ -90,7 +92,11 @@ class MoMoController extends Controller
             if (isset($jsonResult['payUrl'])) {
                 return redirect($jsonResult['payUrl']);
             } else {
-                Log::error('MoMo Payment Error: ', $jsonResult);
+                // Log chi tiết lỗi trả về từ MoMo
+                Log::error('MoMo Payment Error: ', [
+                    'response' => $jsonResult,
+                    'request_data' => $data
+                ]);
 
                 // Xóa order_data khỏi session để tránh vòng lặp và lỗi trùng orderId
                 Session::forget('order_data');
@@ -98,6 +104,8 @@ class MoMoController extends Controller
                 $errorMessage = 'Có lỗi xảy ra khi tạo thanh toán MoMo';
                 if (isset($jsonResult['message'])) {
                     $errorMessage .= ': ' . $jsonResult['message'];
+                } elseif (isset($jsonResult['localMessage'])) {
+                    $errorMessage .= ': ' . $jsonResult['localMessage'];
                 }
 
                 return redirect()->route('cart.checkout')->with('error', $errorMessage);
