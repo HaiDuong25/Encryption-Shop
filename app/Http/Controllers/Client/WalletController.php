@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserWallet;
-use App\Models\WalletTransaction;
+
 use App\Models\WithdrawRequest;
+use App\Models\WalletTransaction;
+
 // thêm model rút tiền
 use App\Models\BankAccount; // thêm model tài khoản ngân hàng
 class WalletController extends Controller
@@ -232,85 +234,114 @@ class WalletController extends Controller
     }
 
     public function withdraw(Request $request)
-    {
-        $request->validate([
-            'amount' => 'required|numeric|min:10000',
-            'bank_account_id' => 'nullable|exists:bank_accounts,id',
-            'bank_name' => 'nullable|string|max:100',
-            'account_number' => 'nullable|string|max:50',
-            'account_holder' => 'nullable|string|max:100',
-            'note' => 'nullable|string|max:255',
-        ]);
+{
+    $request->validate([
+        'amount' => 'required|numeric|min:10000',
+        'bank_account_id' => 'nullable|exists:bank_accounts,id',
+        'bank_name' => 'nullable|string|max:100',
+        'account_number' => 'nullable|string|max:50',
+        'account_holder' => 'nullable|string|max:100',
+        'note' => 'nullable|string|max:255',
+    ]);
 
-        $user = auth()->user();
-        $wallet = $user->wallet; // quan hệ 1-1 User -> Wallet
+    $user = auth()->user();
+    $wallet = $user->wallet;
 
-        // ✅ Check số dư ví
-        if ($request->amount > $wallet->balance) {
-            return back()
-                ->withErrors([
-                    'amount' => 'Số dư ví không đủ để rút tiền! Số dư hiện tại: ' . number_format($wallet->balance) . 'đ',
-                ])
-                ->withInput();
-        }
-
-        $bankAccountId = $request->bank_account_id;
-
-        // Nếu user nhập tài khoản mới
-        if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
-            // Kiểm tra trùng số tài khoản với user hiện tại
-            $existing = BankAccount::where('user_id', $user->id)->where('account_number', $request->account_number)->first();
-
-            if ($existing) {
-                $bankAccountId = $existing->id;
-            } else {
-                $bankAccount = BankAccount::create([
-                    'user_id' => $user->id,
-                    'bank_name' => $request->bank_name,
-                    'account_number' => $request->account_number,
-                    'account_holder' => $request->account_holder,
-                ]);
-                $bankAccountId = $bankAccount->id;
-            }
-        }
-
-        if (!$bankAccountId) {
-            return back()->withErrors(['bank_account_id' => 'Vui lòng chọn hoặc nhập tài khoản ngân hàng']);
-        }
-        $wallet->balance -= $request->amount;
-        $wallet->save();
-        // Tạo yêu cầu rút tiền
-        WithdrawRequest::create([
-            'user_id' => $user->id,
-            'bank_account_id' => $bankAccountId,
-            'amount' => $request->amount,
-            'status' => 'pending', // admin duyệt
-            'note' => $request->note,
-        ]);
-
-        return redirect()->route('wallet.history')->with('success', 'Yêu cầu rút tiền đã được gửi, vui lòng chờ admin duyệt.');
+    if ($request->amount > $wallet->balance) {
+        return back()->withErrors([
+            'amount' => 'Số dư ví không đủ! Hiện có: '.number_format($wallet->balance).'đ',
+        ])->withInput();
     }
+
+    $bankAccountId = $request->bank_account_id;
+
+    if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
+        $existing = BankAccount::where('user_id', $user->id)
+            ->where('account_number', $request->account_number)
+            ->first();
+
+        if ($existing) {
+            $bankAccountId = $existing->id;
+        } else {
+            $bankAccount = BankAccount::create([
+                'user_id' => $user->id,
+                'bank_name' => $request->bank_name,
+                'account_number' => $request->account_number,
+                'account_holder' => $request->account_holder,
+            ]);
+            $bankAccountId = $bankAccount->id;
+        }
+    }
+
+    if (!$bankAccountId) {
+        return back()->withErrors(['bank_account_id' => 'Vui lòng chọn hoặc nhập tài khoản ngân hàng']);
+    }
+
+    // Trừ tiền tạm
+ // Lưu lại số dư trước khi trừ
+$balanceBefore = $wallet->balance;
+
+// Trừ tiền tạm
+$wallet->decrement('balance', $request->amount);
+
+// Lưu lại số dư sau khi trừ
+$balanceAfter = $wallet->balance;
+
+// Tạo yêu cầu rút tiền
+$withdraw = WithdrawRequest::create([
+    'user_id' => $user->id,
+    'bank_account_id' => $bankAccountId,
+    'amount' => $request->amount,
+    'status' => 'pending',
+    'note' => $request->note,
+]);
+
+// Tạo transaction pending
+WalletTransaction::create([
+    'user_id' => $user->id,
+    'type' => 'withdraw', // rút tiền
+        'withdraw_request_id' => $withdraw->id, // liên kết trực tiếp
+    'amount' => $request->amount,
+    'balance_before' => $balanceBefore,
+    'balance_after' => $balanceAfter,
+    'transaction_code' => 'WD' . time() . rand(1000, 9999), // hoặc biến transactionCode nếu có
+    'description' => 'Yêu cầu rút tiền #' . $withdraw->id,
+    'status' => 'pending',
+    'payment_method_type' => $bankAccountId ? 'BANK' : 'OTHER',
+]);
+
+
+
+    return redirect()->route('wallet.history')->with('success', 'Yêu cầu rút tiền đã được gửi, vui lòng chờ duyệt.');
+}
+
 
     public function reject($id, Request $request)
-    {
-        $withdraw = WithdrawRequest::findOrFail($id);
-        $withdraw->status = 'rejected';
-        $withdraw->note = $request->note; // lý do admin nhập
-        $withdraw->save();
+{
+    $withdraw = WithdrawRequest::findOrFail($id);
 
-        return redirect()->back()->with('success', 'Đã từ chối yêu cầu rút tiền');
+    if ($withdraw->status !== 'pending') {
+        return back()->with('error', 'Yêu cầu đã xử lý trước đó.');
     }
-    public function destroy($id)
-    {
-        $account = BankAccount::where('user_id', auth()->id())->findOrFail($id);
-        $account->delete();
 
-        // Nếu request là AJAX thì trả về JSON
-        if (request()->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Xóa tài khoản ngân hàng thành công!']);
-        }
+    $withdraw->update([
+        'status' => 'rejected',
+        'note' => $request->note
+    ]);
 
-        // Nếu request thường (submit form) thì redirect như cũ
-        return redirect()->back()->with('success', 'Xóa tài khoản ngân hàng thành công!');
-    }
+    // Cộng lại tiền cho user
+    $wallet = $withdraw->user->wallet;
+    $wallet->increment('balance', $withdraw->amount);
+
+    // Update transaction status -> failed
+ // Update transaction status -> failed
+$transaction = WalletTransaction::where('withdraw_request_id', $withdraw->id)->first();
+if ($transaction) {
+    $transaction->update(['status' => 'failed']);
+}
+
+
+    return back()->with('success', 'Đã từ chối và hoàn tiền.');
+}
+
 }
