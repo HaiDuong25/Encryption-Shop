@@ -92,7 +92,7 @@ class MoMoController extends Controller
             } else {
                 Log::error('MoMo Payment Error: ', $jsonResult);
 
-                // Xóa order_data khỏi session để tránh vòng lặp
+                // Xóa order_data khỏi session để tránh vòng lặp và lỗi trùng orderId
                 Session::forget('order_data');
 
                 $errorMessage = 'Có lỗi xảy ra khi tạo thanh toán MoMo';
@@ -151,6 +151,8 @@ class MoMoController extends Controller
                 } else {
                     // Thanh toán thất bại
                     Log::info("MoMo payment failed with result code: {$resultCode}, message: {$message}");
+                    // Xóa order_data khỏi session để tránh reuse orderId khi thanh toán lại
+                    Session::forget('order_data');
                     return redirect()->route('cart.checkout')->with('error', 'Thanh toán không thành công: ' . $message);
                 }
             } else {
@@ -159,11 +161,15 @@ class MoMoController extends Controller
                     'calculated_signature' => $partnerSignature,
                     'raw_hash' => $rawHash
                 ]);
+                // Xóa order_data khỏi session để tránh reuse orderId khi thanh toán lại
+                Session::forget('order_data');
                 return redirect()->route('cart.checkout')->with('error', 'Chữ ký không hợp lệ');
             }
 
         } catch (\Exception $e) {
             Log::error('MoMo Return Exception: ' . $e->getMessage());
+            // Xóa order_data khỏi session để tránh reuse orderId khi thanh toán lại
+            Session::forget('order_data');
             return redirect()->route('cart.checkout')->with('error', 'Có lỗi xảy ra khi xử lý kết quả thanh toán');
         }
     }

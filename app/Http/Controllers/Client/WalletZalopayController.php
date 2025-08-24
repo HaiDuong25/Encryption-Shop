@@ -55,6 +55,7 @@ class WalletZalopayController extends Controller
 
         if (!$result) {
             Log::error('ZaloPay Wallet Topup Response is null or invalid JSON');
+            Session::forget('wallet_topup_data');
             return redirect()->route('wallet.topup')->with('error', 'Lỗi kết nối với ZaloPay');
         }
 
@@ -69,7 +70,7 @@ class WalletZalopayController extends Controller
 
             Log::error('ZaloPay Wallet Topup Error: ' . $errorMessage . ' (Code: ' . $returnCode . ')');
             Log::error('Full ZaloPay Wallet Response: ', $result);
-
+            Session::forget('wallet_topup_data');
             return redirect()->route('wallet.topup')->with('error', 'Lỗi ZaloPay: ' . $errorMessage);
         }
     }
@@ -105,6 +106,7 @@ class WalletZalopayController extends Controller
             }
         } else {
             Log::info('ZaloPay wallet topup failed or cancelled, status: ' . $status, []);
+            Session::forget('wallet_topup_data');
             return redirect()->route('wallet.topup.cancel')->with('error', 'Thanh toán ZaloPay thất bại hoặc đã bị hủy');
         }
     }
