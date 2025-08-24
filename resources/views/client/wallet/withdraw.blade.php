@@ -114,16 +114,21 @@
             </div>
 
             {{-- Lý do rút tiền --}}
-            <div class="mb-3">
-                <label for="note" class="form-label">Lý do rút tiền</label>
-                <textarea name="note" id="note" class="form-control" rows="3" placeholder="Nhập lý do rút tiền (nếu có)"></textarea>
-                @error('note')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
+            <div class="alert alert-warning mb-3" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                Số tiền rút sẽ được xử lý trong vòng <b>24h</b> kể từ khi bạn yêu cầu lệnh, muộn nhất có thể tới <b>3 ngày</b>.
+                <br>
+                Nếu trong vòng 3 ngày số tiền rút vẫn chưa đến tay bạn, hãy liên hệ với bộ phận CSKH của chúng tôi.
             </div>
 
-            <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
-            <a href="{{ route('wallet.history') }}" class="btn btn-secondary">Hủy</a>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ route('wallet.history') }}" class="btn btn-secondary w-100">Hủy</a>
+                </div>
+                <div class="col-6">
+                    <button type="submit" class="btn btn-primary w-100">Gửi yêu cầu</button>
+                </div>
+            </div>
         </form>
     </div>
 

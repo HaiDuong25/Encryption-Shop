@@ -78,7 +78,7 @@
 
                                 {{-- Rút tiền --}}
                                 <div class="col-4">
-                                    <a href="{{ route('wallet.withdraw') }}" class="btn btn-danger btn-action w-100">
+                                    <a href="{{ route('wallet.withdraw') }}" class="btn btn-outline-primary btn-danger btn-action w-100">
                                         <i class="fas fa-arrow-down mb-1"></i>
                                         <div class="action-text">Rút tiền</div>
                                     </a>
@@ -92,10 +92,8 @@
                                         <div class="action-text">Lịch sử</div>
                                     </a>
                                 </div>
-
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
