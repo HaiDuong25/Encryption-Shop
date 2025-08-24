@@ -3,15 +3,17 @@
     <div>
         <div class="logo-wrapper logo-wrapper-center">
             <a href="{{ route('admin.dashboard') }}" data-bs-original-title="" title="">
-        <img class="img-fluid for-white" src="{{ asset('assets/images/logo/anhlogo2.png') }}" alt="logo" style="width: 200px; height: auto;">
-    </a>
+                <img class="img-fluid for-white" src="{{ asset('assets/images/logo/anhlogo2.png') }}" alt="logo"
+                    style="width: 200px; height: auto;">
+            </a>
             <div class="back-btn">
                 <i class="fa fa-angle-left"></i>
             </div>
         </div>
         <div class="logo-icon-wrapper">
             <a href="index.html">
-                <img class="img-fluid main-logo main-white" src="{{ asset('assets/images/logo/logo.png') }}" alt="logo">
+                <img class="img-fluid main-logo main-white" src="{{ asset('assets/images/logo/logo.png') }}"
+                    alt="logo">
                 <img class="img-fluid main-logo main-dark" src="{{ asset('assets/images/logo/logo-white.png') }}"
                     alt="logo">
             </a>
@@ -45,7 +47,8 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.categories.index') }}">
+                        <a class="linear-icon-link sidebar-link sidebar-nav"
+                            href="{{ route('admin.categories.index') }}">
                             <i class="ri-list-unordered"></i>
                             <span>Quản lý danh mục</span>
                         </a>
@@ -64,7 +67,8 @@
                             <span>Quản lý đơn hàng</span>
                         </a>
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('shipping-addresses.index') }}">
+                        <a class="linear-icon-link sidebar-link sidebar-nav"
+                            href="{{ route('shipping-addresses.index') }}">
                             <i class="ri-map-pin-line"></i>
                             <span>Quản lý địa chỉ giao hàng</span>
                         </a>
@@ -85,7 +89,8 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.wallet-transactions.index') }}">
+                        <a class="linear-icon-link sidebar-link sidebar-nav"
+                            href="{{ route('admin.wallet-transactions.index') }}">
                             <i class="ri-wallet-line"></i>
                             <span>Quản lý ví điện tử</span>
                         </a>
@@ -110,7 +115,8 @@
                     </li>
 
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('payment-methods.index') }}">
+                        <a class="linear-icon-link sidebar-link sidebar-nav"
+                            href="{{ route('payment-methods.index') }}">
                             <i class="ri-money-dollar-circle-line"></i>
                             <span>Quản lý phương thức thanh toán</span>
                         </a>
@@ -123,11 +129,13 @@
                         </a>
                     </li>
                     <li class="sidebar-list">
-                        <a class="linear-icon-link sidebar-link sidebar-nav" href="{{ route('admin.withdraw.index') }}">
-                            <i class="ri-money-collect-line"></i>
+                        <a class="linear-icon-link sidebar-link sidebar-nav"
+                            href="{{ route('admin.withdraw.index') }}">
+                            <i class="ri-bank-card-line ms-1"></i>
                             <span> Yêu cầu rút tiền </span>
                         </a>
                     </li>
+
 
                 </ul>
             </div>

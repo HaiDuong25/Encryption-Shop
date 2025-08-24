@@ -513,9 +513,15 @@ class CartController extends Controller
                     $orderDetail->variant_id = $cart->variant_id;
                     $orderDetail->quantity = $cart->quantity;
                     $orderDetail->price = $cart->variant ? $cart->variant->price : $cart->product->price;
-                    // Sử dụng cột total_price (migration không có 'total')
                     $orderDetail->total_price = $orderDetail->price * $cart->quantity;
                     $orderDetail->save();
+
+                    // Trừ tồn kho
+                    if ($cart->variant_id) {
+                        $cart->variant->decrement('stock', $cart->quantity);
+                    } else {
+                        $cart->product->decrement('stock', $cart->quantity);
+                    }
                 }
 
                 // Trừ tiền từ ví
@@ -665,19 +671,18 @@ class CartController extends Controller
             Log::error('Lỗi tạo bản ghi thanh toán (COD): ' . $e->getMessage());
         }
 
-        // Lưu chi tiết đơn hàng và giảm tồn kho
+        // Lưu chi tiết đơn hàng và trừ tồn kho
         foreach ($carts as $cart) {
-            $price = $cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price;
+            $orderDetail = new \App\Models\OrderDetail();
+            $orderDetail->order_id = $order->id;
+            $orderDetail->product_id = $cart->product_id;
+            $orderDetail->variant_id = $cart->variant_id;
+            $orderDetail->quantity = $cart->quantity;
+            $orderDetail->price = $cart->variant ? $cart->variant->price : $cart->product->price;
+            $orderDetail->total_price = $orderDetail->price * $cart->quantity;
+            $orderDetail->save();
 
-            $order->orderDetails()->create([
-                'product_id' => $cart->product_id,
-                'variant_id' => $cart->variant_id,
-                'quantity' => $cart->quantity,
-                'price' => $price,
-                'total_price' => $price * $cart->quantity,
-            ]);
-
-            // Giảm tồn kho
+            // Trừ tồn kho
             if ($cart->variant_id) {
                 $cart->variant->decrement('stock', $cart->quantity);
             } else {
