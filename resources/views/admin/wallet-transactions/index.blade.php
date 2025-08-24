@@ -70,8 +70,9 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title">Chờ xử lý</h6>
-                                <h4 class="mb-0">{{ $stats['pending_deposits'] }}</h4>
+                                <h6 class="card-title">Số tiền đã rút</h6>
+                                <h4 class="mb-0">{{ number_format($stats['withdraw_completed_amount'], 0, ',', '.') }} VND
+                                </h4>
                             </div>
                             <div class="icon-lg">
                                 <i class="fas fa-clock"></i>
