@@ -89,9 +89,38 @@ public function cancel(Request $request, Order $order)
             'cancel_note' => $request->note ?? null,
         ]);
 
+
         // Hoàn tiền về ví nếu là đơn thanh toán ví/online
         $order->refresh();
         $order->refundToWallet($order->total_price, 'Hoàn tiền do hủy đơn hàng');
+
+        // Trả lại mã giảm giá cho user nếu có sử dụng (chỉ khi hủy đơn, KHÔNG áp dụng cho trả hàng)
+        // Không cần thay đổi gì ở đây, logic này chỉ chạy khi hủy đơn (cancel), không chạy khi trả hàng (return)
+        if ($order->coupon_code) {
+            $coupon = \App\Models\Coupon::where('code', $order->coupon_code)->first();
+            if ($coupon) {
+                // Giảm số lần sử dụng nếu có giới hạn
+                if ($coupon->usage_count !== null && $coupon->usage_count > 0) {
+                    $coupon->decrement('usage_count');
+                }
+                // Trả lại coupon vào danh sách đã lưu nếu chưa hết hạn và chưa có trong danh sách
+                $alreadySaved = \App\Models\UserSavedCoupon::where('user_id', $order->user_id)
+                    ->where('coupon_id', $coupon->id)
+                    ->exists();
+                $isValid = $coupon->is_active && (!$coupon->expires_at || $coupon->expires_at >= now());
+                if (!$alreadySaved && $isValid) {
+                    \App\Models\UserSavedCoupon::create([
+                        'user_id' => $order->user_id,
+                        'coupon_id' => $coupon->id,
+                        'saved_at' => now()
+                    ]);
+                }
+                // Xóa CouponUse để user có thể sử dụng lại mã sau khi hủy đơn
+                \App\Models\CouponUse::where('order_id', $order->id)
+                    ->where('user_id', $order->user_id)
+                    ->delete();
+            }
+        }
 
         // Lưu lịch sử thay đổi trạng thái
         $order->statusHistories()->create([
