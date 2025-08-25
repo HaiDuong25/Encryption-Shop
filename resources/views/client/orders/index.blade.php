@@ -324,6 +324,9 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $orders->links() }}
+                    </div>
                 @else
                     <div class="alert alert-info text-center mb-0">Bạn chưa có đơn hàng nào.</div>
                 @endif
