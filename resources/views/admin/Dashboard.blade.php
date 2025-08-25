@@ -194,7 +194,7 @@
                                             $statusLabels = [
                                                 'pending' => 'Chờ xử lý',
                                                 'approved' => 'Đã duyệt',
-                                                'confirmed' => 'Đã xác nhận',
+                                                'confirmed' => 'Đã xác nhận', 
                                                 'shipping' => 'Giao cho ĐVVC',
                                                 'delivering' => 'Đang giao',
                                                 'received' => 'Đã nhận',
@@ -207,7 +207,7 @@
                                                 'pending' => 'warning',
                                                 'approved' => 'info',
                                                 'confirmed' => 'info',
-                                                'shipping' => 'primary',
+                                                'shipping' => 'primary', 
                                                 'delivering' => 'primary',
                                                 'received' => 'success',
                                                 'completed' => 'success',
@@ -287,10 +287,10 @@
 <script src="{{ asset('js/apexcharts.min.js') }}"></script>
 <script>
     let chart;
-
+    
     document.addEventListener('DOMContentLoaded', function () {
         initializeChart(@json($revenues ?? [0]), @json($months ?? ['']));
-
+        
         // Filter button click handler
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -298,15 +298,15 @@
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 // Add active class to clicked button
                 this.classList.add('active');
-
+                
                 // Get filter type
                 const filterType = this.dataset.type;
-
+                
                 // Show loading state
                 document.body.style.cursor = 'wait';
                 const buttons = document.querySelectorAll('.filter-btn');
                 buttons.forEach(b => b.disabled = true);
-
+                
                 // Make AJAX request
                 fetch(`/admin/dashboard/filter`, {
                     method: 'POST',
@@ -335,20 +335,20 @@
                                 break;
                         }
                     });
-
+                    
                     // Update chart with animation
                     chart.updateOptions({
                         xaxis: {
                             categories: data.labels
                         }
                     }, false, true);
-
+                    
                     // Clear existing series and add new one
                     chart.updateSeries([{
                         name: 'Doanh thu',
                         data: data.revenues.map(value => parseInt(value))
                     }], true);
-
+                    
                     // Update tables
                     const tables = {
                         bestSelling: document.querySelector('.best-selling-table:not(.recent-orders-table) tbody'),
@@ -371,7 +371,7 @@
             });
         });
     });
-
+    
     function initializeChart(initialData, initialLabels) {
         const options = {
             chart: {
@@ -493,18 +493,18 @@
         border-radius: 12px;
         font-weight: 500;
     }
-
+    
     .status-badge {
         white-space: nowrap;
     }
-
+    
     .product-detail-box h6 {
         color: #6c757d;
         font-size: 12px;
         margin-bottom: 4px;
         font-weight: 500;
     }
-
+    
     .product-detail-box h5 {
         margin: 0;
         font-size: 14px;

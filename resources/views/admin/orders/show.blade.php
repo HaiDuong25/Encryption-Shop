@@ -157,6 +157,10 @@
             '6' => 'cancelled',
         ];
         $statusValue = is_numeric($order->status) ? $statusMap[(string) $order->status] ?? 'pending' : $order->status;
+
+        $statusValue = is_numeric($order->status)
+            ? $statusMap[(string) $order->status] ?? 'pending'
+            : $order->status;
         $statusKeys = array_keys($statuses);
         $currentStatusIndex = array_search($statusValue, $statusKeys);
         $isCancelled = $statusValue === 'cancelled';
