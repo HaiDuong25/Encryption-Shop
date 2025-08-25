@@ -111,13 +111,14 @@
                                     <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
                                     <h6>Nạp tiền MoMo</h6>
                                     <p class="text-muted small">Nạp tiền nhanh chóng qua ví MoMo</p>
-                                    <form action="{{ route('wallet.process-topup') }}" method="POST">
+                                    <form action="{{ route('wallet.process-topup') }}" method="POST" class="topup-form">
                                         @csrf
                                         <div class="d-flex gap-2 align-items-center">
                                             <input type="text" name="amount" class="form-control form-control-sm amount-input" min="10000" step="1000" placeholder="Nhập số tiền nạp" required style="height:32px;" autocomplete="off" inputmode="numeric">
                                             <input type="hidden" name="payment_method" value="momo">
                                             <button type="submit" class="btn btn-sm btn-outline-primary flex-shrink-0" style="height:32px;">Nạp tiền</button>
                                         </div>
+                                        <div class="text-danger mt-2 d-none topup-limit-warning">Số tiền nạp vượt quá mức cho phép (50,000,000 VND).</div>
                                     </form>
                                 </div>
                             </div>
@@ -127,13 +128,14 @@
                                     <i class="fas fa-wallet fa-2x text-info mb-2"></i>
                                     <h6>Nạp tiền ZaloPay</h6>
                                     <p class="text-muted small">Nạp tiền tiện lợi qua ví ZaloPay</p>
-                                    <form action="{{ route('wallet.process-topup') }}" method="POST">
+                                    <form action="{{ route('wallet.process-topup') }}" method="POST" class="topup-form">
                                         @csrf
                                         <div class="d-flex gap-2 align-items-center">
                                             <input type="text" name="amount" class="form-control form-control-sm amount-input" min="10000" step="1000" placeholder="Nhập số tiền nạp" required style="height:32px;" autocomplete="off" inputmode="numeric">
                                             <input type="hidden" name="payment_method" value="zalopay">
                                             <button type="submit" class="btn btn-sm btn-outline-info flex-shrink-0" style="height:32px;">Nạp tiền</button>
                                         </div>
+                                        <div class="text-danger mt-2 d-none topup-limit-warning">Số tiền nạp vượt quá mức cho phép (50,000,000 VND).</div>
                                     </form>
                                 </div>
                             </div>
@@ -433,9 +435,23 @@ document.querySelectorAll('.amount-input').forEach(function(input) {
         } else {
             this.value = '';
         }
+        // Hiển thị cảnh báo nếu vượt quá 50 triệu
+        let warning = input.closest('form').querySelector('.topup-limit-warning');
+        if (Number(value) > 50000000) {
+            warning.classList.remove('d-none');
+        } else {
+            warning.classList.add('d-none');
+        }
     });
     input.form && input.form.addEventListener('submit', function(e) {
         let raw = input.value.replace(/\D/g, '');
+        if (Number(raw) > 50000000) {
+            let warning = input.closest('form').querySelector('.topup-limit-warning');
+            warning.classList.remove('d-none');
+            input.focus();
+            e.preventDefault();
+            return false;
+        }
         input.value = raw;
     });
 });
