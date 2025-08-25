@@ -37,10 +37,6 @@
                                                 style="border-radius: 1rem; font-size: 0.95rem; width: 100%; max-width: 320px; white-space: nowrap;">
                                                 <i class="fa-solid fa-chevron-right text-primary"></i>
                                                 <span>{{ $child->name }}</span>
-                                                @if($child->image)
-                                                    <img src="{{ asset('storage/' . $child->image) }}" alt="{{ $child->name }}"
-                                                        class="rounded" style="width: 28px; height: 28px; object-fit: cover;">
-                                                @endif
                                             </a>
                                         @endforeach
                                     </div>
@@ -74,7 +70,7 @@
         transition: background 0.2s, color 0.2s;
         cursor: pointer;
     }
-    
+
     .category-footer {
         border-bottom-left-radius: 1.5rem;
         border-bottom-right-radius: 1.5rem;
@@ -90,4 +86,8 @@
         background: #0d6efd;
         color: #fff;
     }
+</style>
+background: #0d6efd;
+color: #fff;
+}
 </style>
