@@ -58,34 +58,14 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal{{ $method->id }}" title="Xóa">
+                                    <button class="btn btn-sm btn-danger delete-btn" 
+                                        data-id="{{ $method->id }}" 
+                                        data-type="{{ $method->payment_type }}" 
+                                        data-action="{{ route('payment-methods.destroy', $method) }}" 
+                                        title="Xóa">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </div>
-
-                                <!-- Modal Xác nhận Xóa -->
-                                <div class="modal fade" id="deleteModal{{ $method->id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>Bạn có chắc chắn muốn xóa phương thức <strong>{{ $method->payment_type }}</strong> không?</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                                <form action="{{ route('payment-methods.destroy', $method) }}" method="POST">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger">Xóa</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- End Modal -->
                             </td>
                         </tr>
                     @endforeach
@@ -97,5 +77,45 @@
             </div>
         </div>
     </div>
+<!-- Modal xác nhận xóa dùng chung -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteModalMessage">Bạn có chắc chắn muốn xóa phương thức này không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteModalForm" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteModalMessage = document.getElementById('deleteModalMessage');
+    const deleteModalForm = document.getElementById('deleteModalForm');
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+            const action = this.dataset.action;
+            deleteModalMessage.innerHTML = `Bạn có chắc chắn muốn xóa phương thức <strong>${type}</strong> không?`;
+            deleteModalForm.action = action;
+            deleteModal.show();
+        });
+    });
+});
+</script>
+
 </div>
 @endsection
