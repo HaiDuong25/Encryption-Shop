@@ -113,9 +113,11 @@
                                     <p class="text-muted small">Nạp tiền nhanh chóng qua ví MoMo</p>
                                     <form action="{{ route('wallet.process-topup') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="amount" value="100000">
-                                        <input type="hidden" name="payment_method" value="momo">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Nạp 100k</button>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <input type="text" name="amount" class="form-control form-control-sm amount-input" min="10000" step="1000" placeholder="Nhập số tiền nạp" required style="height:32px;" autocomplete="off" inputmode="numeric">
+                                            <input type="hidden" name="payment_method" value="momo">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary flex-shrink-0" style="height:32px;">Nạp tiền</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -127,9 +129,11 @@
                                     <p class="text-muted small">Nạp tiền tiện lợi qua ví ZaloPay</p>
                                     <form action="{{ route('wallet.process-topup') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="amount" value="100000">
-                                        <input type="hidden" name="payment_method" value="zalopay">
-                                        <button type="submit" class="btn btn-sm btn-outline-info">Nạp 100k</button>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <input type="text" name="amount" class="form-control form-control-sm amount-input" min="10000" step="1000" placeholder="Nhập số tiền nạp" required style="height:32px;" autocomplete="off" inputmode="numeric">
+                                            <input type="hidden" name="payment_method" value="zalopay">
+                                            <button type="submit" class="btn btn-sm btn-outline-info flex-shrink-0" style="height:32px;">Nạp tiền</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -418,3 +422,22 @@
         }
     </style>
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('.amount-input').forEach(function(input) {
+    input.addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        if (value) {
+            this.value = Number(value).toLocaleString('vi-VN');
+        } else {
+            this.value = '';
+        }
+    });
+    input.form && input.form.addEventListener('submit', function(e) {
+        let raw = input.value.replace(/\D/g, '');
+        input.value = raw;
+    });
+});
+</script>
+@endpush

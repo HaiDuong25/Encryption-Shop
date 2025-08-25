@@ -67,6 +67,7 @@
                                 <th>Thời gian</th>
                                 <th>Loại</th>
                                 <th>Số tiền</th>
+                                <th>Số dư sau GD</th>
                                 <th>Mô tả</th>
                                 <th>Phương thức</th>
                                 <th>Trạng thái</th>
@@ -107,6 +108,13 @@
                     <span class="amount-negative">
                         -{{ number_format($transaction['amount'], 0, ',', '.') }} VND
                     </span>
+                @endif
+            </td>
+            <td class="fw-bold">
+                @if(isset($transaction['balance_after']))
+                    {{ number_format($transaction['balance_after'], 0, ',', '.') }} VND
+                @else
+                    <span class="text-muted">-</span>
                 @endif
             </td>
             <td>

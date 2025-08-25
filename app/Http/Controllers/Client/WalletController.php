@@ -150,7 +150,7 @@ class WalletController extends Controller
         // Lấy wallet transactions
         $walletTransactions = $user
             ->walletTransactions()
-            ->select('id', 'type', 'amount', 'description', 'status', 'payment_method_type', 'created_at')
+            ->select('id', 'type', 'amount', 'description', 'status', 'payment_method_type', 'created_at', 'balance_after')
             ->selectRaw("'wallet' as source_type")
             ->get()
             ->map(function ($transaction) {
@@ -162,6 +162,7 @@ class WalletController extends Controller
                     'status' => $transaction->status,
                     'payment_method_type' => $transaction->payment_method_type,
                     'created_at' => $transaction->created_at,
+                    'balance_after' => $transaction->balance_after,
                     'source_type' => 'wallet',
                     'order_id' => $this->extractOrderIdFromDescription($transaction->description),
                 ];
