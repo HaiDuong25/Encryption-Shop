@@ -102,12 +102,13 @@
                 <div class="right-options d-flex gap-2 align-items-center">
                     {{-- Form tìm kiếm theo ID đơn hàng hoặc tên người nhận --}}
                     <form method="GET" action="{{ route('orders.index') }}" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo ID, tên người nhận hoặc tên user..."
-                               value="{{ request('search') }}" style="width: 320px;">
+                        <input type="text" name="search" class="form-control me-2"
+                            placeholder="Tìm theo ID, tên người nhận hoặc tên user..." value="{{ request('search') }}"
+                            style="width: 320px;">
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="ri-search-line"></i> Tìm
                         </button>
-                        @if(request('search'))
+                        @if (request('search'))
                             <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary me-2 bg-dark">
                                 <i class="ri-refresh-line"></i> Xóa bộ lọc
                             </a>
@@ -143,7 +144,9 @@
                                     <td>{{ $order->created_at->format('d/m/Y') }}</td>
                                     <td>
                                         @php
-                                            $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                            $rawPaid =
+                                                $order->payments &&
+                                                $order->payments->where('status', 'completed')->count() > 0;
                                             $paymentType = optional($order->paymentMethod)->payment_type;
                                             // Chuẩn hóa statusValue nếu chưa có (dùng lại biến bên dưới nếu cần)
                                             $tmpStatus = $order->status;
@@ -155,15 +158,17 @@
                                                     '3' => 'delivering',
                                                     '4' => 'received',
                                                     '5' => 'completed',
-                                                    '9' => 'cancelled',
+                                                    '6' => 'cancelled',
                                                 ];
                                                 $tmpStatus = $tmpMap[$tmpStatus] ?? 'pending';
                                             }
-                                            $isPaidCol = $rawPaid || ($paymentType === 'COD' && $tmpStatus === 'completed');
+                                            $isPaidCol =
+                                                $rawPaid || ($paymentType === 'COD' && $tmpStatus === 'completed');
                                         @endphp
                                         <div class="d-flex flex-column align-items-center">
                                             <span class="small text-muted mb-1">{{ $paymentType ?? 'N/A' }}</span>
-                                            <span class="badge {{ $isPaidCol ? 'bg-success' : 'bg-secondary' }} status-badge">
+                                            <span
+                                                class="badge {{ $isPaidCol ? 'bg-success' : 'bg-secondary' }} status-badge">
                                                 {{ $isPaidCol ? 'Đã thanh toán' : 'Chưa' }}
                                             </span>
                                         </div>
@@ -180,7 +185,8 @@
                                                     '3' => 'delivering',
                                                     '4' => 'received',
                                                     '5' => 'completed',
-                                                    '9' => 'cancelled',
+                                                    '6' => 'cancelled',
+                                                    '7' => 'partially_cancelled',
                                                 ];
 
                                                 $statusValue = $statusMap[$statusValue] ?? 'pending';
@@ -200,7 +206,10 @@
                                             <span class="badge bg-success status-badge">Hoàn thành</span>
                                         @elseif($statusValue == 'cancelled')
                                             <span class="badge bg-danger status-badge">Đã hủy</span>
+                                            @elseif($statusValue == 'partially_cancelled')
+                                            <span class="badge bg-danger status-badge">Đã hủy 1 vài sản phẩm</span>
                                         @else
+
                                             <span class="badge bg-secondary status-badge">{{ $statusValue }}</span>
                                         @endif
 
@@ -209,17 +218,20 @@
                                         @php
                                             $returnStatus = $order->returnStatus;
                                         @endphp
-                                        @if($returnStatus && $returnStatus->overall_status !== 'none')
+                                        @if ($returnStatus && $returnStatus->overall_status !== 'none')
                                             @switch($returnStatus->overall_status)
                                                 @case('partial')
                                                     <span class="badge bg-warning text-dark">Một phần</span>
-                                                    @break
+                                                @break
+
                                                 @case('full')
                                                     <span class="badge bg-info">Toàn bộ</span>
-                                                    @break
+                                                @break
+
                                                 @case('completed')
                                                     <span class="badge bg-success">Hoàn tất</span>
-                                                    @break
+                                                @break
+
                                                 @default
                                                     <span class="badge bg-secondary">{{ $returnStatus->overall_status }}</span>
                                             @endswitch
@@ -267,7 +279,8 @@
                                     <td>
                                         <ul class="action-buttons">
                                             <li>
-                                                <a href="{{ route('orders.show', $order->id) }}" title="Xem chi tiết & Cập nhật trạng thái">
+                                                <a href="{{ route('orders.show', $order->id) }}"
+                                                    title="Xem chi tiết & Cập nhật trạng thái">
                                                     <i class="ri-eye-line" style="font-size: 1.1rem;"></i>
                                                 </a>
                                             </li>
@@ -285,7 +298,8 @@
                                                         '5' => 'completed',
                                                         '9' => 'cancelled',
                                                     ];
-                                                    $cancelStatusValue = $cancelStatusMap[$cancelStatusValue] ?? 'pending';
+                                                    $cancelStatusValue =
+                                                        $cancelStatusMap[$cancelStatusValue] ?? 'pending';
                                                 }
                                                 $canCancel = in_array($cancelStatusValue, ['pending', 'confirmed']);
                                             @endphp
@@ -312,10 +326,11 @@
                                                         '5' => 'completed',
                                                         '9' => 'cancelled',
                                                     ];
-                                                    $deleteStatusValue = $deleteStatusMap[$deleteStatusValue] ?? 'pending';
+                                                    $deleteStatusValue =
+                                                        $deleteStatusMap[$deleteStatusValue] ?? 'pending';
                                                 }
                                                 // CHỈ cho phép xóa đơn hàng đã hủy, KHÔNG bao gồm trạng thái trả hàng
-                                                $canDelete = ($deleteStatusValue === 'cancelled');
+                                                $canDelete = $deleteStatusValue === 'cancelled';
                                             @endphp
                                             @if ($canDelete)
                                                 <li>
@@ -402,25 +417,26 @@
                 'Bạn có chắc chắn muốn hủy đơn hàng này không? Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xử lý" hoặc "Đã xác nhận". Số lượng sản phẩm sẽ được trả lại.',
                 () => {
                     fetch(`/admin/orders/${orderId}/cancel`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showAlert(data.message, 'success');
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            showAlert('Lỗi: ' + data.message, 'danger');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showAlert('Có lỗi xảy ra khi hủy đơn hàng', 'danger');
-                    });
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showAlert(data.message, 'success');
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                showAlert('Lỗi: ' + data.message, 'danger');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showAlert('Có lỗi xảy ra khi hủy đơn hàng', 'danger');
+                        });
                 },
                 'warning'
             );
@@ -431,25 +447,26 @@
                 'Bạn có chắc chắn muốn xóa đơn hàng này không? CHỈ có thể xóa đơn hàng ở trạng thái "Đã hủy". Các đơn hàng đang trả hàng KHÔNG được phép xóa.',
                 () => {
                     fetch(`/admin/orders/${orderId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showAlert(data.message, 'success');
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            showAlert('Lỗi: ' + data.message, 'danger');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showAlert('Có lỗi xảy ra khi xóa đơn hàng', 'danger');
-                    });
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showAlert(data.message, 'success');
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                showAlert('Lỗi: ' + data.message, 'danger');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showAlert('Có lỗi xảy ra khi xóa đơn hàng', 'danger');
+                        });
                 },
                 'danger'
             );
@@ -457,8 +474,10 @@
     </script>
 
     <!-- Modal xác nhận -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 9999;">
-        <div class="modal-dialog modal-dialog-centered" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true"
+        style="z-index: 9999;">
+        <div class="modal-dialog modal-dialog-centered"
+            style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmModalLabel">
