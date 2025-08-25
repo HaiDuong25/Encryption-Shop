@@ -162,7 +162,7 @@
                                         <td class="fw-bold">{{ number_format($transaction->balance_after, 0, ',', '.') }}
                                             VND</td>
                                         <td>{{ $transaction->description }}</td>
-                                        <<td>
+                                        <td>
                                             @if (in_array($transaction->type, ['withdraw', 'refund', 'payment']))
                                                 <span class="badge bg-primary">
                                                     <i class="fas fa-wallet me-1"></i>Số dư ví
