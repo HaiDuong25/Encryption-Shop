@@ -145,8 +145,7 @@
                                         @php
                                             $rawPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
                                             $paymentType = optional($order->paymentMethod)->payment_type;
-
-                                            // Chuẩn hóa statusValue
+                                            // Chuẩn hóa statusValue nếu chưa có (dùng lại biến bên dưới nếu cần)
                                             $tmpStatus = $order->status;
                                             if (is_numeric($tmpStatus)) {
                                                 $tmpMap = [
@@ -160,31 +159,15 @@
                                                 ];
                                                 $tmpStatus = $tmpMap[$tmpStatus] ?? 'pending';
                                             }
-
-                                            // Logic xác định trạng thái thanh toán
-                                            $isPaidCol =
-                                                $rawPaid || ($paymentType === 'COD' && $tmpStatus === 'completed');
-                                            $isRefunded = $tmpStatus === 'cancelled' && $paymentType !== 'COD'; // hủy đơn + không phải COD
-
                                             $isPaidCol = $rawPaid || ($paymentType === 'COD' && $tmpStatus === 'completed');
                                         @endphp
-
                                         <div class="d-flex flex-column align-items-center">
                                             <span class="small text-muted mb-1">{{ $paymentType ?? 'N/A' }}</span>
-                                            @if ($isRefunded)
-                                                <span class="badge bg-info status-badge">Chưa thanh toán</span>
-                                            @else
-                                                <span
-                                                    class="badge {{ $isPaidCol ? 'bg-success' : 'bg-secondary' }} status-badge">
-                                                    {{ $isPaidCol ? 'Đã thanh toán' : 'Chưa' }}
-                                                </span>
-                                            @endif
                                             <span class="badge {{ $isPaidCol ? 'bg-success' : 'bg-secondary' }} status-badge">
                                                 {{ $isPaidCol ? 'Đã thanh toán' : 'Chưa' }}
                                             </span>
                                         </div>
                                     </td>
-
                                     <td>
                                         @php
                                             // Convert numeric status to string for compatibility
@@ -197,14 +180,12 @@
                                                     '3' => 'delivering',
                                                     '4' => 'received',
                                                     '5' => 'completed',
-                                                    '6' => 'cancelled',
-
                                                     '9' => 'cancelled',
                                                 ];
+
                                                 $statusValue = $statusMap[$statusValue] ?? 'pending';
                                             }
                                         @endphp
-
                                         @if ($statusValue == 'pending')
                                             <span class="badge bg-warning status-badge">Chờ xử lý</span>
                                         @elseif($statusValue == 'confirmed')
@@ -222,8 +203,8 @@
                                         @else
                                             <span class="badge bg-secondary status-badge">{{ $statusValue }}</span>
                                         @endif
-                                    </td>
 
+                                    </td>
                                     <td>
                                         @php
                                             $returnStatus = $order->returnStatus;

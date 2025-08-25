@@ -217,54 +217,45 @@
                         <div class="mb-2 text-muted small"><i class="fas fa-calendar-alt me-1"></i> Ngày đặt:
                             {{ $order->created_at->format('d/m/Y H:i') }}
                         </div>
-                     <div class="mb-2">
-    <strong>Trạng thái thanh toán:</strong>
-    @php
-        $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
-        $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
-        $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
-        $statusValue = is_numeric($order->status)
-            ? ($statusMap[$order->status] ?? 'pending')
-            : $order->status;
-    @endphp
+                        <div class="mb-2"><strong>Trạng thái thanh toán:</strong>
+                            @php
+                                $isPaid =
+                                    $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+                                $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
+                                $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
+                                $statusValue = is_numeric($order->status)
+                                    ? $statusMap[$order->status] ?? 'pending'
+                                    : $order->status;
+                            @endphp
+                            @switch($statusValue)
+                                @case('refunded')
+                                @case('returned')
+                                    {{-- Đã trả hàng xong --}}
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
 
-    @switch($statusValue)
-        @case('refunded')
-        @case('returned')
-            {{-- Đã trả hàng xong --}}
-            <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
-                {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-            </span>
-            @break
+                                @case('returning')
+                                    {{-- Đang trả hàng --}}
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
 
-        @case('returning')
-            {{-- Đang trả hàng --}}
-            <span class="badge status-badge {{ $isMomo ? 'badge-returning' : 'badge-unpaid' }}">
-                {{ $isMomo ? 'Đang trả hàng' : 'Chưa thanh toán' }}
-            </span>
-            @break
+                                @case('approved')
+                                    <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
+                                        {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                    </span>
+                                @break
 
-        @case('approved')
-            <span class="badge status-badge {{ $isMomo ? 'badge-refunded-approved' : 'badge-unpaid' }}">
-                {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-            </span>
-            @break
+                                @default
+                                    <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
+                                        {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                                    </span>
+                            @endswitch
 
-        @case('cancelled')
-            {{-- Đơn hàng bị hủy --}}
-            <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
-                {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
-            </span>
-            @break
-
-        @default
-            <span class="badge status-badge {{ $isPaid ? 'badge-paid' : 'badge-unpaid' }}">
-                {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
-            </span>
-    @endswitch
-</div>
-
-
+                        </div>
                         <div class="mb-2"><strong>Phương thức thanh toán:</strong>
                             {{ $order->paymentMethod->payment_type ?? 'Chưa chọn' }}
                         </div>
