@@ -14,8 +14,8 @@
         content="admin template, EncryptionStore admin template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="pixelstrap">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset('assets/images/e.png') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ asset('assets/images/e.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('assets-front/images/favicon/e.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets-front/images/favicon/e.png') }}" type="image/x-icon">
     <title>EncryptionStore Admin </title>
 
     <!-- Google font-->
