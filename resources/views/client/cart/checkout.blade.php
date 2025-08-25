@@ -1770,14 +1770,25 @@
             const discount = option.getAttribute('data-discount');
             const description = option.getAttribute('data-description');
             const type = option.getAttribute('data-type');
-            
+
             const detailsDiv = document.getElementById('coupon-details-checkout');
             if (!detailsDiv) return;
-            
+
             document.getElementById('detail-code-checkout').textContent = code;
-            document.getElementById('detail-discount-checkout').textContent = discount || 'Mã đã lưu';
+            // Hiển thị % hoặc VNĐ cho giảm giá
+            let discountText = discount || 'Mã đã lưu';
+            if (discountText !== '-' && discountText !== 'Mã đã lưu') {
+                if (!discountText.includes('%') && !discountText.toLowerCase().includes('vnđ') && !discountText.toLowerCase().includes('đ')) {
+                    if (parseInt(discountText) <= 100) {
+                        discountText = discountText + '%';
+                    } else {
+                        discountText = new Intl.NumberFormat('vi-VN').format(discountText) + ' VNĐ';
+                    }
+                }
+            }
+            document.getElementById('detail-discount-checkout').textContent = discountText;
             document.getElementById('detail-description-checkout').textContent = description || 'Mã giảm giá đã lưu từ danh sách';
-            
+
             detailsDiv.style.display = 'block';
         }
 

@@ -729,6 +729,22 @@
                                                         <div class="col-6">
                                                             <strong>Giảm giá:</strong> <span id="detail-discount">-</span>
                                                         </div>
+                                                        <script>
+                                                        // Hiển thị % hoặc VNĐ cho chi tiết mã giảm giá
+                                                        document.addEventListener('DOMContentLoaded', function() {
+                                                            const discountSpan = document.getElementById('detail-discount');
+                                                            if (discountSpan && discountSpan.textContent !== '-') {
+                                                                let val = discountSpan.textContent.trim();
+                                                                if (!val.includes('%') && !val.toLowerCase().includes('vnđ') && !val.toLowerCase().includes('đ')) {
+                                                                    if (parseInt(val) <= 100) {
+                                                                        discountSpan.textContent = val + '%';
+                                                                    } else {
+                                                                        discountSpan.textContent = new Intl.NumberFormat('vi-VN').format(val) + ' VNĐ';
+                                                                    }
+                                                                }
+                                                            }
+                                                        });
+                                                        </script>
                                                         <div class="col-6">
                                                             <strong>Đơn tối thiểu:</strong> <span id="detail-min-order">-</span>
                                                         </div>
@@ -1035,6 +1051,89 @@
             }
 
             // Define all functions within the DOMContentLoaded scope
+            // Định nghĩa function loadSavedCouponsToDropdown để tránh lỗi ReferenceError
+            function loadSavedCouponsToDropdown() {
+                const savedCouponsPromise = window.couponManager ? window.couponManager.getSavedCoupons() : Promise.resolve([]);
+                const couponSelect = document.getElementById('coupon-select');
+                const couponCountBadge = document.getElementById('available-coupons-count');
+                const statusMessage = document.getElementById('coupon-status-message');
+
+                if (!couponSelect) return;
+
+                savedCouponsPromise.then(savedCoupons => {
+                    // Update count badge
+                    if (couponCountBadge) {
+                        couponCountBadge.textContent = `${savedCoupons.length} mã khả dụng`;
+                    }
+
+                    // Clear existing options
+                    couponSelect.innerHTML = '<option value="">-- Chọn mã giảm giá --</option>';
+
+                    if (savedCoupons.length === 0) {
+                        couponSelect.innerHTML += '<option value="" disabled>Không có mã giảm giá đã lưu</option>';
+                        if (statusMessage) {
+                            statusMessage.innerHTML = `
+                                <small class="text-muted">
+                                    <i class="fa-solid fa-info-circle me-1"></i>
+                                    Bạn chưa lưu mã giảm giá nào.
+                                    <a href="#" class="text-primary" onclick="alert('Tính năng đang phát triển')">Xem mã khả dụng</a>
+                                </small>
+                            `;
+                        }
+                        return;
+                    }
+
+                    // Add saved coupons to dropdown
+                    savedCoupons.forEach(coupon => {
+                        const option = document.createElement('option');
+                        option.value = coupon.code;
+
+                        // Hiển thị % hoặc VNĐ cho discount
+                        let discountText = '';
+                        if (coupon.discount !== undefined && coupon.discount !== null && coupon.discount !== '') {
+                            const discountVal = parseInt(coupon.discount);
+                            if (!isNaN(discountVal)) {
+                                if (discountVal <= 100) {
+                                    discountText = discountVal + '%';
+                                } else {
+                                    discountText = new Intl.NumberFormat('vi-VN').format(discountVal) + ' VNĐ';
+                                }
+                            } else {
+                                discountText = coupon.discount;
+                            }
+                        }
+
+                        let displayText = `${coupon.code}`;
+                        if (discountText) {
+                            displayText += ` - ${discountText}`;
+                        }
+                        option.textContent = displayText;
+
+                        option.setAttribute('data-code', coupon.code);
+                        option.setAttribute('data-discount', coupon.discount || '');
+                        option.setAttribute('data-description', coupon.description || '');
+                        option.setAttribute('data-saved-at', coupon.savedAt || '');
+                        option.setAttribute('data-type', 'saved');
+
+                        couponSelect.appendChild(option);
+                    });
+
+                    // Update status message
+                    if (statusMessage) {
+                        statusMessage.innerHTML = `
+                            <small class="text-success">
+                                <i class="fa-solid fa-check-circle me-1"></i>
+                                Đã tải ${savedCoupons.length} mã giảm giá từ danh sách đã lưu
+                            </small>
+                        `;
+                    }
+                }).catch(error => {
+                    console.error('Error loading saved coupons:', error);
+                    if (couponCountBadge) {
+                        couponCountBadge.textContent = '0 mã khả dụng';
+                    }
+                });
+            }
             function initializeCouponManager() {
 
                 // Ensure coupon manager exists
@@ -1076,23 +1175,8 @@
                     };
                 }
 
-                // Load saved coupons into dropdown
+                // Đảm bảo chỉ gọi loadSavedCouponsToDropdown sau khi window.couponManager đã được khởi tạo
                 loadSavedCouponsToDropdown();
-
-                // Listen for storage changes
-                window.addEventListener('storage', function(e) {
-                    if (e.key === 'savedCoupons') {
-                        loadSavedCouponsToDropdown();
-                    }
-                });
-
-                // Listen for custom events
-                window.addEventListener('couponsUpdated', function() {
-                    loadSavedCouponsToDropdown();
-                });
-            }
-
-            function loadSavedCouponsToDropdown() {
                 const savedCouponsPromise = window.couponManager ? window.couponManager.getSavedCoupons() : Promise.resolve([]);
                 const couponSelect = document.getElementById('coupon-select');
                 const couponCountBadge = document.getElementById('available-coupons-count');
@@ -1170,7 +1254,18 @@
                 if (!detailsDiv) return;
 
                 document.getElementById('detail-code').textContent = code;
-                document.getElementById('detail-discount').textContent = discount || 'Mã đã lưu';
+                // Hiển thị % hoặc VNĐ cho giảm giá
+                let discountText = discount || 'Mã đã lưu';
+                if (discountText !== '-' && discountText !== 'Mã đã lưu') {
+                    if (!discountText.includes('%') && !discountText.toLowerCase().includes('vnđ') && !discountText.toLowerCase().includes('đ')) {
+                        if (parseInt(discountText) <= 100) {
+                            discountText = discountText + '%';
+                        } else {
+                            discountText = new Intl.NumberFormat('vi-VN').format(discountText) + ' VNĐ';
+                        }
+                    }
+                }
+                document.getElementById('detail-discount').textContent = discountText;
                 document.getElementById('detail-description').textContent = description || 'Mã giảm giá đã lưu từ danh sách';
                 document.getElementById('detail-min-order').textContent = 'Kiểm tra khi áp dụng';
 
