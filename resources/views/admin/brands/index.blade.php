@@ -102,7 +102,13 @@ function showAlert(message, type = 'success') {
 
     const container = document.querySelector('.container-fluid');
     const card = document.querySelector('.card');
-    container.insertBefore(alertDiv, card);
+    if (container && card && card.parentNode === container) {
+        container.insertBefore(alertDiv, card);
+    } else if (container) {
+        container.prepend(alertDiv);
+    } else {
+        document.body.prepend(alertDiv);
+    }
 
     // Auto hide after 5 seconds
     setTimeout(() => {
@@ -110,6 +116,49 @@ function showAlert(message, type = 'success') {
             alertDiv.remove();
         }
     }, 5000);
+}
+
+// Function để hiển thị toast
+function showToast(message, type = 'success') {
+    // Kiểm tra đã có toast container chưa, nếu chưa thì tạo
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.top = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '99999';
+        document.body.appendChild(toastContainer);
+    }
+
+    // Tạo toast
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type === 'danger' ? 'danger' : 'success'} border-0 show`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.style.minWidth = '220px';
+    toast.style.marginBottom = '10px';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    toastContainer.appendChild(toast);
+
+    // Auto hide after 4s
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 4000);
+
+    // Đóng khi bấm nút close
+    toast.querySelector('.btn-close').onclick = () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    };
 }
 
 // Function để hiển thị modal xác nhận
@@ -182,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             // Show success message
                             showAlert(data.message, 'success');
+                            showToast('Đã xóa thương hiệu thành công!', 'success');
                         } else {
                             showAlert(data.message || 'Có lỗi xảy ra khi xóa thương hiệu!', 'danger');
                             // Restore button state
