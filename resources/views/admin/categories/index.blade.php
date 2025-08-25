@@ -179,7 +179,10 @@
             }
         }
 
-// Function để hiển thị alert
+// Biến lưu lại nút xóa cuối cùng được bấm
+let lastActiveDeleteBtn = null;
+
+// Function để hiển thị alert (fix lỗi insertBefore)
 function showAlert(message, type = 'success') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -190,7 +193,13 @@ function showAlert(message, type = 'success') {
 
     const container = document.querySelector('.container-fluid');
     const card = document.querySelector('.card');
-    container.insertBefore(alertDiv, card);
+    if (container && card && card.parentNode === container) {
+        container.insertBefore(alertDiv, card);
+    } else if (container) {
+        container.prepend(alertDiv);
+    } else {
+        document.body.prepend(alertDiv);
+    }
 
     // Auto hide after 5 seconds
     setTimeout(() => {
@@ -200,9 +209,10 @@ function showAlert(message, type = 'success') {
     }, 5000);
 }
 
-// Function để hiển thị modal xác nhận
+// Function để hiển thị modal xác nhận (fix accessibility focus)
 function showConfirmModal(message, onConfirm, type = 'warning') {
-    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    const modalEl = document.getElementById('confirmModal');
+    const modal = new bootstrap.Modal(modalEl);
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmButton = document.getElementById('confirmButton');
     const confirmIcon = document.getElementById('confirmIcon');
@@ -233,6 +243,12 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
     newConfirmButton.addEventListener('click', function() {
         modal.hide();
         onConfirm();
+        // Sau khi modal đóng, chuyển focus về nút xóa cuối cùng
+        setTimeout(() => {
+            if (lastActiveDeleteBtn) {
+                lastActiveDeleteBtn.focus();
+            }
+        }, 300);
     });
 
     // Hiển thị modal
@@ -242,6 +258,7 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
         // AJAX Delete functionality
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function() {
+                lastActiveDeleteBtn = this;
                 const categoryId = this.dataset.id;
                 const categoryName = this.dataset.name;
 
@@ -250,21 +267,21 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
                     `Bạn có chắc muốn xóa danh mục "${categoryName}"?`,
                     () => {
                         // Show loading state
-                        this.innerHTML = '<i class="ri-loader-4-line"></i>';
-                        this.disabled = true;
+                        lastActiveDeleteBtn.innerHTML = '<i class="ri-loader-4-line"></i>';
+                        lastActiveDeleteBtn.disabled = true;
 
                         fetch(`{{ route('admin.categories.destroy', ':id') }}`.replace(':id', categoryId), {
-        method: 'DELETE',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 // Remove the row from table
-                                const row = this.closest('tr');
+                                const row = lastActiveDeleteBtn.closest('tr');
                                 row.remove();
 
                                 // Show success message
@@ -272,16 +289,16 @@ function showConfirmModal(message, onConfirm, type = 'warning') {
                             } else {
                                 showAlert(data.message || 'Có lỗi xảy ra khi xóa danh mục!', 'danger');
                                 // Restore button state
-                                this.innerHTML = '<i class="ri-delete-bin-line"></i>';
-                                this.disabled = false;
+                                lastActiveDeleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                                lastActiveDeleteBtn.disabled = false;
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
                             showAlert('Có lỗi xảy ra khi xóa danh mục!', 'danger');
                             // Restore button state
-                            this.innerHTML = '<i class="ri-delete-bin-line"></i>';
-                            this.disabled = false;
+                            lastActiveDeleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+                            lastActiveDeleteBtn.disabled = false;
                         });
                     },
                     'danger'
