@@ -334,6 +334,10 @@
                     </table>
                 </div>
             </div>
+            {{-- Thêm phân trang --}}
+            <div class="d-flex justify-content-center mt-3">
+                {{ $orders->links() }}
+            </div>
         </div>
     </div>
 

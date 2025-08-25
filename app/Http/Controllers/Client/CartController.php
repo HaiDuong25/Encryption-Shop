@@ -403,8 +403,10 @@ class CartController extends Controller
             $productHasVariants = $cart->product->variants->count() > 0;
 
             if ($productHasVariants && !$cart->variant_id) {
-                return redirect()->route('cart.index')->with('error',
-                    "Sản phẩm '{$cart->product->name}' yêu cầu chọn phân loại. Vui lòng cập nhật giỏ hàng!");
+                return redirect()->route('cart.index')->with(
+                    'error',
+                    "Sản phẩm '{$cart->product->name}' yêu cầu chọn phân loại. Vui lòng cập nhật giỏ hàng!"
+                );
             }
         }
 
@@ -475,7 +477,8 @@ class CartController extends Controller
             $wallet = $user->getOrCreateWallet();
 
             if ($wallet->balance < $totalPrice) {
-                return redirect()->back()->with('error',
+                return redirect()->back()->with(
+                    'error',
                     'Số dư trong ví không đủ để thanh toán. Số dư hiện tại: ' .
                     number_format($wallet->balance, 0, ',', '.') . ' VND. ' .
                     'Cần thêm: ' . number_format($totalPrice - $wallet->balance, 0, ',', '.') . ' VND.'
@@ -581,8 +584,8 @@ class CartController extends Controller
                         ->delete();
                 }
 
-                // Xóa giỏ hàng
-                if ($request->selected_items) {
+                // Chỉ xóa các sản phẩm đã chọn khỏi giỏ hàng
+                if (!empty($selectedItems)) {
                     Cart::where('user_id', $user->id)
                         ->whereIn('id', $selectedItems)
                         ->delete();
@@ -957,7 +960,7 @@ class CartController extends Controller
         $order = \App\Models\Order::with([
             'paymentMethod',
             'shippingAddress',
-            'payments' => function($query) {
+            'payments' => function ($query) {
                 $query->orderBy('created_at', 'desc');
             },
             'orderDetails.product',
@@ -1230,9 +1233,9 @@ class CartController extends Controller
                 'used_count' => $coupon->used_count,
                 'remaining_usage' => $coupon->remainingUsage(),
                 'is_one_time_per_user' => $coupon->is_one_time_per_user,
-                'expires_at' => $coupon->expires_at ? date('d/m/Y', strtotime((string)$coupon->expires_at)) : null,
-                'start_date' => $coupon->start_date ? date('d/m/Y', strtotime((string)$coupon->start_date)) : null,
-                'end_date' => $coupon->end_date ? date('d/m/Y', strtotime((string)$coupon->end_date)) : null,
+                'expires_at' => $coupon->expires_at ? date('d/m/Y', strtotime((string) $coupon->expires_at)) : null,
+                'start_date' => $coupon->start_date ? date('d/m/Y', strtotime((string) $coupon->start_date)) : null,
+                'end_date' => $coupon->end_date ? date('d/m/Y', strtotime((string) $coupon->end_date)) : null,
                 'can_use' => !$coupon->hasBeenUsedByUser(Auth::id()),
                 'short_description' => $this->generateCouponDescription($coupon)
             ];
