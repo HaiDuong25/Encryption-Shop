@@ -418,10 +418,12 @@ class CartController extends Controller
         $couponValue = 0; // Giá trị gốc của coupon (% hoặc số tiền)
 
         // Ưu tiên sử dụng coupon từ session (đã được validate qua AJAX)
+
         $sessionCouponCode = session('applied_coupon');
         $sessionDiscountAmount = session('coupon_discount', 0);
         $sessionCouponInfo = session('coupon_info', []);
 
+        $coupon = null;
         if ($sessionCouponCode && $sessionDiscountAmount > 0) {
             // Sử dụng thông tin coupon từ session
             $couponCode = $sessionCouponCode;
@@ -455,6 +457,10 @@ class CartController extends Controller
                     }
                 }
             }
+        }
+        // Luôn truy vấn lại coupon nếu có mã coupon (dù lấy từ session hay request)
+        if (!$coupon && $couponCode) {
+            $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
         }
 
         $totalPrice = $subtotal - $discountAmount;
@@ -543,6 +549,10 @@ class CartController extends Controller
                 ]);
 
                 // Xử lý coupon nếu có
+                // Đảm bảo biến $coupon luôn tồn tại nếu có mã coupon
+                if (!$coupon && $couponCode) {
+                    $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
+                }
                 if ($couponCode && $coupon) {
                     \App\Models\CouponUse::create([
                         'user_id' => $user->id,
