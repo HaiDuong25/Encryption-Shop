@@ -119,9 +119,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}', [ClientOrderController::class, 'show'])->name('client.orders.show');
     Route::post('/orders/{order}/cancel', [ClientOrderController::class, 'cancel'])->name('client.orders.cancel');
     Route::post('/lich-su-don-hang/{id}/confirm', [ClientOrderController::class, 'confirm'])->name('orders.confirm');
-  Route::post('/orders/cancel-item/{orderDetail}', [ClientOrderController::class, 'cancelItem'])
-    ->name('client.orders.cancel-item');
-
 
     // Địa chỉ giao hàng (client)
     Route::resource('addresses', ClientShippingAddressController::class, [
