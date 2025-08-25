@@ -45,7 +45,7 @@
 
                             <div class="input-group shadow rounded search-input-group position-relative">
                                 <input type="text" class="form-control border-0 search-input" id="search-product"
-                                    name="keyword" placeholder="🔍 Tìm kiếm sản phẩm..."
+                                    name="keyword" placeholder="Tìm kiếm sản phẩm..."
                                     value="{{ request('keyword') }}" autocomplete="off">
                                 <button type="submit" class="btn btn-primary search-button">
                                     <i class="fa fa-search me-1"></i> Tìm kiếm

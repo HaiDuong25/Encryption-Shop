@@ -74,9 +74,6 @@
                                     </td>
                                     <td>
                                         <ul>
-                                            <li><a href="{{ route('users.show', $user) }}" title="Xem chi tiết"><i
-                                                        class="ri-eye-line"></i></a></li>
-
                                             <li>
                                                 @if($user->role !== 'admin')
                                                     <button type="button" class="btn btn-link p-0 toggle-btn"
@@ -86,7 +83,10 @@
                                                     </button>
                                                 @endif
                                             </li>
-
+                                            <li><a href="{{ route('users.show', $user) }}" title="Xem chi tiết"><i
+                                                        class="ri-eye-line"></i></a>
+                                            </li>
+                                            
                                             <li><a href="{{ route('users.edit', $user) }}" title="Chỉnh sửa"><i
                                                         class="ri-pencil-line"></i></a></li>
 

@@ -237,8 +237,8 @@
                 </div>
 
                 <div class="text-end mt-4">
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary col-md-2">Huỷ</a>
-                    <button type="submit" class="btn btn-primary ms-2" id="submitBtn">Cập nhật</button>
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary ms-2 col-md-2">Huỷ</a>
+                    <button type="submit" class="btn btn-primary ms-2 col-md-2" id="submitBtn">Cập nhật</button>
                 </div>
         </div>
         </form>
