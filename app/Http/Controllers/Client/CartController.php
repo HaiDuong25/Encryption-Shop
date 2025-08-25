@@ -282,10 +282,17 @@ class CartController extends Controller
             return ($cart->variant->sale_price ?? $cart->variant->price ?? $cart->product->sale_price ?? $cart->product->price) * $cart->quantity;
         });
 
-        // Lấy thông tin coupon từ session
-        $appliedCoupon = session('applied_coupon');
-        $couponDiscount = session('coupon_discount', 0);
-        $couponInfo = session('coupon_info', null);
+        // Chỉ tự động áp lại mã nếu user đã chọn mã ở cart (có flag coupon_selected_in_cart)
+        $appliedCoupon = null;
+        $couponDiscount = 0;
+        $couponInfo = null;
+        if (session('coupon_selected_in_cart')) {
+            $appliedCoupon = session('applied_coupon');
+            $couponDiscount = session('coupon_discount', 0);
+            $couponInfo = session('coupon_info', null);
+            // Xóa flag sau khi đã tự động áp lại 1 lần
+            session()->forget('coupon_selected_in_cart');
+        }
 
         // Validate voucher nếu có - đảm bảo voucher vẫn hợp lệ
         if ($appliedCoupon) {
@@ -298,17 +305,12 @@ class CartController extends Controller
                 return redirect()->route('cart.index');
             }
 
-            // Kiểm tra user đã sử dụng coupon này chưa
-            if ($coupon->hasBeenUsedByUser(Auth::id())) {
-                session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
-                session()->flash('warning', 'Bạn đã sử dụng mã giảm giá này rồi. Mã đã được xóa.');
-                return redirect()->route('cart.index');
-            }
+            // BỎ QUA kiểm tra user đã sử dụng coupon này chưa (fix cứng theo yêu cầu)
 
             // Kiểm tra điều kiện đơn hàng tối thiểu
             if ($coupon->min_order_amount && $subtotal < $coupon->min_order_amount) {
                 session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
-                session()->flash('warning', 'Đơn hàng không đủ điều kiện tối thiểu cho mã giảm giá và đã được xóa.');
+                session()->flash('warning', 'Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã giảm giá.');
                 return redirect()->route('cart.index');
             }
 
@@ -545,7 +547,8 @@ class CartController extends Controller
                     'status' => 'completed',
                     'transaction_code' => $order->transaction_id,
                     'payer_name' => $user->name,
-                    'payment_method_type' => 'WALLET'
+                    'payment_method_type' => 'WALLET',
+                    'amount' => $order->total_price
                 ]);
 
                 // Xử lý coupon nếu có
@@ -554,17 +557,25 @@ class CartController extends Controller
                     $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
                 }
                 if ($couponCode && $coupon) {
-                    \App\Models\CouponUse::create([
-                        'user_id' => $user->id,
-                        'coupon_id' => $coupon->id,
-                        'order_id' => $order->id,
-                        'discount_amount' => $discountAmount
-                    ]);
+                    // Nếu user đã có CouponUse với coupon này nhưng là order khác, vẫn cho phép tạo mới cho order mới
+                    $existingUse = \App\Models\CouponUse::where('user_id', $user->id)
+                        ->where('coupon_id', $coupon->id)
+                        ->where('order_id', $order->id)
+                        ->first();
+                    if (!$existingUse) {
+                        \App\Models\CouponUse::create([
+                            'user_id' => $user->id,
+                            'coupon_id' => $coupon->id,
+                            'order_id' => $order->id,
+                            'discount_amount' => $discountAmount
+                        ]);
+                    }
 
                     if ($coupon->usage_count !== null) {
                         $coupon->increment('usage_count');
                     }
 
+                    // Xóa mã khỏi tài khoản user sau khi đặt đơn thành công
                     \App\Models\UserSavedCoupon::where('user_id', $user->id)
                         ->where('coupon_id', $coupon->id)
                         ->delete();
@@ -837,7 +848,9 @@ class CartController extends Controller
                 'discount_text' => $coupon->discount_type === 'percentage'
                     ? "Giảm {$coupon->discount}%" . ($coupon->max_discount_amount ? " (tối đa " . number_format($coupon->max_discount_amount) . "₫)" : "")
                     : "Giảm " . number_format($coupon->discount) . "₫"
-            ]
+            ],
+            // Đánh dấu user đã chọn mã ở cart
+            'coupon_selected_in_cart' => true
         ]);
 
         return response()->json([

@@ -18,10 +18,17 @@ class DashboardController extends \App\Http\Controllers\Controller
     {
         // Chỉ tính doanh thu từ đơn hoàn thành
         $totalRevenue = Order::where('status', self::STATUS_COMPLETED)->sum('total_price');
+        // Tổng đơn hoàn thành thanh toán bằng ví
+        $walletMethod = \App\Models\PaymentMethod::where('payment_type', 'Số dư ví')->first();
+        $totalWalletOrders = 0;
+        if ($walletMethod) {
+            $totalWalletOrders = Order::where('status', self::STATUS_COMPLETED)
+                ->where('payment_method_id', $walletMethod->id)
+                ->sum('total_price');
+        }
         // Đếm tất cả đơn hàng
         $totalOrders = Order::count();
         $totalProducts = Product::count();
-        $totalCustomers = User::where('role', 'user')->count();
 
         // Dữ liệu doanh thu cho biểu đồ (chỉ từ đơn hoàn thành)
         $now = now();
@@ -48,12 +55,12 @@ class DashboardController extends \App\Http\Controllers\Controller
             'totalRevenue',
             'totalOrders',
             'totalProducts',
-            'totalCustomers',
             'months',
             'revenues',
             'bestSellingProducts',
             'recentOrders',
-            'transactions'
+            'transactions',
+            'totalWalletOrders'
         ));
     }
 
@@ -133,7 +140,6 @@ class DashboardController extends \App\Http\Controllers\Controller
         // Tổng đơn hàng bao gồm tất cả trạng thái
         $totalOrders = Order::whereBetween('created_at', [$start, $end])->count();
         $totalProducts = Product::count();
-        $totalCustomers = User::where('role', 'user')->count();
 
         // Lấy dữ liệu chi tiết
         $bestSellingProducts = $this->getBestSellingProducts($start, $end);
@@ -151,7 +157,7 @@ class DashboardController extends \App\Http\Controllers\Controller
             'totalRevenue' => number_format($totalRevenue) . ' đ',
             'totalOrders' => $totalOrders,
             'totalProducts' => $totalProducts,
-            'totalCustomers' => $totalCustomers,
+            // 'totalCustomers' => $totalCustomers,
             'labels' => $labels,
             'revenues' => $revenues,
             'bestSellingHtml' => view('admin.partials.dashboard_best_selling', ['bestSellingProducts' => $bestSellingProducts])->render(),
