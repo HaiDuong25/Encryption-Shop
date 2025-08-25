@@ -223,76 +223,69 @@
                                                         '4' => 'received',
                                                         '5' => 'completed',
                                                         '6' => 'cancelled',
-                                                        '7' => 'partially_cancelled',
                                                     ];
                                                     $statusValue = $statusMap[$statusValue] ?? 'pending';
                                                 }
-
-                                                $statusMapText = [
-                                                    'pending' => ['label' => 'Chờ xử lý', 'class' => 'bg-warning'],
-                                                    'confirmed' => ['label' => 'Đã xác nhận', 'class' => 'bg-primary'],
-                                                    'shipping' => ['label' => 'Đã giao cho ĐVVC', 'class' => 'bg-info'],
-                                                    'delivering' => ['label' => 'Đang giao', 'class' => 'bg-purple'],
-                                                    'received' => ['label' => 'Đã nhận', 'class' => 'bg-cyan'],
-                                                    'completed' => ['label' => 'Hoàn thành', 'class' => 'bg-success'],
-                                                    'cancelled' => ['label' => 'Đã hủy', 'class' => 'bg-danger'],
-                                                    'partially_cancelled' => [
-                                                        'label' => 'Hủy một phần',
-                                                        'class' => 'bg-secondary',
-                                                    ],
-                                                ];
-
-                                                $currentStatus = $statusMapText[$statusValue] ?? [
-                                                    'label' => 'Không rõ',
-                                                    'class' => 'bg-light text-muted',
-                                                ];
                                             @endphp
 
-                                            <span class="badge {{ $currentStatus['class'] }}">
-                                                {{ $currentStatus['label'] }}
-                                            </span>
+                                            @switch($statusValue)
+                                                @case('pending')
+                                                    <span class="badge bg-warning status-badge">Chờ xử lý</span>
+                                                @break
+
+                                                @case('confirmed')
+                                                    <span class="badge bg-primary status-badge">Đã xác nhận</span>
+                                                @break
+
+                                                @case('shipping')
+                                                    <span class="badge bg-info status-badge">Đã giao cho ĐVVC</span>
+                                                @break
+
+                                                @case('delivering')
+                                                    <span class="badge bg-purple status-badge">Đang giao</span>
+                                                @break
+
+                                                @case('received')
+                                                    <span class="badge bg-cyan status-badge">Đã nhận</span>
+                                                @break
+
+                                                @case('completed')
+                                                    <span class="badge bg-success status-badge">Hoàn thành</span>
+                                                @break
+
+                                                @case('cancelled')
+                                                    <span class="badge bg-danger status-badge">Đã hủy</span>
+                                                @break
+
+                                                @default
+                                                    <span class="badge bg-secondary status-badge">Không rõ</span>
+                                            @endswitch
                                         </td>
 
                                         <td>
                                             @if ($order->returnStatus)
-                                                @php
-                                                    $returnStatusValue = $order->returnStatus->status;
-                                                    $returnStatusMap = [
-                                                        'pending' => [
-                                                            'label' => 'Chờ xử lý trả hàng',
-                                                            'class' => 'bg-warning',
-                                                        ],
-                                                        'approved' => [
-                                                            'label' => 'Đã chấp nhận trả hàng',
-                                                            'class' => 'bg-success',
-                                                        ],
-                                                        'rejected' => [
-                                                            'label' => 'Từ chối trả hàng',
-                                                            'class' => 'bg-danger',
-                                                        ],
-                                                        'cancelled' => [
-                                                            'label' => 'Hủy yêu cầu trả hàng',
-                                                            'class' => 'bg-secondary',
-                                                        ],
-                                                        'partially_cancelled' => [
-                                                            'label' => 'Trả hàng 1 phần',
-                                                            'class' => 'bg-info',
-                                                        ],
-                                                    ];
-                                                    $returnStatus = $returnStatusMap[$returnStatusValue] ?? [
-                                                        'label' => 'Không rõ',
-                                                        'class' => 'bg-light text-muted',
-                                                    ];
-                                                @endphp
-
-                                                <span class="badge {{ $returnStatus['class'] }}">
-                                                    {{ $returnStatus['label'] }}
+                                                <span
+                                                    class="badge
+                                                    @switch($order->returnStatus->status)
+                                                        @case('pending')
+                                                            bg-warning
+                                                            @break
+                                                        @case('approved')
+                                                            bg-success
+                                                            @break
+                                                        @case('rejected')
+                                                            bg-danger
+                                                            @break
+                                                        @default
+                                                            bg-secondary
+                                                    @endswitch
+                                                ">
+                                                    {{ $order->returnStatus->statusText }}
                                                 </span>
                                             @else
                                                 <span class="badge bg-light text-muted">Không trả hàng</span>
                                             @endif
                                         </td>
-
 
                                         <td>
                                             @php
@@ -309,6 +302,9 @@
                                             @switch($statusValue)
                                                 @case('refunded')
                                                 @case('returned')
+
+                                                @case('cancelled')
+                                                    {{-- ✅ thêm cancelled --}}
                                                     <span
                                                         class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
                                                         {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
