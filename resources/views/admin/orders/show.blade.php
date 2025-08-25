@@ -156,6 +156,8 @@
             '5' => 'completed',
             '6' => 'cancelled',
         ];
+        $statusValue = is_numeric($order->status) ? $statusMap[(string) $order->status] ?? 'pending' : $order->status;
+
         $statusValue = is_numeric($order->status)
             ? $statusMap[(string) $order->status] ?? 'pending'
             : $order->status;
@@ -221,9 +223,11 @@
                                 <div class="text-muted small">
                                     <i class="fas fa-clock me-1"></i>{{ $history->created_at->format('H:i d/m/Y') }}
                                     @if ($history->user)
-                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>{{ $history->user->name ?? 'N/A' }}</strong>
+                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi:
+                                        <strong>{{ $history->user->name ?? 'N/A' }}</strong>
                                     @elseif($history->changed_by)
-                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>User ID {{ $history->changed_by }}</strong>
+                                        <br><i class="fas fa-user me-1"></i>Thực hiện bởi: <strong>User ID
+                                            {{ $history->changed_by }}</strong>
                                     @else
                                         <br><i class="fas fa-robot me-1"></i>Thực hiện bởi: <strong>Hệ thống</strong>
                                     @endif
@@ -280,7 +284,8 @@
     @if ($order->returnStatus)
         <div class="alert alert-info mb-4">
             <h6 class="mb-2"><i class="fas fa-undo me-2"></i>Trạng thái trả hàng</h6>
-            <span class="badge
+            <span
+                class="badge
                 @switch($order->returnStatus->status)
                     @case('pending')
                         badge-return-pending
@@ -374,7 +379,7 @@
                                     </td>
                                     <td>
                                         {{-- Hiển thị các biến thể (attribute values) --}}
-                                        @if($detail->variant && $detail->variant->attributeValues->count() > 0)
+                                        @if ($detail->variant && $detail->variant->attributeValues->count() > 0)
                                             @foreach ($detail->variant->attributeValues as $attributeValue)
                                                 <span class="badge bg-light text-dark border">
                                                     {{ $attributeValue->attribute->name }}: {{ $attributeValue->value }}
@@ -387,7 +392,7 @@
                                     <td>{{ $detail->quantity }}</td>
                                     <td>{{ format_vnd($detail->product->sale_price) }} đ</td>
                                     <td>{{ format_vnd($detail->product->sale_price * $detail->quantity) }} đ</td>
-                            </tr>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -409,7 +414,11 @@
                         }
                         $total = $order->total_price;
                         // Thanh toán thành công nếu có payment completed hoặc COD & đơn completed
-                        $isPaid = ($order->payments->where('status', 'completed')->count() > 0) || (optional($order->paymentMethod)->payment_type === 'COD' && ($order->status === 'completed' || (is_numeric($order->status) && (string)$order->status === '5')));
+                        $isPaid =
+                            $order->payments->where('status', 'completed')->count() > 0 ||
+                            (optional($order->paymentMethod)->payment_type === 'COD' &&
+                                ($order->status === 'completed' ||
+                                    (is_numeric($order->status) && (string) $order->status === '5')));
                     @endphp
 
                     @if ($actualDiscountAmount > 0)
@@ -439,16 +448,24 @@
                             $isCOD = optional($order->paymentMethod)->payment_type === 'COD';
                             $isMomo = optional($order->paymentMethod)->payment_type === 'Ví Điện Tử MOMO';
                             $statusValue = is_numeric($order->status)
-                                ? ($statusMap[$order->status] ?? 'pending')
+                                ? $statusMap[$order->status] ?? 'pending'
                                 : $order->status;
                             $isPaid = $rawPaid || ($isCOD && $statusValue === 'completed');
                         @endphp
+
                         @switch($statusValue)
                             @case('refunded')
                             @case('returned')
-                                {{-- Đã trả hàng xong --}}
+                                {{-- Đơn đã trả hàng/hoàn tiền --}}
+                                <span class="badge status-badge badge-refunded">
+                                    Đã hoàn tiền vào ví
+                                </span>
+                            @break
+
+                            @case('cancelled')
+                                {{-- Đơn đã bị hủy --}}
                                 <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
-                                    {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
+                                    {{ $isMomo ? 'Đã hoàn tiền vào ví' : 'Chưa thanh toán' }}
                                 </span>
                             @break
 
@@ -457,6 +474,7 @@
                                     {{ $isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                                 </span>
                         @endswitch
+
                     </li>
                     @php
                         $validPayments = $order->payments->whereNotNull('created_at');
@@ -491,6 +509,7 @@
                     @endphp
 
                     @if($isOrderFinalized || $isReturned)
+                    @if ($isOrderFinalized)
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-1"></i>
                             @if($isOrderFinalized)
@@ -513,7 +532,8 @@
                                     <strong>Quy tắc cập nhật trạng thái:</strong><br>
                                     • <strong>Tiến:</strong> Chuyển sang trạng thái tiếp theo<br>
                                     • <strong>Lùi:</strong> Quay lại 1 trạng thái trước (xử lý sự cố như giao nhầm đơn)<br>
-                                    • <strong>Hủy:</strong> Chỉ được hủy khi người dùng có yêu cầu hủy trước khi đang giao hàng  (trước trạng thái "Đang giao")
+                                    • <strong>Hủy:</strong> Chỉ được hủy khi người dùng có yêu cầu hủy trước khi đang giao
+                                    hàng (trước trạng thái "Đang giao")
                                 </small>
                             </div>
 
@@ -553,18 +573,36 @@
 
                                                 if ($optionIndex == $currentIndex) {
                                                     $canSelect = true; // Trạng thái hiện tại
-                                                } elseif ($optionIndex == $currentIndex + 1 && !in_array($value, $finalStatuses)) {
+                                                } elseif (
+                                                    $optionIndex == $currentIndex + 1 &&
+                                                    !in_array($value, $finalStatuses)
+                                                ) {
                                                     $canSelect = true; // Trạng thái tiếp theo
-                                                } elseif ($optionIndex == $currentIndex - 1 && $currentIndex > 0 && !in_array($statusValue, ['pending', 'completed', 'cancelled'])) {
+                                                } elseif (
+                                                    $optionIndex == $currentIndex - 1 &&
+                                                    $currentIndex > 0 &&
+                                                    !in_array($statusValue, ['pending', 'completed', 'cancelled'])
+                                                ) {
                                                     $canSelect = true; // Cho phép quay lại 1 trạng thái (trừ pending và final statuses)
-                                                } elseif ($value === 'cancelled' && !in_array($statusValue, ['delivering', 'received', 'completed', 'cancelled', 'approved', 'rejected'])) {
+                                                } elseif (
+                                                    $value === 'cancelled' &&
+                                                    !in_array($statusValue, [
+                                                        'delivering',
+                                                        'received',
+                                                        'completed',
+                                                        'cancelled',
+                                                        'approved',
+                                                        'rejected',
+                                                    ])
+                                                ) {
                                                     $canSelect = true; // Cho phép hủy nếu chưa đang giao
                                                 }
                                             @endphp
 
-                                            @if($canSelect)
-                                                <option value="{{ $value }}" {{ $statusValue == $value ? 'selected' : '' }}>
-                                                    @if($optionIndex == $currentIndex - 1 && $optionIndex >= 0)
+                                            @if ($canSelect)
+                                                <option value="{{ $value }}"
+                                                    {{ $statusValue == $value ? 'selected' : '' }}>
+                                                    @if ($optionIndex == $currentIndex - 1 && $optionIndex >= 0)
                                                         {{ $label }} (Quay lại)
                                                     @else
                                                         {{ $label }}
@@ -586,8 +624,9 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label for="cancel_reason" class="form-label">Lý do hủy</label>
-                                        <input type="text" class="form-control" id="cancel_reason" name="cancel_reason"
-                                               maxlength="255" value="{{ old('cancel_reason', $order->cancel_reason) }}">
+                                        <input type="text" class="form-control" id="cancel_reason"
+                                            name="cancel_reason" maxlength="255"
+                                            value="{{ old('cancel_reason', $order->cancel_reason) }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="cancel_note" class="form-label">Ghi chú hủy đơn</label>
@@ -665,38 +704,50 @@
                 @php
                     $latestPayment = $order->payments->where('status', 'completed')->first();
                 @endphp
-                @if($latestPayment && $latestPayment->payment_method_type && in_array($latestPayment->payment_method_type, ['MoMo', 'ZaloPay']))
-                    <div class="transaction-info mt-3 p-3" style="background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #007bff;">
+                @if (
+                    $latestPayment &&
+                        $latestPayment->payment_method_type &&
+                        in_array($latestPayment->payment_method_type, ['MoMo', 'ZaloPay']))
+                    <div class="transaction-info mt-3 p-3"
+                        style="background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #007bff;">
                         <p class="mb-2"><strong><i class="fas fa-receipt me-2"></i>Dữ liệu giao dịch:</strong></p>
                         <div class="row">
                             <div class="col-md-6">
-                                <p class="mb-1"><span class="badge bg-info">{{ $latestPayment->payment_method_type }}</span></p>
-                                @if($latestPayment->transaction_code)
+                                <p class="mb-1"><span
+                                        class="badge bg-info">{{ $latestPayment->payment_method_type }}</span></p>
+                                @if ($latestPayment->transaction_code)
                                     <p class="mb-1"><small class="text-muted">Mã giao dịch:</small><br>
-                                    <strong class="text-primary">{{ $latestPayment->transaction_code }}</strong></p>
+                                        <strong class="text-primary">{{ $latestPayment->transaction_code }}</strong>
+                                    </p>
                                 @endif
                             </div>
                             <div class="col-md-6">
-                                @if($order->transaction_id)
+                                @if ($order->transaction_id)
                                     <p class="mb-1"><small class="text-muted">Mã đơn hàng:</small><br>
-                                    <strong class="text-success">{{ $order->transaction_id }}</strong></p>
+                                        <strong class="text-success">{{ $order->transaction_id }}</strong>
+                                    </p>
                                 @endif
-                                @if($latestPayment->confirmed_at)
+                                @if ($latestPayment->confirmed_at)
                                     <p class="mb-0"><small class="text-muted">Thời gian GD:</small><br>
-                                    <strong class="text-dark">{{ \Carbon\Carbon::parse($latestPayment->confirmed_at)->format('d/m/Y H:i:s') }}</strong></p>
+                                        <strong
+                                            class="text-dark">{{ \Carbon\Carbon::parse($latestPayment->confirmed_at)->format('d/m/Y H:i:s') }}</strong>
+                                    </p>
                                 @endif
                             </div>
                         </div>
                     </div>
                 @elseif($order->paymentMethod && $order->paymentMethod->payment_type == 'COD')
-                    <div class="transaction-info mt-3 p-3" style="background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #28a745;">
-                        <p class="mb-2"><strong><i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh toán:</strong></p>
+                    <div class="transaction-info mt-3 p-3"
+                        style="background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #28a745;">
+                        <p class="mb-2"><strong><i class="fas fa-money-bill-wave me-2"></i>Thông tin thanh
+                                toán:</strong></p>
                         <span class="badge bg-success">Thanh toán khi nhận hàng (COD)</span>
-                        <p class="mb-0 mt-2"><small class="text-muted">Khách hàng sẽ thanh toán trực tiếp cho shipper</small></p>
+                        <p class="mb-0 mt-2"><small class="text-muted">Khách hàng sẽ thanh toán trực tiếp cho
+                                shipper</small></p>
                     </div>
                 @endif
 
-                @if($order->coupon_code)
+                @if ($order->coupon_code)
                     <p><strong>Mã giảm giá:</strong>
                         <span class="badge bg-success">{{ $order->coupon_code }}</span>
                         @if ($order->coupon_type == 'percentage')
@@ -769,17 +820,17 @@
                 const formData = new FormData(form);
 
                 fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        alertContainer.innerHTML = `
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            alertContainer.innerHTML = `
                             <div class="alert alert-success alert-dismissible fade show">
                                 <i class="fas fa-check-circle me-1"></i>
                                 ${data.message}
@@ -787,37 +838,39 @@
                             </div>
                         `;
 
-                        // Reload page after success to show updated status
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        // Show error messages
-                        if (data.errors) {
-                            let errorHtml = '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
-                            Object.values(data.errors).flat().forEach(error => {
-                                errorHtml += `<li>${error}</li>`;
-                            });
-                            errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-                            alertContainer.innerHTML = errorHtml;
+                            // Reload page after success to show updated status
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
                         } else {
-                            alertContainer.innerHTML = `
+                            // Show error messages
+                            if (data.errors) {
+                                let errorHtml =
+                                    '<div class="alert alert-danger alert-dismissible fade show"><strong>Đã có lỗi xảy ra:</strong><ul class="mb-0 mt-2">';
+                                Object.values(data.errors).flat().forEach(error => {
+                                    errorHtml += `<li>${error}</li>`;
+                                });
+                                errorHtml +=
+                                    '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                                alertContainer.innerHTML = errorHtml;
+                            } else {
+                                alertContainer.innerHTML = `
                                 <div class="alert alert-danger alert-dismissible fade show">
                                     <i class="fas fa-exclamation-circle me-1"></i>
                                     ${data.message || 'Có lỗi xảy ra khi cập nhật đơn hàng!'}
                                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                 </div>
                             `;
-                        }
+                            }
 
-                        // Restore button state
-                        updateBtn.innerHTML = originalContent;
-                        updateBtn.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alertContainer.innerHTML = `
+                            // Restore button state
+                            updateBtn.innerHTML = originalContent;
+                            updateBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alertContainer.innerHTML = `
                         <div class="alert alert-danger alert-dismissible fade show">
                             <i class="fas fa-exclamation-circle me-1"></i>
                             Có lỗi xảy ra khi cập nhật đơn hàng!
@@ -825,10 +878,10 @@
                         </div>
                     `;
 
-                    // Restore button state
-                    updateBtn.innerHTML = originalContent;
-                    updateBtn.disabled = false;
-                });
+                        // Restore button state
+                        updateBtn.innerHTML = originalContent;
+                        updateBtn.disabled = false;
+                    });
             });
 
             // Initialize cancel fields visibility
@@ -870,6 +923,7 @@
             from {
                 transform: rotate(0deg);
             }
+
             to {
                 transform: rotate(360deg);
             }

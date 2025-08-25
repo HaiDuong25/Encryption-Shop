@@ -204,6 +204,9 @@
 
                                         <td>
                                             @if ($order->returnStatus)
+                                                <span
+                                                    class="badge
+
                                                 <span class="badge 
                                                     @switch($order->returnStatus->status)
                                                         @case('pending')
@@ -238,6 +241,11 @@
                                             @switch($statusValue)
                                                 @case('refunded')
                                                 @case('returned')
+
+                                                @case('cancelled')
+                                                    {{-- ✅ thêm cancelled --}}
+                                                    <span
+                                                        class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
                                                     <span class="badge status-badge {{ $isMomo ? 'badge-refunded' : 'badge-unpaid' }}">
                                                         {{ $isMomo ? 'Đã hoàn tiền' : 'Chưa thanh toán' }}
                                                     </span>
