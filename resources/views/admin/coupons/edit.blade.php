@@ -1,143 +1,140 @@
 @extends('admin.layouts.main')
 @section('content')
-    <div class="container-fluid py-5 d-flex justify-content-center align-items-center"
-        style="min-height: 90vh; background: #f6fafd; color: #222;">
-        <div class="card shadow-lg border-0 p-5 w-100" style="max-width: 800px; border-radius: 18px; background: #fff;">
-            <h2 class="mb-4 text-center fw-bold" style="color: #009966; font-size: 2.2rem; letter-spacing: 1px;">Cập nhật mã
-                giảm giá</h2>
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            <form id="couponEditForm">
-                @csrf
-                <input type="hidden" name="_method" value="PUT">
-                <input type="hidden" id="couponId" value="{{ $coupon->id }}">
+   <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body p-5">
+                    <h2 class="mb-4 text-center fw-bold text-success">Cập nhật mã giảm giá</h2>
 
-                <div class="mb-4">
-                    <label for="code" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Mã giảm giá</label>
-                    <input type="text" name="code" id="code" class="form-control form-control-lg" 
-                        value="{{ old('code', $coupon->code) }}" placeholder="Mã giảm giá" 
-                        style="color: #222; font-size: 1.3rem;" maxlength="50">
-                    <small class="form-text text-muted">Để trống để hệ thống tự tạo mã ngẫu nhiên</small>
-                </div>
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
 
-                <div class="mb-4">
-                    <label for="description" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Mô tả</label>
-                    <textarea name="description" id="description" class="form-control form-control-lg" rows="3"
-                        placeholder="Mô tả về mã giảm giá này..." style="color: #222; font-size: 1.3rem;" maxlength="500">{{ old('description', $coupon->description) }}</textarea>
-                    <small class="form-text text-muted">Tối đa 500 ký tự</small>
-                </div>
+                    <form id="couponEditForm">
+                        @csrf
+                        <input type="hidden" name="_method" value="PUT">
+                        <input type="hidden" id="couponId" value="{{ $coupon->id }}">
 
-                <div class="mb-4">
-                    <label for="discount_type" class="form-label fw-semibold"
-                        style="color: #009966; font-size: 1.2rem;">Loại giảm giá</label>
-                    <select name="discount_type" id="discount_type" class="form-control form-control-lg" required
-                        style="color: #222; font-size: 1.3rem;">
-                        <option value="percentage" {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'selected' : '' }}>Phần trăm (%)</option>
-                        <option value="fixed" {{ ($coupon->discount_type ?? 'percentage') == 'fixed' ? 'selected' : '' }}>Số
-                            tiền cố định (₫)</option>
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label for="discount" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">
-                        <span
-                            id="discount-label">{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Giảm giá (%)' : 'Giảm giá (₫)' }}</span>
-                    </label>
-                    <input type="number" name="discount" id="discount" class="form-control form-control-lg" required min="1"
-                        max="{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? '100' : '10000000' }}"
-                        value="{{ old('discount', (int)$coupon->discount) }}"
-                        placeholder="{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Nhập giá trị từ 1-100' : 'Nhập số tiền giảm giá' }}"
-                        style="color: #222; font-size: 1.3rem;">
-                    <small id="discount-help" class="form-text text-muted">
-                        {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Nhập giá trị từ 1 đến 100' : 'Nhập số tiền giảm giá (tối đa 10.000.000₫)' }}
-                    </small>
-                </div>
-
-                <div class="mb-4" id="max-discount-container" style="display: {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'block' : 'none' }};">
-                    <label for="max_discount_amount" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">
-                        Số tiền giảm tối đa (₫)
-                    </label>
-                    <input type="number" name="max_discount_amount" id="max_discount_amount" class="form-control form-control-lg" 
-                        min="0" step="1" value="{{ old('max_discount_amount', (int)$coupon->max_discount_amount) }}" 
-                        placeholder="Nhập số tiền giảm tối đa" style="color: #222; font-size: 1.3rem;">
-                    <small class="form-text text-muted">Áp dụng cho giảm giá theo %. VD: Giảm 10% tối đa 50,000₫</small>
-                </div>
-
-                <div class="mb-4">
-                    <label for="min_order_amount" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">
-                        Đơn hàng tối thiểu (₫)
-                    </label>
-                    <input type="number" name="min_order_amount" id="min_order_amount" class="form-control form-control-lg" 
-                        min="0" step="1" value="{{ old('min_order_amount', (int)$coupon->min_order_amount) }}" 
-                        placeholder="Nhập giá trị đơn hàng tối thiểu" style="color: #222; font-size: 1.3rem;">>
-                    <small class="form-text text-muted">Để trống nếu không yêu cầu đơn hàng tối thiểu</small>
-                </div>
-
-                <div class="mb-4">
-                    <label for="usage_limit" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Giới
-                        hạn số lần sử dụng</label>
-                    <input type="number" name="usage_limit" id="usage_limit" class="form-control form-control-lg" min="0"
-                        value="{{ old('usage_limit', $coupon->usage_limit ?? 0) }}" placeholder="0 = không giới hạn"
-                        style="color: #222; font-size: 1.3rem;">
-                    <small class="form-text text-muted">Để trống hoặc 0 để không giới hạn số lần sử dụng</small>
-                    @if($coupon->used_count > 0)
-                        <div class="mt-2">
-                            <span class="badge bg-info">Đã sử dụng: {{ $coupon->used_count }} lần</span>
-                            @if($coupon->usage_limit > 0)
-                                <span class="badge bg-warning">Còn lại: {{ max(0, $coupon->usage_limit - $coupon->used_count) }}
-                                    lần</span>
-                            @endif
+                        <div class="mb-4">
+                            <label for="code" class="form-label fw-semibold text-success">Mã giảm giá</label>
+                            <input type="text" name="code" id="code" class="form-control"
+                                value="{{ old('code', $coupon->code) }}" placeholder="Mã giảm giá" maxlength="50">
+                            <div class="form-text">Để trống để hệ thống tự tạo mã ngẫu nhiên</div>
                         </div>
-                    @endif
-                </div>
 
-                <div class="mb-4">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="is_one_time_per_user" id="is_one_time_per_user" 
-                               value="1" {{ old('is_one_time_per_user', $coupon->is_one_time_per_user ?? true) ? 'checked' : '' }}>
-                        <label class="form-check-label fw-semibold" for="is_one_time_per_user" style="color: #009966; font-size: 1.2rem;">
-                            Giới hạn 1 lần sử dụng mỗi user
-                        </label>
-                    </div>
-                    <small class="form-text text-muted">Mỗi tài khoản chỉ có thể sử dụng mã này 1 lần duy nhất</small>
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold text-success">Mô tả</label>
+                            <textarea name="description" id="description" class="form-control" rows="3"
+                                placeholder="Mô tả về mã giảm giá này..." maxlength="500">{{ old('description', $coupon->description) }}</textarea>
+                            <div class="form-text">Tối đa 500 ký tự</div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="discount_type" class="form-label fw-semibold text-success">Loại giảm giá</label>
+                                <select name="discount_type" id="discount_type" class="form-select" required>
+                                    <option value="percentage" {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'selected' : '' }}>Phần trăm (%)</option>
+                                    <option value="fixed" {{ ($coupon->discount_type ?? 'percentage') == 'fixed' ? 'selected' : '' }}>Số tiền cố định (₫)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="discount" class="form-label fw-semibold text-success">
+                                    <span id="discount-label">{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Giảm giá (%)' : 'Giảm giá (₫)' }}</span>
+                                </label>
+                                <input type="number" name="discount" id="discount" class="form-control" required
+                                    min="1" max="{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? '100' : '10000000' }}"
+                                    value="{{ old('discount', (int)$coupon->discount) }}"
+                                    placeholder="{{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Nhập giá trị từ 1-100' : 'Nhập số tiền giảm giá' }}">
+                                <div class="form-text" id="discount-help">
+                                    {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'Nhập giá trị từ 1 đến 100' : 'Nhập số tiền giảm giá (tối đa 10.000.000₫)' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 mt-4" id="max-discount-container" style="display: {{ ($coupon->discount_type ?? 'percentage') == 'percentage' ? 'block' : 'none' }};">
+                            <label for="max_discount_amount" class="form-label fw-semibold text-success">Số tiền giảm tối đa (₫)</label>
+                            <input type="number" name="max_discount_amount" id="max_discount_amount" class="form-control"
+                                min="0" step="1" value="{{ old('max_discount_amount', (int)$coupon->max_discount_amount) }}"
+                                placeholder="Nhập số tiền giảm tối đa">
+                            <div class="form-text">Áp dụng cho giảm giá theo %. VD: Giảm 10% tối đa 50,000₫</div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="min_order_amount" class="form-label fw-semibold text-success">Đơn hàng tối thiểu (₫)</label>
+                                <input type="number" name="min_order_amount" id="min_order_amount" class="form-control"
+                                    min="0" step="1" value="{{ old('min_order_amount', (int)$coupon->min_order_amount) }}"
+                                    placeholder="Không yêu cầu nếu để trống">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="usage_limit" class="form-label fw-semibold text-success">Giới hạn số lần sử dụng</label>
+                                <input type="number" name="usage_limit" id="usage_limit" class="form-control"
+                                    min="0" value="{{ old('usage_limit', $coupon->usage_limit ?? 0) }}" placeholder="0 = không giới hạn">
+                                <div class="form-text">Để trống hoặc 0 để không giới hạn số lần sử dụng</div>
+
+                                @if($coupon->used_count > 0)
+                                    <div class="mt-2">
+                                        <span class="badge bg-info">Đã sử dụng: {{ $coupon->used_count }} lần</span>
+                                        @if($coupon->usage_limit > 0)
+                                            <span class="badge bg-warning">Còn lại: {{ max(0, $coupon->usage_limit - $coupon->used_count) }} lần</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="form-check my-4">
+                            <input class="form-check-input" type="checkbox" name="is_one_time_per_user" id="is_one_time_per_user"
+                                   value="1" {{ old('is_one_time_per_user', $coupon->is_one_time_per_user ?? true) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold text-success" for="is_one_time_per_user">
+                                Giới hạn 1 lần sử dụng mỗi user
+                            </label>
+                            <div class="form-text">Mỗi tài khoản chỉ có thể sử dụng mã này 1 lần duy nhất</div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label fw-semibold text-success">Ngày bắt đầu <span class="text-danger">*</span></label>
+                                <input type="date" name="start_date" id="start_date" class="form-control" required
+                                    value="{{ old('start_date', $coupon->start_date ? $coupon->start_date->format('Y-m-d') : '') }}">
+                                @php
+                                    $today = \Carbon\Carbon::today();
+                                    $start = $coupon->start_date ? $coupon->start_date->format('Y-m-d') : null;
+                                @endphp
+                                @if($start)
+                                    <div class="mt-2">
+                                        @if($start <= $today->format('Y-m-d'))
+                                            <span class="badge bg-success">Đã bắt đầu</span>
+                                        @else
+                                            <span class="badge bg-danger">Chưa bắt đầu</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="end_date" class="form-label fw-semibold text-success">Ngày kết thúc <span class="text-danger">*</span></label>
+                                <input type="date" name="end_date" id="end_date" class="form-control" required
+                                    value="{{ old('end_date', $coupon->end_date ? $coupon->end_date->format('Y-m-d') : '') }}">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content mt-5">
+                            <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary btn-lg px-4 me-2">Quay lại</a>
+                            <button type="submit" class="btn btn-success btn-lg px-4 fw-semibold">
+                                <span class="btn-text">Cập nhật</span>
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-4">
-                    <label for="start_date" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Ngày
-                        bắt đầu <span class="text-danger">*</span></label>
-                    <input type="date" name="start_date" id="start_date" class="form-control form-control-lg" required
-                        value="{{ old('start_date', $coupon->start_date ? $coupon->start_date->format('Y-m-d') : '') }}"
-                        style="color: #222; font-size: 1.3rem;">
-                    @php
-                        $today = \Carbon\Carbon::today();
-                        $start = $coupon->start_date ? $coupon->start_date->format('Y-m-d') : null;
-                    @endphp
-                    @if($start)
-                        @if($start <= $today->format('Y-m-d'))
-                            <span class="badge bg-success mt-2">Đã bắt đầu</span>
-                        @else
-                            <span class="badge bg-danger mt-2">Chưa bắt đầu</span>
-                        @endif
-                    @endif
-                </div>
-                <div class="mb-4">
-                    <label for="end_date" class="form-label fw-semibold" style="color: #009966; font-size: 1.2rem;">Ngày kết
-                        thúc <span class="text-danger">*</span></label>
-                    <input type="date" name="end_date" id="end_date" class="form-control form-control-lg" required
-                        value="{{ old('end_date', $coupon->end_date ? $coupon->end_date->format('Y-m-d') : '') }}"
-                        style="color: #222; font-size: 1.3rem;">
-                </div>
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary btn-lg px-4">Quay lại</a>
-                    <button type="submit" class="btn btn-lg px-4"
-                        style="background-color: #009966; color: #fff; font-weight: 600; font-size: 1.2rem;">
-                        <span class="btn-text">Cập nhật</span>
-                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
