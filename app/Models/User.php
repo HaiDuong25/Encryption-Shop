@@ -2,14 +2,21 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'name',
         'email',
@@ -25,20 +32,6 @@ class User extends Authenticatable
         'gender'
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-        ];
-    }
-
-    // 🔹 Check quyền
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -49,97 +42,119 @@ class User extends Authenticatable
         return $this->status === 'active';
     }
 
-    // 🔹 Quan hệ
+    /**
+     * Get all shipping addresses for the user.
+     */
     public function shippingAddresses()
     {
         return $this->hasMany(ShippingAddress::class);
     }
 
+    /**
+     * Get all coupon uses for the user.
+     */
     public function couponUses()
     {
         return $this->hasMany(CouponUse::class);
     }
 
+    /**
+     * Get all saved coupons for the user.
+     */
     public function savedCoupons()
     {
         return $this->hasMany(UserSavedCoupon::class);
     }
 
+    /**
+     * Get saved coupons with coupon details
+     */
     public function savedCouponsWithDetails()
     {
         return $this->belongsToMany(Coupon::class, 'user_saved_coupons', 'user_id', 'coupon_id')
-            ->withTimestamps()
-            ->withPivot('saved_at');
+                    ->withTimestamps()
+                    ->withPivot('saved_at');
     }
 
-    // 🔹 Quan hệ với ví
+    /**
+     * Kiểm tra user đã sử dụng coupon này chưa
+     */
+    public function hasUsedCoupon($couponId)
+    {
+        return $this->couponUses()->where('coupon_id', $couponId)->exists();
+    }
+
+    /**
+     * Kiểm tra user đã lưu coupon này chưa
+     */
+    public function hasSavedCoupon($couponId)
+    {
+        return $this->savedCoupons()->where('coupon_id', $couponId)->exists();
+    }
+
+    /**
+     * Get the user's wallet
+     */
     public function wallet()
     {
-        return $this->hasOne(UserWallet::class, 'user_id');
+        return $this->hasOne(UserWallet::class);
     }
 
+    /**
+     * Get wallet transactions
+     */
     public function walletTransactions()
     {
         return $this->hasMany(WalletTransaction::class);
     }
 
-    // 🔹 Lấy hoặc tạo ví cho user
+    /**
+     * Get or create user wallet
+     */
     public function getOrCreateWallet()
     {
         if (!$this->wallet) {
-            return UserWallet::create([
+            UserWallet::create([
                 'user_id' => $this->id,
-                'balance' => 0,
+                'balance' => 0
             ]);
         }
         return $this->wallet;
     }
 
-    // 🔹 Cộng tiền vào ví
-    public function addToWallet($amount, $description = null)
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
-        $wallet = $this->getOrCreateWallet();
-        $wallet->balance += $amount;
-        $wallet->save();
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }public function hasPurchasedProduct($productId)
+{
+    return OrderDetail::whereHas('order', function ($query) {
+        $query->where('user_id', $this->id)
+              ->where('status', 'completed');
+    })->where('product_id', $productId)->exists();
+}
 
-        $this->walletTransactions()->create([
-            'amount'      => $amount,
-            'type'        => 'refund',
-            'description' => $description,
-        ]);
-    }
+public function bankAccounts()
+{
+    return $this->hasMany(\App\Models\BankAccount::class, 'user_id');
+}
 
-    // 🔹 Trừ tiền trong ví
-    public function deductFromWallet($amount, $description = null)
-    {
-        $wallet = $this->getOrCreateWallet();
 
-        if ($wallet->balance >= $amount) {
-            $wallet->balance -= $amount;
-            $wallet->save();
-
-            $this->walletTransactions()->create([
-                'amount'      => -$amount,
-                'type'        => 'withdraw',
-                'description' => $description,
-            ]);
-
-            return true;
-        }
-        return false;
-    }
-
-    // 🔹 Check sản phẩm đã mua
-    public function hasPurchasedProduct($productId)
-    {
-        return OrderDetail::whereHas('order', function ($query) {
-            $query->where('user_id', $this->id)
-                  ->where('status', 'completed');
-        })->where('product_id', $productId)->exists();
-    }
-
-    public function bankAccounts()
-    {
-        return $this->hasMany(BankAccount::class, 'user_id');
-    }
 }
