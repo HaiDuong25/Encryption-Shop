@@ -15,7 +15,10 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Lấy 12 sản phẩm nổi bật sắp xếp theo lượt bán và đánh giá
+    // Unset mã giảm giá nếu có (user rời khỏi giỏ hàng/thanh toán)
+    session()->forget(['applied_coupon', 'coupon_discount', 'coupon_info']);
+
+    // Lấy 12 sản phẩm nổi bật sắp xếp theo lượt bán và đánh giá
         $products = Product::with([
             'rates' => function ($query) {
                 $query->where('status', 1);

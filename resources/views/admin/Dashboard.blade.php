@@ -71,21 +71,6 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-lg-3">
-        <div class="main-tiles border-0 card-hover card o-hidden">
-            <div class="custome-4-bg b-r-4 card-body">
-                <div class="media static-top-widget">
-                    <div class="media-body p-0">
-                        <span class="m-0">Tổng khách hàng</span>
-                        <h4 class="mb-0 counter">{{ $totalCustomers }}</h4>
-                    </div>
-                    <div class="align-self-center text-center">
-                        <i class="ri-user-add-line"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Báo cáo doanh thu -->
     <div class="col-xl-6">

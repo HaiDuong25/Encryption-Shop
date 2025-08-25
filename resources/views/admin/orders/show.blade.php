@@ -487,12 +487,17 @@
                         // Define finalized statuses and check if order is finalized
                         $finalStatuses = ['completed', 'cancelled', 'approved', 'rejected'];
                         $isOrderFinalized = in_array($statusValue, $finalStatuses);
+                        $isReturned = isset($order->returnStatus) && $order->returnStatus !== null;
                     @endphp
 
-                    @if($isOrderFinalized)
+                    @if($isOrderFinalized || $isReturned)
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-1"></i>
-                            Đơn hàng đã ở trạng thái cuối và không thể chỉnh sửa.
+                            @if($isOrderFinalized)
+                                Đơn hàng đã ở trạng thái cuối và không thể chỉnh sửa.
+                            @elseif($isReturned)
+                                Đơn hàng đã có yêu cầu trả hàng, không thể chỉnh sửa trạng thái.
+                            @endif
                         </div>
                     @else
                         {{-- Alert container for AJAX responses --}}

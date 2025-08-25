@@ -58,18 +58,22 @@ Route::get('password/reset/{token}', [ResetPasswordController::class, 'showReset
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 // --- Trang chính ---
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->middleware('unset.coupon.checkout')->name('home');
 
 // --- Sản phẩm ---
-Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
-Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
-Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
-Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('client.products.getStock');
-Route::get('/api/search-products', [ClientProductController::class, 'searchProducts'])->name('client.products.search');
+Route::middleware('unset.coupon.checkout')->group(function () {
+    Route::get('/products', [ClientProductController::class, 'index'])->name('client.products.index');
+    Route::get('/products/category/{id}', [ClientProductController::class, 'category'])->name('client.products.category');
+    Route::get('/products/{id}', [ClientProductController::class, 'show'])->name('client.products.show');
+    Route::get('/get-stock', [ClientProductController::class, 'getStock'])->name('client.products.getStock');
+    Route::get('/api/search-products', [ClientProductController::class, 'searchProducts'])->name('client.products.search');
+});
 
 // --- Tin tức ---
-Route::get('/news', [ClientNewsController::class, 'index'])->name('client.news.index');
-Route::get('/news/{id}', [ClientNewsController::class, 'show'])->name('client.news.show');
+Route::middleware('unset.coupon.checkout')->group(function () {
+    Route::get('/news', [ClientNewsController::class, 'index'])->name('client.news.index');
+    Route::get('/news/{id}', [ClientNewsController::class, 'show'])->name('client.news.show');
+});
 
 // --- Liên hệ ---
 Route::get('/lien-he', [ClientContactController::class, 'create'])->name('client.contact.create');
@@ -77,7 +81,9 @@ Route::post('/lien-he', [ClientContactController::class, 'store'])->name('client
 Route::post('news/{id}/comment', [App\Http\Controllers\Client\NewsCommentController::class, 'store'])->name('client.news.comment');
 
 // --- Các chức năng cần đăng nhập ---
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'unset.coupon.checkout'])->group(function () {
+// Đăng ký middleware unset.coupon.checkout
+app('router')->aliasMiddleware('unset.coupon.checkout', \App\Http\Middleware\UnsetCouponOnCheckoutExit::class);
     //Tài khoản người dùng
     Route::get('/account', [AccountController::class, 'index'])->name('account.index');
     Route::get('/account/edit', [AccountController::class, 'editProfile'])->name('account.editProfile');
