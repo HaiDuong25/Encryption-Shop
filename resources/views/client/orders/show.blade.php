@@ -88,7 +88,12 @@
                 'delivering' => 'Đang giao',
                 'received' => 'Đã nhận',
                 'completed' => 'Hoàn thành',
+                'returning' => 'Đang trả hàng',
+                'approved' => 'Đã trả hàng',
+                'cancelled' => 'Đã hủy',
+                'partially_cancelled' => 'Đã hủy một phần',
             ];
+
             $statusMap = [
                 '0' => 'pending',
                 '1' => 'confirmed',
@@ -97,33 +102,39 @@
                 '4' => 'received',
                 '5' => 'completed',
                 '6' => 'cancelled',
+                '7' => 'partially_cancelled', // 👈 thêm dòng này nếu bạn vẫn lưu dạng số
             ];
+
             $statusValue = is_numeric($order->status)
                 ? $statusMap[(string) $order->status] ?? 'pending'
                 : $order->status;
-            $statusKeys = array_keys($statuses);
-            $currentStatusIndex = array_search($statusValue, $statusKeys);
+
             $isCancelled = $statusValue === 'cancelled';
-            $isPaid = $order->payments && $order->payments->where('status', 'completed')->count() > 0;
+            $isPartiallyCancelled = $statusValue === 'partially_cancelled';
+
+            $trackerSteps = [
+                'pending' => 'Chờ xử lý',
+                'confirmed' => 'Đã xác nhận',
+                'shipping' => 'Giao cho ĐVVC',
+                'delivering' => 'Đang giao',
+                'received' => 'Đã nhận',
+                'completed' => 'Hoàn thành',
+                'returning' => 'Đang trả hàng',
+                'approved' => 'Đã trả hàng',
+            ];
+
+            $trackerKeys = array_keys($trackerSteps);
+            $currentStep = array_search($statusValue, $trackerKeys);
         @endphp
+
         <div class="mb-4">
-            @php
-                $trackerSteps = [
-                    'pending' => 'Chờ xử lý',
-                    'confirmed' => 'Đã xác nhận',
-                    'shipping' => 'Giao cho ĐVVC',
-                    'delivering' => 'Đang giao',
-                    'received' => 'Đã nhận',
-                    'completed' => 'Hoàn thành',
-                    'returning' => 'Đang trả hàng',
-                    'approved' => 'Đã trả hàng',
-                ];
-                $trackerKeys = array_keys($trackerSteps);
-                $currentStep = array_search($statusValue, $trackerKeys);
-            @endphp
             @if ($statusValue === 'cancelled')
                 <div class="alert alert-danger text-center mb-2">
                     <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
+                </div>
+            @elseif ($statusValue === 'partially_cancelled')
+                <div class="alert alert-warning text-center mb-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i> Đơn hàng đã bị hủy một phần
                 </div>
             @elseif ($statusValue === 'returning')
                 <div class="alert alert-warning text-center mb-2">
@@ -150,6 +161,7 @@
                 </div>
             @endif
         </div>
+
         {{-- Timeline chi tiết lịch sử trạng thái --}}
         @if (
             !$isCancelled &&
@@ -210,9 +222,12 @@
                                 <span class="badge bg-warning text-dark">Đang trả hàng</span>
                             @elseif($statusValue == 'approved')
                                 <span class="badge bg-success">Đã trả hàng</span>
+                            @elseif($statusValue == 'partially_cancelled')
+                                <span class="badge bg-success">Đã hủy đơn 1 phần</span>
                             @else
                                 <span class="badge bg-secondary">{{ $statusValue }}</span>
                             @endif
+
                         </div>
                         <div class="mb-2 text-muted small"><i class="fas fa-calendar-alt me-1"></i> Ngày đặt:
                             {{ $order->created_at->format('d/m/Y H:i') }}
@@ -275,12 +290,15 @@
                         <div class="mb-2"><strong>Email:</strong>
                             {{ $order->orderer_email ?? ($order->user->email ?? 'N/A') }}
                         </div>
-                        @if ($isCancelled)
-                            <div class="alert alert-danger mt-3 mb-0 p-2 small">
-                                <div><strong>Lý do hủy:</strong> {{ $order->cancel_reason ?? 'Không có' }}</div>
-                                <div><strong>Ghi chú:</strong> {{ $order->cancel_note ?? 'Không có' }}</div>
-                            </div>
-                        @endif
+                        @foreach ($order->orderDetails as $detail)
+                            @if ($detail->status === 'cancelled')
+                                <div class="alert alert-danger mt-3 mb-0 p-2 small">
+                                    <div><strong>Lý do hủy:</strong> {{ $detail->cancel_reason ?? 'Không có' }}</div>
+                                    <div><strong>Ghi chú:</strong> {{ $detail->cancel_note ?? 'Không có' }}</div>
+                                </div>
+                            @endif
+                        @endforeach
+
                     </div>
                 </div>
                 <div class="card shadow-sm mb-4">
@@ -315,69 +333,58 @@
 
                 </div>
 
-                <div class="d-flex gap-2 justify-content-between justify-content-lg-end mt-3 flex-wrap">
-                    @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
-                        <button class="btn btn-outline-danger flex-grow-1 flex-lg-grow-0" data-bs-toggle="modal"
-                            data-bs-target="#cancelModal">
-                            <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
-                        </button>
-                        <!-- Modal Hủy đơn hàng -->
-                        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST"
-                                    class="w-100">
-                                    @csrf
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-danger bg-opacity-10 border-0">
-                                            <h5 class="modal-title w-100 text-center text-danger fw-bold d-flex align-items-center justify-content-center gap-2"
-                                                id="cancelModalLabel">
-                                                <i class="fas fa-exclamation-triangle me-2"></i> Hủy đơn hàng
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Đóng"></button>
+   <div class="d-flex gap-2 justify-content-between justify-content-lg-end mt-3 flex-wrap">
+                @if (!$isCancelled && in_array($statusValue, ['pending', 'confirmed']))
+                    <button class="btn btn-outline-danger flex-grow-1 flex-lg-grow-0" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                    </button>
+                    <!-- Modal Hủy đơn hàng -->
+                    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <form action="{{ route('client.orders.cancel', $order->id) }}" method="POST" class="w-100">
+                                @csrf
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger bg-opacity-10 border-0">
+                                        <h5 class="modal-title w-100 text-center text-danger fw-bold d-flex align-items-center justify-content-center gap-2" id="cancelModalLabel">
+                                            <i class="fas fa-exclamation-triangle me-2"></i> Hủy đơn hàng
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                    </div>
+                                    <div class="modal-body px-4 py-3">
+                                        <div class="mb-3">
+                                            <label for="reason" class="form-label fw-semibold">Lý do hủy đơn hàng <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="cancel_reason" id="reason" required>
+                                                <option value="">-- Chọn lý do --</option>
+                                                <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
+                                                <option value="Muốn thay đổi địa chỉ">Muốn thay đổi địa chỉ</option>
+                                                <option value="Không còn nhu cầu">Không còn nhu cầu</option>
+                                                <option value="Lý do khác">Lý do khác</option>
+                                            </select>
                                         </div>
-                                        <div class="modal-body px-4 py-3">
-                                            <div class="mb-3">
-                                                <label for="reason" class="form-label fw-semibold">Lý do hủy đơn hàng
-                                                    <span class="text-danger">*</span></label>
-                                                <select class="form-select" name="cancel_reason" id="reason" required>
-                                                    <option value="">-- Chọn lý do --</option>
-                                                    <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
-                                                    <option value="Muốn thay đổi địa chỉ">Muốn thay đổi địa chỉ</option>
-                                                    <option value="Không còn nhu cầu">Không còn nhu cầu</option>
-                                                    <option value="Lý do khác">Lý do khác</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="note" class="form-label fw-semibold">Ghi chú thêm <span
-                                                        class="text-muted">(không bắt buộc)</span></label>
-                                                <textarea class="form-control" name="note" id="note" rows="2" placeholder="Ghi chú nếu có..."></textarea>
-                                            </div>
-                                            <div class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0"
-                                                role="alert">
-                                                <i class="fas fa-info-circle"></i>
-                                                <span>Bạn chỉ có thể hủy đơn khi đơn hàng chưa được giao cho đơn vị vận
-                                                    chuyển.</span>
-                                            </div>
+                                        <div class="mb-3">
+                                            <label for="note" class="form-label fw-semibold">Ghi chú thêm <span class="text-muted">(không bắt buộc)</span></label>
+                                            <textarea class="form-control" name="note" id="note" rows="2" placeholder="Ghi chú nếu có..."></textarea>
                                         </div>
-                                        <div class="modal-footer border-0 justify-content-between px-4 pb-4">
-                                            <button type="button" class="btn btn-outline-secondary px-4"
-                                                data-bs-dismiss="modal">Đóng</button>
-                                            <button type="submit" class="btn btn-danger px-4 fw-bold">
-                                                <i class="fas fa-times-circle me-1"></i> Xác nhận hủy
-                                            </button>
+                                        <div class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0" role="alert">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span>Bạn chỉ có thể hủy đơn khi đơn hàng chưa được giao cho đơn vị vận chuyển.</span>
                                         </div>
                                     </div>
-                                </form>
-                            </div>
+                                    <div class="modal-footer border-0 justify-content-between px-4 pb-4">
+                                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Đóng</button>
+                                        <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                            <i class="fas fa-times-circle me-1"></i> Xác nhận hủy
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                    @endif
-                    <a href="{{ route('client.orders.index') }}"
-                        class="btn btn-outline-secondary flex-grow-1 flex-lg-grow-0">
-                        ← Quay lại danh sách đơn hàng
-                    </a>
-                </div>
+                    </div>
+                @endif
+                <a href="{{ route('client.orders.index') }}" class="btn btn-outline-secondary flex-grow-1 flex-lg-grow-0">
+                    ← Quay lại danh sách đơn hàng
+                </a>
+            </div>
             </div>
             <div class="col-lg-7 col-12">
                 <div class="card shadow-sm mb-4">
@@ -402,7 +409,6 @@
                                                     : asset('storage/' . $image))
                                                 : 'https://via.placeholder.com/80?text=No+Image';
 
-                                            // Kiểm tra xem người dùng đã đánh giá cho order_detail_id này chưa
                                             $hasRated = $item->variant->product
                                                 ->rates()
                                                 ->where('user_id', auth()->id())
@@ -410,17 +416,16 @@
                                                 ->exists();
                                         @endphp
                                         <tr>
-                                            <td><img src="{{ $imageUrl }}" width="80" class="rounded"></td>
-
+                                            <td>
+                                                <img src="{{ $imageUrl }}" width="80" class="rounded">
+                                            </td>
 
                                             <td class="align-top">
                                                 {{-- Tên và danh mục sản phẩm --}}
                                                 <div class="fw-bold text-dark fs-6">
-                                                    {{ $item->product->name ?? 'Sản phẩm đã xóa' }}
-                                                </div>
+                                                    {{ $item->product->name ?? 'Sản phẩm đã xóa' }}</div>
                                                 <div class="text-muted small mb-1">
-                                                    {{ $item->product->category->name ?? 'Danh mục đã xóa' }}
-                                                </div>
+                                                    {{ $item->product->category->name ?? 'Danh mục đã xóa' }}</div>
 
                                                 {{-- Mã SKU --}}
                                                 @if ($item->variant && $item->variant->sku)
@@ -428,13 +433,11 @@
                                                             class="fw-semibold">{{ $item->variant->sku }}</span></div>
                                                 @endif
 
-                                                {{-- Hiển thị các thuộc tính biến thể (Size, Màu, Khác) --}}
+                                                {{-- Thuộc tính --}}
                                                 @if ($item->variant && $item->variant->attributeValues->count())
                                                     <div class="d-flex flex-wrap gap-2 mt-1">
                                                         @foreach ($item->variant->attributeValues as $attrValue)
-                                                            @php
-                                                                $attrName = strtolower($attrValue->attribute->name);
-                                                            @endphp
+                                                            @php $attrName = strtolower($attrValue->attribute->name); @endphp
                                                             @if ($attrName === 'màu')
                                                                 <span class="badge text-dark border"
                                                                     style="background-color: #e3f2fd; border-color: #2196f3;">
@@ -458,55 +461,124 @@
                                                 {{-- Giá và số lượng --}}
                                                 <div class="mt-2 small">
                                                     Giá: <strong>{{ number_format($item->product->sale_price) }}₫</strong>
-                                                    x
-                                                    {{ $item->quantity }}
+                                                    x {{ $item->quantity }}
                                                 </div>
 
-                                                {{-- Đánh giá nếu đơn đã hoàn thành --}}
-                                                @if ($statusValue === 'completed')
-                                                    @if (!$hasRated)
-                                                        <form
-                                                            action="{{ route('client.rates.store', [$item->variant->product->id, $item->id]) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <div class="mb-2">
-                                                                <label class="small">Đánh giá của bạn:</label>
-                                                                <div class="rating-stars">
-                                                                    @for ($i = 5; $i >= 1; $i--)
-                                                                        <input type="radio" name="score"
-                                                                            id="star{{ $i }}-{{ $item->id }}"
-                                                                            value="{{ $i }}" required>
-                                                                        <label
-                                                                            for="star{{ $i }}-{{ $item->id }}"
-                                                                            title="{{ $i }} sao">★</label>
-                                                                    @endfor
+                                                {{-- Trạng thái sản phẩm --}}
+                                                @if ($item->status === 'cancelled')
+                                                    <div class="alert alert-danger p-2 mt-2 small">
+                                                        <i class="fas fa-ban me-1"></i> Sản phẩm đã hủy
+                                                    </div>
+                                                @else
+                                                    {{-- Nút hủy sản phẩm --}}
+                                                    <button type="button" class="btn btn-outline-danger btn-sm mt-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#cancelItemModal{{ $item->id }}">
+                                                        Hủy sản phẩm
+                                                    </button>
+
+                                                    <!-- Modal hủy sản phẩm -->
+                                                    <div class="modal fade" id="cancelItemModal{{ $item->id }}"
+                                                        tabindex="-1"
+                                                        aria-labelledby="cancelItemModalLabel{{ $item->id }}"
+                                                        aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered">
+                                                            <form
+                                                                action="{{ route('client.orders.cancel-item', $item->id) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                <div class="modal-content">
+                                                                    <div
+                                                                        class="modal-header bg-danger bg-opacity-10 border-0">
+                                                                        <h5 class="modal-title text-center text-danger fw-bold"
+                                                                            id="cancelItemModalLabel{{ $item->id }}">
+                                                                            <i
+                                                                                class="fas fa-exclamation-triangle me-2"></i>
+                                                                            Hủy sản phẩm
+                                                                        </h5>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"></button>
+                                                                    </div>
+                                                                    <div class="modal-body px-4 py-3">
+                                                                        <div class="mb-3">
+                                                                            <label for="reason{{ $item->id }}"
+                                                                                class="form-label fw-semibold">Lý do hủy
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <select class="form-select"
+                                                                                name="cancel_reason"
+                                                                                id="reason{{ $item->id }}" required>
+                                                                                <option value="">-- Chọn lý do --
+                                                                                </option>
+                                                                                <option value="Đặt nhầm sản phẩm">Đặt nhầm
+                                                                                    sản phẩm</option>
+                                                                                <option value="Muốn thay đổi địa chỉ">Muốn
+                                                                                    thay đổi địa chỉ</option>
+                                                                                <option value="Không còn nhu cầu">Không còn
+                                                                                    nhu cầu</option>
+                                                                                <option value="Lý do khác">Lý do khác
+                                                                                </option>
+                                                                            </select>
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <label for="note{{ $item->id }}"
+                                                                                class="form-label fw-semibold">Ghi chú thêm
+                                                                                <span class="text-muted">(không bắt
+                                                                                    buộc)</span></label>
+                                                                            <textarea class="form-control" name="note" id="note{{ $item->id }}" rows="2"
+                                                                                placeholder="Ghi chú nếu có..."></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div
+                                                                        class="modal-footer border-0 justify-content-between px-4 pb-4">
+                                                                        <button type="button"
+                                                                            class="btn btn-outline-secondary"
+                                                                            data-bs-dismiss="modal">Đóng</button>
+                                                                        <button type="submit"
+                                                                            class="btn btn-danger fw-bold"><i
+                                                                                class="fas fa-times-circle me-1"></i> Xác
+                                                                            nhận hủy</button>
+                                                                    </div>
                                                                 </div>
-                                                                @error('score')
-                                                                    <small class="text-danger">{{ $message }}</small>
-                                                                @enderror
-                                                            </div>
-
-                                                            <div class="mb-2">
-                                                                <label class="small">Nội dung đánh giá:</label>
-                                                                <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Nhận xét của bạn..."></textarea>
-                                                                @error('content')
-                                                                    <small class="text-danger">{{ $message }}</small>
-                                                                @enderror
-                                                            </div>
-
-                                                            <button type="submit" class="btn btn-primary btn-sm">Gửi đánh
-                                                                giá</button>
-                                                        </form>
-                                                    @else
-                                                        <div class="mt-2 alert alert-success p-2 small">
-                                                            <i class="fas fa-check-circle me-1"></i> Bạn đã đánh giá sản
-                                                            phẩm này.
+                                                            </form>
                                                         </div>
-                                                    @endif
+                                                    </div>
                                                 @endif
 
-                                                {{-- Trả hàng nếu đã nhận --}}
-                                                @if ($statusValue === 'received' && !$item->returnRequest)
+                                                {{-- Đánh giá --}}
+                                                @if ($statusValue === 'completed' && !$hasRated && $item->status !== 'cancelled')
+                                                    <form
+                                                        action="{{ route('client.rates.store', [$item->variant->product->id, $item->id]) }}"
+                                                        method="POST" class="mt-2">
+                                                        @csrf
+                                                        <div class="mb-2">
+                                                            <label class="small">Đánh giá của bạn:</label>
+                                                            <div class="rating-stars">
+                                                                @for ($i = 5; $i >= 1; $i--)
+                                                                    <input type="radio" name="score"
+                                                                        id="star{{ $i }}-{{ $item->id }}"
+                                                                        value="{{ $i }}" required>
+                                                                    <label
+                                                                        for="star{{ $i }}-{{ $item->id }}"
+                                                                        title="{{ $i }} sao">★</label>
+                                                                @endfor
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="small">Nội dung đánh giá:</label>
+                                                            <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Nhận xét của bạn..."></textarea>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary btn-sm">Gửi đánh
+                                                            giá</button>
+                                                    </form>
+                                                @elseif ($hasRated)
+                                                    <div class="mt-2 alert alert-success p-2 small">
+                                                        <i class="fas fa-check-circle me-1"></i> Bạn đã đánh giá sản phẩm
+                                                        này.
+                                                    </div>
+                                                @endif
+
+                                                {{-- Trả hàng --}}
+                                                @if ($statusValue === 'received' && !$item->returnRequest && $item->status !== 'cancelled')
                                                     <a href="{{ route('client.returns.create', ['order_detail_id' => $item->id]) }}"
                                                         class="btn btn-warning btn-sm mt-1">Trả hàng</a>
                                                 @endif
@@ -516,9 +588,9 @@
                                                 {{ number_format($item->product->sale_price * $item->quantity) }}₫
                                             </td>
                                         </tr>
-
                                     @endforeach
                                 </tbody>
+
                             </table>
                         </div>
 

@@ -193,4 +193,78 @@ public function cancel(Request $request, Order $order)
 
         return back()->with('error', 'Chỉ xác nhận được đơn hàng ở trạng thái "Đã nhận".');
     }
+    // Hủy từng sản phẩm trong đơn hàng
+public function cancelItem(Request $request, $orderDetailId)
+{
+    $orderDetail = \App\Models\OrderDetail::with(['order', 'variant', 'product'])->findOrFail($orderDetailId);
+
+    // ✅ Kiểm tra quyền
+    if ($orderDetail->order->user_id !== Auth::id()) {
+        abort(403, 'Bạn không có quyền thực hiện hành động này.');
+    }
+
+    // ✅ Tránh hủy lặp
+    if ($orderDetail->status === 'cancelled') {
+        return back()->with('error', 'Sản phẩm này đã được hủy trước đó.');
+    }
+
+    $request->validate([
+        'cancel_reason' => 'required|string|max:255',
+        'note'          => 'nullable|string|max:500',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // ✅ Cập nhật trạng thái sản phẩm
+        $orderDetail->update([
+            'status'        => 'cancelled',
+            'cancel_reason' => $request->cancel_reason,
+            'cancel_note'   => $request->note ?? null,
+        ]);
+
+        // ✅ Hoàn số lượng tồn kho
+        if ($orderDetail->variant) {
+            $orderDetail->variant->increment('stock', $orderDetail->quantity);
+        }
+
+        // ✅ Tính số tiền cần hoàn
+        $refundAmount = $orderDetail->price * $orderDetail->quantity;
+        $paymentType  = strtolower(optional($orderDetail->order->paymentMethod)->payment_type);
+
+        // ✅ Nếu đơn thanh toán online (momo/zalopay) hoặc trực tiếp bằng ví
+        if (in_array($paymentType, ['momo', 'zalopay', 'wallet'])) {
+            $wallet = $orderDetail->order->user->wallet; // quan hệ User -> UserWallet
+            if (!$wallet) {
+                throw new \Exception('Người dùng chưa có ví để hoàn tiền.');
+            }
+
+            $wallet->refundBalance(
+                $refundAmount,
+                "Hoàn tiền do hủy sản phẩm: {$orderDetail->product->name}"
+            );
+        }
+
+        // === ✅ Cập nhật trạng thái đơn hàng tổng ===
+        $order          = $orderDetail->order;
+        $totalItems     = $order->orderDetails()->count();
+        $cancelledItems = $order->orderDetails()->where('status', 'cancelled')->count();
+
+        $order->update([
+            'status' => $cancelledItems === $totalItems ? 'cancelled' : 'partially_cancelled',
+        ]);
+
+        DB::commit();
+
+        return back()->with('success', 'Hủy sản phẩm thành công, tiền đã hoàn về ví.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Có lỗi xảy ra khi hủy sản phẩm: ' . $e->getMessage());
+    }
+}
+
+
+
+
+
 }

@@ -27,7 +27,7 @@ class DashboardController extends \App\Http\Controllers\Controller
         $now = now();
         $months = [];
         $revenues = [];
-        
+
         for ($i = 1; $i <= 12; $i++) {
             $months[] = 'Tháng ' . $i;
             $revenues[] = (int)Order::whereMonth('created_at', $i)
@@ -61,13 +61,13 @@ class DashboardController extends \App\Http\Controllers\Controller
     {
         $type = $request->input('type', 'day');
         $now = Carbon::now();
-        
+
         // Xác định khoảng thời gian và labels
         $start = null;
         $end = null;
         $labels = [];
         $revenues = [];
-        
+
         switch ($type) {
             case 'day':
                 $start = $now->copy()->startOfDay();
@@ -129,7 +129,7 @@ class DashboardController extends \App\Http\Controllers\Controller
         $totalRevenue = Order::where('status', self::STATUS_COMPLETED)
             ->whereBetween('created_at', [$start, $end])
             ->sum('total_price');
-            
+
         // Tổng đơn hàng bao gồm tất cả trạng thái
         $totalOrders = Order::whereBetween('created_at', [$start, $end])->count();
         $totalProducts = Product::count();
@@ -137,14 +137,14 @@ class DashboardController extends \App\Http\Controllers\Controller
 
         // Lấy dữ liệu chi tiết
         $bestSellingProducts = $this->getBestSellingProducts($start, $end);
-        
+
         // Hiển thị tất cả đơn hàng gần đây trong khoảng thời gian
         $recentOrders = Order::with('user', 'payments')
             ->whereBetween('created_at', [$start, $end])
             ->orderByDesc('created_at')
             ->take(4)
             ->get();
-            
+
         $transactions = $this->getTransactions($start, $end);
 
         return response()->json([
@@ -174,7 +174,7 @@ class DashboardController extends \App\Http\Controllers\Controller
             }])
             ->orderByDesc('total_orders')
             ->take(4);
-            
+
         return $query->get();
     }
 
@@ -183,7 +183,7 @@ class DashboardController extends \App\Http\Controllers\Controller
         $query = Payment::select('payment_method_id', \DB::raw('SUM(amount) as total_amount'))
             ->with('paymentMethod')
             ->where('status', 'completed');
-            
+
         if ($start && $end) {
             $query->whereBetween('created_at', [$start, $end]);
         }

@@ -25,16 +25,20 @@ class OrderDetail extends Model
         return $value;
     }
 
-    protected $fillable = [
-        'order_id',
-        'product_id',
-        'variant_id',
-        'quantity',
-        'price',
-        'total_price',
-        'image', // thêm trường này nếu lưu ảnh vào order_details
-        'return_status',
-    ];
+protected $fillable = [
+    'order_id',
+    'product_id',
+    'variant_id',
+    'quantity',
+    'price',
+    'total_price',
+    'image',
+    'return_status',
+    'status',         // thêm
+    'cancel_reason',  // thêm
+    'cancel_note',    // thêm
+];
+
 
     // Nếu muốn lấy đường dẫn đầy đủ
     public function getImageUrlAttribute()
@@ -60,5 +64,19 @@ class OrderDetail extends Model
     public function returnRequest()
     {
         return $this->hasOne(ReturnRequest::class);
+    }
+   public function cancelAndRefund($reason = null, $note = null)
+    {
+        $this->update([
+            'status' => 'cancelled',
+            'cancel_reason' => $reason,
+            'cancel_note' => $note,
+        ]);
+
+        // Hoàn tiền vào ví
+        if ($this->order && $this->order->user) {
+            $user = $this->order->user;
+            $user->addToWallet($this->total_price, "Hoàn tiền do hủy sản phẩm #{$this->id}");
+        }
     }
 }

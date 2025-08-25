@@ -138,55 +138,70 @@
     </style>
 
     {{-- Progress bar tiến trình giao hàng --}}
-    @php
-        $statuses = [
-            'pending' => 'Chờ xử lý',
-            'confirmed' => 'Đã xác nhận',
-            'shipping' => 'Giao cho ĐVVC',
-            'delivering' => 'Đang giao',
-            'received' => 'Đã nhận',
-            'completed' => 'Hoàn thành',
-        ];
-        $statusMap = [
-            '0' => 'pending',
-            '1' => 'confirmed',
-            '2' => 'shipping',
-            '3' => 'delivering',
-            '4' => 'received',
-            '5' => 'completed',
-            '6' => 'cancelled',
-        ];
-        $statusValue = is_numeric($order->status)
-            ? $statusMap[(string) $order->status] ?? 'pending'
-            : $order->status;
-        $statusKeys = array_keys($statuses);
-        $currentStatusIndex = array_search($statusValue, $statusKeys);
-        $isCancelled = $statusValue === 'cancelled';
-    @endphp
+@php
 
-    <div class="mb-4">
-        @if ($isCancelled)
-            <div class="alert alert-danger text-center mb-2">
-                <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
-            </div>
-        @else
-            {{-- Progress bar giao hàng --}}
-            <div class="progress" style="height: 10px;">
-                @foreach ($statuses as $key => $label)
-                    <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-primary' : 'bg-secondary' }}"
-                        style="width: {{ 100 / count($statuses) }}%"></div>
-                @endforeach
-            </div>
-            <div class="d-flex justify-content-between mt-2 small">
-                @foreach ($statuses as $key => $label)
-                    <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-primary fw-bold' : 'text-muted' }}"
-                        style="width: {{ 100 / count($statuses) }}%">
-                        {{ $label }}
-                    </div>
-                @endforeach
-            </div>
-        @endif
-    </div>
+z
+    $statuses = [
+        'pending' => 'Chờ xử lý',
+        'confirmed' => 'Đã xác nhận',
+        'shipping' => 'Giao cho ĐVVC',
+        'delivering' => 'Đang giao',
+        'received' => 'Đã nhận',
+        'completed' => 'Hoàn thành',
+    ];
+
+    $statusMap = [
+        '0' => 'pending',
+        '1' => 'confirmed',
+        '2' => 'shipping',
+        '3' => 'delivering',
+        '4' => 'received',
+        '5' => 'completed',
+        '6' => 'cancelled',
+        '7' => 'partially_cancelled',
+    ];
+
+    $statusValue = is_numeric($order->status)
+        ? ($statusMap[(string)$order->status] ?? 'pending')
+        : $order->status;
+
+    // 👇 THÊM 2 DÒNG NÀY
+    $isCancelled = ($statusValue === 'cancelled');
+    $isPartiallyCancelled = ($statusValue === 'partially_cancelled');
+
+    $statusKeys = array_keys($statuses);
+    $currentStatusIndex = array_search($statusValue, $statusKeys);
+    if ($currentStatusIndex === false) $currentStatusIndex = -1; // tránh warning
+@endphp
+
+<div class="mb-4">
+    @if ($isCancelled)
+        <div class="alert alert-danger text-center mb-2">
+            <i class="fas fa-times-circle me-1"></i> Đơn hàng đã bị hủy
+        </div>
+    @elseif ($isPartiallyCancelled)
+        <div class="alert alert-warning text-center mb-2">
+            <i class="fas fa-exclamation-triangle me-1"></i> Một số sản phẩm trong đơn đã bị hủy
+        </div>
+    @else
+        <div class="progress" style="height: 10px;">
+            @foreach ($statuses as $key => $label)
+                <div class="progress-bar {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'bg-primary' : 'bg-secondary' }}"
+                     style="width: {{ 100 / count($statuses) }}%"></div>
+            @endforeach
+        </div>
+        <div class="d-flex justify-content-between mt-2 small">
+            @foreach ($statuses as $key => $label)
+                <div class="text-center {{ array_search($key, $statusKeys) <= $currentStatusIndex ? 'text-primary fw-bold' : 'text-muted' }}"
+                     style="width: {{ 100 / count($statuses) }}%">
+                    {{ $label }}
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+
 
 
     {{-- Timeline chi tiết lịch sử trạng thái --}}
