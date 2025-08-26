@@ -38,9 +38,14 @@ class WalletMomoController extends Controller
                 ->whereIn('status', ['pending', 'completed'])
                 ->exists();
             if ($exists) {
-                $orderId = 'WALLET_' . time() . '_' . rand(1000,9999);
+                $orderId = 'TOP_' . time() . '_' . rand(1000,9999);
                 $topupData['transaction_code'] = $orderId;
                 Session::put('wallet_topup_data', $topupData);
+                // Đồng bộ lại transaction_code trong DB
+                if (isset($topupData['transaction_id'])) {
+                    \App\Models\WalletTransaction::where('id', $topupData['transaction_id'])
+                        ->update(['transaction_code' => $orderId]);
+                }
             }
 
             $requestId = time() . "";
