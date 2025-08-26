@@ -106,13 +106,6 @@ class WalletController extends Controller
 
     public function topupCancel()
     {
-        // Nếu có transaction_id trong session thì cập nhật trạng thái transaction sang failed
-        $topupData = Session::get('wallet_topup_data');
-        if (isset($topupData['transaction_id'])) {
-            \App\Models\WalletTransaction::where('id', $topupData['transaction_id'])
-                ->where('status', 'pending')
-                ->update(['status' => 'failed', 'description' => DB::raw("CONCAT(description, ' (Đã hủy bởi user)')")]);
-        }
         Session::forget('wallet_topup_data');
         return redirect()->route('wallet.index')->with('warning', 'Bạn đã hủy giao dịch nạp tiền');
     }
