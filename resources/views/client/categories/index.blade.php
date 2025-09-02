@@ -87,7 +87,3 @@
         color: #fff;
     }
 </style>
-background: #0d6efd;
-color: #fff;
-}
-</style>

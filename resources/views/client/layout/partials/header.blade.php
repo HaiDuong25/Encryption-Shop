@@ -91,36 +91,30 @@
                             </div>
                             <div class="offcanvas-body">
                                 <ul class="navbar-nav mx-auto">
-                                    <li class="nav-item dropdown dropdown-mega">
-                                        <a class="nav-link" href="{{ route('home') }}"
-                                            data-bs-toggle="dropdown-item">Trang chủ</a>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('home') }}">Trang chủ</a>
                                     </li>
 
                                     @php
                                         use App\Models\Category;
                                         $categories = Category::whereNull('parent_id')->with('children')->get();
                                     @endphp
-                                    <li class="nav-item dropdown">
-                                        <span class="nav-link dropdown-toggle" role="button" id="dropdownDanhMuc"
-                                            data-bs-toggle="dropdown" aria-expanded="false"
-                                            data-href="{{ route('categories.index') }}">
+                                    <li class="nav-item dropdown category-hover">
+                                        <a class="nav-link" href="{{ route('categories.index') }}" id="dropdownDanhMuc">
                                             Danh mục
-                                        </span>
-                                        <div class="dropdown-menu p-3" style="min-width: 600px;">
+                                        </a>
+                                        <div class="dropdown-menu p-3" aria-labelledby="dropdownDanhMuc" style="min-width: 600px;">
                                             <div class="d-flex flex-wrap category-columns">
                                                 @foreach ($categories as $parent)
                                                     <div class="category-group px-3">
                                                         <div class="category-parent text-center mb-2 fw-bold">
-                                                            <a class="text-dark"
-                                                                href="{{ route('categories.show', $parent->id) }}">
+                                                            <a class="text-dark" href="{{ route('categories.show', $parent->id) }}">
                                                                 {{ $parent->name }}
                                                             </a>
                                                         </div>
-                                                        <div
-                                                            class="category-children d-flex flex-column align-items-center">
+                                                        <div class="category-children d-flex flex-column align-items-center">
                                                             @foreach ($parent->children as $child)
-                                                                <a class="dropdown-item py-1"
-                                                                    href="{{ route('categories.show', $child->id) }}">
+                                                                <a class="dropdown-item py-1" href="{{ route('categories.show', $child->id) }}">
                                                                     {{ $child->name }}
                                                                 </a>
                                                             @endforeach
@@ -132,9 +126,8 @@
                                     </li>
 
 
-                                    <li class="nav-item dropdown dropdown-mega">
-                                        <a class="nav-link" href="{{ route('client.products.index') }}"
-                                            data-bs-toggle="dropdown-item">Sản phẩm</a>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('client.products.index') }}">Sản phẩm</a>
                                     </li>
 
                                     <li class="nav-item">
@@ -285,6 +278,26 @@
     .main-nav .navbar-nav .nav-item {
         margin-left: 10px;
         margin-right: 10px;
+    }
+                                 <style>
+    /* Hiện dropdown khi hover vào nav-item Danh mục */
+    .navbar-nav .category-hover:hover .dropdown-menu {
+        display: block !important;
+        opacity: 1;
+        visibility: visible;
+        top: 100%;
+    }
+    .navbar-nav .category-hover .dropdown-menu {
+        display: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s;
+        position: absolute;
+        left: 0;
+        z-index: 9999;
+    }
+    .navbar-nav .category-hover {
+        position: relative;
     }
 </style>
 <style>
