@@ -204,7 +204,7 @@
                                     <div>
                                         <h6 class="fw-semibold mb-1">Địa chỉ</h6>
                                         <p class="mb-0 text-muted small">
-                                            Tòa nhà FPT Polytechnic, Cổng số 2, 13 P. Trịnh Văn Bô, Xuân Phương, Nam Từ Liêm, Hà Nội
+                                            Tòa nhà FPT Polytechnic, Cổng số 2, 13 Trịnh Văn Bô, Phường Xuân Phương, TP Hà Nội
                                         </p>
                                     </div>
                                 </div>
