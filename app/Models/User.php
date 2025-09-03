@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -130,6 +131,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'pin_code_hash'
     ];
 
     /**
@@ -154,6 +156,17 @@ class User extends Authenticatable
 public function bankAccounts()
 {
     return $this->hasMany(\App\Models\BankAccount::class, 'user_id');
+}
+
+public function hasWalletPin(): bool
+{
+    return (bool) $this->pin_code_hash;
+}
+
+public function verifyWalletPin(string $pin): bool
+{
+    if (!$this->pin_code_hash) return false;
+    return Hash::check($pin, $this->pin_code_hash);
 }
 
 

@@ -44,6 +44,28 @@
             </div>
         @endif
 
+        @php($user = auth()->user())
+        @if($user && !$user->pin_code_hash)
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Bảo mật ví:</strong> Bạn chưa thiết lập mã PIN. Vui lòng tạo ngay để sử dụng rút tiền và thanh toán bằng ví an toàn hơn.
+                </div>
+                <a href="{{ route('wallet.pin.setup') }}" class="btn btn-sm btn-primary ms-3">Thiết lập PIN</a>
+            </div>
+        @elseif(session('require_pin'))
+            <div class="alert alert-warning">
+                <strong>Yêu cầu xác thực PIN:</strong> Phiên PIN đã hết hạn. <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#walletPinVerifyModal">Nhập PIN</button>
+            </div>
+        @elseif($user && $user->pin_code_hash)
+            <div class="alert alert-primary d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div><i class="fas fa-shield-alt me-1"></i> PIN ví đã được thiết lập.</div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePinModal"><i class="fas fa-edit me-1"></i>Đổi PIN</button>
+                    <a href="{{ route('wallet.pin.forgot') }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-key me-1"></i>Quên PIN</a>
+                </div>
+            </div>
+        @endif
+
         <div class="row">
             <!-- Wallet Balance Card -->
             <div class="col-lg-4 col-md-6 mb-4">
@@ -247,6 +269,78 @@
             </div>
         </div>
     </div>
+
+<!-- Modal xác thực PIN -->
+<div class="modal fade" id="walletPinVerifyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác thực PIN Ví</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pinVerifyAlert" class="alert d-none"></div>
+                <form id="walletPinVerifyForm" autocomplete="off" novalidate>
+                    @csrf
+                    <!-- Dummy anti-autofill fields (trick browsers/password managers) -->
+                    <input type="text" name="fake_user" value="" autocomplete="username" class="d-none" tabindex="-1" aria-hidden="true">
+                    <input type="password" name="fake_pass" value="" autocomplete="new-password" class="d-none" tabindex="-1" aria-hidden="true">
+                    <div class="mb-3 position-relative">
+                        <label class="form-label">Nhập PIN 6 số</label>
+                        <div class="input-group" id="verifyPinWrapper" data-dynamic-pin></div>
+                        <small class="text-muted">Trường này được tạo động để chặn autofill.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Xác thực</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal đổi PIN -->
+<div class="modal fade" id="changePinModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <form method="POST" action="{{ route('wallet.pin.change') }}" autocomplete="off" novalidate>
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Đổi PIN Ví</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+            <!-- Dummy fields to confuse autofill -->
+            <input type="text" name="fake_user2" value="" autocomplete="username" class="d-none" tabindex="-1" aria-hidden="true">
+            <input type="password" name="fake_pass2" value="" autocomplete="new-password" class="d-none" tabindex="-1" aria-hidden="true">
+                    <div class="mb-3 position-relative">
+                        <label class="form-label">PIN hiện tại</label>
+                        <div class="input-group">
+                <input type="password" id="oldPinInput" name="old_pin" inputmode="numeric" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" data-lpignore="true" data-1p-ignore="true" spellcheck="false" pattern="\d{6}" maxlength="6" class="form-control" required aria-label="PIN hiện tại" data-pin-field>
+                            <button type="button" class="btn btn-outline-secondary" tabindex="-1" data-pin-toggle data-target="#oldPinInput"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="mb-3 position-relative">
+                        <label class="form-label">PIN mới</label>
+                        <div class="input-group">
+                <input type="password" id="newPinInput" name="new_pin" inputmode="numeric" autocomplete="new-password" autocorrect="off" autocapitalize="off" data-lpignore="true" data-1p-ignore="true" spellcheck="false" pattern="\d{6}" maxlength="6" class="form-control" required aria-label="PIN mới" data-pin-field>
+                            <button type="button" class="btn btn-outline-secondary" tabindex="-1" data-pin-toggle data-target="#newPinInput"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="mb-3 position-relative">
+                        <label class="form-label">Xác nhận PIN mới</label>
+                        <div class="input-group">
+                <input type="password" id="confirmPinInput" name="new_pin_confirmation" inputmode="numeric" autocomplete="new-password" autocorrect="off" autocapitalize="off" data-lpignore="true" data-1p-ignore="true" spellcheck="false" pattern="\d{6}" maxlength="6" class="form-control" required aria-label="Xác nhận PIN mới" data-pin-field>
+                            <button type="button" class="btn btn-outline-secondary" tabindex="-1" data-pin-toggle data-target="#confirmPinInput"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
     <style>
         /* Modern Wallet Balance Card */
@@ -454,6 +548,91 @@ document.querySelectorAll('.amount-input').forEach(function(input) {
         }
         input.value = raw;
     });
+});
+
+// Xử lý form xác thực PIN
+const pinForm = document.getElementById('walletPinVerifyForm');
+if(pinForm){
+    pinForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const pinValue = document.getElementById('verifyPinInput').value.trim();
+        if(!/^\d{6}$/.test(pinValue)){
+            const alertBox = document.getElementById('pinVerifyAlert');
+            alertBox.classList.remove('d-none','alert-success');
+            alertBox.classList.add('alert-danger');
+            alertBox.textContent = 'PIN phải gồm 6 chữ số';
+            return;
+        }
+        fetch("{{ route('wallet.pin.verify') }}", {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': pinForm.querySelector('input[name="_token"]').value, 'Accept':'application/json','Content-Type':'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ pin: pinValue })
+        }).then(r=>r.json()).then(data=>{
+            const alertBox = document.getElementById('pinVerifyAlert');
+            alertBox.classList.remove('d-none','alert-danger','alert-success');
+            if(data.success){
+                alertBox.classList.add('alert-success');
+                alertBox.textContent = data.message || 'Thành công';
+                setTimeout(()=>window.location.reload(), 800);
+            } else {
+                alertBox.classList.add('alert-danger');
+                alertBox.textContent = data.message || 'PIN không đúng';
+            }
+        }).catch(()=>{
+            const alertBox = document.getElementById('pinVerifyAlert');
+            alertBox.classList.remove('d-none');
+            alertBox.classList.add('alert-danger');
+            alertBox.textContent = 'Lỗi kết nối';
+        });
+    });
+}
+
+// Delegated toggle hiển thị/ẩn PIN (hoạt động với input tạo động)
+document.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-pin-toggle]');
+    if(!btn) return;
+    const selector = btn.getAttribute('data-target');
+    const target = document.querySelector(selector);
+    if(!target) return;
+    if(target.type === 'password'){
+        target.type='text';
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+    } else {
+        target.type='password';
+        btn.innerHTML = '<i class="fas fa-eye"></i>';
+    }
+    target.focus();
+});
+
+// Tạo động ô PIN trong modal verify để ngăn autofill
+const verifyModal = document.getElementById('walletPinVerifyModal');
+verifyModal?.addEventListener('shown.bs.modal', () => {
+    const wrapper = document.getElementById('verifyPinWrapper');
+    if(!wrapper || wrapper.dataset.built) return;
+    const randomName = 'p_'+Math.random().toString(36).slice(2);
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.inputMode = 'numeric';
+    input.autocomplete = 'new-password';
+    input.maxLength = 6;
+    input.pattern = '\\d{6}';
+    input.className = 'form-control';
+    input.id = 'verifyPinInput';
+    input.name = randomName; // tránh tên cố định
+    input.setAttribute('aria-label','Mã PIN 6 số');
+    input.setAttribute('data-pin-field','');
+    input.setAttribute('data-lpignore','true');
+    input.setAttribute('data-1p-ignore','true');
+    const btn = document.createElement('button');
+    btn.type='button';
+    btn.className='btn btn-outline-secondary';
+    btn.setAttribute('data-pin-toggle','');
+    btn.setAttribute('data-target','#verifyPinInput');
+    btn.innerHTML = '<i class="fas fa-eye"></i>';
+    wrapper.appendChild(input);
+    wrapper.appendChild(btn);
+    wrapper.dataset.built = '1';
+    setTimeout(()=>input.focus(),30);
 });
 </script>
 @endpush

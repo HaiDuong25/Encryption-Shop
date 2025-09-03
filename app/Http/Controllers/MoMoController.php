@@ -225,14 +225,16 @@ class MoMoController extends Controller
             $shippingAddress = \App\Models\ShippingAddress::find($orderData['shipping_address_id']);
 
             // Tạo đơn hàng
+            $shippingFee = $orderData['shipping_fee'] ?? 0;
             $order = Order::create([
                 'user_id' => $user->id,
                 'shipping_address_id' => $orderData['shipping_address_id'],
                 'payment_method_id' => $orderData['payment_method_id'],
                 'subtotal' => $orderData['subtotal'],
                 'discount' => $orderData['discount'],
+                'shipping_fee' => $shippingFee,
                 'total' => $orderData['total'],
-                'total_price' => $orderData['total'], // Tương thích với field cũ
+                'total_price' => $orderData['total'], // đã gồm shipping
                 'notes' => $orderData['notes'] ?? null,
                 'coupon_code' => $orderData['coupon_code'] ?? null,
                 'coupon_discount' => $orderData['discount'],

@@ -84,6 +84,7 @@ public function statusHistories()
         'total_price',
     'refunded_amount',
         'subtotal',
+    'shipping_fee',
         'status',
         'cancel_reason',
         'cancel_note',

@@ -17,6 +17,7 @@ use App\Models\WalletTransaction;
 use App\Models\BankAccount; // thêm model tài khoản ngân hàng
 class WalletController extends Controller
 {
+
     public function index()
     {
         $user = Auth::user();
@@ -44,8 +45,9 @@ class WalletController extends Controller
         $amount = $request->amount;
         $paymentMethod = $request->payment_method;
 
-        // Kiểm tra và hủy các giao dịch pending cũ của user này (quá 10 phút)
+        // Chỉ hết hạn các giao dịch nạp tiền (deposit) quá 10 phút, KHÔNG đụng tới giao dịch rút tiền
         WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'deposit')
             ->where('status', 'pending')
             ->where('created_at', '<', now()->subMinutes(10))
             ->update([
@@ -187,8 +189,19 @@ class WalletController extends Controller
                     ->where('amount', '>', 0);
             })
             ->get()
-            ->map(function ($payment) {
+            ->map(function ($payment) use ($user) {
                 $amount = $payment->amount && $payment->amount > 0 ? $payment->amount : $payment->order->total;
+
+                // Lấy số dư ví gần nhất tại hoặc trước thời điểm thanh toán (nếu có giao dịch ví)
+                $balanceAfter = \App\Models\WalletTransaction::where('user_id', $user->id)
+                    ->where('created_at', '<=', $payment->created_at)
+                    ->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->value('balance_after');
+                if ($balanceAfter === null) {
+                    // Fallback: lấy số dư hiện tại (không chính xác lịch sử tuyệt đối nhưng tốt hơn để hiển thị)
+                    $balanceAfter = optional($user->wallet)->balance ?? 0;
+                }
 
                 return [
                     'id' => $payment->id,
@@ -200,6 +213,7 @@ class WalletController extends Controller
                     'created_at' => $payment->created_at,
                     'source_type' => 'payment',
                     'order_id' => $payment->order->id,
+                    'balance_after' => $balanceAfter,
                 ];
             });
 
@@ -235,50 +249,50 @@ class WalletController extends Controller
     }
 
     public function withdraw(Request $request)
-{
-    $request->validate([
-        'amount' => 'required|numeric|min:10000',
-        'bank_account_id' => 'nullable|exists:bank_accounts,id',
-        'bank_name' => 'nullable|string|max:100',
-        'account_number' => 'nullable|string|max:50',
-        'account_holder' => 'nullable|string|max:100',
-        'note' => 'nullable|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:10000',
+            'bank_account_id' => 'nullable|exists:bank_accounts,id',
+            'bank_name' => 'nullable|string|max:100',
+            'account_number' => 'nullable|string|max:50',
+            'account_holder' => 'nullable|string|max:100',
+            'note' => 'nullable|string|max:255',
+        ]);
 
-    $user = auth()->user();
-    $wallet = $user->wallet;
+        $user = auth()->user();
+        $wallet = $user->wallet;
 
-    if ($request->amount > $wallet->balance) {
-        return back()->withErrors([
-            'amount' => 'Số dư ví không đủ! Hiện có: '.number_format($wallet->balance).'đ',
-        ])->withInput();
-    }
-
-    $bankAccountId = $request->bank_account_id;
-
-    if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
-        $existing = BankAccount::where('user_id', $user->id)
-            ->where('account_number', $request->account_number)
-            ->first();
-
-        if ($existing) {
-            $bankAccountId = $existing->id;
-        } else {
-            $bankAccount = BankAccount::create([
-                'user_id' => $user->id,
-                'bank_name' => $request->bank_name,
-                'account_number' => $request->account_number,
-                'account_holder' => $request->account_holder,
-            ]);
-            $bankAccountId = $bankAccount->id;
+        if ($request->amount > $wallet->balance) {
+            return back()->withErrors([
+                'amount' => 'Số dư ví không đủ! Hiện có: '.number_format((float)$wallet->balance).'đ',
+            ])->withInput();
         }
-    }
 
-    if (!$bankAccountId) {
-        return back()->withErrors(['bank_account_id' => 'Vui lòng chọn hoặc nhập tài khoản ngân hàng']);
-    }
+        $bankAccountId = $request->bank_account_id;
 
-    // Trừ tiền tạm
+        if (!$bankAccountId && $request->bank_name && $request->account_number && $request->account_holder) {
+            $existing = BankAccount::where('user_id', $user->id)
+                ->where('account_number', $request->account_number)
+                ->first();
+
+            if ($existing) {
+                $bankAccountId = $existing->id;
+            } else {
+                $bankAccount = BankAccount::create([
+                    'user_id' => $user->id,
+                    'bank_name' => $request->bank_name,
+                    'account_number' => $request->account_number,
+                    'account_holder' => $request->account_holder,
+                ]);
+                $bankAccountId = $bankAccount->id;
+            }
+        }
+
+        if (!$bankAccountId) {
+            return back()->withErrors(['bank_account_id' => 'Vui lòng chọn hoặc nhập tài khoản ngân hàng']);
+        }
+
+        // Trừ tiền tạm
  // Lưu lại số dư trước khi trừ
 $balanceBefore = $wallet->balance;
 
