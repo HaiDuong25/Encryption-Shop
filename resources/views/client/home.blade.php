@@ -690,22 +690,31 @@
                                                 $isDisabled = Auth::check() && $coupon->hasBeenUsedByUser(Auth::id());
                                                 $isSaved = Auth::check() && in_array($coupon->code, $userSavedCoupons ?? []);
                                             @endphp
-                                            <button
-                                                class="btn {{ $isSaved ? 'btn-success' : $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
-                                                data-code="{{ $coupon->code }}" data-discount="{{ $discountText }}"
-                                                data-description="{{ $coupon->description ?? 'Mã giảm giá đặc biệt' }}"
-                                                data-discount-type="{{ $coupon->discount_type ?? 'percentage' }}"
-                                                data-discount-value="{{ $coupon->discount }}"
-                                                data-max-discount="{{ $coupon->max_discount_amount ?? '' }}"
-                                                data-min-order="{{ $coupon->min_order_amount ?? '' }}"
-                                                style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
-                                                {{ $isDisabled ? 'disabled' : '' }}
-                                                onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
-                                                onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
-                                                <i
-                                                    class="fa-solid fa-{{ $isDisabled ? 'check' : ($isSaved ? 'check' : 'bookmark') }} me-2"></i>
-                                                {{ $isDisabled ? 'Đã sử dụng' : ($isSaved ? 'Đã lưu' : 'Lưu mã') }}
-                                            </button>
+                                            @guest
+                                                <a href="{{ route('login') }}"
+                                                   class="btn btn-outline-primary btn-lg fw-bold px-4 py-2 rounded-pill mb-3 shadow-lg coupon-login-prompt"
+                                                   style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease;"
+                                                   onmouseover="this.style.transform='scale(1.05)';"
+                                                   onmouseout="this.style.transform='scale(1)';">
+                                                    <i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập để lưu mã
+                                                </a>
+                                            @else
+                                                <button
+                                                    class="btn {{ $isSaved ? 'btn-success' : $colorScheme['btn_class'] }} btn-lg fw-bold px-4 py-2 rounded-pill save-coupon-btn mb-3 shadow-lg {{ $isDisabled ? 'disabled' : '' }}"
+                                                    data-code="{{ $coupon->code }}" data-discount="{{ $discountText }}"
+                                                    data-description="{{ $coupon->description ?? 'Mã giảm giá đặc biệt' }}"
+                                                    data-discount-type="{{ $coupon->discount_type ?? 'percentage' }}"
+                                                    data-discount-value="{{ $coupon->discount }}"
+                                                    data-max-discount="{{ $coupon->max_discount_amount ?? '' }}"
+                                                    data-min-order="{{ $coupon->min_order_amount ?? '' }}"
+                                                    style="font-size:1.1rem; min-width: 180px; transition: all 0.3s ease; {{ $isDisabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
+                                                    {{ $isDisabled ? 'disabled' : '' }}
+                                                    onmouseover="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1.05)\';' }}"
+                                                    onmouseout="{{ $isDisabled ? '' : 'this.style.transform=\'scale(1)\';' }}">
+                                                    <i class="fa-solid fa-{{ $isDisabled ? 'check' : ($isSaved ? 'check' : 'bookmark') }} me-2"></i>
+                                                    {{ $isDisabled ? 'Đã sử dụng' : ($isSaved ? 'Đã lưu' : 'Lưu mã') }}
+                                                </button>
+                                            @endguest
                                         </div>
                                     </div>
                                 </div>
