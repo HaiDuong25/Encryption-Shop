@@ -408,6 +408,141 @@
         </div>
     </div>
 
+    <!-- Modal xác thực PIN ví khi thanh toán -->
+    <div class="modal fade" id="walletPinCheckoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-shield-alt me-2"></i>Xác thực PIN Ví</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pinCheckoutAlert" class="alert d-none"></div>
+                    <div class="text-muted small mb-2">Nhập mã PIN 6 số để xác nhận thanh toán bằng ví.</div>
+                    <div class="mb-3">
+                        <!-- Dummy fields để tránh autofill -->
+                        <input type="text" name="fake_user_checkout" autocomplete="username" class="d-none" tabindex="-1" aria-hidden="true">
+                        <input type="password" name="fake_pass_checkout" autocomplete="new-password" class="d-none" tabindex="-1" aria-hidden="true">
+                        <div class="input-group" id="checkoutPinWrapper" data-dynamic-pin></div>
+                        <small class="text-muted">Trường PIN tạo động để chặn tự điền.</small>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <a href="{{ route('wallet.pin.forgot') }}" target="_blank">Quên PIN?</a>
+                        <a href="{{ route('wallet.pin.change') }}" class="d-none" id="changePinLinkTemp"></a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" id="confirmPinCheckoutBtn" class="btn btn-primary">
+                        <i class="fas fa-check me-1"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        (function(){
+            const form = document.querySelector('form[action*="checkout"]');
+            if(!form) return;
+            const pinModalEl = document.getElementById('walletPinCheckoutModal');
+            let wantSubmitAfterPin = false;
+
+            // Xác định id payment method ví
+            function isWalletSelected(){
+                const checked = document.querySelector('input[name="payment_method_id"]:checked');
+                if(!checked) return false;
+                return checked.getAttribute('data-type') === 'số dư ví';
+            }
+
+            form.addEventListener('submit', function(e){
+                if(!isWalletSelected()) return; // không phải ví -> tiếp tục
+                //Nếu đã có phiên PIN hợp lệ server sẽ cho qua (backend check). Ta vẫn bật modal để nhập nếu chưa xác thực.
+                e.preventDefault();
+                wantSubmitAfterPin = true;
+                const modal = new bootstrap.Modal(pinModalEl);
+                modal.show();
+                setTimeout(()=>{ document.getElementById('walletPinInput').focus(); },250);
+            });
+
+            // Tạo động ô PIN khi modal mở
+            pinModalEl.addEventListener('shown.bs.modal', () => {
+                const wrapper = document.getElementById('checkoutPinWrapper');
+                if(wrapper.dataset.built) return;
+                const randomName = 'p_'+Math.random().toString(36).slice(2);
+                const input = document.createElement('input');
+                input.type='password';
+                input.id='walletPinInput';
+                input.name=randomName;
+                input.maxLength=6;
+                input.pattern='\\d{6}';
+                input.autocomplete='new-password';
+                input.inputMode='numeric';
+                input.className='form-control text-center fs-5';
+                input.setAttribute('data-lpignore','true');
+                input.setAttribute('data-1p-ignore','true');
+                const btn = document.createElement('button');
+                btn.type='button';
+                btn.className='btn btn-outline-secondary';
+                btn.id='toggleCheckoutPin';
+                btn.setAttribute('data-pin-toggle','');
+                btn.setAttribute('data-target','#walletPinInput');
+                btn.innerHTML='<i class="fas fa-eye"></i>';
+                wrapper.appendChild(input);
+                wrapper.appendChild(btn);
+                wrapper.dataset.built='1';
+                setTimeout(()=>input.focus(),30);
+                input.addEventListener('keyup', function(){ if(this.value.length===6) verifyPinAjax(); });
+                document.getElementById('confirmPinCheckoutBtn').addEventListener('click', verifyPinAjax);
+            });
+            // Delegated toggle (dùng chung với wallet page script nếu có)
+            document.addEventListener('click', function(e){
+                const btn = e.target.closest('#walletPinCheckoutModal [data-pin-toggle]');
+                if(!btn) return;
+                const target = document.querySelector(btn.getAttribute('data-target'));
+                if(!target) return;
+                const icon = btn.querySelector('i');
+                if(target.type==='password'){ target.type='text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+                else { target.type='password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+                target.focus();
+            });
+
+            function verifyPinAjax(){
+                const pinInput = document.getElementById('walletPinInput');
+                if(!pinInput){ showPinAlert('Không tìm thấy ô PIN','danger'); return; }
+                const pin = pinInput.value.trim();
+                if(!/^\d{6}$/.test(pin)){
+                    showPinAlert('PIN phải gồm 6 chữ số','danger');
+                    return;
+                }
+                fetch("{{ route('wallet.pin.verify') }}", {
+                    method:'POST',
+                    headers:{'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), 'Accept':'application/json'},
+                    body: new URLSearchParams({pin: pin})
+                }).then(r=>r.json()).then(data=>{
+                    if(data.success){
+                        showPinAlert('Xác thực thành công','success');
+                        setTimeout(()=>{
+                            bootstrap.Modal.getInstance(pinModalEl).hide();
+                            if(wantSubmitAfterPin){ form.submit(); }
+                        },300);
+                    } else {
+                        showPinAlert(data.message || 'PIN không đúng','danger');
+                    }
+                }).catch(()=>showPinAlert('Lỗi kết nối máy chủ','danger'));
+            }
+
+            function showPinAlert(msg,type){
+                const box = document.getElementById('pinCheckoutAlert');
+                box.className = 'alert alert-'+type;
+                box.textContent = msg;
+                box.classList.remove('d-none');
+            }
+        })();
+    </script>
+    @endpush
+
     <div class="container pb-5">
         <!-- Thông báo lỗi và thành công -->
         @if (session('error'))
@@ -834,12 +969,27 @@
                                     </div>
 
                                     <!-- Tổng tiền phí vận chuyển -->
+                                    @php
+                                        // Công thức mới: ship dựa trên subtotal gốc
+                                        $shippingFeeCheckout = $subtotal > 1000000 ? 0 : 30000;
+                                        // Tính lại discount nếu là phần trăm và có ship (để hiển thị chuẩn)
+                                        $displayCouponDiscount = $couponDiscount;
+                                        if($appliedCoupon && isset($couponDiscount) && $couponDiscount>0 && $shippingFeeCheckout>0){
+                                            // Giả định backend đã lưu đúng số giảm (có thể gồm phần ship). Không cần xử lý lại.
+                                            $displayCouponDiscount = $couponDiscount;
+                                        }
+                                        // Tổng thanh toán thực tế đã được controller tính và trả qua $total (subtotal + ship - discount) => ở controller hiện $total đã gồm ship? Sau cập nhật: $total = (subtotal + ship) - discount.
+                                        $displayTotal = $total; 
+                                    @endphp
                                     <div class="summary-row">
-                                        <span><i class="fa-solid fa-truck me-2 text-muted"></i>Tổng tiền phí vận
-                                            chuyển:</span>
-                                        <span class="text-success fw-semibold" id="shipping-fee">
-                                            <i class="fa-solid fa-gift me-1"></i>Miễn phí
-                                        </span>
+                                        <span><i class="fa-solid fa-truck me-2 text-muted"></i>Tổng tiền phí vận chuyển:</span>
+                                        @if($shippingFeeCheckout == 0)
+                                            <span class="text-success fw-semibold" id="shipping-fee">
+                                                <i class="fa-solid fa-gift me-1"></i>Miễn phí
+                                            </span>
+                                        @else
+                                            <span class="fw-semibold" id="shipping-fee">{{ number_format($shippingFeeCheckout,0,',','.') }} VNĐ</span>
+                                        @endif
                                     </div>
 
                                     <!-- Tổng cộng Voucher giảm giá -->
@@ -863,7 +1013,7 @@
                                     <!-- Tổng thanh toán -->
                                     <div class="summary-row total-amount-row">
                                         <span><i class="fa-solid fa-calculator me-2"></i>Tổng thanh toán:</span>
-                                        <span id="total-amount">{{ format_vnd($total) }} VNĐ</span>
+                                        <span id="total-amount">{{ number_format($displayTotal,0,',','.') }} VNĐ</span>
                                     </div>
                                 </div>
                             </div>

@@ -331,7 +331,32 @@ class CartController extends Controller
             }
         }
 
-        $total = $subtotal - $couponDiscount;
+        // Áp dụng công thức mới: tiền hàng + tiền ship - % giảm (giảm có giới hạn max)
+        // Tính ship base trước khi giảm: nếu subtotal gốc > 1,000,000 thì free ship, ngược lại 30k
+        $shippingBase = 30000;
+        $shippingFeePreview = $subtotal > 1000000 ? 0 : $shippingBase;
+
+        // Nếu có mã giảm giá phần trăm và đơn < =1M (có ship), phần giảm có thể ăn vào cả tiền ship.
+        // Nếu đơn >1M free ship, giảm chỉ áp vào subtotal như cũ.
+        if ($appliedCoupon && isset($coupon) && $coupon && $coupon->discount_type === 'percentage') {
+            $discountableAmount = $subtotal + $shippingFeePreview; // tổng gồm ship (nếu có) để giảm
+            if ($shippingFeePreview === 0) {
+                $discountableAmount = $subtotal; // free ship: không cần cộng ship
+            }
+            $recalculatedDiscount = ($discountableAmount * $coupon->discount) / 100;
+            if ($coupon->max_discount_amount && $recalculatedDiscount > $coupon->max_discount_amount) {
+                $recalculatedDiscount = $coupon->max_discount_amount;
+            }
+            // Không vượt quá discountableAmount
+            $recalculatedDiscount = min($recalculatedDiscount, $discountableAmount);
+            if (abs($recalculatedDiscount - $couponDiscount) > 0.01) {
+                session(['coupon_discount' => $recalculatedDiscount]);
+                $couponDiscount = $recalculatedDiscount;
+            }
+        }
+
+        // Total tạm thời (sẽ hiển thị) = subtotal + ship - discount
+        $total = ($subtotal + $shippingFeePreview) - $couponDiscount;
 
         $payment_methods = \App\Models\PaymentMethod::all();
 
@@ -467,21 +492,59 @@ class CartController extends Controller
             $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
         }
 
-        $totalPrice = $subtotal - $discountAmount;
+    // Công thức mới trong processCheckout
+    // B1: xác định ship trước giảm
+    $shippingBase = 30000;
+    $shippingFee = $subtotal > 1000000 ? 0 : $shippingBase;
+
+    // B2: xác định vùng được giảm
+    $discountableAmount = $subtotal + $shippingFee; // nếu ship =0 (free) thì chỉ là subtotal
+    if ($shippingFee === 0) {
+        $discountableAmount = $subtotal; // free ship, không giảm vào ship
+    }
+
+    // B3: Tính lại giảm theo quy tắc mới nếu có coupon phần trăm
+    if ($couponCode && $coupon) {
+        if ($coupon->discount_type === 'percentage') {
+            $discountAmount = ($discountableAmount * $coupon->discount) / 100;
+            if ($coupon->max_discount_amount && $discountAmount > $coupon->max_discount_amount) {
+                $discountAmount = $coupon->max_discount_amount;
+            }
+            $discountAmount = min($discountAmount, $discountableAmount);
+        } else {
+            // Giảm cố định vẫn chỉ vào subtotal (không vượt tổng có ship)
+            $discountAmount = min($coupon->discount, $discountableAmount);
+        }
+    }
+
+    // B4: Tổng phải trả
+    $totalPriceWithShipping = $discountableAmount - $discountAmount;
+    $totalPrice = $totalPriceWithShipping; // giữ tương thích biến cũ
 
         // Kiểm tra phương thức thanh toán
         $paymentMethod = \App\Models\PaymentMethod::find($request->payment_method_id);
 
         if ($paymentMethod && $paymentMethod->payment_type === 'Số dư ví') {
+            // Kiểm tra PIN ví (bắt buộc phải có và được xác thực gần đây)
+            if (!$user->hasWalletPin()) {
+                return redirect()->route('wallet.pin.setup')
+                    ->with('warning', 'Bạn cần thiết lập mã PIN ví trước khi thanh toán bằng ví.');
+            }
+            $verifiedAt = session('wallet_pin_verified_at');
+            $ttlMinutes = 10;
+            if (!$verifiedAt || now()->diffInMinutes($verifiedAt) >= $ttlMinutes) {
+                // Hết hạn hoặc chưa xác thực
+                return redirect()->route('wallet.index')->with('require_pin', true);
+            }
             // Thanh toán bằng ví - kiểm tra số dư
             $wallet = $user->getOrCreateWallet();
 
-            if ($wallet->balance < $totalPrice) {
+            if ($wallet->balance < $totalPriceWithShipping) {
                 return redirect()->back()->with(
                     'error',
                     'Số dư trong ví không đủ để thanh toán. Số dư hiện tại: ' .
-                    number_format($wallet->balance, 0, ',', '.') . ' VND. ' .
-                    'Cần thêm: ' . number_format($totalPrice - $wallet->balance, 0, ',', '.') . ' VND.'
+                    number_format((float)$wallet->balance, 0, ',', '.') . ' VND. ' .
+                    'Cần thêm: ' . number_format((float)($totalPriceWithShipping - $wallet->balance), 0, ',', '.') . ' VND.'
                 );
             }
 
@@ -505,9 +568,10 @@ class CartController extends Controller
                 $order->payment_method_id = $request->payment_method_id;
                 // Các trường giá trị (giữ cả total_price cũ để tương thích)
                 $order->subtotal = $subtotal;
-                $order->discount = $discountAmount; // tổng số tiền giảm
-                $order->total = $totalPrice; // dùng tạm nếu còn view/code cũ đọc
-                $order->total_price = $totalPrice; // giá trị chuẩn
+                $order->discount = $discountAmount; // tổng số tiền giảm (có thể gồm phần giảm vào ship)
+                $order->shipping_fee = $shippingFee; // ship gốc (trước giảm)
+                $order->total = $totalPriceWithShipping; // tổng phải trả sau giảm
+                $order->total_price = $totalPriceWithShipping; // giá trị chuẩn
                 $order->notes = $request->notes;
                 $order->coupon_code = $couponCode;
                 $order->coupon_discount = $discountAmount;
@@ -593,6 +657,8 @@ class CartController extends Controller
                     Cart::where('user_id', $user->id)->delete();
                 }
 
+                // XÓA phiên xác thực PIN để lần sau bắt nhập lại
+                session()->forget('wallet_pin_verified_at');
                 return redirect()->route('cart.success', $order->id)
                     ->with('success', 'Đặt hàng và thanh toán bằng ví thành công!');
 
@@ -608,13 +674,31 @@ class CartController extends Controller
 
         if ($paymentMethod && $paymentMethod->payment_type === 'Ví Điện Tử MOMO') {
             // Thanh toán MoMo - lưu thông tin vào session trước khi chuyển hướng
+            // Lưu session cho MoMo với công thức mới
+            $shippingBase = 30000;
+            $shippingFee = $subtotal > 1000000 ? 0 : $shippingBase;
+            $discountableAmount = $subtotal + $shippingFee;
+            if ($shippingFee === 0) { $discountableAmount = $subtotal; }
+            if ($couponCode && $coupon) {
+                if ($coupon->discount_type === 'percentage') {
+                    $discountAmount = ($discountableAmount * $coupon->discount) / 100;
+                    if ($coupon->max_discount_amount && $discountAmount > $coupon->max_discount_amount) {
+                        $discountAmount = $coupon->max_discount_amount;
+                    }
+                    $discountAmount = min($discountAmount, $discountableAmount);
+                } else {
+                    $discountAmount = min($coupon->discount, $discountableAmount);
+                }
+            }
+            $totalAfter = $discountableAmount - $discountAmount;
             $orderData = [
                 'user_id' => Auth::id(),
                 'shipping_address_id' => $request->shipping_address_id,
                 'payment_method_id' => $request->payment_method_id,
                 'subtotal' => $subtotal,
                 'discount' => $discountAmount,
-                'total' => $totalPrice,
+                'shipping_fee' => $shippingFee, // ship gốc
+                'total' => $totalAfter,
                 'notes' => $request->notes,
                 'coupon_code' => $couponCode,
                 'shipping_address' => $shippingAddress,
@@ -629,13 +713,31 @@ class CartController extends Controller
 
         if ($paymentMethod && $paymentMethod->payment_type === 'Ví Điện Tử ZALOPAY') {
             // Thanh toán ZaloPay - lưu thông tin vào session trước khi chuyển hướng
+            // Lưu session cho ZaloPay với công thức mới
+            $shippingBase = 30000;
+            $shippingFee = $subtotal > 1000000 ? 0 : $shippingBase;
+            $discountableAmount = $subtotal + $shippingFee;
+            if ($shippingFee === 0) { $discountableAmount = $subtotal; }
+            if ($couponCode && $coupon) {
+                if ($coupon->discount_type === 'percentage') {
+                    $discountAmount = ($discountableAmount * $coupon->discount) / 100;
+                    if ($coupon->max_discount_amount && $discountAmount > $coupon->max_discount_amount) {
+                        $discountAmount = $coupon->max_discount_amount;
+                    }
+                    $discountAmount = min($discountAmount, $discountableAmount);
+                } else {
+                    $discountAmount = min($coupon->discount, $discountableAmount);
+                }
+            }
+            $totalAfter = $discountableAmount - $discountAmount;
             $orderData = [
                 'user_id' => Auth::id(),
                 'shipping_address_id' => $request->shipping_address_id,
                 'payment_method_id' => $request->payment_method_id,
                 'subtotal' => $subtotal,
                 'discount' => $discountAmount,
-                'total' => $totalPrice,
+                'shipping_fee' => $shippingFee,
+                'total' => $totalAfter,
                 'notes' => $request->notes,
                 'coupon_code' => $couponCode,
                 'shipping_address' => $shippingAddress,
@@ -668,12 +770,30 @@ class CartController extends Controller
         $order->recipient_phone = $shippingAddress->phone;
         $order->recipient_address = $shippingAddress->address_detail . ', ' . $shippingAddress->ward . ', ' . $shippingAddress->district . ', ' . $shippingAddress->province;
 
-        // Thông tin đơn hàng
-        $order->subtotal = $subtotal;
+    // Thông tin đơn hàng + shipping fee
+    $shippingBase = 30000;
+    $shippingFee = $subtotal > 1000000 ? 0 : $shippingBase;
+    $discountableAmount = $subtotal + $shippingFee;
+    if ($shippingFee === 0) { $discountableAmount = $subtotal; }
+    if ($couponCode && $coupon) {
+        if ($coupon->discount_type === 'percentage') {
+            $discountAmount = ($discountableAmount * $coupon->discount) / 100;
+            if ($coupon->max_discount_amount && $discountAmount > $coupon->max_discount_amount) {
+                $discountAmount = $coupon->max_discount_amount;
+            }
+            $discountAmount = min($discountAmount, $discountableAmount);
+        } else {
+            $discountAmount = min($coupon->discount, $discountableAmount);
+        }
+    }
+    $totalAfter = $discountableAmount - $discountAmount;
+    $order->subtotal = $subtotal;
+    $order->shipping_fee = $shippingFee; // ship gốc trước giảm
         $order->coupon_code = $couponCode;
         $order->coupon_discount = $discountAmount; // Lưu số tiền giảm thực tế
         $order->coupon_type = $couponType;
-        $order->total_price = $totalPrice;
+    $order->total = $totalAfter;
+    $order->total_price = $totalAfter;
         $order->notes = $request->notes;
         $order->status = 'pending';
         $order->payment_method_id = $request->payment_method_id;
@@ -684,7 +804,7 @@ class CartController extends Controller
             \App\Models\Payment::create([
                 'order_id' => $order->id,
                 'payment_method_id' => $order->payment_method_id,
-                'amount' => $order->total_price,
+                'amount' => $order->total_price, // đã gồm shipping
                 'status' => 'pending', // Chờ xác nhận - chỉ được confirm khi đơn hàng hoàn thành
                 'transaction_code' => null, // Sẽ được tạo khi confirm
                 // Không có 'confirmed_at' - sẽ được set khi đơn hàng completed

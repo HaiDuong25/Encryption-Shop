@@ -836,11 +836,19 @@
                                             <span class="fw-semibold" id="cart-subtotal">VND0</span>
                                         </div>
 
+                                        @php
+                                            // Ship gốc dựa trên tổng tiền hàng chưa giảm theo rule mới
+                                            $shippingFeeDisplay = $grandTotal > 1000000 ? 0 : 30000;
+                                        @endphp
                                         <div class="summary-row">
                                             <span><i class="fa-solid fa-truck me-2 text-muted"></i>Tổng tiền phí vận chuyển:</span>
-                                            <span class="text-success fw-semibold">
-                                                <i class="fa-solid fa-gift me-1"></i>Miễn phí
-                                            </span>
+                                            @if($shippingFeeDisplay == 0)
+                                                <span class="text-success fw-semibold">
+                                                    <i class="fa-solid fa-gift me-1"></i>Miễn phí
+                                                </span>
+                                            @else
+                                                <span class="fw-semibold" id="shipping-fee-cart">{{ number_format($shippingFeeDisplay,0,',','.') }} VND</span>
+                                            @endif
                                         </div>
 
                                         <div class="summary-row" id="payment-discount-row" style="display: none;">
@@ -855,7 +863,11 @@
                                                     toán:</span>
                                                 <div class="text-end">
                                                     <div class="total-price" id="final-total">
-                                                        VND0
+                                                        @if($shippingFeeDisplay == 0)
+                                                            {{ number_format($finalTotal,0,',','.') }} VND
+                                                        @else
+                                                            {{ number_format($finalTotal + $shippingFeeDisplay,0,',','.') }} VND
+                                                        @endif
                                                     </div>
                                                     <small class="text-muted">(Đã bao gồm VAT nếu có)</small>
                                                 </div>
@@ -1653,13 +1665,30 @@
                     return;
                 }
 
-                // Calculate discount
-                let discount = 0;
-                if (window.voucherDiscount > 0 && subtotal > 0) {
-                    discount = Math.min(window.voucherDiscount, subtotal);
+                // Ship gốc: dựa trên subtotal ban đầu
+                let shippingFee = 0;
+                if (checkedItems.length > 0) {
+                    shippingFee = subtotal > 1000000 ? 0 : 30000;
                 }
-
-                const finalTotal = Math.max(0, subtotal - discount);
+                // Vùng được giảm
+                let discountableAmount = subtotal + shippingFee;
+                if (shippingFee === 0) discountableAmount = subtotal;
+                // Tính giảm
+                let discount = 0;
+                if (window.voucherMeta && subtotal > 0) {
+                    if (window.voucherMeta.type === 'percentage') {
+                        discount = (discountableAmount * window.voucherMeta.value) / 100;
+                        if (window.voucherMeta.max && discount > window.voucherMeta.max) {
+                            discount = window.voucherMeta.max;
+                        }
+                        if (discount > discountableAmount) discount = discountableAmount;
+                    } else if (window.voucherMeta.type === 'fixed') {
+                        discount = Math.min(window.voucherMeta.value, discountableAmount);
+                    }
+                } else if (window.voucherDiscount > 0) {
+                    discount = Math.min(window.voucherDiscount, discountableAmount);
+                }
+                const finalTotal = Math.max(0, discountableAmount - discount);
 
                 if (paymentDiscountEl) {
                     paymentDiscountEl.textContent = discount > 0 ? '-' + new Intl.NumberFormat('vi-VN').format(discount) + ' VNĐ' : '-0 VNĐ';
@@ -1667,6 +1696,20 @@
 
                 if (paymentDiscountRowEl) {
                     paymentDiscountRowEl.style.display = discount > 0 ? 'flex' : 'none';
+                }
+
+                // Update shipping fee display
+                let shippingFeeEl = document.getElementById('shipping-fee-cart');
+                if (!shippingFeeEl) {
+                    // Try to find within summary row if dynamically created
+                    shippingFeeEl = document.querySelector('#shipping-fee-cart');
+                }
+                if (shippingFeeEl) {
+                    if (shippingFee === 0) {
+                        shippingFeeEl.innerHTML = '<span class="text-success"><i class="fa-solid fa-gift me-1"></i>Miễn phí</span>';
+                    } else {
+                        shippingFeeEl.textContent = new Intl.NumberFormat('vi-VN').format(shippingFee) + ' VNĐ';
+                    }
                 }
 
                 if (finalTotalEl) {

@@ -21,7 +21,7 @@ class ExpireStaleWalletTransactions extends Command
      *
      * @var string
      */
-    protected $description = 'Expire wallet transactions that are pending for more than 10 minutes';
+    protected $description = 'Expire wallet DEPOSIT transactions pending > 10 minutes (không đụng tới withdraw)';
 
     /**
      * Execute the console command.
@@ -32,8 +32,9 @@ class ExpireStaleWalletTransactions extends Command
     {
         $this->info('Checking for stale wallet transactions...');
 
-        // Tìm các giao dịch ví đang pending quá 10 phút
+        // Chỉ tìm các giao dịch NẠP TIỀN (deposit) pending quá 10 phút
         $expiredTransactions = WalletTransaction::where('status', 'pending')
+            ->where('type', 'deposit')
             ->where('created_at', '<', Carbon::now()->subMinutes(10))
             ->get();
 
@@ -47,7 +48,7 @@ class ExpireStaleWalletTransactions extends Command
             try {
                 $transaction->update([
                     'status' => 'failed',
-                    'description' => $transaction->description . ' (Hết hạn sau 10 phút)'
+                    'description' => $transaction->description . ' (Hết hạn sau 10 phút - auto cancel)'
                 ]);
                 
                 $count++;
@@ -59,7 +60,7 @@ class ExpireStaleWalletTransactions extends Command
             }
         }
 
-        $this->info("Expired {$count} stale wallet transactions.");
+    $this->info("Expired {$count} stale wallet DEPOSIT transactions. Withdraw unaffected.");
         
         return 0;
     }

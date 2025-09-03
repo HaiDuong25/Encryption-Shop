@@ -276,8 +276,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/topup/cancel', [\App\Http\Controllers\Client\WalletController::class, 'topupCancel'])->name('wallet.topup.cancel');
         Route::get('/history', [\App\Http\Controllers\Client\WalletController::class, 'history'])->name('wallet.history');
         Route::get('/payment-history', [\App\Http\Controllers\Client\WalletController::class, 'paymentHistory'])->name('wallet.payment-history');
-  Route::get('/withdraw', [\App\Http\Controllers\Client\WalletController::class, 'withdrawForm'])->name('wallet.withdraw');
-    Route::post('/withdraw', [\App\Http\Controllers\Client\WalletController::class, 'withdraw'])->name('wallet.withdraw.store');
+    Route::middleware('wallet.pin')->group(function(){
+        Route::get('/withdraw', [\App\Http\Controllers\Client\WalletController::class, 'withdrawForm'])->name('wallet.withdraw');
+        Route::post('/withdraw', [\App\Http\Controllers\Client\WalletController::class, 'withdraw'])->name('wallet.withdraw.store');
+    });
 Route::delete('/bank/{id}', [\App\Http\Controllers\Client\WalletController::class, 'destroy'])->name('wallet.bank.destroy');
 
         // MoMo wallet topup
@@ -290,6 +292,14 @@ Route::delete('/bank/{id}', [\App\Http\Controllers\Client\WalletController::clas
         Route::get('/zalopay/return', [\App\Http\Controllers\Client\WalletZalopayController::class, 'returnPayment'])->name('wallet.zalopay.return');
         Route::post('/zalopay/callback', [\App\Http\Controllers\Client\WalletZalopayController::class, 'notifyPayment'])->name('wallet.zalopay.notify');
         Route::post('/zalopay/process-manual-return', [\App\Http\Controllers\Client\WalletZalopayController::class, 'processManualReturn'])->name('wallet.zalopay.process-manual-return');
+
+    // Wallet PIN routes
+    Route::get('/pin/setup', [\App\Http\Controllers\Client\WalletPinController::class, 'showSetupForm'])->name('wallet.pin.setup');
+    Route::post('/pin/setup', [\App\Http\Controllers\Client\WalletPinController::class, 'store'])->name('wallet.pin.store');
+    Route::post('/pin/verify', [\App\Http\Controllers\Client\WalletPinController::class, 'verify'])->name('wallet.pin.verify');
+    Route::post('/pin/change', [\App\Http\Controllers\Client\WalletPinController::class, 'change'])->name('wallet.pin.change');
+    Route::get('/pin/forgot', [\App\Http\Controllers\Client\WalletPinController::class, 'showForgotForm'])->name('wallet.pin.forgot');
+    Route::post('/pin/forgot', [\App\Http\Controllers\Client\WalletPinController::class, 'resetForgot'])->name('wallet.pin.reset');
     });
 
     // Đơn hàng (client)
