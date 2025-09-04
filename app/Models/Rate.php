@@ -16,6 +16,9 @@ class Rate extends Model
         'score',
         'content',
         'status', // Giả sử status là TINYINT: 0 = Chờ duyệt, 1 = Hiện, 2 = Ẩn
+    'likes_count',
+    'dislikes_count',
+    'reports_count',
     ];
 
     // --- THÊM CÁC PHƯƠNG THỨC ACCESSOR DƯỚI ĐÂY ---
@@ -73,6 +76,16 @@ class Rate extends Model
 {
     return $this->belongsTo(OrderDetail::class);
 }
+
+    public function reports()
+    {
+        return $this->hasMany(RateReport::class);
+    }
+
+    // Convenience methods
+    public function addLike(): void { $this->increment('likes_count'); }
+    public function addDislike(): void { $this->increment('dislikes_count'); }
+    public function addReport(): void { $this->increment('reports_count'); }
 
     // public function product() { ... } // Sẽ thêm sau
 }

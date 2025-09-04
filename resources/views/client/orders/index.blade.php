@@ -389,6 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const originalHtml = this.innerHTML;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
                 this.disabled = true;
+                // Hiển thị nút ở giữa ô (block + margin auto)
+                this.classList.add('d-block', 'mx-auto');
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `/lich-su-don-hang/${orderId}/confirm`;

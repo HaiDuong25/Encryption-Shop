@@ -3,6 +3,7 @@
 @section('content')
     <!-- Fix search button click issue caused by toast z-index -->
     <style>
+        
         /* Ensure header search form has higher z-index than toast notifications */
         header .top-nav {
             position: relative !important;
