@@ -2,6 +2,29 @@
 
 @section('title', 'Quản lý Đánh giá Khách hàng')
 
+@section('styles')
+<style>
+    /* Force center the reports modal even if an ancestor has transform or flex constraints */
+    #rateReportsModal .modal-dialog {
+        margin: 0; /* remove default vertical margin so absolute centering works */
+    }
+    /* Use fixed positioning on dialog for reliable viewport centering */
+    #rateReportsModal.show .modal-dialog, #rateReportsModal .modal-dialog {
+        position: fixed; /* detach from potentially transformed ancestors */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) !important; /* override bootstrap animation translate */
+        width: 100%;
+        max-width: 900px; /* similar to modal-lg */
+    }
+    /* Ensure scroll area behaves inside fixed dialog */
+    #rateReportsModal .modal-content { max-height: calc(100vh - 2rem); display: flex; flex-direction: column; }
+    #rateReportsModal .modal-body { overflow: auto; }
+    /* Optional: darken backdrop a bit more if design wants stronger focus */
+    /* .modal-backdrop.show { opacity: .55; } */
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -11,6 +34,9 @@
                     <div class="title-header option-title d-sm-flex d-block justify-content-between align-items-center">
                         <h5>Danh sách Đánh giá Khách hàng</h5>
                         <div class="right-options d-flex gap-2 align-items-center">
+                            <a href="{{ route('admin.rate-reports.index') }}" class="btn btn-danger d-flex align-items-center">
+                                <i class="ri-flag-2-line me-1"></i> Quản lý báo cáo
+                            </a>
                             {{-- Form tìm kiếm theo tên người dùng hoặc nội dung đánh giá --}}
                             <form method="GET" action="{{ route('rates.index') }}" class="d-flex">
                                 <input type="text" name="search" class="form-control me-2" placeholder="Tìm theo tên người dùng hoặc nội dung..."
@@ -51,6 +77,7 @@
                                     <th>Sản phẩm ID</th>
                                     <th>Điểm</th>
                                     <th style="min-width: 200px;">Nội dung</th>
+                                    <th>Báo cáo</th>
                                     <th>Trạng thái</th>
                                     <th>Ngày tạo</th>
                                     <th>Hành động</th>
@@ -76,6 +103,16 @@
                                         ({{ $rate->score }})
                                     </td>
                                     <td>{{ Str::limit($rate->content, 100) }}</td>
+                                    <td>
+                                        @php $pending = $rate->reports()->where('status','pending')->count(); $total=$rate->reports()->count(); @endphp
+                                        @if($total>0)
+                                            <button type="button" class="btn btn-outline-danger btn-sm view-reports-btn" data-rate-id="{{ $rate->id }}" data-bs-toggle="modal" data-bs-target="#rateReportsModal">
+                                                {{ $total }} <span class="small">( {{ $pending }} chờ )</span>
+                                            </button>
+                                        @else
+                                            <span class="badge bg-secondary">0</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <span class="badge rounded-pill {{ $rate->status_class }}">
                                             {{ ucfirst(str_replace('_', ' ', $rate->status_text)) }}
@@ -275,7 +312,96 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+// ==== Report management ====
+document.addEventListener('DOMContentLoaded', ()=>{
+    // Move reports modal to body to avoid any ancestor with transform affecting centering
+    const reportsModalEl = document.getElementById('rateReportsModal');
+    if (reportsModalEl && reportsModalEl.parentElement !== document.body) {
+        document.body.appendChild(reportsModalEl);
+    }
+    const modalEl = document.getElementById('rateReportsModal');
+    const tbody = document.getElementById('reportsTableBody');
+    const token = document.querySelector('meta[name="csrf-token"]').content;
+    let currentRateId = null;
+    document.querySelectorAll('.view-reports-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            currentRateId = btn.dataset.rateId;
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>';
+            fetch(`/admin/rates/${currentRateId}/reports`, {headers:{'Accept':'application/json'}})
+                .then(r=>r.json()).then(data=>{
+                    if(!data.success){ tbody.innerHTML='<tr><td colspan="5" class="text-danger">Tải thất bại</td></tr>'; return; }
+                    if(data.reports.length===0){ tbody.innerHTML='<tr><td colspan="5" class="text-center text-muted">Không có báo cáo</td></tr>'; return; }
+            const statusMap = {pending:'Chờ xử lý', actioned:'Đã xử lý', dismissed:'Đã bỏ qua'};
+                    tbody.innerHTML = data.reports.map(rep=>`
+                        <tr data-report-id="${rep.id}">
+                            <td>${rep.id}</td>
+                            <td>${rep.user_name} (#${rep.user_id})</td>
+                            <td><span class="badge bg-light text-dark">${rep.reason}</span><br><small>${rep.note?rep.note:''}</small></td>
+                <td><span class="badge ${rep.status==='pending'?'bg-warning text-dark':(rep.status==='actioned'?'bg-success':'bg-secondary')}">${statusMap[rep.status]||rep.status}</span></td>
+                            <td class="text-nowrap">
+                                <button class="btn btn-sm btn-outline-success action-report-btn" data-action="actioned" ${rep.status!=='pending'?'disabled':''}>Xử lý</button>
+                                <button class="btn btn-sm btn-outline-secondary action-report-btn" data-action="dismissed" ${rep.status!=='pending'?'disabled':''}>Bỏ qua</button>
+                            </td>
+                        </tr>`).join('');
+                }).catch(()=>{ tbody.innerHTML='<tr><td colspan="5" class="text-danger">Lỗi mạng</td></tr>';});
+        });
+    });
+    modalEl?.addEventListener('click', e=>{
+        const btn = e.target.closest('.action-report-btn');
+        if(!btn) return;
+        const tr = btn.closest('tr');
+        const reportId = tr.dataset.reportId;
+        const action = btn.dataset.action;
+        btn.disabled = true;
+        fetch(`/admin/rate-reports/${reportId}`, {method:'PATCH',headers:{'X-CSRF-TOKEN':token,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify({status:action})})
+            .then(r=>r.json()).then(data=>{
+                if(data.success){
+                    tr.querySelectorAll('.action-report-btn').forEach(b=>b.disabled=true);
+                    const badge = tr.querySelector('td:nth-child(4) .badge');
+            const statusMap = {pending:'Chờ xử lý', actioned:'Đã xử lý', dismissed:'Đã bỏ qua'};
+            badge.textContent = statusMap[data.report.status]||data.report.status;
+                    badge.className = 'badge ' + (data.report.status==='actioned'?'bg-success':(data.report.status==='dismissed'?'bg-secondary':'bg-warning text-dark'));
+                    showToast('Cập nhật thành công','success');
+                } else {
+                    btn.disabled=false; showToast(data.message||'Lỗi','danger');
+                }
+            }).catch(()=>{ btn.disabled=false; showToast('Lỗi mạng','danger'); });
+    });
+});
 </script>
+
+<!-- Modal danh sách báo cáo -->
+<div class="modal fade" id="rateReportsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Báo cáo đánh giá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Người báo cáo</th>
+                                <th>Lý do</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <tr><td colspan="5" class="text-center text-muted">Chưa tải</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal xác nhận -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 9999;">

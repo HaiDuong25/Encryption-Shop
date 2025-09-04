@@ -529,7 +529,7 @@
                                                 'delivering' => 'Đang giao',
                                                 'received' => 'Đã nhận',
                                                 'completed' => 'Hoàn thành',
-                                                'cancelled' => 'Đã hủy',
+                                                // 'cancelled' removed — admin không thể set trạng thái Hủy từ màn hình này
                                                 'returning' => 'Đang trả hàng',
                                                 'approved' => 'Đã trả hàng',
                                                 'rejected' => 'Từ chối trả',
@@ -545,20 +545,16 @@
                                                 $optionIndex = array_search($value, $statusKeysEdit);
                                                 $canSelect = false;
 
-                                                // Chỉ cho phép chọn:
+                                                // Chỉ cho phép:
                                                 // 1. Trạng thái hiện tại
                                                 // 2. Trạng thái tiếp theo (currentIndex + 1)
-                                                // 3. Trạng thái trước đó (currentIndex - 1) - để xử lý lỗi/sự cố
-                                                // 4. Trạng thái hủy (nếu chưa completed)
-
+                                                // 3. Trạng thái trước đó (currentIndex - 1) - để xử lý sự cố
                                                 if ($optionIndex == $currentIndex) {
                                                     $canSelect = true; // Trạng thái hiện tại
                                                 } elseif ($optionIndex == $currentIndex + 1 && !in_array($value, $finalStatuses)) {
                                                     $canSelect = true; // Trạng thái tiếp theo
                                                 } elseif ($optionIndex == $currentIndex - 1 && $currentIndex > 0 && !in_array($statusValue, ['pending', 'completed', 'cancelled'])) {
-                                                    $canSelect = true; // Cho phép quay lại 1 trạng thái (trừ pending và final statuses)
-                                                } elseif ($value === 'cancelled' && !in_array($statusValue, ['delivering', 'received', 'completed', 'cancelled', 'approved', 'rejected'])) {
-                                                    $canSelect = true; // Cho phép hủy nếu chưa đang giao
+                                                    $canSelect = true; // Cho phép quay lại 1 trạng thái
                                                 }
                                             @endphp
 

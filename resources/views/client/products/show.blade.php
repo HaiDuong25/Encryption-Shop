@@ -745,28 +745,63 @@ del { font-size: 14px; color: #999; }
         @foreach ($product->rates->where('status', 1) as $rate)
             <div class="mb-3 border-bottom pb-2">
                 <div class="d-flex align-items-center mb-1">
-                    <strong>{{ $rate->user->name }}</strong>
-                    <div class="ms-2 existing-stars">
-                        @for ($i = 1; $i <= 5; $i++)
-                            @if ($rate->score >= $i)
-                                <i class="fas fa-star text-warning"></i>
-                            @else
-                                <i class="far fa-star text-warning"></i>
-                            @endif
-                        @endfor
+                    <div class="me-2" style="width:40px; height:40px;">
+                        @php
+                            $avatar = $rate->user->avatar ?? null;
+                        @endphp
+                        <img src="{{ $avatar ? asset('storage/' . $avatar) : asset('assets-front/images/default-avatar.png') }}" alt="avatar"
+                             class="rounded-circle" style="width:40px; height:40px; object-fit:cover;">
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong>{{ $rate->user->name }}</strong>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="existing-stars">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    @if ($rate->score >= $i)
+                                        <i class="fas fa-star text-warning"></i>
+                                    @else
+                                        <i class="far fa-star text-warning"></i>
+                                    @endif
+                                @endfor
+                            </div>
+                            <small class="text-muted">• {{ $rate->created_at->format('d/m/Y H:i') }}</small>
+                        </div>
+                        @if ($rate->orderDetail && $rate->orderDetail->variant)
+                            <div class="text-muted small mt-1">
+                                Biến thể:
+                                @foreach ($rate->orderDetail->variant->attributeValues as $attributeValue)
+                                    {{ $attributeValue->value }}@if(!$loop->last), @endif
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
-
-                @if ($rate->orderDetail && $rate->orderDetail->variant)
-                    <div class="text-muted small">
-                        Biến thể:
-                        @foreach ($rate->orderDetail->variant->attributeValues as $attributeValue)
-                            {{ $attributeValue->value }}@if (!$loop->last), @endif
-                        @endforeach
-                    </div>
-                @endif
-
-                <p class="mb-0">{{ $rate->content }}</p>
+                <p class="mb-0 mt-1 ms-5" style="padding-left:1px; font-size:16px; line-height:1.5;">{{ $rate->content }}</p>
+                @php $isOwner = auth()->check() && auth()->id() === $rate->user_id; @endphp
+                <div class="d-flex align-items-center gap-3 ms-5 mt-2 small position-relative">
+                    <button class="btn btn-sm p-0 border-0 bg-transparent text-success rate-action-btn" data-action="like" data-rate-id="{{ $rate->id }}" title="Hữu ích">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span class="like-count" data-rate-id="{{ $rate->id }}">{{ $rate->likes_count ?? 0 }}</span>
+                    </button>
+                    <button class="btn btn-sm p-0 border-0 bg-transparent text-danger rate-action-btn" data-action="dislike" data-rate-id="{{ $rate->id }}" title="Không hữu ích">
+                        <i class="fas fa-thumbs-down"></i>
+                        <span class="dislike-count" data-rate-id="{{ $rate->id }}">{{ $rate->dislikes_count ?? 0 }}</span>
+                    </button>
+                    @unless($isOwner)
+                        <div class="dropdown">
+                            <button class="btn btn-sm p-0 border-0 bg-transparent text-muted dropdown-toggle rate-ellipsis-btn" type="button" id="dropdownMenuRate{{ $rate->id }}" aria-expanded="false" title="Tùy chọn">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <ul class="dropdown-menu rate-dropdown-menu" aria-labelledby="dropdownMenuRate{{ $rate->id }}">
+                                <li>
+                                    <button type="button" class="dropdown-item rate-report-btn" data-rate-id="{{ $rate->id }}">
+                                        <i class="fas fa-flag me-2 text-warning"></i>Báo cáo
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    @endunless
+                </div>
 
                 @if ($rate->replies->count())
                     @foreach ($rate->replies as $reply)
@@ -820,6 +855,163 @@ del { font-size: 14px; color: #999; }
 </div>
 
 @endsection
+@push('scripts')
+<script>
+// Toast init (idempotent)
+(function(){
+    if(document.getElementById('toast-root')) return;
+    const root=document.createElement('div');
+    root.id='toast-root';
+    Object.assign(root.style,{position:'fixed',top:'20px',right:'20px',zIndex:1080,display:'flex',flexDirection:'column',gap:'10px'});
+    document.addEventListener('DOMContentLoaded',()=>document.body.appendChild(root));
+})();
+function showToast(msg,type='info',ms=2500){
+    const root=document.getElementById('toast-root'); if(!root) return;
+    const el=document.createElement('div');
+    const colors={success:'#16a34a',error:'#dc2626',info:'#2563eb',warning:'#d97706'};
+    Object.assign(el.style,{background:colors[type]||colors.info,color:'#fff',padding:'10px 14px',borderRadius:'8px',fontSize:'14px',fontWeight:'500',boxShadow:'0 4px 16px rgba(0,0,0,.18)',opacity:0,transform:'translateY(-6px)',transition:'opacity .25s, transform .25s'});
+    el.textContent=msg; root.appendChild(el); requestAnimationFrame(()=>{el.style.opacity=1;el.style.transform='translateY(0)';});
+    setTimeout(()=>{el.style.opacity=0;el.style.transform='translateY(-6px)'; setTimeout(()=>el.remove(),260);},ms);
+}
+document.addEventListener('DOMContentLoaded', function(){
+    const tokenMeta=document.querySelector('meta[name="csrf-token"]');
+    if(!tokenMeta) return; const token=tokenMeta.getAttribute('content');
+    document.querySelectorAll('.rate-action-btn').forEach(btn=>{
+        btn.addEventListener('click',function(e){
+            e.preventDefault();
+            const action=this.dataset.action; if(action==='report') return;
+            const rateId=this.dataset.rateId;
+            fetch(`{{ url('/rates') }}/${rateId}/action`,{method:'POST',headers:{'X-CSRF-TOKEN':token,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify({action})})
+                .then(r=>r.json()).then(data=>{
+                    if(data.success && data.counts){
+                        const {likes,dislikes}=data.counts;
+                        const l=document.querySelector(`.like-count[data-rate-id='${rateId}']`);
+                        const d=document.querySelector(`.dislike-count[data-rate-id='${rateId}']`);
+                        if(l) l.textContent=likes; if(d) d.textContent=dislikes;
+                        showToast('Đã ghi nhận','success');
+                    } else { showToast(data.message||'Thao tác không thành công','error'); }
+                }).catch(()=>showToast('Lỗi kết nối máy chủ','error'));
+        });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const reportModalEl = document.getElementById('rateReportModal');
+    if(!reportModalEl) return;
+    const reportModal = new bootstrap.Modal(reportModalEl);
+    let currentRateId = null;
+    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+    const token = tokenMeta ? tokenMeta.getAttribute('content') : '';
+
+    // ===== Dropdown manual toggle fallback (in case bootstrap dropdown not auto-bound) =====
+    document.addEventListener('click', function(e){
+        const ellipsisBtn = e.target.closest('.rate-ellipsis-btn');
+        const openMenus = document.querySelectorAll('.rate-dropdown-menu.show');
+        if(ellipsisBtn){
+            e.preventDefault();
+            const menu = ellipsisBtn.parentElement.querySelector('.rate-dropdown-menu');
+            const isOpen = menu.classList.contains('show');
+            openMenus.forEach(m => { if(m !== menu) m.classList.remove('show'); });
+            if(!isOpen){
+                menu.classList.add('show');
+                const rect = ellipsisBtn.getBoundingClientRect();
+                // position via CSS class; rely on relative parent
+            } else {
+                menu.classList.remove('show');
+            }
+        } else if(!e.target.closest('.rate-dropdown-menu')) {
+            openMenus.forEach(m => m.classList.remove('show'));
+        }
+    });
+
+    // Close dropdown when selecting report option (before opening modal)
+    document.addEventListener('click', function(e){
+        const reportBtn = e.target.closest('.rate-report-btn');
+        if(reportBtn){
+            const parentMenu = reportBtn.closest('.rate-dropdown-menu');
+            parentMenu?.classList.remove('show');
+        }
+    });
+
+    // Event delegation để hỗ trợ phần tử trong dropdown
+    document.addEventListener('click', function(e){
+        const trigger = e.target.closest('.rate-report-btn');
+        if(!trigger) return;
+        e.preventDefault();
+        currentRateId = trigger.dataset.rateId;
+        document.getElementById('reportReason').value = '';
+        document.getElementById('reportNote').value = '';
+        document.getElementById('reportError').classList.add('d-none');
+        reportModal.show();
+    });
+
+    document.getElementById('submitRateReportBtn')?.addEventListener('click', function(){
+        const reason = document.getElementById('reportReason').value.trim();
+        const note = document.getElementById('reportNote').value.trim();
+        if(!reason){
+            const err = document.getElementById('reportError');
+            err.textContent = 'Vui lòng chọn lý do';
+            err.classList.remove('d-none');
+            return;
+        }
+        fetch(`{{ url('/rates') }}/${currentRateId}/report`, {
+            method:'POST',
+            headers:{'X-CSRF-TOKEN':token,'Accept':'application/json','Content-Type':'application/json'},
+            body: JSON.stringify({reason: reason, note: note})
+        }).then(r=>r.json()).then(data=>{
+            if(data.success){
+                reportModal.hide();
+                showToast('Đã gửi báo cáo','success');
+            } else {
+                const err = document.getElementById('reportError');
+                err.textContent = data.message || 'Gửi báo cáo thất bại';
+                err.classList.remove('d-none');
+                showToast(data.message || 'Gửi báo cáo thất bại','error');
+            }
+        }).catch(()=>{
+            const err = document.getElementById('reportError');
+            err.textContent = 'Lỗi kết nối';
+            err.classList.remove('d-none');
+            showToast('Lỗi kết nối','error');
+        });
+    });
+});
+</script>
+<div class="modal fade" id="rateReportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Báo cáo đánh giá</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="reportError" class="alert alert-danger d-none"></div>
+        <div class="mb-3">
+            <label class="form-label">Lý do</label>
+            <select id="reportReason" class="form-select" required>
+                <option value="">-- Chọn lý do --</option>
+                <option value="inappropriate">Nội dung không phù hợp</option>
+                <option value="adult">18+/Nhạy cảm</option>
+                <option value="false_info">Sai sự thật / Gây hiểu lầm</option>
+                <option value="spam">Spam / Quảng cáo</option>
+                <option value="abuse">Lăng mạ / Thù ghét</option>
+                <option value="other">Khác</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Ghi chú bổ sung (tuỳ chọn)</label>
+            <textarea id="reportNote" class="form-control" rows="3" placeholder="Mô tả thêm nếu cần..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-primary" id="submitRateReportBtn">Gửi báo cáo</button>
+      </div>
+    </div>
+  </div>
+</div>
+@endpush
 @push('scripts')
         <script>
             let imageList = [];

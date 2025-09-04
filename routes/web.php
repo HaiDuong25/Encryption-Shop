@@ -96,8 +96,19 @@ app('router')->aliasMiddleware('unset.coupon.checkout', \App\Http\Middleware\Uns
     Route::get('/yeu-thich', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/yeu-thich/add/{id}', [WishlistController::class, 'add'])->name('wishlist.add');
     Route::delete('/yeu-thich/remove/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
-    // Đánh giá
-    Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])->name('client.rates.store');
+    // Đánh giá (tạo mới) – giới hạn tham số phải là số để tránh xung đột với /rates/{rate}/report
+    Route::post('/rates/{product}/{orderDetail}', [ClientRateController::class, 'store'])
+        ->whereNumber('product')
+        ->whereNumber('orderDetail')
+        ->name('client.rates.store');
+    // Rate actions (like, dislike)
+    Route::post('/rates/{rate}/action', [App\Http\Controllers\Client\RateActionController::class, 'act'])
+        ->whereNumber('rate')
+        ->name('client.rates.action');
+    // Báo cáo đánh giá (report chi tiết)
+    Route::post('/rates/{rate}/report', [App\Http\Controllers\Client\RateReportController::class, 'store'])
+        ->whereNumber('rate')
+        ->name('client.rates.report');
 
 
 
@@ -176,6 +187,10 @@ Route::prefix('admin')->middleware(['auth', RoleMiddleware::class])->group(funct
     // Rates & replies
     Route::resource('rates', RateController::class)->except(['create', 'store']);
     Route::post('/rates/{rate}/replies', [RateReplyController::class, 'store'])->name('rates.replies.store');
+    // Rate reports management
+    Route::get('/rates/{rate}/reports', [\App\Http\Controllers\Admin\RateReportController::class, 'index']);
+    Route::patch('/rate-reports/{rateReport}', [\App\Http\Controllers\Admin\RateReportController::class, 'update']);
+    Route::get('/rate-reports', [\App\Http\Controllers\Admin\RateReportController::class, 'manage'])->name('admin.rate-reports.index');
 
     // Contacts
     Route::resource('contacts', ContactController::class)->only(['index', 'show', 'destroy']);
