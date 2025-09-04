@@ -17,7 +17,7 @@
               <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm nội dung / user" class="form-control" style="min-width:200px;">
               <select name="status" class="form-select">
                 <option value="">-- Trạng thái --</option>
-                @foreach(['pending'=>'Pending','actioned'=>'Actioned','dismissed'=>'Dismissed'] as $k=>$v)
+                @foreach(['pending'=>'Chờ xử lý','reviewed'=>'Đã xử lý','dismissed'=>'Đã bỏ qua'] as $k=>$v)
                   <option value="{{ $k }}" @selected(request('status')===$k)>{{ $v }}</option>
                 @endforeach
               </select>
@@ -61,11 +61,18 @@
                     <td><span class="badge bg-light text-dark">{{ $rep->reason_text }}</span></td>
                     <td style="max-width:200px; white-space:pre-line;">{{ $rep->note }}</td>
                     <td>
-                      <span class="badge status-badge {{ $rep->status==='pending'?'bg-warning text-dark':($rep->status==='actioned'?'bg-success':'bg-secondary') }}">{{ $rep->status }}</span>
+                      <span class="badge status-badge {{ $rep->status==='pending'?'bg-warning text-dark':('bg-success') }}">
+                        @switch($rep->status)
+                          @case('pending') Chờ xử lý @break
+                          @case('reviewed') Đã xử lý @break
+                          @case('dismissed') Đã bỏ qua @break
+                          @default {{ $rep->status }}
+                        @endswitch
+                      </span>
                     </td>
                     <td>{{ $rep->created_at->format('d/m/Y H:i') }}</td>
                     <td class="text-nowrap">
-                      <button class="btn btn-sm btn-outline-success update-status-btn" data-status="actioned" @disabled($rep->status!=='pending')>Xử lý</button>
+                      <button class="btn btn-sm btn-outline-success update-status-btn" data-status="reviewed" @disabled($rep->status!=='pending')>Xử lý</button>
                       <button class="btn btn-sm btn-outline-secondary update-status-btn" data-status="dismissed" @disabled($rep->status!=='pending')>Bỏ qua</button>
                     </td>
                   </tr>
@@ -105,8 +112,9 @@
       .then(r=>r.json()).then(data=>{
         if(data.success){
           const badge=tr.querySelector('.status-badge');
-          badge.textContent=data.report.status;
-            badge.className='badge status-badge '+(data.report.status==='actioned'?'bg-success':(data.report.status==='dismissed'?'bg-secondary':'bg-warning text-dark'));
+          const statusMap={pending:'Chờ xử lý',reviewed:'Đã xử lý',dismissed:'Đã bỏ qua'};
+          badge.textContent=statusMap[data.report.status]||data.report.status;
+          badge.className='badge status-badge '+(data.report.status==='pending'?'bg-warning text-dark':'bg-success');
           tr.querySelectorAll('.update-status-btn').forEach(b=>b.disabled=true);
           toast('Cập nhật thành công');
         } else { btn.disabled=false; toast(data.message||'Lỗi','error'); }
