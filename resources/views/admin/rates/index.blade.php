@@ -69,7 +69,7 @@
                     @endif
 
                     <div class="table-responsive mt-3">
-                        <table class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
+                        <table id="ratesTable" class="table all-package theme-table table-product text-center align-middle" style="border-collapse: separate; border-spacing: 0 12px;">
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
@@ -331,15 +331,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 .then(r=>r.json()).then(data=>{
                     if(!data.success){ tbody.innerHTML='<tr><td colspan="5" class="text-danger">Tải thất bại</td></tr>'; return; }
                     if(data.reports.length===0){ tbody.innerHTML='<tr><td colspan="5" class="text-center text-muted">Không có báo cáo</td></tr>'; return; }
-            const statusMap = {pending:'Chờ xử lý', actioned:'Đã xử lý', dismissed:'Đã bỏ qua'};
+                    const statusMap = {pending:'Chờ xử lý', reviewed:'Đã xử lý', dismissed:'Đã bỏ qua'};
                     tbody.innerHTML = data.reports.map(rep=>`
                         <tr data-report-id="${rep.id}">
                             <td>${rep.id}</td>
                             <td>${rep.user_name} (#${rep.user_id})</td>
                             <td><span class="badge bg-light text-dark">${rep.reason}</span><br><small>${rep.note?rep.note:''}</small></td>
-                <td><span class="badge ${rep.status==='pending'?'bg-warning text-dark':(rep.status==='actioned'?'bg-success':'bg-secondary')}">${statusMap[rep.status]||rep.status}</span></td>
+                            <td><span class="badge ${rep.status==='pending'?'bg-warning text-dark':(rep.status==='reviewed' || rep.status==='dismissed' ?'bg-success':'bg-success')}">${statusMap[rep.status]||rep.status}</span></td>
                             <td class="text-nowrap">
-                                <button class="btn btn-sm btn-outline-success action-report-btn" data-action="actioned" ${rep.status!=='pending'?'disabled':''}>Xử lý</button>
+                                <button class="btn btn-sm btn-outline-success action-report-btn" data-action="reviewed" ${rep.status!=='pending'?'disabled':''}>Xử lý</button>
                                 <button class="btn btn-sm btn-outline-secondary action-report-btn" data-action="dismissed" ${rep.status!=='pending'?'disabled':''}>Bỏ qua</button>
                             </td>
                         </tr>`).join('');
@@ -358,10 +358,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 if(data.success){
                     tr.querySelectorAll('.action-report-btn').forEach(b=>b.disabled=true);
                     const badge = tr.querySelector('td:nth-child(4) .badge');
-            const statusMap = {pending:'Chờ xử lý', actioned:'Đã xử lý', dismissed:'Đã bỏ qua'};
+                    const statusMap = {pending:'Chờ xử lý', reviewed:'Đã xử lý', dismissed:'Đã bỏ qua'};
             badge.textContent = statusMap[data.report.status]||data.report.status;
-                    badge.className = 'badge ' + (data.report.status==='actioned'?'bg-success':(data.report.status==='dismissed'?'bg-secondary':'bg-warning text-dark'));
+                    badge.className = 'badge ' + (data.report.status==='reviewed' || data.report.status==='dismissed' ? 'bg-success' : 'bg-warning text-dark');
                     showToast('Cập nhật thành công','success');
+                    if(data.rate_hidden && data.rate_id){
+                        const rateRows = document.querySelectorAll('#ratesTable tbody tr');
+                        rateRows.forEach(row=>{
+                            const idCell = row.querySelector('td');
+                            if(idCell && idCell.textContent.trim() === String(data.rate_id)){
+                                // Cập nhật badge trạng thái thay vì xóa hàng
+                                const statusBadge = row.querySelector('td:nth-child(7) .badge');
+                                if(statusBadge){
+                                    statusBadge.className = 'badge rounded-pill bg-danger';
+                                    statusBadge.textContent = 'Ẩn';
+                                }
+                                // Làm mờ hàng để thể hiện đã ẩn
+                                row.style.opacity = '0.6';
+                            }
+                        });
+                    }
                 } else {
                     btn.disabled=false; showToast(data.message||'Lỗi','danger');
                 }

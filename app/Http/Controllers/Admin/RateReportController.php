@@ -57,13 +57,28 @@ class RateReportController extends Controller
     public function update(Request $request, RateReport $rateReport)
     {
         $data = $request->validate([
-            'status'=>'required|in:pending,actioned,dismissed'
+            'status'=>'required|in:pending,reviewed,dismissed'
         ]);
         $rateReport->status = $data['status'];
         $rateReport->save();
-        return response()->json(['success'=>true,'report'=>[
-            'id'=>$rateReport->id,
-            'status'=>$rateReport->status
-        ]]);
+
+        $rateHidden = false;
+        // Nếu báo cáo đã được xử lý (reviewed) thì ẩn luôn đánh giá
+        if($data['status'] === 'reviewed' && $rateReport->rate && $rateReport->rate->status != 2){
+            $rate = $rateReport->rate;
+            $rate->status = 2; // 2 = Ẩn
+            $rate->save();
+            $rateHidden = true;
+        }
+
+        return response()->json([
+            'success'=>true,
+            'report'=>[
+                'id'=>$rateReport->id,
+                'status'=>$rateReport->status
+            ],
+            'rate_hidden'=>$rateHidden,
+            'rate_id'=>$rateReport->rate_id
+        ]);
     }
 }
